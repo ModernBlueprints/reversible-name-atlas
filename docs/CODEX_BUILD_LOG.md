@@ -86,6 +86,38 @@ personal attestations.
 - Live, replay, proof, and blocked-negative screenshots now accompany the
   judge-facing documentation. The full suite remained at 116 passing tests.
 
+## 17 July 2026 — M7 release candidate
+
+- `b4a2dd0` — `docs: enter release candidate validation`
+- A fresh clone installed Python 3.11 dependencies from the frozen lock, passed
+  116 keyless tests and all Ruff/build/link/secret checks, and remained clean.
+- The fresh-clone browser transaction loaded the exact recorded response,
+  resolved 12 of 12 families, staged 28 content objects and 30 data members,
+  produced 28 inverse map rows, left the source unchanged, passed every
+  serialized proof check, and passed a fresh `bagit` validation.
+- A separate clean-clone live startup confirmed the exact `gpt-5.6` model,
+  loopback binding, credential readiness, and explicit Generate control without
+  making a provider request.
+- Both temporary restricted project keys were then revoked and the ignored
+  local credential file was removed. Exactly one OpenAI provider request was
+  made for the project.
+- `79e2836` — `docs: complete release candidate validation`
+
+## 17 July 2026 — M8 public release and submission preparation
+
+- Published the MIT-licensed repository at
+  <https://github.com/ModernBlueprints/reversible-name-atlas> with public
+  `main` at `79e2836`.
+- An unauthenticated clone from the public URL installed from the frozen lock,
+  passed 116 tests and Ruff checks, started the keyless hero replay, displayed
+  the exact recorded label and model contract, and remained Git-clean.
+- Created a separate Reversible Name Atlas Devpost project instead of modifying
+  the unrelated existing Preflight draft. Added the factual project write-up,
+  public repository link, technology list, and an Atlas thumbnail.
+- Prepared one integrated submission package containing the official-requirement
+  snapshot, Devpost copy, 401-word narration draft, second-by-second shot list,
+  claim audit, custom-field draft, and final checklist.
+
 ## Codex contribution boundary
 
 Within the primary build task, Codex translated the frozen product contract into
