@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **17 July 2026 at 18:17:24 CEST**
+Checkpoint: **17 July 2026 at 19:23:31 CEST**
 
-Phase: **M2 — CONTRACT AND GRAPH HARDENING**
+Phase: **M5 — PRODUCT EXPERIENCE**
 
 Production goal: **ACTIVE**
 
@@ -13,92 +13,93 @@ H+0: **Friday 17 July 2026 at 17:16:25 CEST**
 - Recording-ready boundary: Tuesday 21 July 2026 at 02:00 CEST
 - Submission boundary: Wednesday 22 July 2026 at 02:00 CEST
 - Product window at H+0: 80.726 hours
-- Total time to submission at H+0: 104.726 hours
 - Protected submission reserve: 24 hours
-- Full 80-hour activation cutoff: Friday 17 July 2026 at 18:00 CEST
 - H+80 target: Tuesday 21 July 2026 at 01:16:25 CEST
 - Margin from H+80 to recording boundary: 43 minutes 35 seconds
 - Compression: not required; ordinary H+ targets apply
-- M1 target: Saturday 18 July 2026 at 05:16:25 CEST
-- Product time remaining at this checkpoint: 79.710 hours
-- Total time to submission at this checkpoint: 103.710 hours
+- Product time remaining at this checkpoint: 78 hours 36 minutes 29 seconds
+- Total time to submission at this checkpoint: 102 hours 36 minutes 29 seconds
+- M5 ordinary target: Sunday 19 July 2026 at 01:16:25 CEST
 
-## Verified state
+Milestone targets force integration and scope control; they are not cancellation
+timers.
+
+## Verified repository state
 
 - Repository: `/Users/nikolai/Desktop/Repos/reversible-name-atlas`
 - Branch: `main`
-- Scaffold baseline locator: unique root commit on `main` with subject
-  `chore: establish build operating scaffold`
-- Exact baseline commit: `f1c519d215790d9e9949c5991c96826e5a2e295b`
-- M0 product-foundation commit:
+- Scaffold baseline:
+  `f1c519d215790d9e9949c5991c96826e5a2e295b`
+- Product foundation:
   `c177663c59efb22fb85f18d021f850fe396b08b6`
-- Deterministic M1 walking-transaction commit:
+- Deterministic walking transaction:
   `83d64fe361747faef4e340c76a2958736d754e5a`
-- Working tree: clean before this checkpoint update
-- Activated objective: 183 lines, 8,859 bytes, SHA-256
-  `ae72b0a75129754f579c0d817d779feab1238dd986b20193dedc259b851fac98`
-- Controlling attachment: 1,944 lines, 108,954 bytes, SHA-256
-  `1e0cc189e75a95d7f5e504799b4bbc14cc03696880ceb96db3201decc518f8b9`,
-  read through EOF
-- Official rules, FAQ, and GPT-5.6 Sol model page: rechecked 17 July 2026
-- Python: 3.11.9; `uv`: 0.9.28; Git: 2.52.0; GitHub CLI: 2.86.0
-- Git identity and GitHub CLI authentication: configured
-- Free local disk observed before scaffold creation: approximately 93 GiB
-- Spike `SHA256SUMS`: 22/22 passed; selective provenance recorded
-- `OPENAI_API_KEY`: **NOT_CONFIGURED**
-- M0 dependency lock: 31 packages; Python 3.11.9; OpenAI SDK 2.46.0 with
-  `responses.parse` available
-- M0 automation: 8 pytest tests passed; Ruff lint and format checks passed;
-  `uv sync --frozen` passed
-- M0 runtime: replay shell returned a safe health response and listened only on
-  `127.0.0.1:8000`; live mode without a credential exited 2 before server start
-- M0 visual evidence: full-page screenshot and DOM inspected in the in-app
-  browser; mode/model/network status were legible and no console logs existed at
-  inspection
-- The M0 server was shut down cleanly after visual verification
-- M1 hero package: 12 stable object families, 28 content objects, and 30 source
-  members; one `campaña` Meaning-risk family and one casefold collision pair
-- M1 transaction: strict package import, stable families, fixed-profile
-  proposals, visible deterministic risks, bounded live/replay provider
-  boundaries, explicit human decisions, low-risk batch approval without GPT,
-  collision edit/recomputation, copy-only staging, forward/reverse maps,
-  product-owned BagIt creation, Library of Congress BagIt validation, and the
-  connected Atlas/Decisions/Proof interface
-- M1/M2 automation at commit `83d64fe`: 57 pytest tests passed; Ruff lint and
-  format checks passed; `uv sync --frozen` and `git diff --check` passed
-- Connected full-hero test: one Meaning card, explicit campaign approval,
-  low-risk batch approval, one collision edit, second batch approval, all 28
-  resolved paths staged, source bytes unchanged, and BagIt validation passed
-- Independent M2/M4 review found incomplete independent control-file/reverse
-  proof and incomplete early-failure reporting. These are open implementation
-  items; the current proof predicate is not yet accepted as the final `VER-002`
-  implementation.
+- M2–M4 hardening and complete deterministic proof:
+  `1cce39d8c46c62eef96b9baa64b83d16765d5c03`
+- Working tree was clean immediately after the M2–M4 product commit; this
+  checkpoint and plan update are the current documentation-only changes.
+- No Git remote or public repository exists yet.
 
-No API response, retained staged package, public repository, video, or Devpost
-artifact exists at this checkpoint. No API funds have been spent.
+## Verified product evidence
 
-## Current readiness
+- Hero package: 12 stable object families, 28 content objects, 30 source
+  package members, one `campaña` Meaning-risk family, and one casefold collision
+  pair.
+- M2 strict input matrix: 41 focused package-import scenarios pass, including
+  identifier, UTF-8/CSV, supported-tree, reciprocal relationship, traversal,
+  symlink, special-file, and source-change behavior.
+- M3 deterministic transaction: bounded evidence, complete fingerprints,
+  coordinator-side card validation, exact cache/stale-card behavior, explicit
+  human authority, identity-level propagation, persistent conservative spend
+  reservation, write-once replay capture, retry without a second provider call,
+  and replay-startup evidence compatibility are implemented.
+- M4 proof: exact data-member accounting; staged content hashes; declared control
+  semantics and references; canonical source snapshot and decision ledger;
+  strict forward/reverse maps; reverse dry run; profile and collision checks;
+  post-BagIt deterministic rerun; final BagIt validation; blocked failure
+  reports; and atomic no-replace promotion are implemented.
+- Former false-green reproductions for extra staged data, post-proof payload
+  mutation, stale proof after failed re-stage, crafted decision authority, long
+  metadata evidence, and tampered state artifacts are regression-tested and
+  independently confirmed closed.
+- Current automation: `uv sync --frozen` passed; 111 pytest tests passed; Ruff
+  lint and format checks passed; `git diff --check` passed.
+- Browser transaction at 1440×1000: 12/12 families resolved; 28 objects staged;
+  all current proof checks plus Library of Congress BagIt validation rendered
+  green; no browser console errors were present.
+- Source payloads used in browser QA remained unchanged. Ephemeral browser-QA
+  stages were outside the repository and are not product or replay evidence.
 
-- Scaffold implementation: **COMPLETE**
-- Production goal: **ACTIVE**
-- Product implementation: **M0 COMPLETE; M1 DETERMINISTIC SLICE COMPLETE;
-  M1 LIVE EVIDENCE PENDING; M2 IN PROGRESS**
-- Live GPT-5.6 run readiness: **BLOCKED** — local credential not configured and
-  no live call has been made
+## Current blocker and readiness
 
-The missing credential does not block M2–M4 deterministic work. It blocks M1
-completion, recorded replay creation, and any claim that live GPT-5.6
-integration is verified.
+- `OPENAI_API_KEY`: **NOT_CONFIGURED** at this checkpoint.
+- API spend: **USD 0 observed**; no OpenAI request has been made.
+- Canonical replay record: **ABSENT**.
+- M1: deterministic slice complete; required live evidence pending.
+- M2: **COMPLETE**.
+- M3: deterministic decision transaction complete; live/replay evidence pending.
+- M4: **COMPLETE**.
+- M5: **IN_PROGRESS**.
+- Live GPT-5.6 run readiness: implementation **GO**; execution **BLOCKED** only
+  by local credential configuration.
+
+The missing credential blocks the first real GPT-5.6 card, sanitized canonical
+record, replay proof, and completion of M1/M3/M5. It does not block current M5
+product-experience, fixture, responsive, accessibility, documentation, or
+release work. Never request that the key be pasted into chat.
 
 ## Compact recovery capsule
 
-- Current phase: M2 contract and graph hardening; deterministic M1 transaction
-  committed and runnable
-- Unresolved product decisions: none
-- Evidence: clean scaffold baseline, verified M0 commit, and deterministic M1
-  commit `83d64fe`; goal objective read through EOF; 57 tests and Ruff passed
-- Budget: USD 0 spent; USD 10 maximum only after activation
-- Prohibitions: no discovery/tournament/harness loop; no secrets; no unsupported
-  claims; no publication outside the authorized Build Week surfaces
-- Next operation: **Finish the M2 contract scenario set, then implement the
-  independent staged-control and reverse-dry-run proof required by M4.**
+- Current phase: M5 product experience; feature freeze has not yet been declared.
+- Unresolved product decisions: none.
+- Verified baseline: commit `1cce39d`; 111 tests; Ruff/frozen sync/diff checks;
+  1440×1000 full deterministic browser transaction.
+- External dependency: local `OPENAI_API_KEY` configuration, then one bounded
+  baseline `gpt-5.6` call and exact recorded replay verification.
+- Budget: USD 0 observed; USD 10 project cap; conservative reservation is
+  committed before any live request.
+- Prohibitions: no discovery/tournament/harness loop; no secret exposure; no
+  unsupported claims; no silent model substitution.
+- Next operation: **Complete the concise M5 exception-queue experience and the
+  single tiny negative fixture, verify responsive/browser behavior, then declare
+  feature freeze while continuing to check locally for live credential access.**

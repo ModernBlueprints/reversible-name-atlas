@@ -157,7 +157,7 @@ Pre-authorized optional cuts, in order:
 | Owner | Primary integrator; one bounded UI or GPT-schema task may be delegated without owning integration |
 | Allowed scope cut | Use the minimum hero subset and plain styling; do not cut the real GPT call or complete transaction |
 | Actual status | **IN_PROGRESS — DETERMINISTIC SLICE COMPLETE; LIVE EVIDENCE BLOCKED** |
-| Actual verification | **Commit `83d64fe361747faef4e340c76a2958736d754e5a`: the connected 12-family/28-object hero transaction passes package import, Meaning-card test-double flow, explicit low-risk no-GPT batch approval, collision edit and recomputation, complete human resolution, copy-only staging, maps, BagIt creation/validation, and source equality. Repository suite: 57 passed; Ruff lint/format passed; `uv sync --frozen` passed. The required real GPT-5.6 call, sanitized recording, replay proof, and current expanded-hero browser walkthrough remain incomplete because `OPENAI_API_KEY` is not configured.** |
+| Actual verification | **Commits `83d64fe361747faef4e340c76a2958736d754e5a` and `1cce39d8c46c62eef96b9baa64b83d16765d5c03`: the connected 12-family/28-object hero transaction passes package import, Meaning-card test-double flow, explicit low-risk no-GPT batch approval, collision edit and recomputation, complete human resolution, copy-only staging, exact maps/read-back proof, BagIt creation/validation, and source equality. Browser walkthrough at 1440×1000 reached 12/12 resolved and the verified Proof state with no console errors. Repository suite: 111 passed; Ruff lint/format, frozen sync, and `git diff --check` passed. The required real GPT-5.6 call, sanitized recording, and replay proof remain incomplete because `OPENAI_API_KEY` is not configured.** |
 
 ### M2 — Contract and graph hardening
 
@@ -174,8 +174,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M3 decision transaction and M4 staging |
 | Owner | Primary integrator; bounded parser/fixture tests may be delegated |
 | Allowed scope cut | Extra diagnostic prose and non-required risk variants |
-| Actual status | **IN_PROGRESS** |
-| Actual verification | **PARTIAL at commit `83d64fe361747faef4e340c76a2958736d754e5a`: strict supported-tree and UTF-8 CSV import, reciprocal metadata/derivative graph, stable IDs, fixed profile and trace, Meaning signals, exact/NFC/casefold collision detection, successful collision edit/recomputation, raw traversal rejection, symlink and FIFO rejection, source-change detection, and full hero counts are automated. Remaining work: complete the required malformed/duplicate/missing identifier and relationship scenario matrix, inspect serialized graph/blocker UI against the expanded hero, and close any defects those scenarios expose.** |
+| Actual status | **COMPLETE** |
+| Actual verification | **PASSED at commit `1cce39d8c46c62eef96b9baa64b83d16765d5c03`: the complete strict package-contract matrix contains 41 focused import scenarios covering identifiers, UTF-8/CSV shape, supported tree, reciprocal metadata and derivative relationships, traversal, symlinks, special files, stable identities, and optional normalization behavior. Fixed-profile traces, Meaning signals, exact/NFC/casefold collisions, collision editing/recomputation, and source-change blocking are integrated. The 12-family/28-object Atlas and exact blocker states were inspected in-browser at 1440×1000. Full repository verification: 111 passed; Ruff and frozen sync passed.** |
 
 ### M3 — Decision transaction
 
@@ -192,8 +192,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M4 export gate and M5 final Decisions experience |
 | Owner | Primary integrator; bounded prompt/schema adversarial review may be delegated |
 | Allowed scope cut | Extra card layouts, extra semantic-risk variants, and nonessential metrics |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS — DETERMINISTIC TRANSACTION COMPLETE; LIVE/REPLAY EVIDENCE BLOCKED** |
+| Actual verification | **Commit `1cce39d8c46c62eef96b9baa64b83d16765d5c03` implements complete evidence fingerprints, bounded live/replay/test providers, coordinator-side output revalidation, stale-card invalidation, exact cache behavior, explicit human states, identity-level propagation, write-once atomic replay capture with retry-without-second-call, pristine-evidence replay startup validation, and persistent conservative project budget accounting. Metrics distinguish reservations, reported cost, replay, cache, and deterministic calls avoided. Focused lifecycle regressions and the full 111-test suite pass. The first real `gpt-5.6` response, sanitized canonical record, exact replay label, and measured live usage remain blocked by the locally absent credential.** |
 
 ### M4 — Staging and complete proof
 
@@ -210,8 +210,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M5 product experience, M6 claims/docs, and demo recording |
 | Owner | Primary integrator; bounded BagIt/transaction failure review may be delegated |
 | Allowed scope cut | Extra proof charts or artifact viewers; never a proof invariant |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **COMPLETE** |
+| Actual verification | **PASSED at commit `1cce39d8c46c62eef96b9baa64b83d16765d5c03`: atomic no-replace pending promotion; pre/post/final source checks; authority-specific decision validation; byte-copy and complete data-member accounting; strict staged control, source-snapshot, decision-ledger, and forward/reverse-map read-back; declared-reference resolution; exact reverse dry run; profile/collision checks; final post-BagIt deterministic rerun; BagIt validation; blocked failure-report preservation; and stale-proof clearing are implemented. Regression tests prove copy failure, extra payload, post-proof payload mutation, map/control/ledger tampering, source change, crafted authority records, and promotion collision cannot produce the green claim. The full 12-family package reached the Proof UI at 1440×1000 with all checks and no console errors.** |
 
 ### M5 — Product experience and feature freeze
 
@@ -228,8 +228,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M6 hardening and M8 demonstration |
 | Owner | Primary integrator; bounded visual/accessibility critique may be delegated |
 | Allowed scope cut | Cuts 1–6 from the frozen optional list as necessary |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS** |
+| Actual verification | **The connected Atlas/Decisions/Proof visual system and final expanded hero are functional and browser-verified. Current M5 work is reducing the judge path to a concise exception queue, adding explicit family context and compact Atlas disclosure, creating the single tiny negative fixture, verifying responsive/accessibility behavior, and then freezing features. Live-card and recorded-replay visuals remain pending the user-owned credential action.** |
 
 **Feature freeze is mandatory when M5 is complete.**
 
