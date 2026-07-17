@@ -2,11 +2,11 @@
 
 Status: **REVISED / FROZEN**
 
-Amended production goal: **INACTIVE — AWAITING EXPLICIT USER ACTIVATION**
+Amended production goal: **ACTIVE — EXPLICITLY ACTIVATED 18 JULY 2026**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
-Revision R+0: **NOT STARTED**
+Revision R+0: **SATURDAY 18 JULY 2026 AT 00:51:51 CEST**
 
 Submission hold: **ACTIVE**
 

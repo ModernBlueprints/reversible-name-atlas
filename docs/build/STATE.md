@@ -1,16 +1,16 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 00:31:26 CEST**
+Checkpoint: **Saturday 18 July 2026 at 00:53:03 CEST**
 
-Phase: **WAITING_FOR_REVISED_GOAL_ACTIVATION**
+Phase: **R1_REVISION_WALKING_TRANSACTION**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
-Amended production goal: **INACTIVE**
+Amended production goal: **ACTIVE**
 
 Historical H+0: **Friday 17 July 2026 at 17:16:25 CEST — PRESERVED**
 
-Revision R+0: **NOT_STARTED**
+Revision R+0: **Saturday 18 July 2026 at 00:51:51 CEST**
 
 Submission hold: **ACTIVE**
 
@@ -18,10 +18,18 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 73 hours 28 minutes 33 seconds
-- Time to submission: 97 hours 28 minutes 33 seconds
+- Time to recording-ready: 73 hours 6 minutes 57 seconds
+- Time to submission: 97 hours 6 minutes 57 seconds
 - Final submission reserve: 24 hours
-- Revised targets: calculate from actual R+0; no revised milestone is active
+- Planned revision window: 69 hours 8 minutes 9 seconds
+- Protected pre-recording contingency: 4 hours
+- R1 target: Saturday 18 July 2026 at 12:42:57 CEST
+- R2 target: Sunday 19 July 2026 at 02:32:35 CEST
+- R3 target: Sunday 19 July 2026 at 14:23:42 CEST
+- R4 and restore-gate target: Monday 20 July 2026 at 04:13:19 CEST
+- R5 target when admitted: Monday 20 July 2026 at 12:07:24 CEST
+- R6 target: Monday 20 July 2026 at 20:01:28 CEST
+- R7 target: Monday 20 July 2026 at 22:00:00 CEST
 
 ## Observed repository and environment
 
@@ -39,8 +47,9 @@ Submission hold: **ACTIVE**
 - `OPENAI_API_KEY` in the current environment: **ABSENT**; no value was read or
   exposed.
 
-This checkpoint does not claim its own post-commit cleanliness. Fresh Git state
-in the scaffold handoff and at later activation controls that fact.
+- Activation baseline was clean at governance commit
+  `fbe6dea2e3755cc25c20202e254bf4f994ed2121`; current working changes are the
+  authorized activation checkpoint until committed.
 
 ## Inherited verified baseline
 
@@ -61,7 +70,7 @@ in the scaffold handoff and at later activation controls that fact.
 
 ## Revised capability status
 
-- Persistent `migration-case.v1` authority and restart: **NOT STARTED**
+- Persistent `migration-case.v1` authority and restart: **IN PROGRESS (R1)**
 - Atomic persistence, locking, revision checks, and staleness: **NOT STARTED**
 - Evidence/card/human-decision receipt binding: **NOT STARTED**
 - Path-neutral `v2` artifacts and original controls: **NOT STARTED**
@@ -77,29 +86,30 @@ First-cycle README, screenshots, narration, Devpost copy, and thumbnail:
 
 `STALE — PRESERVED FIRST-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER REVISED FEATURE FREEZE`
 
-The feature freeze is reopened only for the approved frozen revision. No product
-implementation is authorized before explicit activation. Current blocker:
+The feature freeze is reopened only for the approved frozen revision. Product
+implementation is now authorized by the activated goal. Current blocker:
 **NONE**.
 
 ## Compact recovery capsule
 
-- Phase: `WAITING_FOR_REVISED_GOAL_ACTIVATION`
-- Branch and baseline: `revision/portable-change-receipt` from `827b0f6`
-- Current milestone: none; R1 is pending and inactive
+- Phase: `R1_REVISION_WALKING_TRANSACTION`
+- Branch and baseline: `revision/portable-change-receipt` at governance commit
+  `fbe6dea`, from public predecessor `827b0f6`
+- Current milestone: R1 in progress; target Saturday 18 July 2026 at 12:42:57
+  CEST
 - Last verified commands: lock check; 116 pytest tests; Ruff lint/format; Git
-  whitespace check — all passed before governance edits
-- Case status: not started
+  whitespace check — all passed at activation
+- Case status: R1 implementation in progress
 - Receipt/verifier status: not started
 - UI status: inherited first-cycle UI only; revised five-state UI not started
 - Restore gate: not evaluated
-- Feature-freeze status: reopened only for approved revision; execution inactive
+- Feature-freeze status: reopened only for the approved revision
 - Release-material status: first-cycle materials preserved but stale
 - Submission hold: active
 - Blockers: none
-- Next operation: User explicitly activates the complete amended
-  `docs/build/GOAL.md` in this primary Codex task at the governance commit
-  reported in the scaffold handoff.
+- Next operation: implement the smallest complete R1 case→decision→receipt→
+  receiver-verifier transaction while preserving the inherited runnable product.
 
 ## Exact next operation
 
-User explicitly activates the complete amended docs/build/GOAL.md in this primary Codex task at the governance commit reported in the scaffold handoff.
+Implement the smallest complete R1 case→decision→receipt→receiver-verifier transaction while preserving the inherited runnable product.

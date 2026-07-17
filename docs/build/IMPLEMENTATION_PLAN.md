@@ -1,10 +1,10 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **READY / INACTIVE**
+Status: **ACTIVE / R1 IN PROGRESS**
 
-Amended production goal: **INACTIVE**
+Amended production goal: **ACTIVE**
 
-Revision R+0: **NOT STARTED**
+Revision R+0: **Saturday 18 July 2026 at 00:51:51 CEST**
 
 Submission hold: **ACTIVE**
 
@@ -75,6 +75,19 @@ If `planned_revision_hours < 70`, multiply the standard anchors by
 | R5 when admitted | 60/70 |
 | R6 | 68/70 |
 | R7 | 70/70 |
+
+Actual activation calculation:
+
+- `available_revision_hours = 73.135833`;
+- `planned_revision_hours = 69.135833`;
+- protected contingency: `4 hours`;
+- R1 target: Saturday 18 July 2026 at 12:42:57 CEST;
+- R2 target: Sunday 19 July 2026 at 02:32:35 CEST;
+- R3 target: Sunday 19 July 2026 at 14:23:42 CEST;
+- R4 and restore-gate target: Monday 20 July 2026 at 04:13:19 CEST;
+- R5 target when admitted: Monday 20 July 2026 at 12:07:24 CEST;
+- R6 target: Monday 20 July 2026 at 20:01:28 CEST; and
+- R7 target: Monday 20 July 2026 at 22:00:00 CEST.
 
 Preserve milestone order and absolute boundaries. The restore gate separately
 requires at least 18 actual hours remaining. Targets force integration and
@@ -148,8 +161,9 @@ hardening.
   or pure contracts.
 - **Allowed cut:** styling, convenience controls, extra metrics, restore; not any
   named walking-transaction link.
-- **Actual status:** `PENDING / INACTIVE`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN_PROGRESS`.
+- **Actual verification:** activation baseline passed: locked dependencies,
+  116 inherited tests, Ruff lint, Ruff format, and Git whitespace checks.
 
 ### R2 — Case and authority hardening
 

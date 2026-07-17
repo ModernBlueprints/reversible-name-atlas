@@ -277,3 +277,14 @@ overrides those artifacts.
 - Rationale: The revised product, video, due diligence, and submission package
   must be complete before the irreversible submission step.
 - Active authority: `GOAL.md`, the sole plan, and current `STATE.md`.
+
+## D-029 — Revised goal activated and targets fixed
+
+- Date: 18 July 2026
+- Decision: Activate the complete amended production goal at Saturday 18 July
+  2026 at 00:51:51 CEST, preserve historical H+0, and calculate the revised
+  milestone targets from the plan's 69-hour 8-minute 9-second product window.
+- Rationale: The governance baseline, branch, locked dependencies, 116 inherited
+  tests, Ruff checks, and Git whitespace check all passed before R1 began.
+- Active authority: activated `GOAL.md`, the sole implementation plan, and
+  current `STATE.md`.
