@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Friday 17 July 2026 at 21:21:22 CEST**
+Checkpoint: **Friday 17 July 2026 at 21:34:20 CEST**
 
 Phase: **M8 — RECORDING READINESS**
 
@@ -12,8 +12,8 @@ H+0: **Friday 17 July 2026 at 17:16:25 CEST**
 
 - Recording-ready boundary: Tuesday 21 July 2026 at 02:00 CEST
 - Submission boundary: Wednesday 22 July 2026 at 02:00 CEST
-- Product time remaining: 76 hours 38 minutes 37 seconds
-- Total time to submission: 100 hours 38 minutes 37 seconds
+- Product time remaining: 76 hours 25 minutes 39 seconds
+- Total time to submission: 100 hours 25 minutes 39 seconds
 - Protected submission reserve: 24 hours
 - Compression: not required; ordinary H+ targets remain in force
 
@@ -31,8 +31,15 @@ Targets force integration and scope control. They are not cancellation timers.
   `d71b0b903a8259b158e1d674c5735edb88a6c665`
 - M7 release candidate was reproduced from:
   `b4a2dd0f7c1c0142901ab1218c06925a4e7d95e3`
-- No Git remote or public repository exists yet.
-- The working tree was clean immediately before this synchronized M7 plan/state
+- M7 completion checkpoint:
+  `79e2836019cc392a02ad0cf04971b091a5c8c8d9`
+- M8 submission-package commit:
+  `2e808ff9cdb98cd6b13cd9cd8bdd4826a7dbe7d9`
+- Remote: `https://github.com/ModernBlueprints/reversible-name-atlas.git`
+- Public repository: <https://github.com/ModernBlueprints/reversible-name-atlas>
+- GitHub reports visibility **PUBLIC**, default branch `main`, MIT license, and
+  seven relevant repository topics. The public page returns HTTP 200.
+- The working tree was clean immediately before this synchronized M8 plan/state
   checkpoint; these two documentation files are the only current changes.
 
 ## Verified release evidence
@@ -81,6 +88,18 @@ Targets force integration and scope control. They are not cancellation timers.
 - A separate clean-clone live startup displayed exact `gpt-5.6`, loopback-only
   binding, credential readiness, and the explicit Generate control. It was
   stopped without generating a card or making a provider request.
+- An unauthenticated public clone at commit `79e2836` installed from the lock,
+  passed 116 tests and Ruff checks, started keyless replay with the exact
+  recorded label/model/hero counts, and remained Git-clean.
+- Current Devpost state: the user is already registered; submissions are open;
+  the separate Reversible Name Atlas project exists as draft
+  <https://devpost.com/software/reversible-name-atlas>; its project copy,
+  technology list, public repository link, and processed Atlas thumbnail are
+  present. The unrelated Preflight draft was not modified.
+- `docs/SUBMISSION_PACKAGE.md` contains the official-rule snapshot, bounded
+  Devpost copy, 401-word narration, shot list, custom-field/testing draft,
+  claim audit, and final checklist. Narration is estimated at 2 minutes 40
+  seconds at 150 words per minute before controlled pauses.
 
 ## Credential and release readiness
 
@@ -94,14 +113,19 @@ Targets force integration and scope control. They are not cancellation timers.
 - M7: **COMPLETE**.
 - M8: **IN_PROGRESS**.
 - Live GPT-5.6 implementation and recorded replay: **COMPLETE**.
-- Public repository: **PENDING**.
-- Recording package, public video, and Devpost submission: **PENDING**.
+- Public repository: **COMPLETE**.
+- Devpost project and thumbnail: **DRAFT COMPLETE**.
+- Recording script and shot list: **DRAFT COMPLETE**.
+- Screen capture, user voice-over, public video, required personal fields,
+  `/feedback` Session ID, and final Devpost submission: **PENDING**.
 - Current M8 blocker: **NONE**.
 
 ## Compact recovery capsule
 
 - Phase: M8 recording readiness; M0–M7 complete; feature freeze active.
-- Release commit: `d71b0b903a8259b158e1d674c5735edb88a6c665`.
+- Public repository: `https://github.com/ModernBlueprints/reversible-name-atlas`;
+  M8 content package commit `2e808ff`; this synchronized state is the subsequent
+  documentation checkpoint in Git history.
 - Product evidence: one real `gpt-5.6` call, one sanitized exact-fingerprint
   record, one verified live transaction, three verified keyless replay
   transactions including a fresh-clone run, 116 tests, clean
@@ -113,7 +137,7 @@ Targets force integration and scope control. They are not cancellation timers.
   substitution; no consumption of the final 24-hour reserve for product work.
 - Credential cleanup: both temporary keys revoked; ignored `.env` absent; no
   further live request is planned or authorized without new user direction.
-- Next operation: **Commit this synchronized M7 checkpoint, create and push the
-  public MIT-licensed GitHub repository without force-push, verify the public
-  commit and clean-clone judge path, then prepare the timed recording and
-  submission package.**
+- Next operation: **Commit and push this synchronized M8 checkpoint, capture and
+  rehearse the exact keyless product footage without another model call, then
+  request only the user-owned voice-over, `/feedback` ID, Submitter Type, and
+  Country of Residence needed to finish the video and Devpost submission.**

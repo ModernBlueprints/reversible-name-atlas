@@ -286,7 +286,7 @@ Pre-authorized optional cuts, in order:
 | Owner | Primary integrator; user handles no recording yet unless they elect to start early |
 | Allowed scope cut | Only nonessential copy polish; recording readiness itself is not cut |
 | Actual status | **IN_PROGRESS** |
-| Actual verification | **M7 release candidate passed. Public repository creation, public-URL verification, timed narration and shot list, Devpost copy, final proof-artifact selection, and the recording-ready rules/claims audit remain. No product code, feature, or design work remains planned.** |
+| Actual verification | **Public MIT repository <https://github.com/ModernBlueprints/reversible-name-atlas> is live on `main`; visibility, MIT detection, unauthenticated HTTP access, remote commit, public clone, frozen install, 116 tests, Ruff checks, and keyless replay startup were verified. Separate Devpost project `reversible-name-atlas` exists in draft with the factual write-up, repository link, technology list, and processed Atlas thumbnail; the unrelated Preflight draft was preserved. `docs/SUBMISSION_PACKAGE.md` contains the rechecked official requirements, bounded Devpost copy, a timed 401-word English narration, second-by-second shot list, testing/custom-field drafts, claim audit, and checklist. Product screenshots and proof artifacts are selected. Screen capture/rehearsal, user voice-over, public YouTube playback, exact `/feedback` ID, personal submission fields, and final rules/claims review remain. No product code, feature, or design work remains planned.** |
 
 ### M9 — Protected submission reserve
 
