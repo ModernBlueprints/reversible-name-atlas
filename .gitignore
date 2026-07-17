@@ -1,0 +1,30 @@
+# Local secrets and environment
+.env
+.env.*
+!.env.example
+.venv/
+
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Packaging and local build output
+/build/
+dist/
+*.egg-info/
+
+# Product-generated local workspaces
+runs/
+staging/
+.name-atlas/
+
+# Editor and operating-system files
+.DS_Store
+*.swp
+*~
