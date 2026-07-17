@@ -13,7 +13,7 @@ only in `docs/build/GOAL.md`. Current observed state lives only in
 `docs/build/STATE.md`.
 
 H+0 is **Friday 17 July 2026 at 17:16:25 CEST**, the active-goal creation
-timestamp in this primary Codex task. M0 is in progress.
+timestamp in this primary Codex task. M0 is complete and M1 is in progress.
 
 ## Operating rules
 
@@ -138,8 +138,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M1 walking skeleton and every later judge command |
 | Owner | Primary integrator; bounded dependency/configuration review may be delegated |
 | Allowed scope cut | Decorative shell styling only |
-| Actual status | **IN_PROGRESS** |
-| Actual verification | **PENDING — foundation not yet implemented** |
+| Actual status | **COMPLETE** |
+| Actual verification | **PASSED at commit `c177663c59efb22fb85f18d021f850fe396b08b6`: `uv sync --frozen`; Python 3.11; CLI/help and missing-credential behavior; 8 pytest tests; Ruff lint/format; SDK `responses.parse` surface; HTTP health smoke; `127.0.0.1`-only listener; safe diagnostics; in-app-browser DOM, console, and full-page visual inspection.** |
 
 ### M1 — Walking skeleton
 
@@ -156,8 +156,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M2–M5; proves the architecture before hardening |
 | Owner | Primary integrator; one bounded UI or GPT-schema task may be delegated without owning integration |
 | Allowed scope cut | Use the minimum hero subset and plain styling; do not cut the real GPT call or complete transaction |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS** |
+| Actual verification | **DETERMINISTIC TRANSACTION WORK STARTED; live GPT-5.6 verification remains blocked until the user configures `OPENAI_API_KEY` locally.** |
 
 ### M2 — Contract and graph hardening
 
