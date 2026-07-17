@@ -228,8 +228,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M6 hardening and M8 demonstration |
 | Owner | Primary integrator; bounded visual/accessibility critique may be delegated |
 | Allowed scope cut | Cuts 1–6 from the frozen optional list as necessary |
-| Actual status | **IN_PROGRESS** |
-| Actual verification | **The connected Atlas/Decisions/Proof visual system and final expanded hero are functional and browser-verified. Current M5 work is reducing the judge path to a concise exception queue, adding explicit family context and compact Atlas disclosure, creating the single tiny negative fixture, verifying responsive/accessibility behavior, and then freezing features. Live-card and recorded-replay visuals remain pending the user-owned credential action.** |
+| Actual status | **IN_PROGRESS — DETERMINISTIC PRODUCT EXPERIENCE COMPLETE AND FEATURE-FROZEN; LIVE/REPLAY EVIDENCE BLOCKED** |
+| Actual verification | **PASSED for the independent deterministic surface at commit `819e674ba74fb86d981f390d52214de5b4e4f7a7`: the selected-root CLI, compact Atlas disclosures, three-item exception queue, exact before/after traces and affected links, full evidence-linked Decision Card presentation, refusal-safe batch action, authority-correct colors, blocker-specific Proof state, allowlisted proof-artifact controls, and single tiny unresolved-Meaning fixture are integrated. `uv sync --frozen`, 116 tests, Ruff lint/format, and `git diff --check` passed. Primary browser QA completed the entire 12-family/28-object transaction at 1440×1000 and 390×844, inspected the neutral card and artifact shelf, reached all-green deterministic Proof and BagIt validation, and separately verified the tiny fixture's disabled export. An independent bounded closure audit found no remaining material M5 defect. Feature freeze is active. The actual live `gpt-5.6` card, canonical sanitized record, and recorded-replay visuals remain pending the user-owned credential action, so formal M5 completion is not claimed.** |
 
 **Feature freeze is mandatory when M5 is complete.**
 
@@ -248,8 +248,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M7 release candidate |
 | Owner | Primary integrator; bounded documentation/claims audit may be delegated |
 | Allowed scope cut | Cuts 5–8 only; no new feature work |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS** |
+| Actual verification | **M6 began after deterministic feature freeze at commit `819e674ba74fb86d981f390d52214de5b4e4f7a7`. Release documentation, claims, licensing, screenshot capture, and clean-environment preparation are independently executable. Final live metrics, canonical replay evidence, and the live/replay screenshots remain key-gated.** |
 
 ### M7 — Release candidate
 

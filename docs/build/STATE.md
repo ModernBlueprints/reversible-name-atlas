@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **17 July 2026 at 19:23:31 CEST**
+Checkpoint: **17 July 2026 at 20:07:22 CEST**
 
-Phase: **M5 — PRODUCT EXPERIENCE**
+Phase: **M6 — RELEASE HARDENING**
 
 Production goal: **ACTIVE**
 
@@ -17,8 +17,8 @@ H+0: **Friday 17 July 2026 at 17:16:25 CEST**
 - H+80 target: Tuesday 21 July 2026 at 01:16:25 CEST
 - Margin from H+80 to recording boundary: 43 minutes 35 seconds
 - Compression: not required; ordinary H+ targets apply
-- Product time remaining at this checkpoint: 78 hours 36 minutes 29 seconds
-- Total time to submission at this checkpoint: 102 hours 36 minutes 29 seconds
+- Product time remaining at this checkpoint: 77 hours 52 minutes 37 seconds
+- Total time to submission at this checkpoint: 101 hours 52 minutes 37 seconds
 - M5 ordinary target: Sunday 19 July 2026 at 01:16:25 CEST
 
 Milestone targets force integration and scope control; they are not cancellation
@@ -36,7 +36,9 @@ timers.
   `83d64fe361747faef4e340c76a2958736d754e5a`
 - M2–M4 hardening and complete deterministic proof:
   `1cce39d8c46c62eef96b9baa64b83d16765d5c03`
-- Working tree was clean immediately after the M2–M4 product commit; this
+- Deterministic product experience and feature freeze:
+  `819e674ba74fb86d981f390d52214de5b4e4f7a7`
+- The working tree was clean immediately after the M5 product commit; this
   checkpoint and plan update are the current documentation-only changes.
 - No Git remote or public repository exists yet.
 
@@ -62,11 +64,21 @@ timers.
   mutation, stale proof after failed re-stage, crafted decision authority, long
   metadata evidence, and tampered state artifacts are regression-tested and
   independently confirmed closed.
-- Current automation: `uv sync --frozen` passed; 111 pytest tests passed; Ruff
+- Current automation: `uv sync --frozen` passed; 116 pytest tests passed; Ruff
   lint and format checks passed; `git diff --check` passed.
-- Browser transaction at 1440×1000: 12/12 families resolved; 28 objects staged;
-  all current proof checks plus Library of Congress BagIt validation rendered
-  green; no browser console errors were present.
+- M5 product experience: selected local source/output paths; concise Atlas
+  disclosures; a three-family initial exception queue; complete before/after,
+  trace, risk, reference, and neutral Decision Card content; refusal-safe batch
+  authority; explicit blocker details; and open/download proof-artifact controls.
+- Browser transactions at 1440×1000 and 390×844: 12/12 families resolved; 28
+  objects staged; neutral card content and evidence linkage remained visually
+  separate from human authority; all deterministic proof checks plus Library of
+  Congress BagIt validation rendered green; long paths and proof labels wrapped
+  at the narrow viewport.
+- The single tiny negative fixture was separately rendered with its Meaning
+  decision unresolved, its exact blocker listed, and staging disabled. Automated
+  tests also prove the valid two-member fixture creates no output when unresolved.
+- An independent bounded M5 closure audit found no remaining material defect.
 - Source payloads used in browser QA remained unchanged. Ephemeral browser-QA
   stages were outside the repository and are not product or replay evidence.
 
@@ -79,7 +91,9 @@ timers.
 - M2: **COMPLETE**.
 - M3: deterministic decision transaction complete; live/replay evidence pending.
 - M4: **COMPLETE**.
-- M5: **IN_PROGRESS**.
+- M5: deterministic experience **FEATURE-FROZEN**; formal completion remains
+  pending actual live-card and recorded-replay evidence.
+- M6: **IN_PROGRESS** for independently executable release work.
 - Live GPT-5.6 run readiness: implementation **GO**; execution **BLOCKED** only
   by local credential configuration.
 
@@ -90,16 +104,17 @@ release work. Never request that the key be pasted into chat.
 
 ## Compact recovery capsule
 
-- Current phase: M5 product experience; feature freeze has not yet been declared.
+- Current phase: M6 release hardening; deterministic feature freeze is active.
 - Unresolved product decisions: none.
-- Verified baseline: commit `1cce39d`; 111 tests; Ruff/frozen sync/diff checks;
-  1440×1000 full deterministic browser transaction.
+- Verified baseline: commit `819e674`; 116 tests; Ruff/frozen sync/diff checks;
+  complete 1440×1000 and 390×844 deterministic browser transactions plus the
+  one-fixture negative block.
 - External dependency: local `OPENAI_API_KEY` configuration, then one bounded
   baseline `gpt-5.6` call and exact recorded replay verification.
 - Budget: USD 0 observed; USD 10 project cap; conservative reservation is
   committed before any live request.
 - Prohibitions: no discovery/tournament/harness loop; no secret exposure; no
   unsupported claims; no silent model substitution.
-- Next operation: **Complete the concise M5 exception-queue experience and the
-  single tiny negative fixture, verify responsive/browser behavior, then declare
-  feature freeze while continuing to check locally for live credential access.**
+- Next operation: **Complete the minimum M6 release documentation, license,
+  package metadata, deterministic screenshot set, claims audit, and release
+  checks while continuing to check locally for live credential access.**
