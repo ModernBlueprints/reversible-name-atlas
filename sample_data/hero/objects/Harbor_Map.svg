@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Harbor map north edition</title>
+  <desc id="desc">Synthetic source for the casefold-collision demonstration.</desc>
+  <rect width="1200" height="800" fill="#edf4ef"/>
+  <path d="M0 500Q280 350 560 520T1200 470V800H0Z" fill="#3f7f91"/>
+  <path d="M240 500L390 270 520 500M760 490L900 220 1030 480" fill="#d8d0b7" stroke="#47604b" stroke-width="12"/>
+  <text x="72" y="120" font-family="Georgia,serif" font-size="74" fill="#244a55">Harbor Map · North</text>
+  <text x="72" y="742" font-family="Arial,sans-serif" font-size="28" fill="#fff">CASE-010 · SYNTHETIC ORIGINAL · COLLISION A</text>
+</svg>

@@ -2,10 +2,12 @@
 
 from name_atlas.domain.contracts import (
     CandidateExplanation,
+    ContentRole,
     DecisionCard,
     EvidencePacket,
     EvidenceRef,
     LinkedObservation,
+    MemberKind,
     PackageValidationResult,
     RunMode,
     TransformationStep,
@@ -13,10 +15,12 @@ from name_atlas.domain.contracts import (
 
 __all__ = [
     "CandidateExplanation",
+    "ContentRole",
     "DecisionCard",
     "EvidencePacket",
     "EvidenceRef",
     "LinkedObservation",
+    "MemberKind",
     "PackageValidationResult",
     "RunMode",
     "TransformationStep",

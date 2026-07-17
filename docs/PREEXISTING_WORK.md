@@ -78,3 +78,25 @@ focused algorithm, update this file in the same product commit with:
 Behavioral inspiration without copied code must still be described when it
 materially shaped an implementation. Tournament semantic/evaluator machinery
 remains excluded even if adapting it appears faster.
+
+## Actual M1 mechanical adaptations
+
+The M1 vertical transaction was written in the new repository rather than
+copied wholesale. The bounded source inspection nevertheless materially shaped
+the following implementations. All rows belong to the product commit with
+subject `feat: deliver deterministic M1 walking transaction`; its exact hash is
+recorded in `docs/build/STATE.md` after the commit exists.
+
+| Verified source behavior | Destination | Disposition and contract change | Acceptance evidence |
+|---|---|---|---|
+| `pathatlas/contracts.py:70-75` and `pathatlas/bundle.py:49-89`; source hashes above | `src/name_atlas/source.py` — `_read_regular_file`, `snapshot_tree` | **ADAPT** — retained streamed SHA-256, deterministic ordering, and regular-file classification; added descriptor-level `fstat`, no-follow open, raw supported-tree classification, and change-during-read checks | `tests/test_package_import.py` stable snapshot, symlink, and source-change cases |
+| `pathatlas/bundle.py:92-108` | `src/name_atlas/package_import.py` — `_csv_rows`, `_parse_metadata`, `_parse_normalization` | **ADAPT** — rebuilt only for the frozen UTF-8 metadata/normalization contracts and corrected the old missing-trailing-cell predicate by requiring exact row cardinality | malformed-row and reciprocal-accounting tests in `tests/test_package_import.py` |
+| `pathatlas/graph.py:10-93` | `src/name_atlas/package_import.py` — `_reconcile` and `ObjectFamily` | **REWRITE** — retained the invariant that every reference resolves to one stable identity; rejected the old bundle, raw-byte, and evaluator schemas | hero family/derivative import and orphan-reference tests |
+| `pathatlas/projection.py:81-189` | `src/name_atlas/proposals.py` — `project_descriptor`, `build_family_proposals` | **ADAPT** — recast the ordered projection as the fixed identifier/descriptor/role profile with structured steps and separate Meaning signals; did not reuse old encoding claims or collision keys | `campaña` to `campana` proposal and human-decision tests |
+| Focused `pathatlas/transaction.py:1050-1206` copy-only lessons | `src/name_atlas/staging.py` — `stage_package`, `_copy_content_member`, control propagation | **REWRITE** — decomposed the monolith into import, decision, staging, artifact, BagIt writer, and validator boundaries; omitted every tournament arm/review/evaluator protocol | `tests/test_staging.py` and connected `tests/test_workflow.py` |
+| Focused mapping/reverse invariants in `pathatlas/transaction.py:1582-1791` | `src/name_atlas/artifacts.py` and `src/name_atlas/staging.py` | **ADAPT** — retained complete forward/reverse map coverage and hash equality while replacing raw hexadecimal identity with stable `ObjectFamily` identity and ordinary logical paths; independent control-file reconstruction remains an M4 deliverable | map-row completeness, staged-hash, source-equality, report, and BagIt assertions |
+
+No code, prompt, executable, scoring rule, or transport behavior from
+`pathatlas/semantic.py` was inspected, imported, executed, or adapted. The
+product has no runtime, test, or judge-path dependency on the ephemeral spike
+root.

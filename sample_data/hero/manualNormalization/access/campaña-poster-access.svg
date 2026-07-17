@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 1200 800" role="img" aria-labelledby="title description">
+  <title id="title">Campaña poster access derivative</title>
+  <desc id="description">Synthetic access derivative used by Reversible Name Atlas.</desc>
+  <rect width="1200" height="800" fill="#f4f1e8"/>
+  <circle cx="970" cy="180" r="240" fill="#d5eadf"/>
+  <path d="M0 650 C220 500 430 760 650 600 S1020 470 1200 610 V800 H0Z" fill="#174f3d"/>
+  <text x="88" y="250" fill="#12211d" font-family="Georgia, serif" font-size="112">Campaña</text>
+  <text x="94" y="344" fill="#5f6e68" font-family="Arial, sans-serif" font-size="42">community archive · 2026</text>
+  <text x="92" y="706" fill="#ffffff" font-family="Arial, sans-serif" font-size="31">ACCESS DERIVATIVE · SYNTHETIC</text>
+</svg>

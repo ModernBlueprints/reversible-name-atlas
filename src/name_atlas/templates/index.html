@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#174f3d">
     <title>Reversible Name Atlas</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23174f3d%22/><text x=%2211%22 y=%2241%22 font-size=%2226%22 fill=%22white%22>NA</text></svg>">
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
   </head>
   <body>
@@ -18,65 +20,226 @@
 
       <section class="hero" aria-labelledby="page-title">
         <div>
-          <p class="eyebrow">M0 · Product foundation</p>
+          <p class="eyebrow">Linked-collection migration workbench</p>
           <h1 id="page-title">Refactor the collection.<br>Preserve every identity.</h1>
           <p class="lede">
-            A local-first workbench for previewing linked collection migrations,
-            resolving the few changes that need human judgment, and proving the
-            staged result.
+            Preview the complete rename, resolve only the meaning-sensitive
+            exceptions, and prove a copy-only staged result before ingest.
           </p>
         </div>
 
         <aside class="status-card" aria-label="Runtime status">
           <div class="status-card__header">
             <span class="status-dot" aria-hidden="true"></span>
-            <span>Application shell ready</span>
+            <span>{% if view %}Source package indexed{% else %}Application shell ready{% endif %}</span>
           </div>
           <dl>
-            <div>
-              <dt>Provider mode</dt>
-              <dd>{{ diagnostics.mode }}</dd>
-            </div>
-            <div>
-              <dt>Model contract</dt>
-              <dd>{{ diagnostics.model }}</dd>
-            </div>
-            <div>
-              <dt>Network</dt>
-              <dd>{{ diagnostics.host }} · loopback only</dd>
-            </div>
+            <div><dt>Provider mode</dt><dd>{{ diagnostics.mode }}</dd></div>
+            <div><dt>Model contract</dt><dd>{{ diagnostics.model }}</dd></div>
+            <div><dt>Network</dt><dd>{{ diagnostics.host }} · loopback only</dd></div>
+            {% if view %}
+              <div><dt>Snapshot</dt><dd class="mono">{{ view.snapshot.commitment[:10] }}…</dd></div>
+            {% endif %}
           </dl>
           <p class="provider-status">{{ diagnostics.provider_status }}</p>
         </aside>
       </section>
 
+      {% if notice %}<p class="notice notice--success" role="status">{{ notice }}</p>{% endif %}
+      {% if action_error %}<p class="notice notice--error" role="alert">{{ action_error }}</p>{% endif %}
+
       <nav class="product-nav" aria-label="Product states">
-        <span class="product-nav__item product-nav__item--active">01 Atlas</span>
-        <span class="product-nav__item">02 Decisions</span>
-        <span class="product-nav__item">03 Proof</span>
+        <a class="product-nav__item" href="#atlas">01 Atlas</a>
+        <a class="product-nav__item" href="#decisions">02 Decisions</a>
+        <a class="product-nav__item" href="#proof">03 Proof</a>
       </nav>
 
-      <section class="foundation-grid" aria-label="Foundation status">
-        <article>
-          <span class="number">01</span>
-          <h2>Atlas</h2>
-          <p>Collection structure, identities, declared links, and proposed moves.</p>
-          <span class="pending">Domain integration begins in M1</span>
-        </article>
-        <article>
-          <span class="number">02</span>
-          <h2>Decisions</h2>
-          <p>Bounded evidence, neutral GPT-5.6 cards, and human authority.</p>
-          <span class="pending">{{ diagnostics.provider_status }}</span>
-        </article>
-        <article>
-          <span class="number">03</span>
-          <h2>Proof</h2>
-          <p>Copy-only staging, inverse maps, content hashes, and BagIt validation.</p>
-          <span class="pending">Verification transaction begins in M1</span>
-        </article>
-      </section>
+      {% if view %}
+        <section id="atlas" class="product-section" aria-labelledby="atlas-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">01 · Atlas</p>
+              <h2 id="atlas-title">One identity, every declared relationship</h2>
+            </div>
+            <p>{{ view.family_count }} families · {{ view.content_count }} content objects · {{ view.proposal_count }} visible proposals</p>
+          </div>
+
+          <div class="metric-grid" aria-label="Risk counts">
+            <article><span>Families</span><strong>{{ view.family_count }}</strong><small>stable identities</small></article>
+            <article><span>Policy</span><strong>{{ view.risk_counts.Policy }}</strong><small>profile blockers</small></article>
+            <article><span>Collision</span><strong>{{ view.risk_counts.Collision }}</strong><small>target conflicts</small></article>
+            <article><span>Links</span><strong>{{ view.risk_counts.Links }}</strong><small>broken references</small></article>
+            <article class="metric--amber"><span>Meaning</span><strong>{{ view.risk_counts.Meaning }}</strong><small>human judgment</small></article>
+          </div>
+
+          {% for item in view.families %}
+            <article class="family-card">
+              <header class="family-card__header">
+                <div>
+                  <span class="id-chip">{{ item.family.canonical_identifier }}</span>
+                  <h3>{{ item.family.metadata_row.value('dc.title') }}</h3>
+                  <p class="mono subtle">Family {{ item.family.family_id[:16] }}…</p>
+                </div>
+                {% if item.ready %}<span class="state state--green">Human resolved</span>{% else %}<span class="state state--amber">Judgment required</span>{% endif %}
+              </header>
+
+              <div class="relationship-strip" aria-label="Declared family roles">
+                <span>Original</span><i aria-hidden="true">→</i>
+                <span>{% if item.family.access %}Access{% else %}No access{% endif %}</span><i aria-hidden="true">→</i>
+                <span>{% if item.family.preservation %}Preservation{% else %}No preservation{% endif %}</span>
+              </div>
+
+              <div class="proposal-table" role="table" aria-label="Path proposals">
+                <div class="proposal-row proposal-row--header" role="row">
+                  <span>Role</span><span>Source</span><span>Proposed target</span><span>Risk</span>
+                </div>
+                {% for proposal in item.proposals %}
+                  <div class="proposal-row" role="row">
+                    <strong>{{ proposal.role.value }}</strong>
+                    <code>{{ proposal.original_relative_path }}</code>
+                    <code>{{ proposal.proposed_relative_path }}</code>
+                    <span>
+                      {% if proposal.meaning_risks %}<b class="risk risk--amber">Meaning</b>{% else %}<b class="risk risk--neutral">Review</b>{% endif %}
+                    </span>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <details class="trace">
+                <summary>Inspect deterministic transformation trace and affected links</summary>
+                {% for proposal in item.proposals %}
+                  <h4>{{ proposal.role.value }} · {{ proposal.affected_references|length }} affected reference(s)</h4>
+                  <ol>
+                    {% for step in proposal.transformation_steps %}
+                      <li><span>{{ step.operation }}</span><code>{{ step.before }} → {{ step.after }}</code></li>
+                    {% endfor %}
+                  </ol>
+                {% endfor %}
+              </details>
+            </article>
+          {% endfor %}
+        </section>
+
+        <section id="decisions" class="product-section" aria-labelledby="decisions-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">02 · Decisions</p>
+              <h2 id="decisions-title">Mechanics stop. Human judgment begins.</h2>
+            </div>
+            <p>{{ view.ready_count }} of {{ view.family_count }} families resolved</p>
+          </div>
+
+          <form class="batch-action" method="post" action="/approve-low-risk">
+            <p>Explicitly approve every currently unblocked family that has no Meaning risk. This action never calls GPT-5.6.</p>
+            <button class="button" type="submit">Approve eligible low-risk families</button>
+          </form>
+
+          {% for item in view.families %}
+            <article class="decision-layout">
+              <section class="evidence-panel" aria-labelledby="packet-{{ loop.index }}">
+                <span class="panel-label">Bounded outbound evidence</span>
+                {% if item.requires_card %}
+                  <h3 id="packet-{{ loop.index }}">What GPT-5.6 will see</h3>
+                  <p>No payload bytes. No approval fields. The call occurs only when you request it.</p>
+                  <dl class="compact-dl">
+                    <div><dt>Family</dt><dd class="mono">{{ item.family.family_id[:12] }}…</dd></div>
+                    <div><dt>Paths</dt><dd>{{ item.packet.original_paths|length }} source · {{ item.packet.proposed_paths|length }} proposed</dd></div>
+                    <div><dt>Evidence</dt><dd>{{ item.packet.path_evidence|length + item.packet.metadata_evidence|length + item.packet.derivative_evidence|length }} addressed facts</dd></div>
+                    <div><dt>Meaning signals</dt><dd>{{ item.packet.risk_signals|length }}</dd></div>
+                  </dl>
+                  <details>
+                    <summary>Preview complete outbound text</summary>
+                    <pre>{{ item.outbound_text }}</pre>
+                  </details>
+                  <form method="post" action="/families/{{ item.family.family_id }}/generate">
+                    <button class="button button--primary" type="submit">
+                      {% if diagnostics.mode == 'live' %}Generate neutral card with gpt-5.6{% else %}Load recorded GPT-5.6 card{% endif %}
+                    </button>
+                  </form>
+                {% else %}
+                  <h3 id="packet-{{ loop.index }}">No model call required</h3>
+                  <p>Mechanics found no Meaning risk. The complete proposal remains visible for explicit human approval, and no evidence leaves the application.</p>
+                {% endif %}
+              </section>
+
+              <section class="ai-panel" aria-labelledby="card-{{ loop.index }}">
+                <span class="panel-label panel-label--neutral">GPT is advisory</span>
+                <h3 id="card-{{ loop.index }}">Decision card</h3>
+                {% if not item.requires_card %}
+                  <p class="empty-state">Skipped by design. Low-risk mechanics do not invoke GPT-5.6.</p>
+                {% elif item.card %}
+                  {% if diagnostics.mode == 'replay' and diagnostics.replay_record_configured %}<p class="recorded-label">Recorded GPT-5.6 response</p>{% endif %}
+                  <p><strong>Possible meaning loss</strong></p>
+                  <ul>
+                    {% for observation in item.card.possible_meaning_loss %}<li>{{ observation.text }}</li>{% endfor %}
+                  </ul>
+                  <p><strong>Uncertainty</strong><br>{{ item.card.uncertainty }}</p>
+                  <blockquote>{{ item.card.discriminating_question }}</blockquote>
+                {% elif item.card_error %}
+                  <p class="empty-state empty-state--error">{{ item.card_error }}</p>
+                {% else %}
+                  <p class="empty-state">No model output yet. The proposal remains amber and unresolved.</p>
+                {% endif %}
+              </section>
+
+              <section class="human-panel" aria-labelledby="human-{{ loop.index }}">
+                <span class="panel-label panel-label--human">Human authority</span>
+                <h3 id="human-{{ loop.index }}">Resolve the family</h3>
+                {% if item.decision %}
+                  <p class="decision-state">Stored state: <strong>{{ item.decision.action.value }}</strong></p>
+                {% endif %}
+                <form method="post" action="/families/{{ item.family.family_id }}/approve">
+                  <button class="button" type="submit" {% if item.requires_card and not item.card %}disabled{% endif %}>Approve proposed family map</button>
+                </form>
+                <form class="edit-form" method="post" action="/families/{{ item.family.family_id }}/edit">
+                  <label for="descriptor-{{ loop.index }}">Or enter one exact family descriptor</label>
+                  <div><input id="descriptor-{{ loop.index }}" name="descriptor" placeholder="e.g. revised-descriptor" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required><button class="button" type="submit" {% if item.requires_card and not item.card %}disabled{% endif %}>Apply to all roles</button></div>
+                </form>
+                <form method="post" action="/families/{{ item.family.family_id }}/refuse">
+                  <button class="button button--quiet" type="submit">Refuse and block export</button>
+                </form>
+                <p class="authority-note">GPT cannot press these controls, populate the descriptor, or change export readiness.</p>
+              </section>
+            </article>
+          {% endfor %}
+        </section>
+
+        <section id="proof" class="product-section" aria-labelledby="proof-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">03 · Proof</p>
+              <h2 id="proof-title">The staged package earns green.</h2>
+            </div>
+            <p>Source snapshot · payload hashes · links · inverse maps · BagIt</p>
+          </div>
+
+          {% if view.proof %}
+            <article class="proof-card proof-card--verified">
+              <header><span class="state state--green">Verified</span><h3>{{ view.proof.report.claim }}</h3></header>
+              <p class="mono subtle">{{ view.stage_root }}</p>
+              <div class="proof-grid">
+                {% for check in view.proof.report.checks %}
+                  <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>{{ check.label }}</strong><small>{{ check.detail }}</small></p></div>
+                {% endfor %}
+                <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Library of Congress BagIt validation</strong><small>{{ view.proof.report.bagit_validation.messages[0] }}</small></p></div>
+              </div>
+              <footer>{{ view.proof.report.content_object_count }} content objects · {{ view.proof.report.content_bytes }} bytes · {{ view.proof.report.map_row_count }} forward/reverse rows</footer>
+            </article>
+          {% else %}
+            <article class="proof-card">
+              <header><span class="state {% if view.export_ready %}state--green{% else %}state--amber{% endif %}">{% if view.export_ready %}Ready to prove{% else %}Blocked by decisions{% endif %}</span><h3>No staged package has been exposed.</h3></header>
+              <p>The source remains untouched. Complete every required family decision, then run the copy-only staging transaction.</p>
+              <form method="post" action="/stage"><button class="button button--primary" type="submit" {% if not view.export_ready %}disabled{% endif %}>Stage copies and run complete proof</button></form>
+            </article>
+          {% endif %}
+        </section>
+      {% else %}
+        <section class="foundation-grid" aria-label="Foundation status">
+          <article><span class="number">01</span><h2>Atlas</h2><p>Collection structure, identities, declared links, and proposed moves.</p></article>
+          <article><span class="number">02</span><h2>Decisions</h2><p>Bounded evidence, neutral GPT-5.6 cards, and human authority.</p></article>
+          <article><span class="number">03</span><h2>Proof</h2><p>Copy-only staging, inverse maps, content hashes, and BagIt validation.</p></article>
+        </section>
+      {% endif %}
     </main>
   </body>
 </html>
-

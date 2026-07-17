@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Community radio log</title>
+  <desc id="desc">Synthetic broadcast log with fictional entries.</desc>
+  <rect width="1200" height="800" fill="#181d2a"/>
+  <circle cx="340" cy="420" r="190" fill="#e2b84f"/>
+  <circle cx="340" cy="420" r="88" fill="#181d2a"/>
+  <g stroke="#64b6ac" stroke-width="26" fill="none"><path d="M650 300Q850 420 650 540"/><path d="M760 210Q1080 420 760 630"/></g>
+  <text x="68" y="110" font-family="Arial,sans-serif" font-size="68" fill="#f5f0dc">COMMUNITY RADIO LOG</text>
+  <text x="68" y="738" font-family="Arial,sans-serif" font-size="28" fill="#a8b5c2">SYNTHETIC ORIGINAL · FICTIONAL BROADCASTS</text>
+</svg>

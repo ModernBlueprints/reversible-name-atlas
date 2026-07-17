@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Oral history session 01</title>
+  <desc id="desc">Synthetic session card containing no personal data.</desc>
+  <rect width="1200" height="800" fill="#f2ede4"/>
+  <rect x="84" y="94" width="1032" height="612" rx="30" fill="#6b3e53"/>
+  <path d="M230 430 C290 280 350 580 410 430 S530 280 590 430 710 580 770 430 890 280 950 430" fill="none" stroke="#f4d6a0" stroke-width="24"/>
+  <text x="136" y="210" font-family="Georgia,serif" font-size="70" fill="#fffaf0">Oral History 01</text>
+  <text x="140" y="650" font-family="Arial,sans-serif" font-size="30" fill="#fffaf0">SYNTHETIC ORIGINAL · NO PERSONAL DATA</text>
+</svg>

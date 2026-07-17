@@ -1,19 +1,28 @@
 """Loopback-only FastAPI application factory."""
 
 from pathlib import Path
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from name_atlas.config import RuntimeConfig
+from name_atlas.decision_cards import DecisionCardProviderError
+from name_atlas.decisions import DecisionError
+from name_atlas.staging import StagingError
+from name_atlas.workflow import WorkflowSession
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=PACKAGE_ROOT / "templates")
+MAX_FORM_BODY_BYTES = 4_096
 
 
-def create_app(config: RuntimeConfig) -> FastAPI:
+def create_app(
+    config: RuntimeConfig,
+    workflow: WorkflowSession | None = None,
+) -> FastAPI:
     """Create the local application with safe startup diagnostics."""
 
     app = FastAPI(
@@ -24,6 +33,9 @@ def create_app(config: RuntimeConfig) -> FastAPI:
         redoc_url=None,
     )
     app.state.runtime_config = config
+    app.state.workflow = workflow
+    app.state.notice = None
+    app.state.action_error = None
     app.mount(
         "/static",
         StaticFiles(directory=PACKAGE_ROOT / "static"),
@@ -38,17 +50,109 @@ def create_app(config: RuntimeConfig) -> FastAPI:
             context={
                 "config": config,
                 "diagnostics": config.safe_diagnostics(),
+                "view": workflow.view_model() if workflow is not None else None,
+                "notice": app.state.notice,
+                "action_error": app.state.action_error,
             },
         )
 
     @app.get("/healthz")
-    async def health() -> dict[str, str | bool]:
+    async def health() -> dict[str, str | bool | int]:
         ready = config.mode.value == "replay" or config.api_key_configured
-        return {
+        response: dict[str, str | bool | int] = {
             "status": "ready" if ready else "blocked",
             "mode": config.mode.value,
             "model": config.model,
             "api_key_configured": config.api_key_configured,
         }
+        if workflow is not None:
+            response.update(
+                {
+                    "families": len(workflow.package.families),
+                    "content_objects": len(workflow.package.content_members),
+                    "stage_verified": workflow.stage_result is not None,
+                }
+            )
+        return response
+
+    if workflow is not None:
+
+        @app.post("/families/{family_id}/generate", include_in_schema=False)
+        async def generate_card(family_id: str) -> RedirectResponse:
+            _clear_action_state(app)
+            try:
+                await workflow.generate_card(family_id)
+                app.state.notice = (
+                    "Neutral decision card generated from the visible packet."
+                )
+            except (DecisionCardProviderError, DecisionError) as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#decisions", status_code=303)
+
+        @app.post("/approve-low-risk", include_in_schema=False)
+        async def approve_low_risk() -> RedirectResponse:
+            _clear_action_state(app)
+            try:
+                decisions = workflow.approve_low_risk()
+                app.state.notice = (
+                    f"Human batch approval stored for {len(decisions)} "
+                    "low-risk families."
+                )
+            except DecisionError as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#decisions", status_code=303)
+
+        @app.post("/families/{family_id}/approve", include_in_schema=False)
+        async def approve(family_id: str) -> RedirectResponse:
+            _clear_action_state(app)
+            try:
+                workflow.approve(family_id)
+                app.state.notice = "Human approval stored for the complete family."
+            except DecisionError as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#decisions", status_code=303)
+
+        @app.post("/families/{family_id}/edit", include_in_schema=False)
+        async def edit(family_id: str, request: Request) -> RedirectResponse:
+            _clear_action_state(app)
+            body = await request.body()
+            try:
+                if len(body) > MAX_FORM_BODY_BYTES:
+                    raise DecisionError("Edited descriptor form is too large.")
+                decoded = body.decode("utf-8", errors="strict")
+                fields = parse_qs(decoded, strict_parsing=True, max_num_fields=4)
+                descriptor_values = fields.get("descriptor", [])
+                if len(descriptor_values) != 1:
+                    raise DecisionError("Exactly one edited descriptor is required.")
+                workflow.edit(family_id, descriptor_values[0])
+                app.state.notice = "Human descriptor stored across the complete family."
+            except (UnicodeDecodeError, ValueError, DecisionError) as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#decisions", status_code=303)
+
+        @app.post("/families/{family_id}/refuse", include_in_schema=False)
+        async def refuse(family_id: str) -> RedirectResponse:
+            _clear_action_state(app)
+            try:
+                workflow.refuse(family_id)
+                app.state.notice = "Human refusal stored; complete export is blocked."
+            except DecisionError as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#decisions", status_code=303)
+
+        @app.post("/stage", include_in_schema=False)
+        async def stage() -> RedirectResponse:
+            _clear_action_state(app)
+            try:
+                workflow.stage()
+                app.state.notice = "Copy-only staged package verified and promoted."
+            except StagingError as exc:
+                app.state.action_error = str(exc)
+            return RedirectResponse(url="/#proof", status_code=303)
 
     return app
+
+
+def _clear_action_state(app: FastAPI) -> None:
+    app.state.notice = None
+    app.state.action_error = None

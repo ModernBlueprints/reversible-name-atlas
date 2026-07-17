@@ -5,14 +5,28 @@ import logging
 import os
 import sys
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 import uvicorn
 
 from name_atlas.app import create_app
 from name_atlas.config import DEFAULT_PORT, LOOPBACK_HOST, RuntimeConfig
+from name_atlas.decision_cards import (
+    LiveDecisionCardProvider,
+    RecordedReplayDecisionCardProvider,
+    ReplayProviderError,
+)
 from name_atlas.domain import RunMode
+from name_atlas.verification import BagItPackageValidator
+from name_atlas.workflow import UnavailableReplayDecisionCardProvider, WorkflowSession
 
 LOGGER = logging.getLogger(__name__)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+HERO_SOURCE_ROOT = PROJECT_ROOT / "sample_data" / "hero"
+REPLAY_RECORD_PATH = (
+    PROJECT_ROOT / "src" / "name_atlas" / "recordings" / "hero_decision_card.json"
+)
+OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "stages"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,10 +63,27 @@ def run(
 
     args = build_parser().parse_args(argv)
     mode = RunMode(args.mode)
+    selected_environment = os.environ if environ is None else environ
+
+    replay_record_configured = False
+    if mode is RunMode.REPLAY and REPLAY_RECORD_PATH.is_file():
+        try:
+            decision_card_provider = RecordedReplayDecisionCardProvider(
+                REPLAY_RECORD_PATH.read_bytes()
+            )
+            replay_record_configured = True
+        except (OSError, ReplayProviderError):
+            decision_card_provider = UnavailableReplayDecisionCardProvider()
+    elif mode is RunMode.REPLAY:
+        decision_card_provider = UnavailableReplayDecisionCardProvider()
+    else:
+        decision_card_provider = None
+
     config = RuntimeConfig.from_environment(
         mode=mode,
         port=args.port,
-        environ=os.environ if environ is None else environ,
+        environ=selected_environment,
+        replay_record_configured=replay_record_configured,
     )
 
     if mode is RunMode.LIVE and not config.api_key_configured:
@@ -63,12 +94,26 @@ def run(
         )
         return 2
 
+    if mode is RunMode.LIVE:
+        decision_card_provider = LiveDecisionCardProvider.from_api_key(
+            selected_environment["OPENAI_API_KEY"]
+        )
+
+    assert decision_card_provider is not None
+    workflow = WorkflowSession(
+        source_root=HERO_SOURCE_ROOT,
+        output_root=OUTPUT_ROOT,
+        decision_card_provider=decision_card_provider,
+        package_validator=BagItPackageValidator(),
+        replay_record_path=REPLAY_RECORD_PATH,
+    )
+
     logging.basicConfig(level=logging.INFO)
     LOGGER.info("Starting Reversible Name Atlas: %s", config.safe_diagnostics())
     print(f"Reversible Name Atlas: http://{LOOPBACK_HOST}:{config.port}")
     print(config.provider_status)
     uvicorn.run(
-        create_app(config),
+        create_app(config, workflow),
         host=LOOPBACK_HOST,
         port=config.port,
         log_level="info",

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class StrictFrozenModel(BaseModel):
     """Fail-closed base for immutable serialized contracts."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
 
 class RunMode(StrEnum):
@@ -17,6 +17,21 @@ class RunMode(StrEnum):
 
     REPLAY = "replay"
     LIVE = "live"
+
+
+class ContentRole(StrEnum):
+    """Role of one content object inside its stable family."""
+
+    ORIGINAL = "original"
+    ACCESS = "access"
+    PRESERVATION = "preservation"
+
+
+class MemberKind(StrEnum):
+    """Supported source-package member kinds."""
+
+    CONTENT_OBJECT = "content_object"
+    DECLARED_CONTROL_FILE = "declared_control_file"
 
 
 class EvidenceRef(StrictFrozenModel):
@@ -44,6 +59,7 @@ class EvidencePacket(StrictFrozenModel):
     transformation_steps: tuple[TransformationStep, ...] = Field(min_length=1)
     candidate_paths: tuple[str, ...] = ()
     neighboring_paths: tuple[str, ...] = ()
+    path_evidence: tuple[EvidenceRef, ...] = ()
     metadata_evidence: tuple[EvidenceRef, ...] = ()
     derivative_evidence: tuple[EvidenceRef, ...] = ()
     risk_signals: tuple[str, ...] = Field(min_length=1)
