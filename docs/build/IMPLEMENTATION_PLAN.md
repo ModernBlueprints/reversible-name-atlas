@@ -156,8 +156,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M2–M5; proves the architecture before hardening |
 | Owner | Primary integrator; one bounded UI or GPT-schema task may be delegated without owning integration |
 | Allowed scope cut | Use the minimum hero subset and plain styling; do not cut the real GPT call or complete transaction |
-| Actual status | **IN_PROGRESS** |
-| Actual verification | **DETERMINISTIC TRANSACTION WORK STARTED; live GPT-5.6 verification remains blocked until the user configures `OPENAI_API_KEY` locally.** |
+| Actual status | **IN_PROGRESS — DETERMINISTIC SLICE COMPLETE; LIVE EVIDENCE BLOCKED** |
+| Actual verification | **Commit `83d64fe361747faef4e340c76a2958736d754e5a`: the connected 12-family/28-object hero transaction passes package import, Meaning-card test-double flow, explicit low-risk no-GPT batch approval, collision edit and recomputation, complete human resolution, copy-only staging, maps, BagIt creation/validation, and source equality. Repository suite: 57 passed; Ruff lint/format passed; `uv sync --frozen` passed. The required real GPT-5.6 call, sanitized recording, replay proof, and current expanded-hero browser walkthrough remain incomplete because `OPENAI_API_KEY` is not configured.** |
 
 ### M2 — Contract and graph hardening
 
@@ -174,8 +174,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M3 decision transaction and M4 staging |
 | Owner | Primary integrator; bounded parser/fixture tests may be delegated |
 | Allowed scope cut | Extra diagnostic prose and non-required risk variants |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS** |
+| Actual verification | **PARTIAL at commit `83d64fe361747faef4e340c76a2958736d754e5a`: strict supported-tree and UTF-8 CSV import, reciprocal metadata/derivative graph, stable IDs, fixed profile and trace, Meaning signals, exact/NFC/casefold collision detection, successful collision edit/recomputation, raw traversal rejection, symlink and FIFO rejection, source-change detection, and full hero counts are automated. Remaining work: complete the required malformed/duplicate/missing identifier and relationship scenario matrix, inspect serialized graph/blocker UI against the expanded hero, and close any defects those scenarios expose.** |
 
 ### M3 — Decision transaction
 
