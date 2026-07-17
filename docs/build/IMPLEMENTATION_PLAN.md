@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Integrated Implementation Plan
 
-Status: **NOT STARTED**
+Status: **ACTIVE**
 
-Production goal: **INACTIVE**
+Production goal: **ACTIVE**
 
 Plan authority: **the only product implementation plan**
 
@@ -12,9 +12,8 @@ requirements live only in `docs/build/BUILD_SPEC.md`. Execution authority lives
 only in `docs/build/GOAL.md`. Current observed state lives only in
 `docs/build/STATE.md`.
 
-No milestone has started. H+0 is not scaffold approval or the scaffold commit; it
-is the Europe/Oslo timestamp at which the user explicitly activates
-`docs/build/GOAL.md` in the current primary Codex task.
+H+0 is **Friday 17 July 2026 at 17:16:25 CEST**, the active-goal creation
+timestamp in this primary Codex task. M0 is in progress.
 
 ## Operating rules
 
@@ -139,8 +138,8 @@ Pre-authorized optional cuts, in order:
 | Downstream consumer | M1 walking skeleton and every later judge command |
 | Owner | Primary integrator; bounded dependency/configuration review may be delegated |
 | Allowed scope cut | Decorative shell styling only |
-| Actual status | **PENDING** |
-| Actual verification | **NOT RUN** |
+| Actual status | **IN_PROGRESS** |
+| Actual verification | **PENDING — foundation not yet implemented** |
 
 ### M1 — Walking skeleton
 

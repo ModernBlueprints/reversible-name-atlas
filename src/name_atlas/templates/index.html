@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reversible Name Atlas</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <a class="wordmark" href="/" aria-label="Reversible Name Atlas home">
+          <span class="mark" aria-hidden="true">NA</span>
+          <span>Reversible Name Atlas</span>
+        </a>
+        <span class="local-pill">Local · source untouched</span>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">M0 · Product foundation</p>
+          <h1 id="page-title">Refactor the collection.<br>Preserve every identity.</h1>
+          <p class="lede">
+            A local-first workbench for previewing linked collection migrations,
+            resolving the few changes that need human judgment, and proving the
+            staged result.
+          </p>
+        </div>
+
+        <aside class="status-card" aria-label="Runtime status">
+          <div class="status-card__header">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Application shell ready</span>
+          </div>
+          <dl>
+            <div>
+              <dt>Provider mode</dt>
+              <dd>{{ diagnostics.mode }}</dd>
+            </div>
+            <div>
+              <dt>Model contract</dt>
+              <dd>{{ diagnostics.model }}</dd>
+            </div>
+            <div>
+              <dt>Network</dt>
+              <dd>{{ diagnostics.host }} · loopback only</dd>
+            </div>
+          </dl>
+          <p class="provider-status">{{ diagnostics.provider_status }}</p>
+        </aside>
+      </section>
+
+      <nav class="product-nav" aria-label="Product states">
+        <span class="product-nav__item product-nav__item--active">01 Atlas</span>
+        <span class="product-nav__item">02 Decisions</span>
+        <span class="product-nav__item">03 Proof</span>
+      </nav>
+
+      <section class="foundation-grid" aria-label="Foundation status">
+        <article>
+          <span class="number">01</span>
+          <h2>Atlas</h2>
+          <p>Collection structure, identities, declared links, and proposed moves.</p>
+          <span class="pending">Domain integration begins in M1</span>
+        </article>
+        <article>
+          <span class="number">02</span>
+          <h2>Decisions</h2>
+          <p>Bounded evidence, neutral GPT-5.6 cards, and human authority.</p>
+          <span class="pending">{{ diagnostics.provider_status }}</span>
+        </article>
+        <article>
+          <span class="number">03</span>
+          <h2>Proof</h2>
+          <p>Copy-only staging, inverse maps, content hashes, and BagIt validation.</p>
+          <span class="pending">Verification transaction begins in M1</span>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
+

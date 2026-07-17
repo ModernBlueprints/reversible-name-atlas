@@ -18,12 +18,17 @@ The active 22-entry `SHA256SUMS` inventory at that root was verified 22/22 on
 
 | Source module | SHA-256 |
 |---|---|
-| `name_atlas_spike/contracts.py` | `69e4ee549bd4a7289ff7deda82bdcbe9200d021ebad0c667186a0ef590a7ca97` |
-| `name_atlas_spike/bundle.py` | `59bc11400cda7ba939a6e13874498f9ae1fc7fec3d02ab1e54e01bbe221cec56` |
-| `name_atlas_spike/graph.py` | `347475dd1cdaa27b2fbe0b57d0d1fcf65922c0a6dedf303619fdc7bb52679aa7` |
-| `name_atlas_spike/projection.py` | `f49e5c4c2acaceb0a51dc2d563a13e3812319f073f32dcf0556660dcefd2db73` |
-| `name_atlas_spike/transaction.py` | `bca2c560dde8e3612124b8b40598d62a2e7bcdf2fb8d0d3a5fab140dce640ef3` |
-| `name_atlas_spike/semantic.py` — excluded | `1c654220fe73846fed683c5c303a266c70fd7dc0c096930edd1590c248772ea8` |
+| `pathatlas/contracts.py` | `69e4ee549bd4a7289ff7deda82bdcbe9200d021ebad0c667186a0ef590a7ca97` |
+| `pathatlas/bundle.py` | `59bc11400cda7ba939a6e13874498f9ae1fc7fec3d02ab1e54e01bbe221cec56` |
+| `pathatlas/graph.py` | `347475dd1cdaa27b2fbe0b57d0d1fcf65922c0a6dedf303619fdc7bb52679aa7` |
+| `pathatlas/projection.py` | `f49e5c4c2acaceb0a51dc2d563a13e3812319f073f32dcf0556660dcefd2db73` |
+| `pathatlas/transaction.py` | `bca2c560dde8e3612124b8b40598d62a2e7bcdf2fb8d0d3a5fab140dce640ef3` |
+| `pathatlas/semantic.py` — excluded | `1c654220fe73846fed683c5c303a266c70fd7dc0c096930edd1590c248772ea8` |
+
+The scaffold-time ledger used the package label `name_atlas_spike/`. A bounded
+17 July 2026 provenance inspection established that the live candidate package
+is actually `pathatlas/`; the five eligible file hashes still match the
+scaffold-time values exactly. The table above records the observed source paths.
 
 The `/tmp` path is ephemeral. The new product must build, test, run, and disclose
 provenance without that path existing. No source import, package dependency,

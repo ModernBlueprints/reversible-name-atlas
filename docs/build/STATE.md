@@ -1,22 +1,24 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **17 July 2026 at 17:00:56 CEST**
+Checkpoint: **17 July 2026 at 17:18:22 CEST**
 
-Phase: **WAITING_FOR_USER_GOAL_ACTIVATION**
+Phase: **M0 — PRODUCT FOUNDATION**
 
-Production goal: **INACTIVE**
+Production goal: **ACTIVE**
 
-H+0: **NOT_STARTED**
+H+0: **Friday 17 July 2026 at 17:16:25 CEST**
 
 ## Schedule at this checkpoint
 
 - Recording-ready boundary: Tuesday 21 July 2026 at 02:00 CEST
 - Submission boundary: Wednesday 22 July 2026 at 02:00 CEST
-- Product window if activated at checkpoint: 80.984 hours
-- Total time to submission at checkpoint: 104.984 hours
+- Product window at H+0: 80.726 hours
+- Total time to submission at H+0: 104.726 hours
 - Protected submission reserve: 24 hours
 - Full 80-hour activation cutoff: Friday 17 July 2026 at 18:00 CEST
-- Compression at checkpoint: not yet required; recalculate at activation
+- H+80 target: Tuesday 21 July 2026 at 01:16:25 CEST
+- Margin from H+80 to recording boundary: 43 minutes 35 seconds
+- Compression: not required; ordinary H+ targets apply
 
 ## Verified state
 
@@ -24,9 +26,10 @@ H+0: **NOT_STARTED**
 - Branch: `main`
 - Scaffold baseline locator: unique root commit on `main` with subject
   `chore: establish build operating scaffold`
-- Exact baseline commit: resolve from fresh Git history; reported in handoff
-- Final baseline working tree: must be clean and is verified after the one
-  scaffold commit; fresh Git state overrides this checkpoint
+- Exact baseline commit: `f1c519d215790d9e9949c5991c96826e5a2e295b`
+- Activation-time working tree: clean before this checkpoint update
+- Activated objective: 183 lines, 8,859 bytes, SHA-256
+  `ae72b0a75129754f579c0d817d779feab1238dd986b20193dedc259b851fac98`
 - Controlling attachment: 1,944 lines, 108,954 bytes, SHA-256
   `1e0cc189e75a95d7f5e504799b4bbc14cc03696880ceb96db3201decc518f8b9`,
   read through EOF
@@ -40,31 +43,30 @@ H+0: **NOT_STARTED**
   read and corrected; the final pass and post-commit Git evidence are reported
   in the scaffold handoff
 
-No product source, dependency environment, API response, product test, fixture,
-staged package, public repository, video, or Devpost artifact has been created.
-No API funds have been spent by this scaffold task.
+M0 is active. No product source, dependency environment, API response, product
+test, fixture, staged package, public repository, video, or Devpost artifact had
+been created at this checkpoint. No API funds have been spent.
 
 ## Current readiness
 
 - Scaffold implementation: **COMPLETE**
-- Activation readiness: **GO**
-- Production goal: **INACTIVE**
-- Product implementation: **NOT STARTED**
+- Production goal: **ACTIVE**
+- Product implementation: **M0 IN PROGRESS**
 - Live GPT-5.6 run readiness: **BLOCKED** — local credential not configured and
   no live call has been made
 
-The missing credential does not block scaffold completion, goal activation, or
-deterministic M0 work. After activation, request local configuration without
-asking for the key in chat and continue independent work. It blocks M1 completion
-and any claim that live GPT-5.6 integration is verified.
+The missing credential does not block deterministic M0 work. Request local
+configuration without asking for the key in chat and continue independent work.
+It blocks M1 completion and any claim that live GPT-5.6 integration is verified.
 
 ## Compact recovery capsule
 
-- Current phase: waiting for explicit activation in this primary Codex task
+- Current phase: M0 product foundation
 - Unresolved product decisions: none
-- Evidence: frozen spec and plan passed Stage A; all final cross-document
-  findings corrected; post-commit confirmation reported in handoff
+- Evidence: clean immutable scaffold baseline; goal objective read through EOF;
+  H+0 and schedule derived from active-goal state
 - Budget: USD 0 spent; USD 10 maximum only after activation
-- Prohibitions: no product work or external mutation before activation; no
-  discovery/tournament/harness loop; no secrets; no unsupported claims
-- Next operation: **User activates `docs/build/GOAL.md` in this primary Codex task.**
+- Prohibitions: no discovery/tournament/harness loop; no secrets; no unsupported
+  claims; no publication outside the authorized Build Week surfaces
+- Next operation: **Create and verify the M0 Python project foundation and
+  loopback application shell.**
