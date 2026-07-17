@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **ACTIVE / R1 IN PROGRESS**
+Status: **ACTIVE / R2 IN PROGRESS**
 
 Amended production goal: **ACTIVE**
 
@@ -161,9 +161,21 @@ hardening.
   or pure contracts.
 - **Allowed cut:** styling, convenience controls, extra metrics, restore; not any
   named walking-transaction link.
-- **Actual status:** `IN_PROGRESS`.
-- **Actual verification:** activation baseline passed: locked dependencies,
-  116 inherited tests, Ruff lint, Ruff format, and Git whitespace checks.
+- **Actual status:** `COMPLETE`.
+- **Actual verification:** integrated in commit `2495a6f`. The durable hero case
+  retained revision `5` across restart, finalized at revision `6`, and reused
+  the exact recorded card with zero post-restart provider requests. Producer,
+  copied-bag, and copied-bag-plus-source CLI checks all printed `VERIFIED` for
+  receipt `c660aff8333564583456732fbc5b6d6c66ffe07f8182bb16feeb6aaf3944fcb8`.
+  The role-preserving altered target
+  `manualNormalization/access/CASE-010__altered__access.svg` remained BagIt
+  valid while `verify-receipt` exited `1` with exactly
+  `artifact_digest_mismatch:decision_ledger`. All five routes were inspected in
+  the running loopback app with correct current-step, lifecycle, and recorded
+  GPT labels. The corrected full suite passed 144 tests; lock check, Ruff
+  lint/format, and Git whitespace checks passed. Independent review found two
+  material defects, one correction pass resolved both, and the bounded recheck
+  returned `GO`.
 
 ### R2 — Case and authority hardening
 
@@ -190,8 +202,10 @@ hardening.
 - **Owner:** primary integrator; bounded persistence-test reviewer allowed.
 - **Allowed cut:** case listing, rename/delete, destructive reset, reconciliation,
   and convenience UI.
-- **Actual status:** `PENDING / INACTIVE`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN_PROGRESS`.
+- **Actual verification:** R1 dependency is verified at `2495a6f`; exact
+  source-difference reporting and before-mutation revalidation are not yet
+  implemented.
 
 ### R3 — Receipt and verifier completion
 

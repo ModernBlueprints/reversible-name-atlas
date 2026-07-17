@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 00:53:03 CEST**
+Checkpoint: **Saturday 18 July 2026 at 01:34:50 CEST**
 
-Phase: **R1_REVISION_WALKING_TRANSACTION**
+Phase: **R2_CASE_AND_AUTHORITY_HARDENING**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
@@ -18,8 +18,8 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 73 hours 6 minutes 57 seconds
-- Time to submission: 97 hours 6 minutes 57 seconds
+- Time to recording-ready: 72 hours 25 minutes 9 seconds
+- Time to submission: 96 hours 25 minutes 9 seconds
 - Final submission reserve: 24 hours
 - Planned revision window: 69 hours 8 minutes 9 seconds
 - Protected pre-recording contingency: 4 hours
@@ -47,9 +47,9 @@ Submission hold: **ACTIVE**
 - `OPENAI_API_KEY` in the current environment: **ABSENT**; no value was read or
   exposed.
 
-- Activation baseline was clean at governance commit
-  `fbe6dea2e3755cc25c20202e254bf4f994ed2121`; current working changes are the
-  authorized activation checkpoint until committed.
+- R1 walking transaction is committed at
+  `2495a6fabd38e2695d574c02ac8a8130717eb729`; the revision branch was clean at
+  this checkpoint.
 
 ## Inherited verified baseline
 
@@ -70,14 +70,15 @@ Submission hold: **ACTIVE**
 
 ## Revised capability status
 
-- Persistent `migration-case.v1` authority and restart: **IN PROGRESS (R1)**
-- Atomic persistence, locking, revision checks, and staleness: **NOT STARTED**
-- Evidence/card/human-decision receipt binding: **NOT STARTED**
-- Path-neutral `v2` artifacts and original controls: **NOT STARTED**
-- Acyclic Portable Change Receipt and offline HTML: **NOT STARTED**
-- Independent keyless receiver verifier: **NOT STARTED**
-- BagIt-valid altered-ledger counterfactual: **NOT STARTED**
-- Five-state Atlas/Decide/Stage/Verify/Handoff workbench: **NOT STARTED**
+- Persistent `migration-case.v1` authority and restart: **COMPLETE (R1)**
+- Atomic persistence, locking, and revision checks: **FOUNDATION COMPLETE (R1)**
+- Exact staleness differences and before-mutation revalidation: **IN PROGRESS (R2)**
+- Evidence/card/human-decision receipt binding: **COMPLETE (R1)**
+- Path-neutral `v2` artifacts and original controls: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
+- Acyclic Portable Change Receipt and offline HTML: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
+- Independent keyless receiver verifier: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
+- BagIt-valid altered-ledger counterfactual: **COMPLETE (R1)**
+- Five-state Atlas/Decide/Stage/Verify/Handoff workbench: **PLAIN FLOW COMPLETE (R1)**
 - Blueprint dark visual layer and packaged assets: **NOT STARTED**
 - Restore applicability gate: **NOT EVALUATED**
 - Revised release candidate and recording readiness: **NOT STARTED**
@@ -92,24 +93,24 @@ implementation is now authorized by the activated goal. Current blocker:
 
 ## Compact recovery capsule
 
-- Phase: `R1_REVISION_WALKING_TRANSACTION`
+- Phase: `R2_CASE_AND_AUTHORITY_HARDENING`
 - Branch and baseline: `revision/portable-change-receipt` at governance commit
-  `fbe6dea`, from public predecessor `827b0f6`
-- Current milestone: R1 in progress; target Saturday 18 July 2026 at 12:42:57
-  CEST
-- Last verified commands: lock check; 116 pytest tests; Ruff lint/format; Git
-  whitespace check — all passed at activation
-- Case status: R1 implementation in progress
-- Receipt/verifier status: not started
-- UI status: inherited first-cycle UI only; revised five-state UI not started
+  `fbe6dea`, with R1 at `2495a6f`, from public predecessor `827b0f6`
+- Current milestone: R2 in progress; target Sunday 19 July 2026 at 02:32:35 CEST
+- Last verified commands: lock check; 144 pytest tests; Ruff lint/format; Git
+  whitespace check — all passed after the R1 correction
+- Case status: restart and finalized handoff pass; exact staleness hardening pending
+- Receipt/verifier status: receipt `c660aff8…` verified after copy; exact valid
+  altered-ledger copy blocked with `artifact_digest_mismatch:decision_ledger`
+- UI status: five plain routes pass; Blueprint redesign remains R4
 - Restore gate: not evaluated
 - Feature-freeze status: reopened only for the approved revision
 - Release-material status: first-cycle materials preserved but stale
 - Submission hold: active
 - Blockers: none
-- Next operation: implement the smallest complete R1 case→decision→receipt→
-  receiver-verifier transaction while preserving the inherited runnable product.
+- Next operation: implement exact source-difference classification and enforce
+  strict case revalidation before every mutation while preserving the R1 path.
 
 ## Exact next operation
 
-Implement the smallest complete R1 case→decision→receipt→receiver-verifier transaction while preserving the inherited runnable product.
+Implement and verify the complete R2 case-authority hardening: strict reload before every mutation, exact added/removed/renamed/resized/content-changed differences, durable stale blocking, binding revalidation, writer/revision conflicts, and finalized-case immutability.
