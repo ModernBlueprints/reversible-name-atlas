@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 04:19:07 CEST**
+Checkpoint: **Saturday 18 July 2026 at 05:11:24 CEST**
 
-Phase: **R5_CONDITIONAL_RESTORE**
+Phase: **R6_RELEASE_HARDENING**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
@@ -18,8 +18,8 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 69 hours 40 minutes 52 seconds
-- Time to submission: 93 hours 40 minutes 52 seconds
+- Time to recording-ready: 68 hours 48 minutes 36 seconds
+- Time to submission: 92 hours 48 minutes 36 seconds
 - Final submission reserve: 24 hours
 - Planned revision window: 69 hours 8 minutes 9 seconds
 - Protected pre-recording contingency: 4 hours
@@ -56,6 +56,8 @@ Submission hold: **ACTIVE**
   `b59b9efd5752b4038c89db6e2b0fd6f19e1b5a47`.
 - R4 five-state product experience is committed at
   `0e7543af1f46e06a55ccd22d75c647b44b68d102`.
+- R5 verified logical restore is committed at
+  `b10445138baf47ee4156a5a5ed151d0cb7819d4e`.
 
 ## Inherited verified baseline
 
@@ -87,26 +89,29 @@ Submission hold: **ACTIVE**
 - Five-state Atlas/Decide/Stage/Verify/Handoff workbench: **COMPLETE (R4)**
 - Blueprint dark visual layer and packaged assets: **COMPLETE (R4)**
 - Restore applicability gate: **GO — RECORDED ONCE AT 04:19:07 CEST**
-- Bounded `restore-receipt` implementation: **IN PROGRESS (R5)**
-- Revised release candidate and recording readiness: **NOT STARTED**
+- Bounded `restore-receipt` implementation: **COMPLETE (R5)**
+- Revised release hardening: **IN PROGRESS (R6)**
+- Revised recording readiness: **NOT STARTED**
 
 First-cycle README, screenshots, narration, Devpost copy, and thumbnail:
 
 `STALE — PRESERVED FIRST-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER REVISED FEATURE FREEZE`
 
-The feature freeze is reopened only for the approved frozen revision. Product
-implementation is now authorized by the activated goal. Current blocker:
-**NONE**.
+The revised feature freeze is now **ACTIVE**. Remaining work is limited to
+defects, proof integrity, accessibility, visual QA, clean installation,
+documentation, screenshots, claims, demo rehearsal, and release readiness.
+Current blocker: **NONE**.
 
 ## Compact recovery capsule
 
-- Phase: `R5_CONDITIONAL_RESTORE`
+- Phase: `R6_RELEASE_HARDENING`
 - Branch and baseline: `revision/portable-change-receipt` at governance commit
   `fbe6dea`, with R1 at `2495a6f`, R2 at `5949a0f`, R3 at `b59b9ef`, and R4 at
-  `0e7543a`, from public predecessor `827b0f6`
-- Current milestone: R5 in progress; target Monday 20 July 2026 at 12:07:24 CEST
-- Last verified commands: lock check; 241 pytest tests; Ruff lint/format; Python
-  compilation; Git whitespace check; clean wheel build/install/smoke — all passed
+  `0e7543a`, and R5 at `b104451`, from public predecessor `827b0f6`
+- Current milestone: R6 in progress; target Monday 20 July 2026 at 20:01:28 CEST
+- Last verified commands: lock check; 262 pytest tests; Ruff lint/format; Python
+  compilation; Git whitespace check; actual restore CLI; clean wheel
+  build/install/restore — all passed
 - Case status: strict restart, exact staleness, binding revalidation, zero-call
   card reuse, writer/revision conflicts, and finalized immutability complete
 - Receipt/verifier status: receipt `69c1d00e…` verified after copy, source-free
@@ -114,20 +119,19 @@ implementation is now authorized by the activated goal. Current blocker:
   `artifact_digest_mismatch:decision_ledger`; full negative matrix passed
 - UI status: five connected dark Blueprint routes pass desktop, medium, and
   narrow visual/authority QA
-- Restore gate: `GO` at Saturday 18 July 2026 at 04:19:07 CEST; command mandatory,
-  UI independently cuttable
-- Feature-freeze status: only admitted R5 restore remains before mandatory freeze
+- Restore status: gate `GO`; command, strict report, failure matrix, clean-wheel
+  execution, independent audit, and Handoff QA complete at R5 commit `b104451`
+- Feature-freeze status: `ACTIVE` after R5
 - Release-material status: first-cycle materials preserved but stale
 - Submission hold: active
 - Blockers: none
-- Next operation: implement and verify the admitted copy-only
-  `restore-receipt` command, its strict `restore-report.v1` result, no-replace
-  transaction, reimport, complete portable-snapshot equality, and failure matrix.
+- Next operation: execute R6 proof-integrity and release hardening; refresh the
+  README, limitations, build log, submission package, screenshots, narration,
+  shot list, Devpost draft, and claim matrix only from the frozen final behavior.
 
 ## Exact next operation
 
-Implement and verify R5: add the admitted `restore-receipt` command with
-verify-first dispatch, absent-destination guard, sibling pending transaction,
-reverse-map content copy, byte-exact original-control restoration, strict
-reimport, complete path/size/SHA-256 equality proof, external
-`restore-report.v1`, no-replace promotion, and source/handoff immutability.
+Execute R6 under feature freeze: independently harden proof integrity, replay
+and live truthfulness, portability, secrets, assets, build and clean-clone judge
+paths; then regenerate all stale revised-release documentation, screenshots,
+narration, shot list, Devpost draft, and claims from the verified release.

@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **ACTIVE / R5 IN PROGRESS**
+Status: **ACTIVE / R6 IN PROGRESS — FEATURE FREEZE ACTIVE**
 
 Amended production goal: **ACTIVE**
 
@@ -372,9 +372,39 @@ hardening.
 - **Owner:** primary integrator.
 - **Allowed cut:** restore UI only after gate `GO`; there is no post-`GO` command
   cut. An admitted-command failure blocks R5 and release until corrected.
-- **Actual status:** `IN_PROGRESS`.
-- **Actual verification:** restore gate recorded `GO` at Saturday 18 July 2026
-  at 04:19:07 CEST. Implementation and acceptance evidence are not yet complete.
+- **Actual status:** `COMPLETE`.
+- **Actual verification:** committed at `b104451`. The verify-first
+  `restore-receipt` command reconstructs every in-scope member through the
+  receipt-bound reverse map and byte-exact original controls, strictly
+  reimports the pending package, proves exact portable-snapshot equality, and
+  promotes no-replace only after source-free receiver verification passes a
+  second time. Its strict external `restore-report.v1` contains the complete
+  successful check set and remains outside the immutable bag. The command
+  dispatches before provider, budget, demo-source, or web initialization and
+  uses no API key, GPT call, network, case, or browser.
+
+  The corrected primary tree passed `uv lock --check`, 262 pytest tests, Ruff
+  lint/format, Python compilation, and Git whitespace checks. An actual
+  unmocked CLI restore returned `RESTORED`, reconstructed all 30 source members
+  and 23,621 bytes exactly, preserved both source and handoff, and left no
+  pending directory. A fresh wheel with SHA-256
+  `e90e65662df87fadfcdd9c2624119bd2087de12dc9d4e74bdc5c76451b20280a`
+  installed under isolated Python 3.11, exposed the verifier and restore from
+  an unrelated working directory, restored the same source commitment, and
+  refused a second existing destination without changing it.
+
+  The 21-test restore matrix covers invalid input, existing and racing
+  destinations, copy/reimport/proof/promotion failure, handoff mutation or
+  disappearance, intermediate pending-tree symlink injection, pending-path
+  replacement, late tag-file and empty-directory injection, source/handoff
+  immutability, cleanup ownership, CLI dispatch, and exit contracts. One
+  bounded adversarial correction replaced unsafe pathname ownership with
+  descriptor/inode-bound copying and cleanup, moved the final complete handoff
+  snapshot after receiver verification, and normalized the vanished-handoff
+  error boundary. Independent recheck reproduced each former defect and
+  returned R5 `GO`. Final Handoff QA at 1440×900 and 390×844 showed the
+  exact verify-first restore guidance, no document overflow, no console errors,
+  and truthful current-versus-historical receipt status.
 
 ### R6 — Feature freeze and release hardening
 
@@ -405,8 +435,10 @@ hardening.
   reviewers allowed.
 - **Allowed cut:** only remaining optional presentation conveniences; no required
   integrity or release surface.
-- **Actual status:** `PENDING / INACTIVE`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN_PROGRESS`.
+- **Actual verification:** feature freeze began after verified R5 commit
+  `b104451`. Release hardening and revised release-material regeneration are
+  now the only active work.
 
 ### R7 — Recording readiness
 
