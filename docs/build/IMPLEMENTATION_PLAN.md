@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **ACTIVE / R2 IN PROGRESS**
+Status: **ACTIVE / R3 IN PROGRESS**
 
 Amended production goal: **ACTIVE**
 
@@ -202,10 +202,25 @@ hardening.
 - **Owner:** primary integrator; bounded persistence-test reviewer allowed.
 - **Allowed cut:** case listing, rename/delete, destructive reset, reconciliation,
   and convenience UI.
-- **Actual status:** `IN_PROGRESS`.
-- **Actual verification:** R1 dependency is verified at `2495a6f`; exact
-  source-difference reporting and before-mutation revalidation are not yet
-  implemented.
+- **Actual status:** `COMPLETE`.
+- **Actual verification:** committed at `5949a0f`. The case strictly rebuilds
+  deterministic families, proposals, evidence, cards, decisions, lifecycle,
+  and final target uniqueness before use. Every mutation reloads the exact
+  durable revision and bytes, re-scans and re-imports the source, rehydrates the
+  runtime, and fails closed on external replacement. Added, removed, renamed,
+  resized, and same-size content changes each persist an exact, path-neutral,
+  terminal `stale` record; scanner/import failures persist a distinct blocker.
+  Missing sources resume through explicit and default case paths. Unchanged
+  restart reuses the durable card with zero provider calls and no case revision;
+  source drift during the provider wait persists stale without card or decision
+  authority. `handoff_ready` remains an immutable historical terminal case.
+  A real stale case was restarted in the loopback server: `/` routed to Atlas,
+  all five routes displayed `BLOCKED`, the exact resized member was visible,
+  direct POST mutation was refused, and no decision/stage control was exposed.
+  The primary final run passed `uv lock --check`, 184 pytest tests, Ruff
+  lint/format, and `git diff --check`. Independent adversarial review reproduced
+  and corrected five authority defects, reran the final tree, and returned
+  `R2 GO`. No GPT/API call was made.
 
 ### R3 — Receipt and verifier completion
 
@@ -233,8 +248,10 @@ hardening.
 - **Owner:** primary integrator; independent bounded verifier reviewer allowed.
 - **Allowed cut:** extra negative permutations only; no additional public output
   format is permitted.
-- **Actual status:** `PENDING / INACTIVE`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN_PROGRESS`.
+- **Actual verification:** R2 dependency is verified and committed at
+  `5949a0f`; R3 artifact-DAG, schema, offline-receipt, and complete
+  receiver-verifier hardening are the current operation.
 
 ### R4 — Five-state product experience
 

@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 01:34:50 CEST**
+Checkpoint: **Saturday 18 July 2026 at 02:21:28 CEST**
 
-Phase: **R2_CASE_AND_AUTHORITY_HARDENING**
+Phase: **R3_RECEIPT_AND_VERIFIER_COMPLETION**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
@@ -18,8 +18,8 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 72 hours 25 minutes 9 seconds
-- Time to submission: 96 hours 25 minutes 9 seconds
+- Time to recording-ready: 71 hours 38 minutes 32 seconds
+- Time to submission: 95 hours 38 minutes 32 seconds
 - Final submission reserve: 24 hours
 - Planned revision window: 69 hours 8 minutes 9 seconds
 - Protected pre-recording contingency: 4 hours
@@ -48,8 +48,10 @@ Submission hold: **ACTIVE**
   exposed.
 
 - R1 walking transaction is committed at
-  `2495a6fabd38e2695d574c02ac8a8130717eb729`; the revision branch was clean at
-  this checkpoint.
+  `2495a6fabd38e2695d574c02ac8a8130717eb729`.
+- R2 case-authority hardening is committed at
+  `5949a0f3255e181fdde46ca206d86a6c41bb5eb6`; the revision branch was clean
+  immediately after that product commit.
 
 ## Inherited verified baseline
 
@@ -71,8 +73,8 @@ Submission hold: **ACTIVE**
 ## Revised capability status
 
 - Persistent `migration-case.v1` authority and restart: **COMPLETE (R1)**
-- Atomic persistence, locking, and revision checks: **FOUNDATION COMPLETE (R1)**
-- Exact staleness differences and before-mutation revalidation: **IN PROGRESS (R2)**
+- Atomic persistence, locking, and revision checks: **COMPLETE (R2)**
+- Exact staleness differences and before-mutation revalidation: **COMPLETE (R2)**
 - Evidence/card/human-decision receipt binding: **COMPLETE (R1)**
 - Path-neutral `v2` artifacts and original controls: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
 - Acyclic Portable Change Receipt and offline HTML: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
@@ -93,13 +95,15 @@ implementation is now authorized by the activated goal. Current blocker:
 
 ## Compact recovery capsule
 
-- Phase: `R2_CASE_AND_AUTHORITY_HARDENING`
+- Phase: `R3_RECEIPT_AND_VERIFIER_COMPLETION`
 - Branch and baseline: `revision/portable-change-receipt` at governance commit
-  `fbe6dea`, with R1 at `2495a6f`, from public predecessor `827b0f6`
-- Current milestone: R2 in progress; target Sunday 19 July 2026 at 02:32:35 CEST
-- Last verified commands: lock check; 144 pytest tests; Ruff lint/format; Git
-  whitespace check — all passed after the R1 correction
-- Case status: restart and finalized handoff pass; exact staleness hardening pending
+  `fbe6dea`, with R1 at `2495a6f` and R2 at `5949a0f`, from public predecessor
+  `827b0f6`
+- Current milestone: R3 in progress; target Sunday 19 July 2026 at 14:23:42 CEST
+- Last verified commands: lock check; 184 pytest tests; Ruff lint/format; Git
+  whitespace check — all passed after the bounded R2 adversarial correction
+- Case status: strict restart, exact staleness, binding revalidation, zero-call
+  card reuse, writer/revision conflicts, and finalized immutability complete
 - Receipt/verifier status: receipt `c660aff8…` verified after copy; exact valid
   altered-ledger copy blocked with `artifact_digest_mismatch:decision_ledger`
 - UI status: five plain routes pass; Blueprint redesign remains R4
@@ -108,9 +112,13 @@ implementation is now authorized by the activated goal. Current blocker:
 - Release-material status: first-cycle materials preserved but stale
 - Submission hold: active
 - Blockers: none
-- Next operation: implement exact source-difference classification and enforce
-  strict case revalidation before every mutation while preserving the R1 path.
+- Next operation: complete the path-neutral v2 artifacts, original controls,
+  acyclic receipt finalization order, offline HTML, and full source-free
+  receiver-verification matrix while preserving the R2 case authority.
 
 ## Exact next operation
 
-Implement and verify the complete R2 case-authority hardening: strict reload before every mutation, exact added/removed/renamed/resized/content-changed differences, durable stale blocking, binding revalidation, writer/revision conflicts, and finalized-case immutability.
+Implement and verify R3 receipt completion: final strict schemas, path-neutral
+artifacts and report, byte-exact original controls, the acyclic ReceiptCore
+envelope and generation order, offline HTML, complete source-free verifier,
+optional source comparison, and the required BagIt-valid altered-ledger blocker.
