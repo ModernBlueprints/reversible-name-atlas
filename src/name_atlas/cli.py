@@ -105,15 +105,15 @@ def run(
     args = build_parser().parse_args(argv)
     if args.command == "verify-receipt":
         try:
-            result = verify_receipt(
-                args.received_bag.expanduser().resolve(strict=False),
-                source_root=(
-                    args.source.expanduser().resolve(strict=False)
-                    if args.source is not None
-                    else None
-                ),
+            received_bag = args.received_bag.expanduser()
+            supplied_source = (
+                args.source.expanduser() if args.source is not None else None
             )
-        except ReceiptCandidateError as exc:
+            result = verify_receipt(
+                received_bag,
+                source_root=supplied_source,
+            )
+        except (ReceiptCandidateError, RuntimeError) as exc:
             print(f"Receipt input error: {exc}", file=sys.stderr)
             return 2
         if result.status is ReceiptVerificationStatus.VERIFIED:

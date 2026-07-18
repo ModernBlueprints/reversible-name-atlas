@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import csv
 import hashlib
-import html
 import io
 import json
 import logging
@@ -49,18 +48,19 @@ from name_atlas.receipts import (
     ORIGINAL_METADATA_PATH,
     ORIGINAL_NORMALIZATION_PATH,
     PORTABLE_SOURCE_SNAPSHOT_PATH,
+    RECEIPT_CLAIM_BOUNDARIES,
     REVERSE_PATH_MAP_PATH,
     VERIFICATION_REPORT_PATH,
     VERIFICATION_SUMMARY_PATH,
     DecisionLedgerV2,
     PortableSourceSnapshot,
     ReceiptCore,
-    ReceiptEnvelope,
     VerificationReportV2,
     artifact_commitment,
     build_receipt_envelope,
     canonical_artifact_json_bytes,
     portable_snapshot_from_source,
+    render_offline_receipt,
     staged_data_commitment,
     staged_data_members,
 )
@@ -158,6 +158,7 @@ def stage_package(
     receipt_finalized = False
     receipt_fingerprint_value: str | None = None
     receiver_result: ReceiptVerificationResult | None = None
+    portable_report: VerificationReportV2 | None = None
     write_verification_report(
         report_path,
         _failure_report(
@@ -342,7 +343,7 @@ def stage_package(
             artifact_paths=artifact_paths,
             blockers=blockers,
         )
-        _replace_final_report(
+        portable_report = _replace_final_report(
             report_path,
             report,
             portable=migration_case is not None,
@@ -364,7 +365,7 @@ def stage_package(
                 artifact_paths=artifact_paths,
                 blockers=final_validation.messages,
             )
-            _replace_final_report(
+            portable_report = _replace_final_report(
                 report_path,
                 report,
                 portable=migration_case is not None,
@@ -382,6 +383,7 @@ def stage_package(
         if migration_case is not None:
             assert portable_snapshot is not None
             assert decision_ledger is not None
+            assert portable_report is not None
             current_stage = "receipt_finalization"
             receipt_core = _build_receipt_core(
                 pending_root=pending_root,
@@ -401,7 +403,11 @@ def stage_package(
             receipt_finalized = True
             _write_new_bytes(
                 pending_root / CHANGE_RECEIPT_HTML_PATH,
-                _render_offline_receipt(receipt_envelope),
+                render_offline_receipt(
+                    receipt_envelope,
+                    decision_ledger,
+                    portable_report,
+                ),
             )
             current_stage = "final_tag_manifest"
             writer.finalize_tagmanifest(pending_root)
@@ -504,17 +510,18 @@ def _replace_final_report(
     report: VerificationReport,
     *,
     portable: bool,
-) -> None:
+) -> VerificationReportV2 | None:
     """Replace the provisional report with the final local or portable schema."""
 
     if not portable:
         replace_verification_report(path, report)
-        return
+        return None
     payload = report.model_dump(mode="python")
     payload.pop("schema_version", None)
     payload.pop("staged_location", None)
     portable_report = VerificationReportV2.model_validate(payload, strict=True)
     _replace_artifact_bytes(path, canonical_artifact_json_bytes(portable_report))
+    return portable_report
 
 
 def _replace_artifact_bytes(path: Path, content: bytes) -> None:
@@ -576,47 +583,8 @@ def _build_receipt_core(
         gpt_assisted_decision_count=gpt_assisted,
         human_decision_count=len(decision_ledger.decisions),
         producer_bagit_validation=package_validation,
-        claim_boundaries=(
-            "Internal transaction consistency within the supported Name Atlas "
-            "package contract.",
-            "No sender identity, semantic correctness, compliance, or historical "
-            "source authenticity is asserted.",
-        ),
+        claim_boundaries=RECEIPT_CLAIM_BOUNDARIES,
     )
-
-
-def _render_offline_receipt(envelope: ReceiptEnvelope) -> bytes:
-    """Render a deterministic non-authoritative offline handoff view."""
-
-    core = envelope.receipt
-    claims = "".join(
-        f"<li>{html.escape(boundary)}</li>" for boundary in core.claim_boundaries
-    )
-    document = (
-        "<!doctype html>\n"
-        '<html lang="en"><head><meta charset="utf-8">'
-        "<title>Reversible Name Atlas Change Receipt</title>"
-        "<style>body{font:16px system-ui;background:#111;color:#eee;"
-        "max-width:820px;margin:3rem auto;padding:0 1rem}code{word-break:break-all;"
-        "color:#8abbff}.verified{color:#72ca9b}</style></head><body>"
-        '<p class="verified">VERIFIED PORTABLE CHANGE RECEIPT</p>'
-        "<h1>Reversible Name Atlas</h1>"
-        "<p>This offline view is derived from the authoritative machine receipt.</p>"
-        f"<h2>Receipt fingerprint</h2><code>{envelope.receipt_fingerprint}</code>"
-        f"<h2>Case</h2><code>{core.case_id}</code>"
-        "<dl>"
-        f"<dt>Schema</dt><dd>{core.schema_version}</dd>"
-        f"<dt>Source members</dt><dd>{core.source_member_count}</dd>"
-        f"<dt>Staged data members</dt><dd>{core.staged_data_file_count}</dd>"
-        f"<dt>Human decisions</dt><dd>{core.human_decision_count}</dd>"
-        f"<dt>GPT-assisted decisions</dt><dd>"
-        f"{core.gpt_assisted_decision_count}</dd></dl>"
-        f"<h2>Claim boundaries</h2><ul>{claims}</ul>"
-        "<p>Verify with: <code>uv run name-atlas verify-receipt "
-        "RECEIVED_BAG</code></p>"
-        "</body></html>\n"
-    )
-    return document.encode("utf-8")
 
 
 def _preserve_post_receipt_failure(

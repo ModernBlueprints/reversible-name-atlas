@@ -8,13 +8,22 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
+from name_atlas import staging as staging_module
+from name_atlas.artifacts import parse_path_map
 from name_atlas.cases import CaseLifecycle, load_case
 from name_atlas.decision_cards import RecordedReplayDecisionCardProvider
-from name_atlas.receipts import DECISION_LEDGER_PATH
+from name_atlas.receipts import (
+    DECISION_LEDGER_PATH,
+    FORWARD_PATH_MAP_PATH,
+    REVERSE_PATH_MAP_PATH,
+)
 from name_atlas.receiver_verifier import (
+    ReceiptVerificationCheck,
+    ReceiptVerificationResult,
     ReceiptVerificationStatus,
     verify_receipt,
 )
+from name_atlas.staging import StagingError
 from name_atlas.verification import BagItPackageValidator
 from name_atlas.verification.bag_writer import BagItWriter
 from name_atlas.workflow import WorkflowSession
@@ -24,6 +33,14 @@ HERO_ROOT = PROJECT_ROOT / "sample_data" / "hero"
 REPLAY_RECORD = (
     PROJECT_ROOT / "src" / "name_atlas" / "recordings" / "hero_decision_card.json"
 )
+
+
+def _tree_bytes(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
 
 
 @pytest.fixture
@@ -214,3 +231,123 @@ async def test_r1_restart_stage_portable_verify_and_controlled_block(
     assert (
         verify_receipt(successful_handoff).status is ReceiptVerificationStatus.VERIFIED
     )
+
+    portable_files = tuple(
+        path
+        for path in (successful_handoff / "name-atlas").rglob("*")
+        if path.is_file()
+    )
+    portable_bytes = b"\n".join(path.read_bytes() for path in portable_files)
+    sender_local_values = {
+        str(source),
+        str(source.resolve()),
+        str(output),
+        str(output.resolve()),
+        str(case_path),
+        str(case_path.resolve()),
+        str(tmp_path),
+        str(tmp_path.resolve()),
+        str(PROJECT_ROOT),
+        str(PROJECT_ROOT.resolve()),
+        str(Path.home()),
+    }
+    for value in sender_local_values:
+        assert value.encode("utf-8") not in portable_bytes
+    assert b"file://" not in portable_bytes.lower()
+    for relative_path, reverse in (
+        (FORWARD_PATH_MAP_PATH, False),
+        (REVERSE_PATH_MAP_PATH, True),
+    ):
+        for row in parse_path_map(
+            (successful_handoff / relative_path).read_bytes(),
+            reverse=reverse,
+        ):
+            for logical_path in (row.source_path, row.target_path):
+                path = PurePosixPath(logical_path)
+                assert not path.is_absolute()
+                assert ".." not in path.parts
+
+
+@pytest.mark.anyio
+async def test_post_receipt_receiver_failure_preserves_immutable_pending_bag(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    shutil.copytree(HERO_ROOT, source)
+    output = tmp_path / "stages"
+    case_path = tmp_path / "hero.case.json"
+    workflow = WorkflowSession(
+        source_root=source,
+        output_root=output,
+        decision_card_provider=RecordedReplayDecisionCardProvider(
+            REPLAY_RECORD.read_bytes()
+        ),
+        package_validator=BagItPackageValidator(),
+        case_path=case_path,
+        case_name="Post-receipt failure proof",
+    )
+    meaning_family = next(
+        family
+        for family in workflow.package.families
+        if family.canonical_identifier == "NA-0001"
+    )
+    collision_family = next(
+        family
+        for family in workflow.package.families
+        if family.canonical_identifier == "CASE-010"
+    )
+    await workflow.generate_card(meaning_family.family_id)
+    workflow.approve(meaning_family.family_id)
+    workflow.approve_low_risk()
+    workflow.edit(collision_family.family_id, "harbor-map-north")
+    workflow.approve_low_risk()
+
+    injected = ReceiptVerificationResult(
+        schema_version="receipt-verification.v1",
+        status=ReceiptVerificationStatus.BLOCKED,
+        receipt_fingerprint=None,
+        checks=(
+            ReceiptVerificationCheck(
+                check_id="injected_receiver_failure",
+                passed=False,
+                detail="Injected only after receipt finalization.",
+            ),
+        ),
+        failed_check_ids=("injected_receiver_failure",),
+    )
+    captured_receipt_bound_bytes: dict[str, bytes] = {}
+
+    def inject_after_capturing_bag(
+        bag_root: Path,
+        *args: object,
+        **kwargs: object,
+    ) -> ReceiptVerificationResult:
+        del args, kwargs
+        captured_receipt_bound_bytes.update(_tree_bytes(bag_root))
+        return injected
+
+    monkeypatch.setattr(staging_module, "verify_receipt", inject_after_capturing_bag)
+
+    try:
+        with pytest.raises(StagingError, match="Independent receiver verification"):
+            workflow.stage()
+    finally:
+        workflow.close()
+
+    pending = tuple(output.glob(".*.pending"))
+    assert len(pending) == 1
+    failure_records = tuple(output.glob(".*.pending.failure.json"))
+    assert len(failure_records) == 1
+    assert not any(
+        path.is_dir() and not path.name.startswith(".") for path in output.iterdir()
+    )
+    assert BagItPackageValidator().validate(pending[0]).valid
+    assert captured_receipt_bound_bytes
+    assert _tree_bytes(pending[0]) == captured_receipt_bound_bytes
+    actual = verify_receipt(pending[0])
+    assert actual.status is ReceiptVerificationStatus.VERIFIED
+    assert actual.receipt_fingerprint is not None
+    failure = json.loads(failure_records[0].read_text(encoding="utf-8"))
+    assert failure["stage"] == "receiver_verification"
+    assert "injected_receiver_failure" in failure["reason"]

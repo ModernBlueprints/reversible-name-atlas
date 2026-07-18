@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -12,10 +14,9 @@ import pytest
 from pydantic import ValidationError
 
 from name_atlas.artifacts import (
-    ControlFileProof,
     PathMapRow,
     ProofStatus,
-    VerificationCheck,
+    render_verification_summary,
     write_path_map,
 )
 from name_atlas.cases import (
@@ -35,7 +36,12 @@ from name_atlas.domain import (
 from name_atlas.package_import import import_package
 from name_atlas.proposals import build_proposals
 from name_atlas.receipts import (
+    CHANGE_RECEIPT_PATH,
     DECISION_LEDGER_PATH,
+    PORTABLE_SOURCE_SNAPSHOT_PATH,
+    RECEIPT_CLAIM_BOUNDARIES,
+    VERIFICATION_REPORT_PATH,
+    VERIFICATION_SUMMARY_PATH,
     ArtifactCommitment,
     DecisionLedgerEntry,
     DecisionLedgerV2,
@@ -51,6 +57,7 @@ from name_atlas.receipts import (
     oslo_tz,
     portable_snapshot_from_source,
     receipt_fingerprint,
+    render_offline_receipt,
     staged_data_commitment,
     staged_data_members,
 )
@@ -59,6 +66,7 @@ from name_atlas.receiver_verifier import (
     verify_receipt,
 )
 from name_atlas.verification import BagItPackageValidator
+from name_atlas.verification.staged_proof import verify_staged_artifacts
 
 CASE_ID = "12345678123442348123456789abcdef"
 COMMITTED_ARTIFACT_PATHS = (
@@ -187,9 +195,11 @@ def _complete_handoff(parent: Path) -> tuple[Path, Path, ReceiptCore]:
         (map_row,),
         reverse=True,
     )
-    (bag / "name-atlas" / "verification_summary.md").write_text(
-        "# Verification summary\n\nThe transaction is receipt-bound.\n",
-        encoding="utf-8",
+    (bag / "name-atlas" / "verification_summary.md").write_bytes(
+        render_verification_summary(
+            content_objects=1,
+            content_bytes=content_member.size,
+        )
     )
 
     payload_paths = (
@@ -211,10 +221,17 @@ def _complete_handoff(parent: Path) -> tuple[Path, Path, ReceiptCore]:
         _render_manifest(bag, payload_paths), encoding="utf-8"
     )
 
-    metadata_source = next(
-        member
-        for member in package.snapshot.members
-        if member.relative_path == "metadata/metadata.csv"
+    deterministic_proof = verify_staged_artifacts(
+        package,
+        (map_row,),
+        {decision.family_id: decision},
+        pending_root=bag,
+        expected_source_snapshot=(
+            bag / "name-atlas" / "source_snapshot.json"
+        ).read_bytes(),
+        expected_decision_ledger=(
+            bag / "name-atlas" / "decision_ledger.json"
+        ).read_bytes(),
     )
     report = VerificationReportV2(
         status=ProofStatus.VERIFIED,
@@ -226,24 +243,9 @@ def _complete_handoff(parent: Path) -> tuple[Path, Path, ReceiptCore]:
         source_unchanged=True,
         content_object_count=1,
         content_bytes=content_member.size,
-        control_files=(
-            ControlFileProof(
-                logical_path="metadata/metadata.csv",
-                source_sha256=metadata_source.sha256,
-                staged_sha256=hashlib.sha256(staged_metadata).hexdigest(),
-                rewritten_fields=("row:2:filename",),
-                non_path_fields_unchanged=True,
-            ),
-        ),
+        control_files=deterministic_proof.control_files,
         map_row_count=1,
-        checks=(
-            VerificationCheck(
-                check_id="transaction_consistent",
-                label="Transaction artifacts agree",
-                passed=True,
-                detail="Receiver-recomputable transaction evidence agrees.",
-            ),
-        ),
+        checks=deterministic_proof.checks,
         bagit_validation=PackageValidationResult(
             validator="bagit",
             valid=True,
@@ -293,23 +295,14 @@ def _complete_handoff(parent: Path) -> tuple[Path, Path, ReceiptCore]:
             valid=True,
             messages=("BagIt validation passed.",),
         ),
-        claim_boundaries=(
-            "Without --source, verification proves internal transaction consistency.",
-            "The receipt is not sender authentication or semantic truth.",
-        ),
+        claim_boundaries=RECEIPT_CLAIM_BOUNDARIES,
     )
     envelope = build_receipt_envelope(core)
     (bag / "name-atlas" / "change_receipt.json").write_bytes(
         canonical_artifact_json_bytes(envelope)
     )
-    (bag / "name-atlas" / "change_receipt.html").write_text(
-        "<!doctype html><html><body>"
-        "<h1>Portable Change Receipt</h1>"
-        f"<p>{envelope.receipt_fingerprint}</p>"
-        f"<p>{CASE_ID}</p>"
-        "<p>portable-change-receipt.v1</p>"
-        "</body></html>\n",
-        encoding="utf-8",
+    (bag / "name-atlas" / "change_receipt.html").write_bytes(
+        render_offline_receipt(envelope, ledger, report)
     )
     tag_paths = tuple(
         path.relative_to(bag).as_posix()
@@ -336,6 +329,36 @@ def _refresh_tagmanifest(bag: Path) -> None:
     (bag / "tagmanifest-sha256.txt").write_text(
         _render_manifest(bag, tag_paths), encoding="utf-8"
     )
+
+
+def _reseal_receipt(
+    bag: Path,
+    *,
+    changed_paths: tuple[str, ...] = (),
+    core_updates: dict[str, object] | None = None,
+) -> None:
+    """Recommit selected fixture facts without altering unrelated evidence."""
+
+    receipt_path = bag / CHANGE_RECEIPT_PATH
+    envelope = json.loads(receipt_path.read_text(encoding="utf-8"))
+    core_value = envelope["receipt"]
+    commitments = {
+        commitment["path"]: commitment
+        for commitment in core_value["artifact_commitments"]
+    }
+    for relative_path in changed_paths:
+        data = (bag / relative_path).read_bytes()
+        commitments[relative_path]["size"] = len(data)
+        commitments[relative_path]["sha256"] = hashlib.sha256(data).hexdigest()
+    core_value.update(core_updates or {})
+    core = ReceiptCore.model_validate_json(
+        json.dumps(core_value, ensure_ascii=False, allow_nan=False)
+    )
+    envelope["receipt"] = core.model_dump(mode="json", exclude_none=False)
+    envelope["receipt_fingerprint"] = receipt_fingerprint(core)
+    _write_json(receipt_path, envelope)
+    _refresh_tagmanifest(bag)
+    assert BagItPackageValidator().validate(bag).valid is True
 
 
 def test_receipt_core_fingerprint_is_canonical_and_non_circular(
@@ -475,3 +498,224 @@ def test_bagit_valid_altered_ledger_has_exact_receipt_digest_blocker(
     assert result.failed_check_ids == ("artifact_digest_mismatch:decision_ledger",)
     failure = next(check for check in result.checks if not check.passed)
     assert "name-atlas/decision_ledger.json" in failure.detail
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_blocker"),
+    (
+        ("malformed_receipt", "receipt_schema_invalid"),
+        ("duplicate_receipt_key", "receipt_schema_invalid"),
+        ("unknown_receipt_schema", "receipt_schema_invalid"),
+        ("fingerprint_mismatch", "receipt_fingerprint_mismatch"),
+        (
+            "missing_committed_summary",
+            "artifact_missing_or_unreadable:verification_summary",
+        ),
+        (
+            "changed_non_ledger_commitment",
+            "artifact_digest_mismatch:verification_summary",
+        ),
+    ),
+)
+def test_receipt_and_raw_commitment_negative_matrix_has_stable_blockers(
+    tmp_path: Path,
+    mutation: str,
+    expected_blocker: str,
+) -> None:
+    _source, bag, _core = _complete_handoff(tmp_path)
+    receipt_path = bag / CHANGE_RECEIPT_PATH
+    summary_path = bag / VERIFICATION_SUMMARY_PATH
+
+    if mutation == "malformed_receipt":
+        receipt_path.write_bytes(b'{"receipt":')
+    elif mutation == "duplicate_receipt_key":
+        receipt_bytes = receipt_path.read_bytes()
+        receipt_path.write_bytes(
+            b'{"receipt_fingerprint":"'
+            + (b"0" * 64)
+            + b'",'
+            + receipt_bytes.lstrip()[1:]
+        )
+    elif mutation == "unknown_receipt_schema":
+        envelope = json.loads(receipt_path.read_text(encoding="utf-8"))
+        envelope["receipt"]["schema_version"] = "portable-change-receipt.v999"
+        _write_json(receipt_path, envelope)
+    elif mutation == "fingerprint_mismatch":
+        envelope = json.loads(receipt_path.read_text(encoding="utf-8"))
+        envelope["receipt_fingerprint"] = "0" * 64
+        _write_json(receipt_path, envelope)
+    elif mutation == "missing_committed_summary":
+        summary_path.unlink()
+    elif mutation == "changed_non_ledger_commitment":
+        summary_path.write_bytes(summary_path.read_bytes() + b"Changed view.\n")
+    else:  # pragma: no cover - the parameter table is exhaustive
+        raise AssertionError(f"Unsupported test mutation: {mutation}")
+
+    _refresh_tagmanifest(bag)
+    assert BagItPackageValidator().validate(bag).valid is True
+
+    result = verify_receipt(bag)
+
+    assert result.status is ReceiptVerificationStatus.BLOCKED
+    assert result.failed_check_ids == (expected_blocker,)
+
+
+def test_malformed_recommitted_portable_artifact_has_stable_blocker(
+    tmp_path: Path,
+) -> None:
+    _source, bag, _core = _complete_handoff(tmp_path)
+    snapshot_path = bag / PORTABLE_SOURCE_SNAPSHOT_PATH
+    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    snapshot["unexpected_field"] = "not allowed by the strict schema"
+    _write_json(snapshot_path, snapshot)
+    _reseal_receipt(bag, changed_paths=(PORTABLE_SOURCE_SNAPSHOT_PATH,))
+
+    result = verify_receipt(bag)
+
+    assert result.status is ReceiptVerificationStatus.BLOCKED
+    assert result.failed_check_ids == ("portable_artifact_schema_invalid",)
+
+
+def test_recommitted_payload_manifest_cannot_mask_staged_data_change(
+    tmp_path: Path,
+) -> None:
+    _source, bag, _core = _complete_handoff(tmp_path)
+    payload_path = next((bag / "data" / "objects").iterdir())
+    payload_path.write_bytes(b"x" * payload_path.stat().st_size)
+    payload_paths = tuple(
+        path.relative_to(bag).as_posix()
+        for path in (bag / "data").rglob("*")
+        if path.is_file()
+    )
+    (bag / "manifest-sha256.txt").write_text(
+        _render_manifest(bag, payload_paths),
+        encoding="utf-8",
+    )
+    _reseal_receipt(bag, changed_paths=("manifest-sha256.txt",))
+
+    result = verify_receipt(bag)
+
+    assert result.status is ReceiptVerificationStatus.BLOCKED
+    assert result.failed_check_ids == ("staged_data_commitment_mismatch",)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_blocker"),
+    (
+        ("source_count", "source_snapshot_receipt_mismatch"),
+        ("decision_count", "receipt_counts_inconsistent"),
+        ("producer_claim", "producer_report_inconsistent"),
+    ),
+)
+def test_coherently_recommitted_cross_artifact_mismatches_are_blocked(
+    tmp_path: Path,
+    mutation: str,
+    expected_blocker: str,
+) -> None:
+    _source, bag, core = _complete_handoff(tmp_path)
+
+    if mutation == "source_count":
+        _reseal_receipt(
+            bag,
+            core_updates={"source_member_count": core.source_member_count + 1},
+        )
+    elif mutation == "decision_count":
+        _reseal_receipt(
+            bag,
+            core_updates={
+                "decision_count": core.decision_count + 1,
+                "human_decision_count": core.human_decision_count + 1,
+            },
+        )
+    elif mutation == "producer_claim":
+        report_path = bag / VERIFICATION_REPORT_PATH
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        report["claim"] = "A different producer claim."
+        _write_json(report_path, report)
+        _reseal_receipt(bag, changed_paths=(VERIFICATION_REPORT_PATH,))
+    else:  # pragma: no cover - the parameter table is exhaustive
+        raise AssertionError(f"Unsupported test mutation: {mutation}")
+
+    result = verify_receipt(bag)
+
+    assert result.status is ReceiptVerificationStatus.BLOCKED
+    assert result.failed_check_ids == (expected_blocker,)
+
+
+def test_unreadable_optional_source_has_stable_blocker(tmp_path: Path) -> None:
+    _source, bag, _core = _complete_handoff(tmp_path)
+
+    result = verify_receipt(bag, source_root=tmp_path / "missing-source")
+
+    assert result.status is ReceiptVerificationStatus.BLOCKED
+    assert result.failed_check_ids == ("supplied_source_unreadable",)
+
+
+def test_keyless_cli_subprocess_verifies_moved_bag_and_blocks_wrong_source(
+    tmp_path: Path,
+) -> None:
+    source, bag, core = _complete_handoff(tmp_path)
+    received = tmp_path / "receiver" / "portable-handoff"
+    received.parent.mkdir()
+    shutil.copytree(bag, received)
+    project_root = Path(__file__).parents[1]
+    environment = os.environ.copy()
+    environment.pop("OPENAI_API_KEY", None)
+    command = (
+        "uv",
+        "run",
+        "--no-sync",
+        "name-atlas",
+        "verify-receipt",
+        str(received),
+    )
+    original_bag_bytes = _read_tree(received)
+
+    verified = subprocess.run(
+        command,
+        cwd=project_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert verified.returncode == 0
+    assert verified.stdout == f"VERIFIED {receipt_fingerprint(core)}\n"
+    assert verified.stderr == ""
+    assert _read_tree(received) == original_bag_bytes
+
+    source_verified = subprocess.run(
+        (*command, "--source", str(source)),
+        cwd=project_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert source_verified.returncode == 0
+    assert source_verified.stdout == f"VERIFIED {receipt_fingerprint(core)}\n"
+    assert source_verified.stderr == ""
+    assert _read_tree(received) == original_bag_bytes
+
+    wrong_source = tmp_path / "different-source"
+    shutil.copytree(source, wrong_source)
+    payload = next((wrong_source / "objects").iterdir())
+    payload.write_bytes(payload.read_bytes() + b"different")
+    blocked = subprocess.run(
+        (*command, "--source", str(wrong_source)),
+        cwd=project_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert blocked.returncode == 1
+    assert blocked.stdout == "BLOCKED supplied_source_mismatch\n"
+    assert blocked.stderr == ""
+    assert _read_tree(received) == original_bag_bytes

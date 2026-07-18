@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import json
 import re
 import unicodedata
 from pathlib import Path
@@ -13,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from name_atlas.domain import ContentRole, MemberKind
 from name_atlas.source import (
+    ControlRole,
     SourceError,
     SourceMember,
     SourceSnapshot,
@@ -107,15 +109,99 @@ def import_package(root: Path) -> SourcePackage:
         metadata_member = members.get("metadata/metadata.csv")
         if metadata_member is None:
             raise PackageImportError("Required metadata/metadata.csv is missing.")
-        metadata_header, metadata_rows = _parse_metadata(
-            read_member_bytes(snapshot.source_root, metadata_member)
-        )
+        metadata_bytes = read_member_bytes(snapshot.source_root, metadata_member)
         normalization_member = members.get("normalization.csv")
-        normalization_rows = (
-            _parse_normalization(
-                read_member_bytes(snapshot.source_root, normalization_member)
-            )
+        normalization_bytes = (
+            read_member_bytes(snapshot.source_root, normalization_member)
             if normalization_member is not None
+            else None
+        )
+        return import_package_description(
+            snapshot,
+            metadata_bytes=metadata_bytes,
+            normalization_bytes=normalization_bytes,
+        )
+    except PackageImportError:
+        raise
+    except SourceError as exc:
+        raise PackageImportError(str(exc)) from exc
+
+
+def import_package_description(
+    snapshot: SourceSnapshot,
+    *,
+    metadata_bytes: bytes,
+    normalization_bytes: bytes | None,
+) -> SourcePackage:
+    """Reconstruct package facts from a snapshot and byte-exact controls.
+
+    This pure boundary performs no filesystem reads or writes. It applies the
+    same strict control parsing and family reconciliation used by
+    :func:`import_package`, allowing a receiver to rebuild deterministic package
+    authority from portable evidence alone.
+    """
+
+    members: dict[str, SourceMember] = {}
+    for member in snapshot.members:
+        try:
+            validate_relative_path(member.relative_path)
+        except SourceError as exc:
+            raise PackageImportError(str(exc)) from exc
+        if member.relative_path in members:
+            raise PackageImportError(
+                f"Duplicate source member path: {member.relative_path}"
+            )
+        members[member.relative_path] = member
+    canonical_members = json.dumps(
+        [member.model_dump(mode="json") for member in snapshot.members],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    if hashlib.sha256(canonical_members).hexdigest() != snapshot.commitment:
+        raise PackageImportError(
+            "Source snapshot commitment does not match its members."
+        )
+
+    metadata_member = members.get("metadata/metadata.csv")
+    if (
+        metadata_member is None
+        or metadata_member.kind is not MemberKind.DECLARED_CONTROL_FILE
+        or metadata_member.role is not ControlRole.METADATA
+    ):
+        raise PackageImportError("Required metadata/metadata.csv is missing.")
+    _require_control_bytes_match(
+        metadata_member,
+        metadata_bytes,
+        label="metadata/metadata.csv",
+    )
+
+    normalization_member = members.get("normalization.csv")
+    if (normalization_member is None) != (normalization_bytes is None):
+        raise PackageImportError(
+            "normalization.csv bytes and source snapshot presence disagree."
+        )
+    if normalization_member is not None:
+        if (
+            normalization_member.kind is not MemberKind.DECLARED_CONTROL_FILE
+            or normalization_member.role is not ControlRole.NORMALIZATION
+        ):
+            raise PackageImportError(
+                "normalization.csv is not a declared control file."
+            )
+        assert normalization_bytes is not None
+        _require_control_bytes_match(
+            normalization_member,
+            normalization_bytes,
+            label="normalization.csv",
+        )
+
+    try:
+        metadata_header, metadata_rows = _parse_metadata(metadata_bytes)
+        normalization_rows = (
+            _parse_normalization(normalization_bytes)
+            if normalization_bytes is not None
             else ()
         )
         return _reconcile(
@@ -123,12 +209,22 @@ def import_package(root: Path) -> SourcePackage:
             metadata_header=metadata_header,
             metadata_rows=metadata_rows,
             normalization_rows=normalization_rows,
-            normalization_present=normalization_member is not None,
+            normalization_present=normalization_bytes is not None,
         )
-    except PackageImportError:
-        raise
     except SourceError as exc:
         raise PackageImportError(str(exc)) from exc
+
+
+def _require_control_bytes_match(
+    member: SourceMember,
+    data: bytes,
+    *,
+    label: str,
+) -> None:
+    if len(data) != member.size or hashlib.sha256(data).hexdigest() != member.sha256:
+        raise PackageImportError(
+            f"{label} bytes do not match the portable source snapshot."
+        )
 
 
 def _decode_utf8(data: bytes, *, label: str) -> str:

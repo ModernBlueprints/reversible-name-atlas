@@ -15,10 +15,35 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from name_atlas.artifacts import ArtifactReadError, PathMapRow, parse_path_map
+from name_atlas.artifacts import (
+    ArtifactReadError,
+    PathMapRow,
+    parse_path_map,
+    render_verification_summary,
+)
+from name_atlas.decision_cards.errors import DecisionCardProviderError
+from name_atlas.decision_cards.evidence import validate_decision_card
+from name_atlas.decision_cards.service import build_evidence_packet
+from name_atlas.decisions import (
+    DecisionError,
+    HumanAction,
+    approve_family,
+    edit_family,
+    proposals_after_decision,
+)
 from name_atlas.domain import ContentRole
+from name_atlas.package_import import (
+    PackageImportError,
+    SourcePackage,
+    import_package_description,
+)
 from name_atlas.ports import PackageValidator
-from name_atlas.proposals import DESCRIPTOR_PATTERN, EXTENSION_PATTERN
+from name_atlas.proposals import (
+    DESCRIPTOR_PATTERN,
+    EXTENSION_PATTERN,
+    RiskCategory,
+    build_proposals,
+)
 from name_atlas.receipts import (
     CHANGE_RECEIPT_HTML_PATH,
     CHANGE_RECEIPT_PATH,
@@ -29,7 +54,9 @@ from name_atlas.receipts import (
     PORTABLE_SOURCE_SNAPSHOT_PATH,
     REVERSE_PATH_MAP_PATH,
     VERIFICATION_REPORT_PATH,
+    VERIFICATION_SUMMARY_PATH,
     DecisionLedgerV2,
+    DecisionMethod,
     PortableSourceMember,
     PortableSourceSnapshot,
     ReceiptContractError,
@@ -42,17 +69,45 @@ from name_atlas.receipts import (
     portable_snapshot_from_source,
     read_regular_bytes,
     receipt_fingerprint,
+    render_offline_receipt,
     staged_data_commitment,
     staged_data_members,
 )
-from name_atlas.source import ControlRole, snapshot_tree, validate_relative_path
+from name_atlas.source import (
+    ControlRole,
+    SourceMember,
+    SourceSnapshot,
+    snapshot_tree,
+    validate_relative_path,
+)
 from name_atlas.verification.bagit_validator import (
     BagItAdapterError,
     BagItPackageValidator,
 )
+from name_atlas.verification.staged_proof import (
+    StagedProofError,
+    verify_staged_artifacts,
+)
 
 _Model = TypeVar("_Model", bound=BaseModel)
 _DIGEST_PATTERN = re.compile(r"[a-f0-9]{64}\Z")
+_EXPECTED_PRODUCER_CLAIM = (
+    "Verified round-trip integrity within the supported package contract"
+)
+_EXPECTED_PRODUCER_CHECK_IDS = frozenset(
+    {
+        "source_snapshot_equal",
+        "payload_hashes_equal",
+        "data_members_accounted",
+        "state_artifacts_exact",
+        "control_file_semantics_preserved",
+        "declared_references_resolve",
+        "target_profile_valid",
+        "forward_reverse_inverse",
+        "reverse_dry_run",
+        "target_uniqueness",
+    }
+)
 
 
 class ReceiptVerificationStatus(StrEnum):
@@ -156,7 +211,7 @@ def verify_receipt(
             "ReceiptCore canonical bytes do not match the envelope fingerprint.",
         )
         return _result(checks, fingerprint=fingerprint_value)
-    ReceiptEnvelope(receipt=core, receipt_fingerprint=fingerprint_value)
+    envelope = ReceiptEnvelope(receipt=core, receipt_fingerprint=fingerprint_value)
     _record_success(
         checks,
         "receipt_fingerprint_valid",
@@ -269,31 +324,47 @@ def verify_receipt(
     )
 
     try:
-        receipt_html = read_regular_bytes(root, CHANGE_RECEIPT_HTML_PATH).decode(
-            "utf-8", errors="strict"
+        summary_bytes = read_regular_bytes(root, VERIFICATION_SUMMARY_PATH)
+        receipt_html_bytes = read_regular_bytes(root, CHANGE_RECEIPT_HTML_PATH)
+        expected_html_bytes = render_offline_receipt(
+            envelope,
+            ledger,
+            report,
         )
-    except (ReceiptContractError, UnicodeError):
+    except (ReceiptContractError, UnicodeError, ValueError):
         _record_failure(
             checks,
             "offline_receipt_invalid",
-            "The offline receipt is missing or is not valid UTF-8.",
+            "A derived human-readable view cannot be parsed or reconstructed.",
         )
         return _result(checks, fingerprint=fingerprint_value)
-    if (
-        fingerprint_value not in receipt_html
-        or core.case_id not in receipt_html
-        or "portable-change-receipt.v1" not in receipt_html
-    ):
+    expected_summary_bytes = render_verification_summary(
+        content_objects=core.map_row_count,
+        content_bytes=report.content_bytes,
+    )
+    if summary_bytes != expected_summary_bytes:
+        _record_failure(
+            checks,
+            "verification_summary_disagrees",
+            "The Markdown summary is not the exact view derived from machine facts.",
+        )
+        return _result(checks, fingerprint=fingerprint_value)
+    _record_success(
+        checks,
+        "verification_summary_consistent",
+        "The Markdown summary is exactly derived from committed machine facts.",
+    )
+    if receipt_html_bytes != expected_html_bytes:
         _record_failure(
             checks,
             "offline_receipt_disagrees",
-            "The offline receipt omits a central machine-receipt identity.",
+            "The offline receipt is not the exact view derived from machine facts.",
         )
         return _result(checks, fingerprint=fingerprint_value)
     _record_success(
         checks,
         "offline_receipt_consistent",
-        "The offline view identifies the machine receipt and case.",
+        "The offline receipt is exactly derived from the receipt, ledger, and report.",
     )
 
     if source_root is not None:
@@ -440,6 +511,13 @@ def _cross_artifact_failures(
             )
         )
 
+    authority_failures = _deterministic_authority_failures(
+        root=root,
+        snapshot=snapshot,
+        ledger=ledger,
+    )
+    failures.extend(authority_failures)
+
     gpt_count = sum(
         decision.meaning_review is not None for decision in ledger.decisions
     )
@@ -458,9 +536,33 @@ def _cross_artifact_failures(
             )
         )
 
+    try:
+        reconstructed_package = _package_from_portable_evidence(root, snapshot)
+        recomputed_proof = verify_staged_artifacts(
+            reconstructed_package,
+            forward_rows,
+            {entry.family_id: entry.human_decision for entry in ledger.decisions},
+            pending_root=root,
+            expected_source_snapshot=read_regular_bytes(
+                root, PORTABLE_SOURCE_SNAPSHOT_PATH
+            ),
+            expected_decision_ledger=read_regular_bytes(root, DECISION_LEDGER_PATH),
+        )
+    except (
+        ArtifactReadError,
+        KeyError,
+        OSError,
+        PackageImportError,
+        ReceiptContractError,
+        StagedProofError,
+        ValidationError,
+        ValueError,
+    ):
+        recomputed_proof = None
+
     report_consistent = (
         report.status.value == "verified"
-        and report.claim is not None
+        and report.claim == _EXPECTED_PRODUCER_CLAIM
         and report.generated_at.tzinfo is not None
         and report.source_snapshot_commitment == snapshot.commitment
         and report.prestaging_snapshot_commitment == snapshot.commitment
@@ -469,11 +571,15 @@ def _cross_artifact_failures(
         and report.content_object_count == len(forward_rows)
         and report.content_bytes == sum(row.size for row in forward_rows)
         and report.map_row_count == len(forward_rows)
+        and recomputed_proof is not None
+        and report.checks == recomputed_proof.checks
+        and report.control_files == recomputed_proof.control_files
+        and len(report.checks) == len(_EXPECTED_PRODUCER_CHECK_IDS)
+        and {check.check_id for check in report.checks} == _EXPECTED_PRODUCER_CHECK_IDS
         and all(check.passed for check in report.checks)
         and report.bagit_validation == core.producer_bagit_validation
         and not report.blockers
         and core.producer_bagit_validation.valid
-        and _report_control_hashes_match(root, report, controls)
         and set(report.artifact_paths)
         == committed_paths
         | {
@@ -491,6 +597,144 @@ def _cross_artifact_failures(
         )
 
     return tuple(failures)
+
+
+def _deterministic_authority_failures(
+    *,
+    root: Path,
+    snapshot: PortableSourceSnapshot,
+    ledger: DecisionLedgerV2,
+) -> tuple[ReceiptVerificationCheck, ...]:
+    """Rebuild package, proposal, evidence, card, and human authority."""
+
+    try:
+        package = _package_from_portable_evidence(root, snapshot)
+        expected_proposals = build_proposals(package.families)
+        expected_by_family = {
+            family.family_id: tuple(
+                proposal
+                for proposal in expected_proposals
+                if proposal.family_id == family.family_id
+            )
+            for family in package.families
+        }
+        ledger_by_family = {entry.family_id: entry for entry in ledger.decisions}
+        if set(ledger_by_family) != set(expected_by_family):
+            raise ValueError("Ledger families differ from reconstructed families.")
+
+        family_by_id = {family.family_id: family for family in package.families}
+        current_proposals = expected_proposals
+        for entry in sorted(
+            ledger.decisions,
+            key=lambda item: (item.decided_at, item.family_id),
+        ):
+            family_id = entry.family_id
+            expected_family_proposals = expected_by_family[family_id]
+            family = family_by_id[family_id]
+            if entry.initial_proposals != expected_family_proposals:
+                raise ValueError(
+                    "Ledger proposals differ from deterministic reconstruction."
+                )
+
+            has_meaning_risk = any(
+                risk.category is RiskCategory.MEANING
+                for proposal in expected_family_proposals
+                for risk in proposal.risk_signals
+            )
+            review = entry.meaning_review
+            if has_meaning_risk != (review is not None):
+                raise ValueError(
+                    "Meaning provenance does not match deterministic risk."
+                )
+            if review is not None:
+                expected_packet = build_evidence_packet(
+                    package,
+                    family,
+                    expected_proposals,
+                )
+                if review.evidence_packet != expected_packet:
+                    raise ValueError(
+                        "Meaning evidence differs from deterministic reconstruction."
+                    )
+                validate_decision_card(review.decision_card, expected_packet)
+
+            decision = entry.human_decision
+            if decision.action is HumanAction.APPROVED:
+                expected_decision = approve_family(
+                    family,
+                    current_proposals,
+                    semantic_card_available=review is not None,
+                )
+                if decision != expected_decision:
+                    raise ValueError("Approved targets differ from proposal authority.")
+                if (
+                    entry.decision_method is DecisionMethod.BATCH_APPROVAL
+                    and has_meaning_risk
+                ):
+                    raise ValueError("Batch approval was used for a risky family.")
+            elif decision.action is HumanAction.EDITED:
+                if decision.human_input is None:
+                    raise ValueError("Edited decision lacks its human descriptor.")
+                expected_decision = edit_family(
+                    family,
+                    current_proposals,
+                    descriptor=decision.human_input,
+                    semantic_card_available=review is not None,
+                    other_resolved_targets=tuple(
+                        proposal.proposed_relative_path
+                        for proposal in current_proposals
+                        if proposal.family_id != family_id
+                    ),
+                )
+                if decision != expected_decision:
+                    raise ValueError(
+                        "Edited targets differ from the persisted human descriptor."
+                    )
+            else:
+                raise ValueError("Completed ledger contains unresolved authority.")
+            current_proposals = proposals_after_decision(current_proposals, decision)
+    except (
+        DecisionCardProviderError,
+        DecisionError,
+        PackageImportError,
+        ReceiptContractError,
+        ValidationError,
+        ValueError,
+    ):
+        return (
+            _failed(
+                "deterministic_authority_mismatch",
+                "Package, proposal, evidence, card, or human authority does not "
+                "reconstruct exactly from portable evidence.",
+            ),
+        )
+    return ()
+
+
+def _package_from_portable_evidence(
+    root: Path,
+    snapshot: PortableSourceSnapshot,
+) -> SourcePackage:
+    source_snapshot = SourceSnapshot(
+        source_root=Path("__portable_receipt__"),
+        members=tuple(
+            SourceMember.model_validate(member.model_dump(mode="python"), strict=True)
+            for member in snapshot.members
+        ),
+        commitment=snapshot.commitment,
+    )
+    normalization_present = any(
+        member.relative_path == "normalization.csv" for member in snapshot.members
+    )
+    return import_package_description(
+        source_snapshot,
+        metadata_bytes=read_regular_bytes(root, ORIGINAL_METADATA_PATH),
+        normalization_bytes=(
+            read_regular_bytes(root, ORIGINAL_NORMALIZATION_PATH)
+            if normalization_present
+            else None
+        ),
+    )
 
 
 def _maps_are_consistent(
@@ -627,38 +871,6 @@ def _controls_match_transaction(
             "" if not value else target_by_source.get(value) for value in original_row
         )
         if staged_row != expected:
-            return False
-    return True
-
-
-def _report_control_hashes_match(
-    root: Path,
-    report: VerificationReportV2,
-    controls: dict[ControlRole, PortableSourceMember],
-) -> bool:
-    proofs = {proof.logical_path: proof for proof in report.control_files}
-    expected_paths = {"metadata/metadata.csv"}
-    if ControlRole.NORMALIZATION in controls:
-        expected_paths.add("normalization.csv")
-    if set(proofs) != expected_paths:
-        return False
-    for role, logical_path in (
-        (ControlRole.METADATA, "metadata/metadata.csv"),
-        (ControlRole.NORMALIZATION, "normalization.csv"),
-    ):
-        member = controls.get(role)
-        if member is None:
-            continue
-        proof = proofs[logical_path]
-        try:
-            staged = read_regular_bytes(root, f"data/{logical_path}")
-        except ReceiptContractError:
-            return False
-        if (
-            proof.source_sha256 != member.sha256
-            or proof.staged_sha256 != hashlib.sha256(staged).hexdigest()
-            or not proof.non_path_fields_unchanged
-        ):
             return False
     return True
 

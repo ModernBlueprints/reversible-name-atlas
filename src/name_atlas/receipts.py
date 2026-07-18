@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import os
 import re
 import stat
 from datetime import datetime
 from enum import StrEnum
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import TYPE_CHECKING, Any, Literal, Self
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -88,14 +89,21 @@ _EXCLUDED_RECEIPT_COMMITMENT_PATHS = frozenset(
         "tagmanifest-sha256.txt",
     }
 )
-_WINDOWS_ABSOLUTE_PATH = re.compile(r"^[A-Za-z]:[\\/]")
-_SENDER_LOCAL_POSIX_PREFIXES = (
-    "/Users/",
-    "/home/",
-    "/tmp/",
-    "/private/",
-    "/var/folders/",
-    "/Volumes/",
+_FILE_URI = re.compile(
+    r"(?<![A-Za-z0-9+.-])file:(?=/{1,3}|[A-Za-z]:[\\/])",
+    flags=re.IGNORECASE,
+)
+_POSIX_ABSOLUTE_FRAGMENT = re.compile(r"(?<![A-Za-z0-9./])/(?!/)[^\s\"'<>|]+")
+_WINDOWS_ABSOLUTE_FRAGMENT = re.compile(
+    r"(?<![A-Za-z0-9])(?:[A-Za-z]:[\\/][^\s\"'<>|]+|"
+    r"\\\\[^\\/\s\"'<>|]+[\\/][^\s\"'<>|]+)"
+)
+
+RECEIPT_CLAIM_BOUNDARIES = (
+    "Internal transaction consistency within the supported Name Atlas "
+    "package contract.",
+    "No sender identity, semantic correctness, compliance, or historical "
+    "source authenticity is asserted.",
 )
 
 
@@ -388,6 +396,10 @@ class DecisionLedgerEntry(_StrictFrozenModel):
             )
         if self.meaning_review is not None:
             packet = self.meaning_review.evidence_packet
+            if self.decided_at < self.meaning_review.generated_at:
+                raise ValueError(
+                    "A human decision cannot predate its displayed Meaning card."
+                )
             if packet.family_id != self.family_id:
                 raise ValueError("Meaning-review evidence has a mismatched family ID.")
             proposal_sources = {
@@ -562,6 +574,10 @@ class ReceiptCore(_StrictFrozenModel):
             raise ValueError("GPT-assisted count exceeds decision count.")
         if self.human_decision_count != self.decision_count:
             raise ValueError("Every completed decision must be human-owned.")
+        if self.claim_boundaries != RECEIPT_CLAIM_BOUNDARIES:
+            raise ValueError(
+                "Receipt claim boundaries do not match the frozen contract."
+            )
         return self
 
 
@@ -594,6 +610,191 @@ def build_receipt_envelope(core: ReceiptCore) -> ReceiptEnvelope:
     """Create a self-validating envelope without adding a circular hash edge."""
 
     return ReceiptEnvelope(receipt=core, receipt_fingerprint=receipt_fingerprint(core))
+
+
+def render_offline_receipt(
+    envelope: ReceiptEnvelope,
+    ledger: DecisionLedgerV2,
+    report: VerificationReportV2,
+) -> bytes:
+    """Render one deterministic, self-contained, non-authoritative receipt view."""
+
+    core = envelope.receipt
+    gpt_assisted_count = sum(
+        entry.meaning_review is not None for entry in ledger.decisions
+    )
+    agreement_failures = (
+        ledger.case_id != core.case_id,
+        len(ledger.decisions) != core.decision_count,
+        len(ledger.decisions) != core.human_decision_count,
+        gpt_assisted_count != core.gpt_assisted_decision_count,
+        report.status is not ProofStatus.VERIFIED,
+        report.claim is None,
+        report.source_snapshot_commitment != core.source_snapshot_commitment,
+        report.content_object_count != core.map_row_count,
+        report.map_row_count != core.map_row_count,
+        report.bagit_validation != core.producer_bagit_validation,
+        bool(report.blockers),
+        not all(check.passed for check in report.checks),
+    )
+    if any(agreement_failures):
+        raise ReceiptContractError(
+            "Offline receipt inputs do not describe one finalized transaction."
+        )
+
+    def escaped(value: object) -> str:
+        return html.escape(str(value), quote=True)
+
+    bagit_messages = (
+        "".join(
+            f"<li>{escaped(message)}</li>"
+            for message in core.producer_bagit_validation.messages
+        )
+        or "<li>No validator message was recorded.</li>"
+    )
+    report_checks = "".join(
+        "<tr>"
+        f"<td><code>{escaped(check.check_id)}</code></td>"
+        f"<td>{escaped(check.label)}</td>"
+        f"<td>{'PASS' if check.passed else 'BLOCKED'}</td>"
+        f"<td>{escaped(check.detail)}</td>"
+        "</tr>"
+        for check in report.checks
+    )
+    control_proofs = (
+        "".join(
+            "<tr>"
+            f"<td><code>{escaped(proof.logical_path)}</code></td>"
+            f"<td><code>{escaped(proof.source_sha256)}</code></td>"
+            f"<td><code>{escaped(proof.staged_sha256)}</code></td>"
+            f"<td>{escaped(', '.join(proof.rewritten_fields) or 'None')}</td>"
+            f"<td>{'YES' if proof.non_path_fields_unchanged else 'NO'}</td>"
+            "</tr>"
+            for proof in sorted(
+                report.control_files, key=lambda item: item.logical_path
+            )
+        )
+        or '<tr><td colspan="5">No declared control proofs.</td></tr>'
+    )
+
+    decision_sections: list[str] = []
+    for entry in ledger.decisions:
+        mappings = "".join(
+            "<tr>"
+            f"<td>{escaped(proposal.role.value)}</td>"
+            f"<td><code>{escaped(proposal.original_relative_path)}</code></td>"
+            f"<td><code>{escaped(proposal.proposed_relative_path)}</code></td>"
+            f"<td><code>{escaped(entry.human_decision.resolved_targets[proposal.role])}</code></td>"
+            "</tr>"
+            for proposal in sorted(
+                entry.initial_proposals,
+                key=lambda item: (item.role.value, item.original_relative_path),
+            )
+        )
+        meaning = ""
+        if entry.meaning_review is not None:
+            review = entry.meaning_review
+            meaning = (
+                '<div class="meaning"><h4>Meaning review</h4><dl>'
+                f"<dt>Model</dt><dd><code>{escaped(review.model)}</code></dd>"
+                "<dt>Display origin</dt>"
+                f"<dd>{escaped(review.display_origin.value)}</dd>"
+                "<dt>Question</dt>"
+                f"<dd>{escaped(review.decision_card.discriminating_question)}</dd>"
+                "<dt>Evidence fingerprint</dt>"
+                f"<dd><code>{escaped(review.evidence_fingerprint)}</code></dd>"
+                "<dt>Card fingerprint</dt>"
+                f"<dd><code>{escaped(review.card_fingerprint)}</code></dd>"
+                "</dl></div>"
+            )
+        decision_sections.append(
+            '<section class="decision">'
+            f"<h3>Family <code>{escaped(entry.family_id)}</code></h3>"
+            "<dl>"
+            f"<dt>Decision method</dt><dd>{escaped(entry.decision_method.value)}</dd>"
+            "<dt>Human action</dt>"
+            f"<dd>{escaped(entry.human_decision.action.value)}</dd>"
+            f"<dt>Decided at</dt><dd>{escaped(entry.decided_at.isoformat())}</dd>"
+            "</dl>"
+            "<table><thead><tr><th>Role</th><th>Before</th>"
+            "<th>Mechanical proposal</th><th>Resolved target</th></tr></thead>"
+            f"<tbody>{mappings}</tbody></table>{meaning}</section>"
+        )
+
+    claim_boundaries = "".join(
+        f"<li>{escaped(boundary)}</li>" for boundary in core.claim_boundaries
+    )
+    artifact_paths = "".join(
+        f"<li><code>{escaped(path)}</code></li>" for path in report.artifact_paths
+    )
+    document = (
+        "<!doctype html>\n"
+        '<html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        "<title>Reversible Name Atlas Portable Change Receipt</title>"
+        "<style>"
+        ":root{color-scheme:dark}body{font:15px/1.5 system-ui,sans-serif;"
+        "background:#11151b;color:#e8edf3;max-width:1080px;margin:0 auto;padding:32px}"
+        "h1,h2,h3,h4{line-height:1.2}code{color:#9ecbff;overflow-wrap:anywhere}"
+        ".notice{border-left:4px solid #d6a84b;background:#211d15;padding:12px 16px}"
+        ".verified{color:#72ca9b;font-weight:700}dl{display:grid;grid-template-columns:"
+        "minmax(150px,220px) 1fr;gap:6px 16px}dt{font-weight:700}dd{margin:0}"
+        "table{border-collapse:collapse;width:100%;margin:12px 0 24px}"
+        "th,td{border:1px solid #384351;"
+        "padding:8px;text-align:left;vertical-align:top}th{background:#202833}"
+        ".decision,.proof{border:1px solid #384351;border-radius:6px;"
+        "padding:16px;margin:16px 0}"
+        "</style></head><body>"
+        '<p class="verified">VERIFIED PORTABLE CHANGE RECEIPT</p>'
+        "<h1>Reversible Name Atlas</h1>"
+        '<p class="notice"><strong>Non-authoritative offline view.</strong> '
+        "The machine receipt, decision ledger, verification report, maps, and "
+        "committed artifacts remain authoritative. Re-run the independent verifier "
+        "before relying on this handoff.</p>"
+        "<h2>Receipt identity</h2><dl>"
+        "<dt>Receipt fingerprint</dt>"
+        f"<dd><code>{escaped(envelope.receipt_fingerprint)}</code></dd>"
+        f"<dt>Case ID</dt><dd><code>{escaped(core.case_id)}</code></dd>"
+        f"<dt>Receipt schema</dt><dd>{escaped(core.schema_version)}</dd>"
+        f"<dt>Package contract</dt><dd>{escaped(core.package_contract_id)}</dd>"
+        f"<dt>Profile</dt><dd>{escaped(core.profile_id)}</dd></dl>"
+        "<h2>Committed transaction</h2><dl>"
+        "<dt>Source commitment</dt>"
+        f"<dd><code>{escaped(core.source_snapshot_commitment)}</code></dd>"
+        f"<dt>Source members</dt><dd>{core.source_member_count}</dd>"
+        f"<dt>Source bytes</dt><dd>{core.source_bytes}</dd>"
+        "<dt>Staged-data commitment</dt>"
+        f"<dd><code>{escaped(core.staged_data_commitment)}</code></dd>"
+        f"<dt>Staged data members</dt><dd>{core.staged_data_file_count}</dd>"
+        f"<dt>Staged data bytes</dt><dd>{core.staged_data_bytes}</dd>"
+        f"<dt>Map rows</dt><dd>{core.map_row_count}</dd>"
+        f"<dt>Decisions</dt><dd>{core.decision_count}</dd>"
+        f"<dt>GPT-assisted decisions</dt><dd>{core.gpt_assisted_decision_count}</dd>"
+        f"<dt>Human decisions</dt><dd>{core.human_decision_count}</dd></dl>"
+        "<h2>Producer BagIt validation</h2>"
+        "<p><strong>"
+        f"{'PASS' if core.producer_bagit_validation.valid else 'BLOCKED'}"
+        "</strong> · "
+        f"{escaped(core.producer_bagit_validation.validator)}</p>"
+        f"<ul>{bagit_messages}</ul>"
+        f"<h2>Human decisions</h2>{''.join(decision_sections)}"
+        '<section class="proof"><h2>Producer verification report</h2><dl>'
+        f"<dt>Status</dt><dd>{escaped(report.status.value)}</dd>"
+        f"<dt>Claim</dt><dd>{escaped(report.claim)}</dd>"
+        f"<dt>Generated at</dt><dd>{escaped(report.generated_at.isoformat())}</dd></dl>"
+        "<h3>Checks</h3><table><thead><tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th>"
+        f"</tr></thead><tbody>{report_checks}</tbody></table>"
+        "<h3>Declared control proofs</h3><table><thead><tr><th>Path</th>"
+        "<th>Source SHA-256</th><th>Staged SHA-256</th><th>Rewritten fields</th>"
+        "<th>Other fields unchanged</th></tr></thead>"
+        f"<tbody>{control_proofs}</tbody></table></section>"
+        f"<h2>Claim boundaries</h2><ul>{claim_boundaries}</ul>"
+        f"<h2>Machine artifact paths</h2><ul>{artifact_paths}</ul>"
+        "<h2>Independent verification</h2>"
+        "<p><code>uv run name-atlas verify-receipt RECEIVED_BAG</code></p>"
+        "</body></html>\n"
+    )
+    return document.encode("utf-8")
 
 
 def canonical_artifact_json_bytes(value: BaseModel) -> bytes:
@@ -741,11 +942,15 @@ def contains_sender_local_path(value: object) -> bool:
         return any(contains_sender_local_path(item) for item in value)
     if not isinstance(value, str):
         return False
-    lowered = value.casefold()
+    candidate = value.strip()
+    if not candidate:
+        return False
     return (
-        value.startswith(_SENDER_LOCAL_POSIX_PREFIXES)
-        or "file://" in lowered
-        or _WINDOWS_ABSOLUTE_PATH.match(value) is not None
+        _FILE_URI.search(candidate) is not None
+        or _POSIX_ABSOLUTE_FRAGMENT.search(candidate) is not None
+        or _WINDOWS_ABSOLUTE_FRAGMENT.search(candidate) is not None
+        or PurePosixPath(candidate).is_absolute()
+        or PureWindowsPath(candidate).is_absolute()
     )
 
 

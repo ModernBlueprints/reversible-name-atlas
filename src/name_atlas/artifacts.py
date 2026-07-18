@@ -276,6 +276,30 @@ def replace_verification_report(path: Path, report: VerificationReport) -> None:
 def write_summary(path: Path, *, content_objects: int, content_bytes: int) -> None:
     """Write a stable human-readable pointer to the serialized final report."""
 
+    _write_new(
+        path,
+        render_verification_summary(
+            content_objects=content_objects,
+            content_bytes=content_bytes,
+        ),
+    )
+
+
+def render_verification_summary(*, content_objects: int, content_bytes: int) -> bytes:
+    """Render the exact deterministic human-readable verification summary."""
+
+    if (
+        not isinstance(content_objects, int)
+        or isinstance(content_objects, bool)
+        or content_objects < 0
+    ):
+        raise ValueError("Content-object count must be a non-negative integer.")
+    if (
+        not isinstance(content_bytes, int)
+        or isinstance(content_bytes, bool)
+        or content_bytes < 0
+    ):
+        raise ValueError("Content byte count must be a non-negative integer.")
     text = (
         "# Reversible Name Atlas verification summary\n\n"
         f"- Content objects staged copy-only: {content_objects}\n"
@@ -285,7 +309,7 @@ def write_summary(path: Path, *, content_objects: int, content_bytes: int) -> No
         "- Forward and reverse logical maps: exact content-object inverses\n"
         "- Source payload bytes are not stored in proof artifacts\n"
     )
-    _write_new(path, text.encode())
+    return text.encode("utf-8")
 
 
 def _write_new(path: Path, content: bytes) -> None:

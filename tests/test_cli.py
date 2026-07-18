@@ -1,5 +1,6 @@
 """Judge-facing CLI tests."""
 
+import os
 import shutil
 from pathlib import Path
 from types import SimpleNamespace
@@ -139,6 +140,21 @@ def test_verify_receipt_reports_stable_blockers(
     assert capsys.readouterr().out == (
         "BLOCKED artifact_digest_mismatch:decision_ledger\n"
     )
+
+
+def test_verify_receipt_symlink_loop_is_a_usage_error(
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = tmp_path / "received-bag"
+    os.symlink(candidate.name, candidate)
+
+    exit_code = cli.run(["verify-receipt", str(candidate)], environ={})
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.out == ""
+    assert captured.err.startswith("Receipt input error:")
 
 
 def test_invalid_selected_package_fails_before_server_start(
