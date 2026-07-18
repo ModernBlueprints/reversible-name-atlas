@@ -1,538 +1,421 @@
-# Reversible Name Atlas — Revised Integrated Implementation Plan
+# Reversible Name Atlas — Sole AI-first Implementation Plan
 
-Status: **ACTIVE / R7 COMPLETE — RECORDING-READY**
+Status: **EXECUTION-READY; AI-FIRST GOAL INACTIVE**
 
-Amended production goal: **ACTIVE**
-
-Revision R+0: **Saturday 18 July 2026 at 00:51:51 CEST**
+Phase: **WAITING_FOR_AI_FIRST_GOAL_ACTIVATION**
 
 Submission hold: **ACTIVE**
 
 This is the only implementation plan. `BUILD_SPEC.md` defines product truth;
-the complete amended `GOAL.md`, once explicitly activated by the user, defines
-execution authority; `STATE.md` reports current observed state. This plan
-defines dependency order, target signals, evidence, allowed cuts, and actual
-results. Merely existing or being committed does not activate it.
+this file controls dependency order, targets, evidence, scope cuts, status, and
+the next vertical outcome. It does not authorize execution.
 
-## Known-good inherited baseline
+## 1. Historical baseline and supersession
 
-The revision starts from public release commit
-`827b0f6f93174d3c34aedfd98d8467a299ab2669` on `main`. The product cycle will
-continue on `revision/portable-change-receipt`; `main` remains the immutable
-fallback until a renewed release candidate passes and is fast-forward promoted.
+Historical first-cycle H+0: **Friday 17 July 2026 at 17:16:25 CEST**.
 
-Inherited evidence, not proof of any newly added requirement:
+Historical second-cycle R+0: **Saturday 18 July 2026 at 00:51:51 CEST**.
 
-- M0–M7 completed in the first cycle.
-- Decisive first-cycle commits include scaffold `f1c519d`, feature-freeze
-  product `819e674`, live/replay release `d71b0b9`, clean-clone release candidate
-  `b4a2dd0`, and public checkpoint `827b0f6`.
-- The strict linked-package importer, deterministic family/proposal engine,
-  collision/reference checks, human authority, copy-only staging, maps, reverse
-  dry run, BagIt validation, replay mode, and one validated real `gpt-5.6`
-  record are inherited.
-- The inherited release passed 116 pytest tests, Ruff lint/format, builds,
-  secret/link checks, replay/live truthfulness checks, clean-clone installation,
-  and one complete verified hero transaction.
-- The validated replay record has SHA-256
-  `2fe0da43fe57e72043effcf13dc3a3084b8a262295e132b00109bf767f06ae00`
-  and evidence fingerprint
-  `0f0b0b7cf923432431e7d184c6881cb34d61a0e5caf578f87cc029494b97d830`.
-  Reuse it unless the evidence/card contract materially changes.
+Known-good predecessor:
+`4baec1ed7b8553775527e3be506edab584b2b8b3`.
 
-Old M8 status:
+`INHERITED VERIFIED BASELINE — NOT PROOF OF AI-FIRST REQUIREMENTS`
 
-`SUPERSEDED — FIRST-CYCLE RELEASE MATERIAL PRESERVED BUT STALE`
+At the meta-stage baseline, the inherited product had 265 passing tests and
+verified scanner/hashing, source-change detection, atomic copy-only staging,
+saved cases, exact `gpt-5.6` provider and historical replay, cumulative budget
+ledger, BagIt receipt, source-free verifier, reconstruction, FastAPI/Jinja/
+Blueprint shell, CLI packaging, clean-install infrastructure, public repository,
+and second-cycle release materials.
 
-The first-cycle README, screenshots, narration, thumbnail, Devpost copy, and
-submission package are not evidence of revised release readiness. Final
-submission remains prohibited while the submission hold is active.
+The archive-specific user transaction, schemas, cards, five-state UI, and
+fixtures remain historical. They do not prove generic folder scanning, complete
+AI planning, automatic execution, Markdown-link preservation, exception-only
+clarification, the new job/artifact schemas, or the new three-state product.
 
-## Timing model fixed at activation
+First-cycle M0–M8 and second-cycle R1–R7 are complete historical evidence and no
+longer active milestones. The former second-cycle recording-ready state is
+superseded for future work.
 
-R+0 is the Europe/Oslo timestamp at which the user explicitly activates the
-complete amended `docs/build/GOAL.md` in this primary Codex task.
+All current README, limitations, provenance, build log, screenshots, narration,
+Devpost copy, submission package, thumbnail, and hero artifacts are:
 
-At R+0 calculate:
+`STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER AI-FIRST FEATURE FREEZE`
 
-`available_revision_hours = hours from R+0 to Tuesday 21 July 2026 at 02:00 CEST`
+Final submission remains prohibited while the submission hold is active.
 
-`planned_revision_hours = min(70, max(0, available_revision_hours - 4))`
+## 2. Activation and timing model
 
-The four hours immediately before recording readiness are contingency for
-defects and release blockers, never new scope. The final 24 hours through
-Wednesday 22 July 2026 at 02:00 CEST remain the submission reserve.
+A+0 is the Europe/Oslo timestamp when the user explicitly activates the complete
+amended `docs/build/GOAL.md` in this primary Codex task. Meta-plan approval,
+scaffold creation, branch creation, commit, or goal reproduction do not start
+A+0.
 
-If `planned_revision_hours < 70`, multiply the standard anchors by
-`planned_revision_hours / 70`:
+At activation calculate:
 
-| Milestone | Standard anchor |
+`available_ai_first_hours = max(0, hours from A+0 to Tuesday 21 July 2026 at 02:00 CEST)`
+
+`planned_ai_first_hours = min(60, available_ai_first_hours)`
+
+`scale = planned_ai_first_hours / 60`
+
+For each standard-hour anchor `n`, calculate:
+
+`target_offset_hours = n × scale`
+
+and set the target to `A+0 + target_offset_hours`.
+
+| Outcome | Standard-hour anchor `n` |
 |---|---:|
-| R1 | 12/70 |
-| R2 | 26/70 |
-| R3 | 38/70 |
-| R4 and restore gate | 52/70 |
-| R5 when admitted | 60/70 |
-| R6 | 68/70 |
-| R7 | 70/70 |
+| A1 | 10 |
+| A2 | 24 |
+| A3 | 34 |
+| A4 and plugin gate | 42 |
+| A5 and feature freeze | 48 |
+| A6 | 54 |
+| A7 | 60 |
 
-Actual activation calculation:
+The absolute recording-ready boundary remains Tuesday 21 July 2026 at 02:00
+CEST. The absolute submission boundary remains Wednesday 22 July 2026 at 02:00
+CEST. Feature freeze occurs no later than both scaled A5 and twelve actual hours
+before recording readiness, using the earlier boundary. The plugin gate also
+requires twelve actual hours remaining.
 
-- `available_revision_hours = 73.135833`;
-- `planned_revision_hours = 69.135833`;
-- protected contingency: `4 hours`;
-- R1 target: Saturday 18 July 2026 at 12:42:57 CEST;
-- R2 target: Sunday 19 July 2026 at 02:32:35 CEST;
-- R3 target: Sunday 19 July 2026 at 14:23:42 CEST;
-- R4 and restore-gate target: Monday 20 July 2026 at 04:13:19 CEST;
-- R5 target when admitted: Monday 20 July 2026 at 12:07:24 CEST;
-- R6 target: Monday 20 July 2026 at 20:01:28 CEST; and
-- R7 target: Monday 20 July 2026 at 22:00:00 CEST.
+Targets force early integration and simplification. They are not process
+timeouts, automatic cancellation points, or evidence of completion.
 
-Preserve milestone order and absolute boundaries. The restore gate separately
-requires at least 18 actual hours remaining. Targets force integration and
-simplification; they are not cancellation timers. A missed optional gate cuts
-that optional feature. A missed target does not cancel required case,
-staleness, binding, receipt, verifier, controlled failure, five-state flow,
-proof, clean clone, or release outcomes.
+If a target slips:
 
-## Operating rules
+1. measure what is actually verified;
+2. identify the precise dependency and root cause;
+3. select the simplest route to the same required user-visible outcome;
+4. apply the next optional cut;
+5. restore a continuously runnable product;
+6. update this plan and short `STATE.md`;
+7. continue.
 
-- The current primary Codex task is the sole primary integrator. Bounded
-  subagents may handle non-overlapping work; their results require inspection
-  and product-native verification.
-- Build vertical outcomes. Keep the integrated application runnable after R1.
-- Every milestone closes only with actual automated evidence and relevant
-  visual/artifact inspection; a completion message is not proof.
-- Update this plan and the short state checkpoint with observed results. Record
-  only material specification deviations in `DECISIONS.md`.
-- Do not reopen project discovery, adapters, a parallel scaffold, or generic
-  validation infrastructure.
-- After two serious failed corrections of the same defect, reassess and simplify
-  the abstraction rather than applying a third symptom patch.
+After two serious failed corrections of the same defect, replace or simplify
+the abstraction rather than applying a third symptom patch.
 
-Pre-authorized optional cuts, in order:
+## 3. Ownership and integration rules
+
+This primary Codex task is the sole primary integrator. It owns architecture,
+shared contracts, repository state, integration, product evidence, release
+acceptance, and completion decisions.
+
+Bounded subagents may inspect isolated mechanics, implement non-overlapping
+modules against frozen contracts, write focused tests, or independently audit a
+completed surface. They may not design competing architectures, edit overlapping
+modules without coordination, create another plan/goal/harness, reopen product
+selection, or qualify their own output. The primary integrator verifies all
+material results.
+
+After A1, the application must remain continuously runnable. A milestone is
+complete only when its user-visible vertical outcome, focused tests, relevant
+full-suite checks, visual checks where applicable, product-native proof, state
+checkpoint, and coherent commit all agree.
+
+Verification belongs in normal tests, the actual job/result/receipt/verifier/
+reconstruction, clean-run commands, and browser inspection. Do not build a
+tournament, generic evidence platform, benchmark harness, or validation system.
+
+## 4. Remaining scope control
+
+Already excluded before A+0: CSV reference adapter; image evidence/OCR/media
+understanding; reference-style Markdown; native picker; generic rules; 5,000-file
+planner language; hosted ChatGPT app; React/Vite; required plugin; second GPT
+semantic review; conversational mutation of completed receipts; code refactor;
+AI-data/JSONL/Parquet/Hugging Face; NER/ReFinED; signatures/authentication;
+accounts/collaboration; repository/cloud/Archivematica integrations; multiple
+polished collections; further product discovery or evaluation harness work.
+
+Remaining optional cut order:
 
 1. decorative motion;
-2. second theme;
-3. advanced Atlas filters and nonessential metrics;
-4. thumbnails and additional relationship visuals;
-5. case list/rename/delete conveniences;
-6. extra negative permutations; additional public verifier output formats are
-   already excluded;
-7. restore UI; and
-8. `restore-receipt` itself, but only before the one-time restore verdict; taking
-   this cut causes `CUT_BY_PREAUTHORIZED_GATE`, and a recorded `GO` makes the
-   command mandatory.
+2. nonessential metrics;
+3. advanced filters;
+4. extra evidence-viewer presentation;
+5. optional Codex plugin.
 
-Never cut case persistence, staleness detection, evidence/card/human binding,
-receipt JSON, offline HTML, independent receiver verifier, the controlled
-failure, five-state flow, live/replay truthfulness, clean clone, or release
-hardening.
+Never cut automatic complete planning, source immutability, complete file
+accounting, protected members, persistent job/staleness, bounded evidence,
+deterministic compilation, one clarification path, Markdown preservation,
+separate result, receipt, source-free verifier, controlled negative,
+reconstruction, live/replay GPT truthfulness, three-state browser, clean
+installation, or release hardening.
 
-## Revised vertical delivery records
+## 5. Active vertical milestones
 
-### R1 — Revision walking transaction
+### A1 — Automatic walking transaction
 
-- **Requirements:** PRD-006, CASE-001–005, AI-007, VER-005–008, UX-006–007,
-  REL-005.
-- **Dependencies:** explicit goal activation; inherited `827b0f6` release and
-  validated replay record.
-- **Calculated target:** standard R+0–12; proportionally scaled at activation.
-- **User-visible outcome:** the hero case survives a process restart, the
-  inherited replay card binds to a human decision, staging emits a minimal
-  receipt, a separate keyless verifier passes, the exact BagIt-valid altered
-  copy blocks, and all five routes exist in plain integrated form.
-- **Implementation responsibilities:** introduce one rehydratable case aggregate,
-  minimal versioned persistence, decision/card binding, minimal receipt DAG,
-  receiver-verifier dispatch, controlled counterfactual, and five server routes
-  without visual redesign.
-- **Automated checks:** focused restart/binding tests; inherited suite; valid
-  bag verifier exit `0`; altered-ledger bag BagIt-pass plus verifier exit `1`;
-  route and redirect tests; no provider call in replay.
-- **Visual checks:** inspect one complete plain Atlas→Decide→Stage→Verify→Handoff
-  transaction and truthful replay label.
-- **Exact completion evidence:** committed integrated transaction; case revision
-  before/after restart; receipt fingerprint; separate subprocess output; BagIt
-  result and exact digest blocker for controlled failure; five route captures;
-  actual test counts.
-- **Downstream consumer:** R2 hardening and R3 final receipt/verifier contracts.
-- **Owner:** primary integrator; bounded subagents only for frozen isolated tests
-  or pure contracts.
-- **Allowed cut:** styling, convenience controls, extra metrics, restore; not any
-  named walking-transaction link.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** integrated in commit `2495a6f`. The durable hero case
-  retained revision `5` across restart, finalized at revision `6`, and reused
-  the exact recorded card with zero post-restart provider requests. Producer,
-  copied-bag, and copied-bag-plus-source CLI checks all printed `VERIFIED` for
-  receipt `c660aff8333564583456732fbc5b6d6c66ffe07f8182bb16feeb6aaf3944fcb8`.
-  The role-preserving altered target
-  `manualNormalization/access/CASE-010__altered__access.svg` remained BagIt
-  valid while `verify-receipt` exited `1` with exactly
-  `artifact_digest_mismatch:decision_ledger`. All five routes were inspected in
-  the running loopback app with correct current-step, lifecycle, and recorded
-  GPT labels. The corrected full suite passed 144 tests; lock check, Ruff
-  lint/format, and Git whitespace checks passed. Independent review found two
-  material defects, one correction pass resolved both, and the bounded recheck
-  returned `GO`.
+- **Requirements:** `PRD-007`–`PRD-009`, `IO-006`–`IO-010`, `TX-009`,
+  `TX-010`, `TX-012`, `AI-008`, `AI-009`, `REL-008`.
+- **Dependencies:** explicit goal activation; exact governance commit; clean
+  branch; inherited scanner, provider Protocol, promotion, and proof mechanics.
+- **Calculated target:** standard A+0–10; scale at actual A+0.
+- **User-visible outcome:** a small ordinary folder plus plain request runs
+  through generic inventory, a deterministic fake/replay planner, complete
+  compiled map, separate result copy, and one visible proof while source remains
+  unchanged.
+- **Implementation responsibilities:** create focused generic domain modules
+  beside the archive workflow; implement inventory/member identity/protection,
+  plan/outcome/accepted-plan contracts, compiler bijection/path checks, result
+  root/output authority, minimal staging integration, and a plain Start-to-Done
+  shell. Do not redesign every inherited subsystem.
+- **Automated checks:** regular/hidden/protected/empty inventory; member limits;
+  symlink/special/hard-link/unreadable blockers; stable IDs; missing/duplicate/
+  invented/excluded plan entries; suffix/path/collision/ancestor checks; source
+  equality; absent result; byte-equal copy; fake provider; no archive schema
+  dependency; focused end-to-end transaction; relevant inherited suite.
+- **Visual checks:** crude but uninterrupted Start, progress, and proof visible
+  at desktop width; no per-file approval; source/result paths understandable.
+- **Completion evidence:** one committed source fixture; accepted plan; separate
+  copied result; source before/after equality; visible proof; exact focused and
+  full command results; coherent commit; updated plan/state.
+- **Downstream consumer:** A2 link and real-planner hardening.
+- **Owner:** primary integrator; bounded subagents only for isolated scanner or
+  contract tests.
+- **Allowed cut:** no optional UI decoration or metrics.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-### R2 — Case and authority hardening
+### A2 — Connected-folder and planner hardening
 
-- **Requirements:** CASE-001–005, AI-004–007, TX-006–007, VER-009.
-- **Dependencies:** verified R1 walking transaction.
-- **Calculated target:** standard R+12–26; proportionally scaled at activation.
-- **User-visible outcome:** restart-safe decisions behave as one durable case;
-  corruption, conflicting writers, and source change produce precise blockers;
-  finalized cases cannot silently change.
-- **Implementation responsibilities:** strict complete schema, canonical naming,
-  atomic fsync/replace, process lock, optimistic revision check, lifecycle,
-  deterministic rehydration, exact staleness diff, invalidation, and global
-  budget-ledger separation.
-- **Automated checks:** corrupt/unknown/incomplete case; revision and lock
-  conflict; all five source-change classes; binding mismatches; finalized-case
-  immutability; low-risk/collision records without GPT provenance; unchanged
-  reopen with zero provider requests; inherited suite.
-- **Visual checks:** restart the server on the same case; inspect preserved
-  decisions and exact stale-source blocker.
-- **Exact completion evidence:** serialized schema examples, atomicity and lock
-  tests, source-diff matrix, no-call evidence, restart capture, actual full-suite
-  result.
-- **Downstream consumer:** R3 immutable receipt finalization and R4 persistent UI.
-- **Owner:** primary integrator; bounded persistence-test reviewer allowed.
-- **Allowed cut:** case listing, rename/delete, destructive reset, reconciliation,
-  and convenience UI.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** committed at `5949a0f`. The case strictly rebuilds
-  deterministic families, proposals, evidence, cards, decisions, lifecycle,
-  and final target uniqueness before use. Every mutation reloads the exact
-  durable revision and bytes, re-scans and re-imports the source, rehydrates the
-  runtime, and fails closed on external replacement. Added, removed, renamed,
-  resized, and same-size content changes each persist an exact, path-neutral,
-  terminal `stale` record; scanner/import failures persist a distinct blocker.
-  Missing sources resume through explicit and default case paths. Unchanged
-  restart reuses the durable card with zero provider calls and no case revision;
-  source drift during the provider wait persists stale without card or decision
-  authority. `handoff_ready` remains an immutable historical terminal case.
-  A real stale case was restarted in the loopback server: `/` routed to Atlas,
-  all five routes displayed `BLOCKED`, the exact resized member was visible,
-  direct POST mutation was refused, and no decision/stage control was exposed.
-  The primary final run passed `uv lock --check`, 184 pytest tests, Ruff
-  lint/format, and `git diff --check`. Independent adversarial review reproduced
-  and corrected five authority defects, reran the final tree, and returned
-  `R2 GO`. No GPT/API call was made.
+- **Requirements:** `IO-006`–`IO-011`, `TX-009`–`TX-012`, `CASE-006`–`CASE-009`,
+  `AI-008`–`AI-010`, `CLAIM-004`–`CLAIM-005`.
+- **Dependencies:** verified A1 walking transaction and frozen generic contracts.
+- **Calculated target:** standard A+10–24; scale at actual A+0.
+- **User-visible outcome:** Name Atlas plans a complete ordinary-folder change,
+  automatically repairs mechanical plan defects within bounds, updates
+  supported Markdown links when notes/targets move, and asks at most one useful
+  question when text evidence is genuinely ambiguous.
+- **Implementation responsibilities:** exact-span Markdown scanner; deterministic
+  reference graph; percent encoding and same-target rewrites; complete planner
+  tool loop; response/evidence/repair/clarification counters; strict terminal
+  outcomes; selected excerpt evidence; prompt-injection isolation; source
+  staleness; initial persistent job; protected-file behavior; unsupported
+  request/link blockers.
+- **Automated checks:** inline links/images; note-only, target-only, and both-move
+  paths; fragments and encoding; external/anchor ignore counts; code-block
+  ignore; query/absolute/outside/directory/dangling/malformed/reference-style
+  blockers; exact byte preservation; evidence/call byte limits; parallel tool
+  counting; duplicate cache counting; initial plus two repairs; one question/
+  answer; no second question; API/malformed/limit failures become system
+  blockers; source changes before planning/execution; complete plan bijection.
+- **Visual checks:** progress identifies GPT planning versus fixed checking;
+  one-question view is concise; repair details remain collapsed; no archive
+  jargon.
+- **Completion evidence:** zero-question deterministic-provider transaction;
+  one-question deterministic-provider transaction; link before/after click to
+  same payload ID; source-stale blocker; exact tests and browser inspection;
+  coherent commit and state update.
+- **Downstream consumer:** A3 persistent proof transaction.
+- **Owner:** primary integrator; one isolated Markdown-test or planner-adversary
+  subagent permitted.
+- **Allowed cut:** decorative progress behavior, advanced filters, and extra
+  evidence presentation only.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-### R3 — Receipt and verifier completion
+### A3 — Persistent proof transaction
 
-- **Requirements:** VER-005–009, AI-007, REL-005, CLAIM-003.
-- **Dependencies:** verified R2 case authority and inherited deterministic proof.
-- **Calculated target:** standard R+26–38; proportionally scaled at activation.
-- **User-visible outcome:** the complete source-free receipt can be copied and
-  independently verified offline; its HTML explains the transaction; the exact
-  controlled alteration remains BagIt-valid but Name-Atlas-blocked.
-- **Implementation responsibilities:** final strict schemas; path-neutral source
-  and report; byte-exact original controls; canonical ReceiptCore and envelope;
-  acyclic 15-step writer; offline HTML; pure source-free verifier; optional
-  source comparison; stable check IDs and exit contract.
-- **Automated checks:** fingerprint/raw-digest/staged-data recomputation;
-  self-reference absence; moved-bag verification; sender-path scan; HTML-machine
-  agreement; cross-artifact consistency; source-free and `--source` matrices;
-  malformed/schema/invariant blockers; no-write verifier snapshot; controlled
-  counterfactual; inherited suite.
-- **Visual checks:** open offline HTML without server/network and compare its
-  central facts to the machine receipt and CLI verdict.
-- **Exact completion evidence:** finalized successful hero handoff, copied-bag
-  subprocess result, artifact hash table, path scan, HTML capture, controlled
-  failure transcript, and actual test counts.
-- **Downstream consumer:** R4 workbench and restore applicability gate.
-- **Owner:** primary integrator; independent bounded verifier reviewer allowed.
-- **Allowed cut:** extra negative permutations only; no additional public output
-  format is permitted.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** committed at `b59b9ef`. The receiver now rebuilds
-  the strict package, deterministic families/proposals, chronological human
-  actions, Meaning evidence/card authority, exact staged proof findings, maps,
-  controls, payloads, summary, and offline receipt without a case, source,
-  provider, network, browser, or API key. A copied hero handoff verified
-  source-free and with the exact source at receipt fingerprint `69c1d00e…`; a
-  separate keyless subprocess changed no bag byte. The exact altered-ledger
-  copy remained BagIt-valid and blocked with only
-  `artifact_digest_mismatch:decision_ledger`. Path-neutrality was scanned over
-  the real hero output, post-finalization failure preserved every bag byte, and
-  malformed/schema/fingerprint/digest/data/cross-artifact/source negatives
-  returned stable blockers. Five independently reproduced false-positive
-  attacks—pre-card decisions, two invalid collision chronologies, fabricated
-  producer prose, and prohibited claim boundaries—now fail closed. The primary
-  and independent final runs each passed 215 tests plus lock, Ruff lint/format,
-  Python compilation, and Git whitespace checks. The Browser control surface
-  declined a standalone `file://` visual open by policy; deterministic HTML
-  reconstruction and static content inspection passed, and visual rendering is
-  carried forward into R4's required browser QA rather than bypassing that
-  policy.
+- **Requirements:** `CASE-006`–`CASE-009`, `TX-011`–`TX-013`,
+  `VER-010`–`VER-014`, `REL-008`, `CLAIM-004`–`CLAIM-005`.
+- **Dependencies:** verified A2 planner/compiler/reference behavior; inherited
+  atomic case, BagIt, receipt, verifier, promotion, and restore mechanics.
+- **Calculated target:** standard A+24–34; scale at actual A+0.
+- **User-visible outcome:** a job survives refresh/restart; a verified result
+  carries its complete request, evidence, accepted plan, changes, proof, and
+  exact original Markdown bytes; another process can verify it without GPT or a
+  key; original paths/bytes can be recreated.
+- **Implementation responsibilities:** strict `FolderRefactorJob`; atomic
+  revision/lock/rehydration/staleness; all new schemas and paths; path-neutral
+  inventory/evidence/plan/reference/maps/change/report; acyclic receipt and
+  generation order; original-content storage; source-free verifier; exact
+  controlled negative; reconstruction; unrelated-location verification.
+- **Automated checks:** corrupt/unsupported/lock/revision failures; restart at
+  planning/clarification/executing; no duplicate provider/output; terminal
+  immutability; portable absolute-path scan; canonical receipt fingerprint;
+  every raw digest; staged-data commitment; bijection/path/link/report agreement;
+  optional source comparison; verifier exits 0/1/2; copied-location pass;
+  altered-plan BagIt pass plus exact blocker; existing-destination refusal;
+  complete path/size/hash reconstruction; source/result unchanged.
+- **Visual checks:** result path and verification understandable without BagIt
+  knowledge; technical details collapsed; reconstruction wording does not imply
+  destructive undo.
+- **Completion evidence:** restart transcript; canonical result; portable copy
+  verifier output; ordinary BagIt and exact negative output; reconstruction
+  report and complete snapshot equality; focused/full suites; coherent commit.
+- **Downstream consumer:** A4 final product and real provider evidence.
+- **Owner:** primary integrator; bounded receipt/verifier adversarial reviewer
+  permitted after implementation.
+- **Allowed cut:** extra verifier display formats and negative permutations only.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-### R4 — Five-state product experience
+### A4 — Complete product experience and real GPT evidence
 
-- **Requirements:** UX-004, UX-006–008, CASE-002–004, VER-007–009.
-- **Dependencies:** verified R3 case/receipt/verifier transaction.
-- **Calculated target:** standard R+38–52; proportionally scaled at activation.
-- **User-visible outcome:** a streamlined dark Atlas, Decide, Stage, Verify, and
-  Handoff workbench makes exceptions, human authority, proof, and receiver
-  action immediately understandable.
-- **Implementation responsibilities:** server-computed routing and guards;
-  persistent shell; exception-first inspectors; progressive disclosure;
-  Blueprint core `6.17.2` and icons `6.13.0` vendoring, attribution, wheel
-  packaging, semantic HTML, responsive Name Atlas CSS, limited local JS.
-- **Automated checks:** all routes and root transitions in every prerequisite
-  state; POST guards; accessibility landmarks/labels; asset/no-CDN checks; wheel
-  contents; uv-only clean install; inherited and revised suites.
-- **Visual checks:** desktop recording resolution and narrow viewport; each
-  route in complete and blocked states; keyboard flow, focus, contrast, status
-  text, collapsed evidence, and no sender-path leakage.
-- **Exact completion evidence:** route matrix, five approved captures, clean-wheel
-  asset list and notice, visual/accessibility findings, actual suite results.
-- **Downstream consumer:** restore gate, R6 hardening, and three-minute demo.
-- **Owner:** primary integrator; bounded visual QA reviewer allowed.
-- **Allowed cut:** motion, second theme, advanced filters, thumbnails, extra
-  relationship visuals, case conveniences.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** committed at `0e7543a`. The five server-rendered
-  routes now form one exception-first dark workbench with server-owned state,
-  neutral GPT presentation, read-only finalized decisions, progressive
-  disclosure, current-versus-historical receiver truthfulness, and responsive
-  persistent case facts. Blueprint core `6.17.2`, icons `6.13.0`, the exact
-  nine-icon vocabulary, Apache-2.0 license, and third-party notice are locally
-  packaged with no CDN, React, Vite, Node runtime, or Node judge step. The
-  corrected full suite passed 241 tests; lock, Ruff lint/format, Python
-  compilation, and Git whitespace checks passed. A wheel with SHA-256
-  `520cd30c29ee01a3fda176b12e7a65e8370f1ab0a643b2f6f5443a98b9b50883`
-  installed in a clean Python 3.11 environment, contained all required assets,
-  and served its application and styles from an unrelated working directory.
-  Browser QA at 1440×900, 1000×800, and 390×844 found no horizontal overflow
-  and verified truthful amber, green, and red handoff states. Independent
-  adversarial review corrected the discovered authority and presentation
-  defects, reverified the final tree, and returned R4 `GO` with no material
-  residual defect. The correct byte-identical Blueprint CSS SHA-256 is
-  `04c4dc66a0753f7256194af14f5f96f15a1a149e125898349b26c26c92ba377e`.
+- **Requirements:** all active `PRD`, `IO`, `TX`, `CASE`, `AI`, `UX`, `VER`,
+  `REL-008`–`REL-009`, and `CLAIM` requirements.
+- **Dependencies:** verified A3 transaction; stable new schemas/tools/prompts;
+  existing cumulative budget ledger; justified live credentials.
+- **Calculated target:** standard A+34–42; scale at actual A+0.
+- **User-visible outcome:** the complete 24-file hero accepts one request and
+  creates a verified usable result without a question; the separate ambiguity
+  fixture asks exactly one question; both have truthful live and recorded
+  GPT-5.6 modes; Start/Working/Done is polished and coherent at desktop and
+  narrow widths.
+- **Implementation responsibilities:** final fixtures/provenance; exact hero
+  instruction; ambiguity evidence; sole-budget-ledger version migration from
+  call cap 8 to cumulative cap 13 without resetting the one historical request
+  or permitting more than twelve additional third-cycle attempts; conservative
+  USD reservations;
+  real `gpt-5.6` zero-question and clarification recordings; sanitized exact
+  replays; release routing; Blueprint hierarchy; plain Done proof; absence of
+  old archive routes/nav; data-retention disclosure.
+- **Automated checks:** USD 10 budget dominance; historical count preservation;
+  no second ledger; `store=false`; no provider retry/fallback; real returned
+  model ID; response/evidence/repair bounds; no-call replay; replay fingerprint
+  mismatch; no secrets/response IDs/absolute paths; 24 files exactly once;
+  eight or more supported links; source unchanged; copied/reconstructed bytes;
+  both end-to-end scenarios; all prior/new tests.
+- **Visual checks:** 1280×720 and 390×844; Start disclosure; meaningful working
+  progress; one-question authority; Done plain facts/actions; keyboard/focus/
+  contrast; old routes/nav absent; replay explicitly labeled; live mode truthful;
+  no mobile or universal-safety implication.
+- **Completion evidence:** two validated real provider records; two exact replays;
+  final fixture fingerprints; actual usage/cost and cumulative ledger state;
+  hero result/receipt/verifier/reconstruction; ambiguity result; visual captures;
+  full suites; coherent commit; updated state.
+- **Downstream consumer:** one-time plugin gate and A5 feature freeze.
+- **Owner:** primary integrator; bounded visual, claims, and replay reviewers
+  permitted after facts exist.
+- **Allowed cut:** motion, metrics, filters, extra evidence presentation; not any
+  required transaction or fixture.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-### Restore gate — one-time applicability decision
+### Plugin gate — one-time decision at A4
 
-- **Requirements:** REL-006.
-- **Dependencies:** R1–R4 complete and freshly passing.
-- **Calculated target:** at R4, no later than standard R+52 or its scaled anchor.
-- **User-visible outcome:** one objective decision: restore is admitted or is
-  recorded `CUT_BY_PREAUTHORIZED_GATE` without ambiguity.
-- **Checks:** case restart; receipt JSON/HTML; positive and controlled-negative
-  receiver verification; all five routes; inherited/new core suites; no material
-  cross-artifact defect; at least 18 actual hours before recording readiness.
-- **Exact completion evidence:** timestamped gate table with every predicate and
-  final `GO` or `CUT_BY_PREAUTHORIZED_GATE`.
-- **Owner:** primary integrator; no delegation of the decision.
-- **Allowed cut:** restore UI may be cut independently. Before the verdict, the
-  restore command may be cut and the verdict becomes
-  `CUT_BY_PREAUTHORIZED_GATE`. After a recorded `GO`, the command is mandatory
-  and cannot be relabeled as a gate cut. A legitimate gate cut does not block R6
-  or release.
-- **Actual status:** `COMPLETE — GO`.
-- **Actual verification:** evaluated once at Saturday 18 July 2026 at 04:19:07
-  CEST. The verdict is monotonic: the restore command is now mandatory; only
-  its UI remains independently cuttable.
+- **Requirements:** `REL-010`.
+- **Dependencies:** verified A4 with no required defect.
+- **Calculated target:** scaled A4; standard A+42.
+- **Predicates:** both GPT paths; restart; Markdown preservation; receipt;
+  keyless verifier; exact controlled negative; reconstruction; coherent
+  three-state UI; no cross-artifact defect; at least twelve actual hours before
+  recording readiness; complete plugin estimate at most six hours; shared core
+  architecture; clean-clone install/test feasibility.
+- **Decision:** record exactly `GO` or `CUT_BY_PREAUTHORIZED_GATE` once.
+- **Evidence:** predicate-by-predicate current outputs, Europe/Oslo time, time
+  calculation, estimate, and architecture inspection.
+- **Actual status:** `NOT REACHED`.
+- **Actual verification:** `NOT RUN`.
 
-  | Frozen predicate | Result | Evidence |
-  |---|---|---|
-  | Case persistence and restart | PASS | R2 restart/staleness matrix remains passing in the 241-test final tree |
-  | Receipt JSON and offline HTML | PASS | R3 machine/HTML agreement plus R4 restart and browser inspection |
-  | Positive receiver verification | PASS | copied, source-free hero receipt verification and final receiver suite |
-  | Exact controlled negative | PASS | BagIt-valid altered ledger blocks only on `artifact_digest_mismatch:decision_ledger` |
-  | All five routes | PASS | final route/guard matrix and browser QA at three viewport widths |
-  | Inherited and revised core tests | PASS | 241/241 tests, lock, Ruff lint/format, compilation, and diff check |
-  | No material cross-artifact defect | PASS | independent final R4 audit returned overall `GO` |
-  | At least 18 real hours remain | PASS | 69 hours 40 minutes 52 seconds remained before recording readiness |
+### A5 — Optional plugin or core hardening; feature freeze
 
-### R5 — Conditional restore
+- **Requirements:** `REL-010` if admitted; otherwise all required active
+  requirements; `REL-011` feature-freeze surface.
+- **Dependencies:** recorded plugin-gate decision and verified A4.
+- **Calculated target:** standard A+42–48; scale at actual A+0; freeze no later
+  than twelve actual hours before recording readiness.
+- **User-visible outcome:** either one fully installable Codex plugin invokes the
+  same Name Atlas transaction, or the required browser product receives the
+  full interval for defects, accessibility, clarity, and portability. In both
+  cases the required release is feature-frozen.
+- **Implementation responsibilities if GO:** use the official plugin format and
+  plugin-creator workflow; required manifest plus relative MCP config; thin
+  STDIO server; only four high-level tools; no duplicate logic; local marketplace
+  install; restart/new task; keyless replay; missing-key/live behavior; uninstall
+  path; supported-platform and judge instructions.
+- **Implementation responsibilities if cut:** no plugin files or claims; harden
+  core defects, evidence clarity, naming/path cases, accessibility, and release
+  consistency.
+- **Automated checks if GO:** manifest/schema/path/package; installed-copy start;
+  no developer absolute path; real new-task invocation; keyless replay; live
+  missing-key error; same accepted plan/receipt; no second budget/persistence/
+  planner; full core regression.
+- **Visual checks:** plugin only if installed in actual app/new task; browser
+  remains primary and recording-ready in substance.
+- **Completion evidence:** installed tool transcript plus clean-clone path, or
+  exact cut record; feature-freeze timestamp; full suites; coherent commit.
+- **Downstream consumer:** A6 release candidate.
+- **Owner:** primary integrator. Plugin work may be delegated only after GO and
+  must use the official plugin-creator instructions; integration remains primary.
+- **Allowed cut:** plugin itself; all other optional presentation items.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-- **Requirements:** REL-006 and only the applicable portions of VER-009 and
-  CLAIM-003.
-- **Dependencies:** restore-gate `GO`.
-- **Calculated target:** standard R+52–60; proportionally scaled at activation.
-- **User-visible outcome:** a verified receipt can reconstruct every in-scope
-  logical source-package member into a new destination, or this entire milestone
-  is correctly absent after a gate cut.
-- **Implementation responsibilities:** verify-first CLI, absent-destination
-  guard, pending directory, reverse-map copy, byte-exact control restoration,
-  strict reimport, complete path/size/hash equality, no-replace promotion,
-  `restore-report.v1`; UI action only if still admitted.
-- **Automated checks:** successful restore, existing destination, invalid receipt,
-  copy/reimport/proof failure, source and handoff immutability, complete snapshot
-  equality, no partial promotion.
-- **Visual checks:** command clarity and Handoff action only if shipped.
-- **Exact completion evidence:** after gate `GO`, a restore report and equality
-  matrix; if the gate instead records `CUT_BY_PREAUTHORIZED_GATE`, R5 is
-  inapplicable and no command/UI/docs/claim is present.
-- **Downstream consumer:** R6 hardening and optional demo claim.
-- **Owner:** primary integrator.
-- **Allowed cut:** restore UI only after gate `GO`; there is no post-`GO` command
-  cut. An admitted-command failure blocks R5 and release until corrected.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** committed at `b104451`. The verify-first
-  `restore-receipt` command reconstructs every in-scope member through the
-  receipt-bound reverse map and byte-exact original controls, strictly
-  reimports the pending package, proves exact portable-snapshot equality, and
-  promotes no-replace only after source-free receiver verification passes a
-  second time. Its strict external `restore-report.v1` contains the complete
-  successful check set and remains outside the immutable bag. The command
-  dispatches before provider, budget, demo-source, or web initialization and
-  uses no API key, GPT call, network, case, or browser.
+### A6 — Release candidate
 
-  The corrected primary tree passed `uv lock --check`, 262 pytest tests, Ruff
-  lint/format, Python compilation, and Git whitespace checks. An actual
-  unmocked CLI restore returned `RESTORED`, reconstructed all 30 source members
-  and 23,621 bytes exactly, preserved both source and handoff, and left no
-  pending directory. A fresh wheel with SHA-256
-  `e90e65662df87fadfcdd9c2624119bd2087de12dc9d4e74bdc5c76451b20280a`
-  installed under isolated Python 3.11, exposed the verifier and restore from
-  an unrelated working directory, restored the same source commitment, and
-  refused a second existing destination without changing it.
+- **Requirements:** all required active requirements; admitted plugin only if
+  gate GO; `REL-011`; `CLAIM-004`–`CLAIM-005`.
+- **Dependencies:** feature freeze; stable required product.
+- **Calculated target:** standard A+48–54; scale at actual A+0.
+- **User-visible outcome:** a judge can clone, install, run keyless replay,
+  understand the product, inspect the exact proof, verify/reconstruct the result,
+  and optionally install the admitted plugin without developer intervention.
+- **Implementation responsibilities:** defects only; full suites; clean install/
+  clone; replay/live truthfulness; portability/absolute-path/secret scans;
+  performance adequate for demo; accessibility and responsive QA; regenerate
+  README, limitations, provenance, pre-existing work, Codex build log,
+  screenshots, submission package, narration, and Devpost draft; license/third-
+  party notices; public revision update; no final submission.
+- **Automated checks:** stable commands; full tests/lint/format/diff; new clean
+  environment; replay no-call; live model; hero/ambiguity/negative/restore;
+  wheel asset inclusion; no secrets/local paths/stale archive language;
+  documentation commands copied verbatim and executed; optional plugin tests if
+  admitted.
+- **Visual checks:** clean recording browser at both viewports; no overlays or
+  sensitive data; exact plain-English story; screenshots match current commit;
+  replay/live labels; README judge review.
+- **Completion evidence:** selected release-candidate commit; clean clone and
+  command log; final proof artifacts; visual screenshots; claims/provenance
+  audit; refreshed release materials; public branch state; coherent state update.
+- **Downstream consumer:** A7 recording readiness.
+- **Owner:** primary integrator; independent clean-clone, visual, README, and
+  claims reviewers may work in parallel on non-mutating audits.
+- **Allowed cut:** no new features; only nonessential documentation beyond judge,
+  provenance, license, and submission needs.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-  The 21-test restore matrix covers invalid input, existing and racing
-  destinations, copy/reimport/proof/promotion failure, handoff mutation or
-  disappearance, intermediate pending-tree symlink injection, pending-path
-  replacement, late tag-file and empty-directory injection, source/handoff
-  immutability, cleanup ownership, CLI dispatch, and exit contracts. One
-  bounded adversarial correction replaced unsafe pathname ownership with
-  descriptor/inode-bound copying and cleanup, moved the final complete handoff
-  snapshot after receiver verification, and normalized the vanished-handoff
-  error boundary. Independent recheck reproduced each former defect and
-  returned R5 `GO`. Final Handoff QA at 1440×900 and 390×844 showed the
-  exact verify-first restore guidance, no document overflow, no console errors,
-  and truthful current-versus-historical receipt status.
+### A7 — Recording readiness
 
-### R6 — Feature freeze and release hardening
+- **Requirements:** complete `REL-011` and every non-cut active requirement.
+- **Dependencies:** accepted A6 release candidate.
+- **Calculated target:** standard A+54–60; scale at actual A+0; absolute target
+  Tuesday 21 July 2026 at 02:00 CEST.
+- **User-visible outcome:** the only remaining work is final capture, the user's
+  voice, editing/upload, `/feedback`, due diligence, hold release, and submission.
+- **Implementation responsibilities:** select final release commit; run final
+  clean clone and stable commands; generate final hero/result/receipt/verifier/
+  reconstruction; rehearse exact under-three-minute transaction; finalize timed
+  narration and shot list; finalize screenshots and Devpost draft; document
+  Codex/GPT contributions and pre-existing/new work; confirm no planned product
+  change; keep submission hold active.
+- **Automated checks:** final suite/lint/format/diff; clean repo/clone; replay/live;
+  receipt/verifier/negative/restore; secrets/paths; exact artifact fingerprints;
+  optional plugin only if admitted.
+- **Visual checks:** complete rehearsal at 1280×720; narrow QA; narration timing;
+  no sensitive UI; story understandable without archive expertise.
+- **Completion evidence:** final commit, clean public state, exact command output,
+  artifact fingerprints, rehearsal time, narration/shot-list paths, completed
+  draft fields, and `RECORDING_READY` checkpoint.
+- **Downstream consumer:** protected final 24-hour video/submission reserve.
+- **Owner:** primary integrator, with user-only voice and `/feedback` deferred.
+- **Allowed cut:** none from required product; optional plugin must already be
+  accepted or cut.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
 
-- **Requirements:** all required specification IDs; REL-006 only if applicable;
-  REL-007; CLAIM-001–003.
-- **Dependencies:** R4 plus restore cut, or R5 when admitted.
-- **Calculated target:** R+52–68 without restore or R+60–68 with restore,
-  proportionally scaled; optional feature freeze occurs immediately before R6
-  and no later than 12 hours before recording readiness.
-- **User-visible outcome:** one truthful, portable, stable release candidate with
-  a clear judge path and no planned features.
-- **Implementation responsibilities:** defect repair only; full proof-integrity
-  audit; replay/live truthfulness; portability/path and secret scans; clean clone;
-  wheel/build/license checks; accessibility/visual QA; refreshed README,
-  limitations, notices/provenance, screenshots, narration, Devpost draft, and
-  claims.
-- **Automated checks:** lock/sync; full pytest; Ruff lint/format; build; link,
-  secret, absolute-path, asset-license, and wheel-content scans; fresh copied
-  hero verification; conditional restore; clean-clone replay and verifier;
-  live startup and card validity without an unnecessary call.
-- **Visual checks:** every route, blocked states, offline receipt, recording
-  viewport, clean clone, no secrets/personal paths, refreshed screenshots.
-- **Exact completion evidence:** selected candidate SHA, command transcript,
-  test counts, artifact fingerprints, clean-clone record, visual audit,
-  refreshed release-material paths, and claim matrix.
-- **Downstream consumer:** R7 recording readiness and submission reserve.
-- **Owner:** primary integrator; bounded clean-clone, visual, README, and claim
-  reviewers allowed.
-- **Allowed cut:** only remaining optional presentation conveniences; no required
-  integrity or release surface.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** feature freeze began after verified R5 commit
-  `b104451`; the accepted R6 candidate is
-  `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c`. The final worktree and two
-  independent reviews passed 265 tests, lock integrity, Ruff lint/format,
-  Python compilation, Git whitespace, claim/link/path/secret checks, and the
-  complete revised screenshot audit. The exact detached candidate passed a
-  fresh Python 3.11 `uv sync --frozen`, all 265 tests, build, wheel, license,
-  asset, hero, replay, and installed-wheel checks. Its wheel SHA-256 is
-  `1ed641680a164196bf0fc07d894389713d0033ad28ffda27cba7253e2c0e266b`.
-  A primary exact-commit transaction survived restart and independently
-  verified receipt
-  `9279dd11742f73518bf6a27f6a2fa41d3a15659fc3fe27592c6bf8a0499334da`;
-  the BagIt-valid altered ledger blocked only on
-  `artifact_digest_mismatch:decision_ledger`, and restore reproduced all 30
-  members. A separate clean-clone auditor independently reproduced the same
-  complete matrix with receipt
-  `e68229f3cc7d3cef736823a138c3099617e4a325aaaae016e91704141b8bf5f0`
-  and returned overall `GO`. Replay startup was keyless and truthful; live
-  startup with no key exited `2`, while a non-secret placeholder exposed exact
-  `gpt-5.6` readiness without a provider request. README, limitations, build
-  log, submission copy, seven screenshots, and the code-native 3:2 submission
-  thumbnail now match the frozen product and claims.
+## 6. Protected final reserve and hold
 
-### R7 — Recording readiness
+After A7, only the user's voice-over, final capture/edit/audio cleanup, public
+YouTube upload and playback verification, `/feedback`, final rules/claims/clean-
+run audit, Devpost completion, explicit submission-hold release, final
+submission, and receipt confirmation remain.
 
-- **Requirements:** REL-007 and all applicable completion surfaces.
-- **Dependencies:** verified R6 release candidate.
-- **Calculated target:** standard R+68–70; proportionally scaled, ending no later
-  than Tuesday 21 July 2026 at 02:00 CEST.
-- **User-visible outcome:** the exact three-minute case→decision→receipt→receiver
-  story is stable, rehearsed, and ready to record.
-- **Implementation responsibilities:** select release commit; final clean replay
-  and verifier; confirm live evidence truthfulness; finalize proof artifacts,
-  screenshots, narration, shot list, Devpost draft, and `/feedback` path; make no
-  planned code or design changes.
-- **Automated checks:** final clean-clone judge commands and artifact fingerprints;
-  repository/public revision alignment only after release acceptance.
-- **Visual checks:** timed full rehearsal at capture resolution and offline
-  receipt/handoff readability.
-- **Exact completion evidence:** release SHA, clean status, final verification
-  fingerprint, timed rehearsal duration, final materials, and zero planned work.
-- **Downstream consumer:** protected submission reserve.
-- **Owner:** primary integrator; user owns voice recording and `/feedback`.
-- **Allowed cut:** no required release surface; restore remains absent if already
-  gate-cut.
-- **Actual status:** `COMPLETE`.
-- **Actual verification:** the accepted product candidate is `eb54f3a`. A
-  complete browser rehearsal at a 1280×720 capture viewport traversed Atlas,
-  explicit low-risk approval, mechanical collision edit, the exact recorded
-  GPT-5.6 card, human Meaning edit, copy-only Stage, seven-group Verify,
-  Handoff, and the offline receipt with no horizontal overflow. The selected
-  recording transaction has receipt fingerprint
-  `2ba5d8316f970d0a8f220a57fef1b7f77c167213146eeef2639284f251f0509a`.
-  Its copied handoff verified in 0.95 seconds; its ordinary-BagIt-valid altered
-  ledger blocked exactly as required; and restore completed in 0.74 seconds
-  with all 30 source members byte-identical and the copied handoff unchanged.
-  The 0:00–2:45 visual storyboard was rehearsed at its specified shot holds;
-  the 356-word narration remains a user-owned recording and timing action.
-  Recording-ready release checkpoint
-  `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4` has parent `eb54f3a` and
-  contains the final R7 documents and 3:2 thumbnail. An exact detached local
-  clone passed frozen Python 3.11 sync, all 265 tests, Ruff lint/format,
-  compilation, build, the unchanged wheel SHA-256, local-link checks, both
-  selected-receipt verifier modes, and keyless five-route replay startup. It
-  was then normally fast-forward promoted without force or history rewrite.
-  A credential-disabled HTTPS clone of the public GitHub repository resolved
-  exactly to `6591d57` and independently passed the same 265 tests, build,
-  wheel hash, selected-receipt verification, and keyless five-route replay
-  smoke. The public `main` and revision branch both contained the selected
-  checkpoint before this governance-only closure. No product code, feature,
-  design, screenshot, thumbnail, narration-draft, or shot-list work remains.
-  The remaining work is the user-owned voice recording and `/feedback`, final
-  video capture/edit/public playback, personal attestations, explicit hold
-  release, and submission.
-
-## Protected submission reserve
-
-The final 24 hours are for the user's voice-over, final capture/edit/upload,
-playback verification, `/feedback`, final rule/claim/clean-run audit, and
-submission. Codex may prepare and update the Devpost draft after revised-goal
-activation, but final submission is prohibited until the user explicitly
-releases the active submission hold.
-
-If every independent requirement is complete while the hold remains active, set
-the phase to `WAITING_FOR_SUBMISSION_HOLD_RELEASE`, request only that release,
-and preserve the completed release unchanged.
-
-R7 is complete. The current protected-reserve boundary is the user's voice
-recording and `/feedback`; `WAITING_FOR_SUBMISSION_HOLD_RELEASE` is not reached
-until the final public video, due diligence, and all other pre-submission fields
-are complete.
-
-## Milestone closure protocol
-
-For each milestone: verify dependencies; calculate its actual target; implement
-the smallest complete vertical outcome; run its automated and visual checks;
-record actual results and artifact/commit evidence; update `STATE.md`; and commit
-coherently. If late, measure the gap, diagnose its root cause, take the next
-authorized cut, restore the integrated product, and continue. Never mark a
-milestone complete from elapsed time, code volume, or an agent report.
+Codex may prepare and update drafts after activation, but cannot submit while the
+hold is active. When every independent requirement is complete but release has
+not been granted, set `STATE.md` to `WAITING_FOR_SUBMISSION_HOLD_RELEASE`,
+request only the release, and preserve the accepted release unchanged.
