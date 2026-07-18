@@ -562,3 +562,183 @@ overrides those artifacts.
   `/status` responsive without splitting the job across competing writers or
   leaving a detached mutation running during shutdown.
 - Active authority: `UX-010`, `CASE-007`, `TX-012`.
+
+## D-056 — In-place Connected Change revision
+
+- Date: 18 July 2026
+- Decision: Revise the existing five-document scaffold on
+  `revision/ai-first-folder-refactor` rather than create another branch or
+  governance authority.
+- Rationale: The current branch already contains the exact completed A1–A3
+  foundation; another branch would fragment integration and recovery.
+
+## D-057 — Exact A3 fallback preservation
+
+- Date: 18 July 2026
+- Decision: Preserve `e3803d2` as the immutable completed A3 fallback.
+- Rationale: The existential extension can fail without endangering the verified
+  job, proof, receipt, verifier, and reconstruction transaction.
+
+## D-058 — Change File as central differentiator
+
+- Date: 18 July 2026
+- Decision: Center the revised product on a transferable Name Atlas Change File.
+- Rationale: Planning once and deterministically reapplying the same connected
+  change is the clearest novel user transaction and strongest extension of A3.
+
+## D-059 — Payload-free but metadata-disclosing transfer
+
+- Date: 18 July 2026
+- Decision: Transfer no project payload bytes while disclosing that paths,
+  structure, sizes, hashes, link relationships, instruction, targets, and proof
+  identifiers remain sensitive metadata.
+- Rationale: This is the strongest truthful privacy boundary supported by the
+  artifact; a broader secrecy claim would be false.
+
+## D-060 — Deterministic partition refinement
+
+- Date: 18 July 2026
+- Decision: Match path-independent intrinsic descriptors and refine by ordered
+  outgoing and sorted incoming relationship colors to a fixed point.
+- Rationale: It supports differently arranged equivalent copies without semantic
+  guesses, path shortcuts, or general graph-isomorphism scope.
+
+## D-061 — Symmetric duplicates block
+
+- Date: 18 July 2026
+- Decision: Accept singleton refined classes only and block any unresolved
+  duplicate symmetry.
+- Rationale: An arbitrary tie-break could apply the right content to the wrong
+  intended role while appearing mechanically successful.
+
+## D-062 — Safe in-root parent links
+
+- Date: 18 July 2026
+- Decision: Permit decoded `..` only when lexical normalization remains inside
+  the selected root and resolves uniquely to a regular logical member.
+- Rationale: Real connected folders use sibling/parent-relative links; bounded
+  normalization broadens usefulness without allowing traversal escape.
+
+## D-063 — Truthful execution origins
+
+- Date: 18 July 2026
+- Decision: Record strict `gpt_planned` and `capsule_applied` origins.
+- Rationale: Receiver execution must prove zero provider/API/budget use and must
+  not fabricate model evidence or planning progress.
+
+## D-064 — Versioned v2 authority with strict v1 evidence support
+
+- Date: 18 July 2026
+- Decision: Introduce v2 job, accepted-plan, and receipt contracts while keeping
+  finalized A3 v1 receipts verifiable and v1 jobs read-only.
+- Rationale: New provenance and receiver semantics cannot be silently imposed on
+  historical artifacts.
+
+## D-065 — Acyclic Core, receipt, and envelope
+
+- Date: 18 July 2026
+- Decision: Have the origin receipt commit the Change File Core fingerprint,
+  then embed that finalized receipt in the self-fingerprinted envelope.
+- Rationale: This produces a portable bidirectional binding without any artifact
+  hashing itself.
+
+## D-066 — Receiver-specific proof and convergence
+
+- Date: 18 July 2026
+- Decision: Give the receiver its own plan, receipt, reverse map,
+  reconstruction, and one path-sensitive organized-tree commitment shared with
+  the producer result.
+- Rationale: The receiver must prove convergence while retaining the ability to
+  recreate its own different starting layout.
+
+## D-067 — Home, Organize, and Apply surface
+
+- Date: 18 July 2026
+- Decision: Use one Home with separate Organize and Apply journeys feeding shared
+  Working and Done states.
+- Rationale: The split makes the two product promises understandable and keeps
+  GPT progress out of keyless receiver execution.
+
+## D-068 — Bounded macOS picker and Finder bridge
+
+- Date: 18 July 2026
+- Decision: Add fixed-script `osascript` selection and verified-path `open`
+  actions while retaining manual path fields.
+- Rationale: Native selection removes the main local-browser usability problem
+  without introducing a second desktop architecture or arbitrary command input.
+
+## D-069 — One required shared STDIO MCP server
+
+- Date: 18 July 2026
+- Decision: Under Connected Change, expose seven high-level tools through one
+  stable-v1 Python MCP server backed by the browser/CLI services.
+- Rationale: MCP makes the product reusable from Codex and compatible hosts
+  without duplicating the planner or filesystem authority.
+
+## D-070 — MCP consent and idempotency
+
+- Date: 18 July 2026
+- Decision: Require explicit planning disclosure acknowledgement and persist
+  canonical request/idempotency bindings in the existing job.
+- Rationale: Model-driven retries must not duplicate provider calls, jobs,
+  results, or clarification answers, and MCP must not bypass user disclosure.
+
+## D-071 — Plugin behind installed-copy proof
+
+- Date: 18 July 2026
+- Decision: Gate plugin packaging after shared MCP and require marketplace
+  installation, restart, new task, discovery, real invocation, and cache-copy
+  evidence.
+- Rationale: Repository files or a standalone server are not proof of an
+  installable Codex plugin experience.
+
+## D-072 — Existential C0 and exact A3 fallback
+
+- Date: 18 July 2026
+- Decision: Decide the whole cross-layout transaction before UI, provider, MCP,
+  or plugin work, with two corrections maximum and mutually exclusive Connected
+  or A3 fallback profiles.
+- Rationale: The matching premise is the product's existential risk and must not
+  consume release time if it cannot be proven end to end.
+
+## D-073 — C+0 and absolute feature freeze
+
+- Date: 18 July 2026
+- Decision: Scale only pre-freeze milestones from actual C+0 while keeping
+  feature freeze, release candidate, recording readiness, and submission fixed.
+- Rationale: Remaining time changes, but the release reserve cannot be borrowed
+  for continued feature work.
+
+## D-074 — Sole budget ledger and delayed provider evidence
+
+- Date: 18 July 2026
+- Decision: Preserve one cumulative USD 10 ledger and make new provider calls
+  only after C0 plus prompt/schema/evidence/fixture stabilization.
+- Rationale: Calls before the existential and replay contracts stabilize create
+  cost and unusable evidence without reducing core risk.
+
+## D-075 — Connected Change claim and privacy boundaries
+
+- Date: 18 July 2026
+- Decision: Claim deterministic application to a differently arranged
+  equivalent copy and no transferred payload bytes, while explicitly excluding
+  semantic reconciliation, authentication, and metadata secrecy.
+- Rationale: The demonstrated invariant is valuable only when stated more
+  narrowly than universal equivalence, privacy, or trust.
+
+## D-076 — Explicit C+0 activation
+
+- Date: 18 July 2026
+- Decision: Make the amended Connected Change goal inactive until the user
+  explicitly activates its complete text in the current primary task.
+- Rationale: Scaffold implementation freezes authority but must not consume the
+  product clock or resume product mutation automatically.
+
+## D-077 — Submission hold continues
+
+- Date: 18 July 2026
+- Decision: Keep final Devpost submission prohibited until the selected product,
+  renewed materials, public video, `/feedback`, due diligence, and draft are
+  complete and the user explicitly releases the hold.
+- Rationale: Irreversible submission remains a user-owned gate and must reflect
+  the final selected profile rather than an intermediate build.

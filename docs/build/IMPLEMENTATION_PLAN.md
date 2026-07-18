@@ -1,8 +1,8 @@
-# Reversible Name Atlas — Sole AI-first Implementation Plan
+# Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **PAUSED — A3 COMPLETE; WAITING FOR CONNECTED CAPSULE AND MCP REPLAN**
+Status: **EXECUTION-READY; CONNECTED CHANGE GOAL INACTIVE**
 
-Phase: **WAITING_FOR_CONNECTED_CAPSULE_AND_MCP_REPLAN**
+Phase: **WAITING_FOR_CONNECTED_CHANGE_GOAL_ACTIVATION**
 
 Submission hold: **ACTIVE**
 
@@ -10,7 +10,7 @@ This is the only implementation plan. `BUILD_SPEC.md` defines product truth;
 this file controls dependency order, targets, evidence, scope cuts, status, and
 the next vertical outcome. It does not authorize execution.
 
-## 1. Historical baseline and supersession
+## 1. Completed foundation and supersession
 
 Historical first-cycle H+0: **Friday 17 July 2026 at 17:16:25 CEST**.
 
@@ -40,67 +40,81 @@ superseded for future work.
 All current README, limitations, provenance, build log, screenshots, narration,
 Devpost copy, submission package, thumbnail, and hero artifacts are:
 
-`STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER AI-FIRST FEATURE FREEZE`
+`STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE`
 
 Final submission remains prohibited while the submission hold is active.
 
-The user's transition instruction of Saturday 18 July 2026 supersedes the
-goal's automatic continuation after A3. A1–A3 remain the completed AI-first
-implementation baseline. A4, the plugin gate, A5–A7, Connected Change Capsule
-work, MCP work, public promotion, and submission have not begun and are not
-authorized by this plan in its current paused state.
+Historical AI-first A+0: **Saturday 18 July 2026 at 15:37:55 CEST**.
 
-## 2. Activation and timing model
+Completed A milestones:
 
-A+0 is the Europe/Oslo timestamp when the user explicitly activates the complete
-amended `docs/build/GOAL.md` in this primary Codex task. Meta-plan approval,
-scaffold creation, branch creation, commit, or goal reproduction do not start
-A+0.
+- A1 commit `5609ca6` — automatic walking transaction;
+- A2 commit `04f6b89` — connected-folder planning and exact Markdown adapter;
+- A3 commit `e3803d2` — persistent proof transaction.
 
-Actual A+0: **Saturday 18 July 2026 at 15:37:55 CEST**.
+`COMPLETED AI-FIRST A1–A3 FOUNDATION — VERIFIED IMPLEMENTATION, NOT PROOF OF CONNECTED CHANGE`
 
-Activation calculation:
+A3 preserves the 590-test regression floor, durable `FolderRefactorJob`, exact
+Markdown rewrites and original bytes, source/result immutability, portable
+receipt, source-free verifier, exact controlled negative, unrelated-location
+verification, reconstruction, and responsive Start/Working/Done transaction.
+The detailed observed evidence remains in the A1–A3 rows below.
 
-- available and planned product window: **58 hours, 22 minutes, 5 seconds**;
-- scale: **0.972800926**;
-- A1 target: **Sunday 19 July 2026 at 01:21:35 CEST**;
-- A2 target: **Sunday 19 July 2026 at 14:58:45 CEST**;
-- A3 target: **Monday 20 July 2026 at 00:42:25 CEST**;
-- A4 and plugin-gate target: **Monday 20 July 2026 at 08:29:22 CEST**;
-- scaled A5 target: **Monday 20 July 2026 at 14:19:35 CEST**;
-- mandatory earlier feature freeze: **Monday 20 July 2026 at 14:00:00 CEST**;
-- A6 target: **Monday 20 July 2026 at 20:09:47 CEST**;
-- A7 and recording-ready target: **Tuesday 21 July 2026 at 02:00:00 CEST**.
+The user's transition instruction superseded automatic continuation after A3.
+The former A4, plugin gate, and A5–A7 are:
 
-At activation calculate:
+`SUPERSEDED BEFORE START — REPLACED BY THE CONNECTED CHANGE OR A3 RELEASE-FALLBACK SEQUENCE`
 
-`available_ai_first_hours = max(0, hours from A+0 to Tuesday 21 July 2026 at 02:00 CEST)`
+Connected Change, native-picker expansion, shared MCP, plugin packaging, budget
+migration, new provider calls, promotion, video, and submission have not begun.
 
-`planned_ai_first_hours = min(60, available_ai_first_hours)`
+## 2. C+0 activation, timing, and profile decision
 
-`scale = planned_ai_first_hours / 60`
+C+0 is the Europe/Oslo timestamp when the user explicitly activates the complete
+amended `docs/build/GOAL.md` in this primary Codex task. Scaffold approval,
+editing, commit, handoff, reproduction, or readiness does not create C+0. H+0,
+R+0, and A+0 remain historical and cannot be reset.
 
-For each standard-hour anchor `n`, calculate:
+At C+0 calculate:
 
-`target_offset_hours = n × scale`
+`available_to_recording = max(0, Tuesday 21 July 2026 02:00 CEST - C+0)`
 
-and set the target to `A+0 + target_offset_hours`.
+`available_to_freeze = max(0, Monday 20 July 2026 14:00 CEST - C+0)`
 
-| Outcome | Standard-hour anchor `n` |
+`planned_connected_change_hours = min(60, available_to_recording in hours)`
+
+`pre_freeze_scale = min(1, available_to_freeze / 40 hours)`
+
+Scale only these pre-freeze anchors:
+
+| Milestone | Standard pre-freeze anchor |
 |---|---:|
-| A1 | 10 |
-| A2 | 24 |
-| A3 | 34 |
-| A4 and plugin gate | 42 |
-| A5 and feature freeze | 48 |
-| A6 | 54 |
-| A7 | 60 |
+| C0 feasibility decision | 6/40 |
+| C1 complete engine | 18/40 |
+| C2 browser/native experience | 27/40 |
+| C3 real GPT evidence and fixtures | 32/40 |
+| C4 shared MCP and plugin decision | 36/40 |
+| C5 feature freeze | 40/40 |
 
-The absolute recording-ready boundary remains Tuesday 21 July 2026 at 02:00
-CEST. The absolute submission boundary remains Wednesday 22 July 2026 at 02:00
-CEST. Feature freeze occurs no later than both scaled A5 and twelve actual hours
-before recording readiness, using the earlier boundary. The plugin gate also
-requires twelve actual hours remaining.
+Absolute boundaries do not scale or move:
+
+- C5 feature freeze: **Monday 20 July 2026 at 14:00 CEST**;
+- C6 release candidate: **Monday 20 July 2026 at 20:00 CEST**;
+- C7 recording readiness: **Tuesday 21 July 2026 at 02:00 CEST**;
+- submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**.
+
+C0's latest decision is the earliest of its scaled target, C+8 hours, or the
+point when only 32 actual hours remain before feature freeze. If that point is
+already past at C+0, immediately select `A3_RELEASE_FALLBACK` without consuming
+release time on a nominal C0 attempt.
+
+C0 ends in exactly one mutually exclusive profile:
+
+- `CONNECTED_CHANGE_GO`; or
+- `A3_RELEASE_FALLBACK`.
+
+No UI/native-picker, final fixture, provider call, budget migration, MCP, or
+plugin work starts before that decision. Only the selected sequence continues.
 
 Targets force early integration and simplification. They are not process
 timeouts, automatic cancellation points, or evidence of completion.
@@ -131,7 +145,7 @@ modules without coordination, create another plan/goal/harness, reopen product
 selection, or qualify their own output. The primary integrator verifies all
 material results.
 
-After A1, the application must remain continuously runnable. A milestone is
+The application must remain continuously runnable. A milestone is
 complete only when its user-visible vertical outcome, focused tests, relevant
 full-suite checks, visual checks where applicable, product-native proof, state
 checkpoint, and coherent commit all agree.
@@ -140,32 +154,37 @@ Verification belongs in normal tests, the actual job/result/receipt/verifier/
 reconstruction, clean-run commands, and browser inspection. Do not build a
 tournament, generic evidence platform, benchmark harness, or validation system.
 
-## 4. Remaining scope control
+## 4. Scope control
 
-Already excluded before A+0: CSV reference adapter; image evidence/OCR/media
-understanding; reference-style Markdown; native picker; generic rules; 5,000-file
-planner language; hosted ChatGPT app; React/Vite; required plugin; second GPT
-semantic review; conversational mutation of completed receipts; code refactor;
-AI-data/JSONL/Parquet/Hugging Face; NER/ReFinED; signatures/authentication;
-accounts/collaboration; repository/cloud/Archivematica integrations; multiple
-polished collections; further product discovery or evaluation harness work.
+Excluded: native desktop wrapper; hosted service; cloud synchronization;
+accounts/collaboration database; arbitrary filesystem MCP; semantic/general
+graph matching; independently edited-copy reconciliation; application-specific
+adapters; media semantic understanding; reference-style Markdown; code-aware
+refactoring; AI-data/JSONL/Parquet/Hugging Face; NER/ReFinED; signatures or
+authentication; repository/Archivematica integration; React/Vite; second
+planner/job/ledger/receipt/verifier/reconstruction; multiple client-specific MCP
+servers; multiple polished projects; further discovery, benchmark, tournament,
+or validation-harness work.
 
 Remaining optional cut order:
 
 1. decorative motion;
-2. nonessential metrics;
-3. advanced filters;
-4. extra evidence-viewer presentation;
-5. optional Codex plugin.
+2. native completion notification;
+3. nonessential metrics;
+4. advanced filters;
+5. expanded evidence presentation;
+6. Claude smoke test;
+7. additional MCP-client examples;
+8. Codex plugin packaging when its gate fails.
 
-Never cut automatic complete planning, source immutability, complete file
-accounting, protected members, persistent job/staleness, bounded evidence,
-deterministic compilation, one clarification path, Markdown preservation,
-separate result, receipt, source-free verifier, controlled negative,
-reconstruction, live/replay GPT truthfulness, three-state browser, clean
+Under `CONNECTED_CHANGE_GO`, never cut automatic planning, Change File,
+cross-layout matching, ambiguity blocking, safe in-root parent links, truthful
+provenance, source immutability, separate results, complete file accounting,
+receipt, verifier, refusal matrix, receiver reconstruction, native picker with
+manual fallback, Organize/Apply UX, shared MCP, live/replay truthfulness, clean
 installation, or release hardening.
 
-## 5. Active vertical milestones
+## 5. Completed A1–A3 vertical milestones
 
 ### A1 — Automatic walking transaction
 
@@ -257,7 +276,8 @@ installation, or release hardening.
   durably block stale, malformed, over-budget, protected-content, and unsupported
   requests. The deterministic A2 provider is bound to one exact disclosed
   development request, so arbitrary unrecorded language cannot create a result;
-  general live-language classification remains an A4 requirement. The initial
+  general live-language classification remains a future qualification
+  requirement in C3 or, after an exact C0 fallback decision, F1. The initial
   `FolderRefactorJob` survives planning, clarification, execution, restart,
   cancellation, and completed-result recovery without duplicate provider calls
   or output. Browser work runs off the event loop with one mutation authority and
@@ -336,168 +356,406 @@ installation, or release hardening.
   migration, A4 operation, plugin-gate decision, Connected Change Capsule work,
   or MCP work occurred.
 
-### A4 — Complete product experience and real GPT evidence
+## 6. Connected Change sequence
 
-- **Requirements:** all active `PRD`, `IO`, `TX`, `CASE`, `AI`, `UX`, `VER`,
-  `REL-008`–`REL-009`, and `CLAIM` requirements.
-- **Dependencies:** verified A3 transaction; stable new schemas/tools/prompts;
-  existing cumulative budget ledger; justified live credentials.
-- **Calculated target:** **Monday 20 July 2026 at 08:29:22 CEST**.
-- **User-visible outcome:** the complete 24-file hero accepts one request and
-  creates a verified usable result without a question; the separate ambiguity
-  fixture asks exactly one question; both have truthful live and recorded
-  GPT-5.6 modes; Start/Working/Done is polished and coherent at desktop and
-  narrow widths.
-- **Implementation responsibilities:** final fixtures/provenance; exact hero
-  instruction; ambiguity evidence; sole-budget-ledger version migration from
-  call cap 8 to cumulative cap 13 without resetting the one historical request
-  or permitting more than twelve additional third-cycle attempts; conservative
-  USD reservations;
-  real `gpt-5.6` zero-question and clarification recordings; sanitized exact
-  replays; release routing; Blueprint hierarchy; plain Done proof; absence of
-  old archive routes/nav; data-retention disclosure.
-- **Automated checks:** USD 10 budget dominance; historical count preservation;
-  no second ledger; `store=false`; no provider retry/fallback; real returned
-  model ID; response/evidence/repair bounds; no-call replay; replay fingerprint
-  mismatch; no secrets/response IDs/absolute paths; 24 files exactly once;
-  eight or more supported links; source unchanged; copied/reconstructed bytes;
-  both end-to-end scenarios; all prior/new tests.
-- **Visual checks:** 1280×720 and 390×844; Start disclosure; meaningful working
-  progress; one-question authority; Done plain facts/actions; keyboard/focus/
-  contrast; old routes/nav absent; replay explicitly labeled; live mode truthful;
-  no mobile or universal-safety implication.
-- **Completion evidence:** two validated real provider records; two exact replays;
-  final fixture fingerprints; actual usage/cost and cumulative ledger state;
-  hero result/receipt/verifier/reconstruction; ambiguity result; visual captures;
-  full suites; coherent commit; updated state.
-- **Downstream consumer:** one-time plugin gate and A5 feature freeze.
-- **Owner:** primary integrator; bounded visual, claims, and replay reviewers
-  permitted after facts exist.
-- **Allowed cut:** motion, metrics, filters, extra evidence presentation; not any
-  required transaction or fixture.
-- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
+Every C and fallback milestone records requirement references, dependencies,
+calculated target, integrated user-visible outcome, implementation
+responsibilities, automated checks, visual checks, exact completion evidence,
+downstream consumer, owner, allowed cut, actual status, and actual verification.
+
+### C0 — Existential cross-layout gate
+
+- **Requirements:** `PRD-011`–`PRD-013`, `IO-012`–`IO-015`,
+  `TX-014`–`TX-018`, `CASE-010`–`CASE-012`, `AI-013`,
+  `VER-015`–`VER-018`, `CLAIM-006`–`CLAIM-007`.
+- **Dependencies:** explicit C+0 activation; exact governance commit; clean
+  `revision/ai-first-folder-refactor` at that commit; preserved A3
+  `e3803d2`; frozen schemas and matcher rules.
+- **Calculated target:** at C+0, compute 6/40 of
+  `available_to_freeze`, capped by C+8 hours and the point when only 32 actual
+  hours remain before feature freeze. The earliest is binding.
+- **User-visible integrated outcome:** Sofia creates one Change File from an
+  organized equivalent project; Martin applies it to a differently arranged
+  equivalent copy with no provider/API/budget/external-network use; both
+  independently verified results have the same organized-tree commitment; Martin
+  recreates his own starting paths and bytes.
+- **Implementation responsibilities:** the smallest full v1 Change File Core and
+  envelope; one ordinary-payload matcher; normalized Markdown descriptors and
+  incoming/outgoing fixed-point refinement; safe in-root `../` link; receiver
+  plan rebinding; truthful `capsule_applied` origin; separate receiver result;
+  convergence; receiver reconstruction; required changed-payload, changed-prose,
+  changed-relationship, protected-disagreement, and symmetric-duplicate
+  blockers.
+- **Automated checks:** complete two-layout transaction, source and Change File
+  immutability, provider/API/budget call counts all zero on receiver,
+  deterministic termination within `file_count` rounds, complete bijection,
+  unique singleton mappings only, identical organized-tree commitment, verifier
+  pass, receiver reconstruction equality, and each exact blocker.
+- **Visual checks:** none required to decide C0; inspect plain CLI/service output
+  only to ensure Sofia/Martin provenance and blocker text are truthful.
+- **Exact completion evidence:** actual origin/receiver source commitments,
+  Change File/core/envelope fingerprints, match report, receiver accepted plan,
+  both receipt fingerprints, both verifier outputs, equal organized-tree
+  commitment, receiver reconstruction commitment, zero-call instrumentation,
+  negative outputs, focused/full tests, and coherent checkpoint commit.
+- **Downstream consumer:** exactly one active profile.
+- **Owner:** primary integrator; bounded matcher/receipt reviewers can inspect
+  non-overlapping contracts.
+- **Allowed cut:** none inside the gate. Permit the initial implementation,
+  correction 1, and correction 2 only.
+- **Actual status:** `NOT STARTED — GOAL INACTIVE`.
+- **Actual verification:** `NOT RUN`.
+- **Terminal decision:** record exactly `CONNECTED_CHANGE_GO` if the complete
+  positive and negative transaction passes. If the same material premise still
+  fails after correction 2, record exactly `A3_RELEASE_FALLBACK`, preserve all
+  work/evidence in ordinary commits, and continue only through Section 8.
+
+### C1 — Complete Connected Change engine
+
+- **Requirements:** all `IO-012`–`IO-015`, `TX-014`–`TX-018`,
+  `CASE-010`–`CASE-012`, and `VER-015`–`VER-018`.
+- **Dependencies:** C0 decision `CONNECTED_CHANGE_GO`.
+- **Calculated target:** scaled 18/40 pre-freeze anchor.
+- **User-visible integrated outcome:** origin and receiver transactions work from
+  unrelated paths, persist/restart safely, create distinct receipts, verify
+  without GPT/key/network/source, converge, refuse every required mismatch, and
+  reconstruct the correct local original.
+- **Implementation responsibilities:** final strict schemas/canonicalization;
+  Change File builder/parser; partition-refinement matcher; receiver rebinding;
+  execution-origin union; v2 job/accepted-plan/receipt; v1 strict dispatch;
+  receipt DAG; organized-tree commitment; receiver verifier and reconstruction;
+  staleness for source and Change File; no-replace promotion.
+- **Automated checks:** 16 MiB/duplicate-key/non-finite/unknown-field/version
+  failures; every blocker ID; deterministic permutation tests; v1 receipt
+  compatibility; nonterminal v1 job refusal; origin/receiver DAG checks; restart,
+  lock, revision, idempotency service boundaries; unrelated location; full
+  positive/negative matrix; source/result/Change File immutability.
+- **Visual checks:** technical artifact names and receiver proof remain
+  understandable when surfaced through existing development views.
+- **Exact completion evidence:** final schema fixtures, canonical hashes, complete
+  transaction artifacts, verifier and reconstruction outputs, focused and full
+  suites, state update, coherent commit.
+- **Downstream consumer:** C2 browser/native experience and C3 final evidence.
+- **Owner:** primary integrator with bounded schema/matcher/verifier reviews.
+- **Allowed cut:** extra diagnostic presentation and redundant negative
+  permutations only.
+- **Actual status:** `NOT STARTED`.
 - **Actual verification:** `NOT RUN`.
 
-### Plugin gate — one-time decision at A4
+### C2 — Complete browser and native experience
 
-- **Requirements:** `REL-010`.
-- **Dependencies:** verified A4 with no required defect.
-- **Calculated target:** **Monday 20 July 2026 at 08:29:22 CEST**.
-- **Predicates:** both GPT paths; restart; Markdown preservation; receipt;
-  keyless verifier; exact controlled negative; reconstruction; coherent
-  three-state UI; no cross-artifact defect; at least twelve actual hours before
-  recording readiness; complete plugin estimate at most six hours; shared core
-  architecture; clean-clone install/test feasibility.
-- **Decision:** record exactly `GO` or `CUT_BY_PREAUTHORIZED_GATE` once.
-- **Evidence:** predicate-by-predicate current outputs, Europe/Oslo time, time
-  calculation, estimate, and architecture inspection.
-- **Actual status:** `NOT REACHED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
+- **Requirements:** `UX-013`–`UX-016` plus the active transaction requirements.
+- **Dependencies:** verified C1 engine and stable service boundaries.
+- **Calculated target:** scaled 27/40 pre-freeze anchor.
+- **User-visible integrated outcome:** Home offers Organize or Apply; macOS users
+  can choose folders/files natively or type paths; Working shows the true origin;
+  Done provides the verified result, Change File, proof, Finder, verification,
+  and receiver-local reconstruction actions.
+- **Implementation responsibilities:** fixed routes; server-owned state; Organize
+  and Apply forms/disclosures; one clarification; truthful progress; Change File
+  download; `/choose-path` fixed-script role dispatch; `/show-in-finder` verified
+  server path; manual fallback; responsive Blueprint hierarchy.
+- **Automated checks:** route/method/CSRF/trusted-host/same-origin/cross-site
+  boundaries; strict picker role enum; no shell/interpolation; cancellation
+  error -128; unavailable/timeout/failure; process reaping; zero side effects
+  before form submit; no arbitrary Finder path; apply flow never initializes or
+  displays GPT; refresh/restart idempotence; all actions share job services.
+- **Visual checks:** 1280×720 and 390×844; Home/Organize/Apply/Working/Done;
+  picker cancellation; manual fallback; one clarification; keyboard/focus/
+  contrast; no overflow; technical details collapsed.
+- **Exact completion evidence:** browser captures and interaction transcript,
+  native-picker outcomes, route tests, user-visible origin/receiver transactions,
+  focused/full suites, state update, coherent commit.
+- **Downstream consumer:** C3 final fixtures/evidence and C4 MCP.
+- **Owner:** primary integrator; bounded visual/accessibility reviewer permitted.
+- **Allowed cut:** decorative motion, native completion notification,
+  nonessential metrics, advanced filters, and expanded evidence presentation.
+- **Actual status:** `NOT STARTED`.
 - **Actual verification:** `NOT RUN`.
 
-### A5 — Optional plugin or core hardening; feature freeze
+### C3 — Final GPT-5.6 evidence and fixtures
 
-- **Requirements:** `REL-010` if admitted; otherwise all required active
-  requirements; `REL-011` feature-freeze surface.
-- **Dependencies:** recorded plugin-gate decision and verified A4.
-- **Calculated target:** scaled A5 is Monday 20 July 2026 at 14:19:35 CEST;
-  mandatory earlier feature freeze is **Monday 20 July 2026 at 14:00:00 CEST**.
-- **User-visible outcome:** either one fully installable Codex plugin invokes the
-  same Name Atlas transaction, or the required browser product receives the
-  full interval for defects, accessibility, clarity, and portability. In both
-  cases the required release is feature-frozen.
-- **Implementation responsibilities if GO:** use the official plugin format and
-  plugin-creator workflow; required manifest plus relative MCP config; thin
-  STDIO server; only four high-level tools; no duplicate logic; local marketplace
-  install; restart/new task; keyless replay; missing-key/live behavior; uninstall
-  path; supported-platform and judge instructions.
-- **Implementation responsibilities if cut:** no plugin files or claims; harden
-  core defects, evidence clarity, naming/path cases, accessibility, and release
-  consistency.
-- **Automated checks if GO:** manifest/schema/path/package; installed-copy start;
-  no developer absolute path; real new-task invocation; keyless replay; live
-  missing-key error; same accepted plan/receipt; no second budget/persistence/
-  planner; full core regression.
-- **Visual checks:** plugin only if installed in actual app/new task; browser
-  remains primary and recording-ready in substance.
-- **Completion evidence:** installed tool transcript plus clean-clone path, or
-  exact cut record; feature-freeze timestamp; full suites; coherent commit.
-- **Downstream consumer:** A6 release candidate.
-- **Owner:** primary integrator. Plugin work may be delegated only after GO and
-  must use the official plugin-creator instructions; integration remains primary.
-- **Allowed cut:** plugin itself; all other optional presentation items.
-- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
+- **Requirements:** `AI-008`–`AI-013`, `REL-009`, `REL-012`,
+  `VER-017`, and active claim boundaries.
+- **Dependencies:** verified C1/C2 contracts; final prompt, tools, schemas,
+  evidence envelope, hero, and replay fingerprint; justified credential access.
+- **Calculated target:** scaled 32/40 pre-freeze anchor.
+- **User-visible integrated outcome:** the 24-file hero completes without a
+  question; the ambiguity case asks exactly one question; both have truthful
+  live and recorded modes; the final Sofia/Martin receiver transaction applies
+  the hero Change File without another GPT call.
+- **Implementation responsibilities:** monotonic sole-budget-ledger migration;
+  final hero/ambiguity/receiver fixtures; exact `gpt-5.6` tools and prompts;
+  one real zero-question run; one real clarification run; sanitized exact
+  replays; usage/cost recording; final negative fixtures; disclosures.
+- **Automated checks:** preserve all historical budget values; cumulative request
+  cap 13 and USD 10 dominance; strict tools and `store=false`; no fallback or
+  retry; returned model identity; evidence/turn/repair/clarification limits;
+  replay makes no call and fails on fingerprint drift; no credentials, response
+  IDs, absolute paths, hidden reasoning, or unrelated data; complete final
+  positive/negative matrix.
+- **Visual checks:** live and Recorded GPT-5.6 labels; accurate retention
+  disclosure; zero-question and one-question journeys; Apply stays model-free;
+  Done proof matches exact artifacts.
+- **Exact completion evidence:** two real provider records, two exact replays,
+  fixture fingerprints, actual usage/cost and ledger state, Sofia/Martin
+  transaction, verifier/reconstruction outputs, visual captures, full suites,
+  coherent commit.
+- **Downstream consumer:** C4 shared MCP and release proof.
+- **Owner:** primary integrator; bounded replay/privacy/claims reviewer permitted.
+- **Allowed cut:** no extra polished fixture or second semantic review.
+- **Actual status:** `NOT STARTED`.
 - **Actual verification:** `NOT RUN`.
 
-### A6 — Release candidate
+### C4 — Required shared MCP and plugin decision
 
-- **Requirements:** all required active requirements; admitted plugin only if
-  gate GO; `REL-011`; `CLAIM-004`–`CLAIM-005`.
-- **Dependencies:** feature freeze; stable required product.
-- **Calculated target:** **Monday 20 July 2026 at 20:09:47 CEST**.
-- **User-visible outcome:** a judge can clone, install, run keyless replay,
-  understand the product, inspect the exact proof, verify/reconstruct the result,
-  and optionally install the admitted plugin without developer intervention.
-- **Implementation responsibilities:** defects only; full suites; clean install/
-  clone; replay/live truthfulness; portability/absolute-path/secret scans;
-  performance adequate for demo; accessibility and responsive QA; regenerate
-  README, limitations, provenance, pre-existing work, Codex build log,
-  screenshots, submission package, narration, and Devpost draft; license/third-
-  party notices; public revision update; no final submission.
-- **Automated checks:** stable commands; full tests/lint/format/diff; new clean
-  environment; replay no-call; live model; hero/ambiguity/negative/restore;
-  wheel asset inclusion; no secrets/local paths/stale archive language;
-  documentation commands copied verbatim and executed; optional plugin tests if
-  admitted.
-- **Visual checks:** clean recording browser at both viewports; no overlays or
-  sensitive data; exact plain-English story; screenshots match current commit;
-  replay/live labels; README judge review.
-- **Completion evidence:** selected release-candidate commit; clean clone and
-  command log; final proof artifacts; visual screenshots; claims/provenance
-  audit; refreshed release materials; public branch state; coherent state update.
-- **Downstream consumer:** A7 recording readiness.
-- **Owner:** primary integrator; independent clean-clone, visual, README, and
-  claims reviewers may work in parallel on non-mutating audits.
-- **Allowed cut:** no new features; only nonessential documentation beyond judge,
-  provenance, license, and submission needs.
-- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
+- **Requirements:** `CASE-011`–`CASE-012`, `REL-012`–`REL-014`.
+- **Dependencies:** verified C1–C3 and stable shared domain services.
+- **Calculated target:** scaled 36/40 pre-freeze anchor.
+- **User-visible integrated outcome:** Codex can start and poll an origin job,
+  answer the sole clarification, retrieve a verified Change File, apply it
+  keylessly, verify a result, and reconstruct an original through one shared
+  STDIO MCP server.
+- **Implementation responsibilities:** add `mcp>=1.27,<2` through the normal
+  lock workflow; `name-atlas mcp`; exactly seven high-level tools; strict
+  schemas/annotations; consent acknowledgement; job-bound idempotency;
+  durable handles/polling; STDERR logs and protocol-only STDOUT; server
+  instructions; local credentials only; direct server configuration and one
+  actual Codex invocation.
+- **Automated checks:** protocol initialize/list/call; consent refusal has zero
+  mutation/call; identical retry returns same job/result; conflicting key reuse
+  blocks; answer revision/question binding; status never mutates; keyless
+  apply/verify/reconstruct; missing live key is clear; process restart rehydrates;
+  no raw filesystem/shell/compiler/proof tools; same browser/CLI artifacts.
+- **Visual checks:** actual Codex tool discovery and one invocation; MCP status
+  wording is concise and origin-truthful.
+- **Exact completion evidence:** direct MCP transcript, actual Codex invocation,
+  job/result/Change File/receipt fingerprints, idempotency evidence, no-key
+  receiver transaction, full suites, coherent commit.
+- **Downstream consumer:** one-time optional plugin decision and C5.
+- **Owner:** primary integrator; bounded MCP protocol/security reviewer permitted.
+- **Allowed cut:** Claude smoke test and untested-client examples only; the
+  shared MCP cannot be cut under `CONNECTED_CHANGE_GO`.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+- **Plugin decision:** after all predicates pass, record exactly `GO` or
+  `CUT_BY_PREAUTHORIZED_GATE`. No plugin work starts before `GO`.
+
+### C5 — Optional plugin or core hardening; feature freeze
+
+- **Requirements:** `REL-014` if plugin `GO`; otherwise every non-cut active
+  requirement; `REL-015`.
+- **Dependencies:** verified C4 and recorded plugin decision.
+- **Calculated target:** absolute **Monday 20 July 2026 at 14:00 CEST**.
+- **User-visible integrated outcome:** either the installed Codex plugin invokes
+  the same shared MCP from its installed copy, or the required browser/CLI/MCP
+  product receives the full interval for hardening. The selected product then
+  freezes.
+- **Implementation responsibilities if GO:** use plugin-creator; required
+  manifest and relative MCP config; repo marketplace entry; clean-clone install;
+  app restart; new Codex task; actual tool invocation; installed-cache proof;
+  uninstall/reinstall docs; rerun core regression.
+- **Implementation responsibilities if cut:** create no plugin surface or claim;
+  spend the interval on core defects, accessibility, path portability,
+  negative-case clarity, evidence presentation, and release consistency.
+- **Automated checks:** plugin manifest/paths/package/marketplace/install cache,
+  no developer absolute path, installed-copy invocation, keyless replay,
+  missing-key live error, no duplicate service, and full core regressions; or
+  exact cut record and absence of plugin claims.
+- **Visual checks:** plugin only in the installed app/new task if admitted;
+  browser remains primary and coherent.
+- **Exact completion evidence:** installed-copy transcript or exact cut;
+  feature-freeze timestamp; full suites; state update; coherent commit.
+- **Downstream consumer:** C6 release candidate.
+- **Owner:** primary integrator. Plugin creation can be delegated only after GO;
+  final integration remains primary.
+- **Allowed cut:** plugin packaging and every earlier optional presentation item.
+- **Actual status:** `NOT STARTED`.
 - **Actual verification:** `NOT RUN`.
 
-### A7 — Recording readiness
+### C6 — Release candidate
 
-- **Requirements:** complete `REL-011` and every non-cut active requirement.
-- **Dependencies:** accepted A6 release candidate.
-- **Calculated target:** **Tuesday 21 July 2026 at 02:00:00 CEST**.
-- **User-visible outcome:** the only remaining work is final capture, the user's
-  voice, editing/upload, `/feedback`, due diligence, hold release, and submission.
-- **Implementation responsibilities:** select final release commit; run final
-  clean clone and stable commands; generate final hero/result/receipt/verifier/
-  reconstruction; rehearse exact under-three-minute transaction; finalize timed
-  narration and shot list; finalize screenshots and Devpost draft; document
-  Codex/GPT contributions and pre-existing/new work; confirm no planned product
-  change; keep submission hold active.
-- **Automated checks:** final suite/lint/format/diff; clean repo/clone; replay/live;
-  receipt/verifier/negative/restore; secrets/paths; exact artifact fingerprints;
-  optional plugin only if admitted.
-- **Visual checks:** complete rehearsal at 1280×720; narrow QA; narration timing;
-  no sensitive UI; story understandable without archive expertise.
-- **Completion evidence:** final commit, clean public state, exact command output,
-  artifact fingerprints, rehearsal time, narration/shot-list paths, completed
-  draft fields, and `RECORDING_READY` checkpoint.
-- **Downstream consumer:** protected final 24-hour video/submission reserve.
-- **Owner:** primary integrator, with user-only voice and `/feedback` deferred.
-- **Allowed cut:** none from required product; optional plugin must already be
-  accepted or cut.
-- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
+- **Requirements:** every non-cut requirement of the selected profile,
+  `REL-015`, and applicable claims.
+- **Dependencies:** selected-profile feature freeze.
+- **Calculated target:** absolute **Monday 20 July 2026 at 20:00 CEST**.
+- **User-visible integrated outcome:** a judge can clone, install, run the
+  keyless replay, understand and exercise the selected product, inspect proof,
+  verify/reconstruct results, use required MCP under Connected Change, and use
+  the plugin only if it passed.
+- **Implementation responsibilities:** defects only; full lock/test/lint/format/
+  diff and clean install/clone; live/replay and Sofia/Martin proof; native picker;
+  MCP; admitted plugin; secret/absolute-path scans; wheel assets; regenerate
+  README, limitations, provenance/pre-existing-work disclosure, Codex build log,
+  screenshots, submission package, narration draft, and Devpost copy; public
+  revision update; no final submission.
+- **Automated checks:** all stable CLI/browser/MCP commands from clean clone;
+  final positive/negative/reconstruction matrix; wheel contents; no secrets or
+  sender-local paths; accurate docs commands; release materials match the
+  selected profile.
+- **Visual checks:** clean recording browser at both viewports, no overlays or
+  sensitive data, plain Sofia/Martin or fallback story, README/judge-path review.
+- **Exact completion evidence:** release-candidate commit, clean-clone log, final
+  artifacts/fingerprints, screenshots, claims/provenance audit, refreshed
+  materials, public branch state, state update.
+- **Downstream consumer:** C7 recording readiness.
+- **Owner:** primary integrator; independent clean-clone, visual, docs, and claim
+  reviewers permitted.
+- **Allowed cut:** no new feature; only documentation not required for judges,
+  provenance, license, or submission.
+- **Actual status:** `NOT STARTED`.
 - **Actual verification:** `NOT RUN`.
 
-## 6. Protected final reserve and hold
+### C7 — Recording readiness
 
-After A7, only the user's voice-over, final capture/edit/audio cleanup, public
-YouTube upload and playback verification, `/feedback`, final rules/claims/clean-
-run audit, Devpost completion, explicit submission-hold release, final
+- **Requirements:** complete `REL-015` and every non-cut selected-profile
+  requirement.
+- **Dependencies:** accepted C6 release candidate.
+- **Calculated target:** absolute **Tuesday 21 July 2026 at 02:00 CEST**.
+- **User-visible integrated outcome:** only final capture, the user's voice,
+  edit/upload, `/feedback`, due diligence, hold release, and submission remain.
+- **Implementation responsibilities:** select release commit; final clean clone;
+  final live/replay and selected-profile transactions; final artifacts; rehearse
+  the strictly-under-three-minute demonstration (target approximately
+  02:50–02:55); finalize timed narration, shot list, screenshots, and Devpost
+  draft; document Codex/GPT and pre-existing/new work; confirm no planned code
+  or design work; keep hold active.
+- **Automated checks:** final suite/lint/format/lock/diff, clean repo/clone,
+  replay/live, selected positive/negative/restore matrix, secret/path scans,
+  exact fingerprints, required MCP, and admitted plugin only if passed.
+- **Visual checks:** full 1280×720 rehearsal, narrow QA, narration timing,
+  understandable story, no sensitive UI.
+- **Exact completion evidence:** final commit/public state, commands, artifacts,
+  rehearsal duration, narration/shot-list paths, completed draft fields, and
+  `RECORDING_READY` state.
+- **Downstream consumer:** protected final reserve.
+- **Owner:** primary integrator; user-owned voice and `/feedback` remain
+  outstanding.
+- **Allowed cut:** none from selected required scope.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 7. One-time plugin predicates
+
+Record plugin `GO` only when the complete origin/receiver browser flows, shared
+MCP flow, live/replay planner paths, Change File, receipt, verifier,
+reconstruction, C0 matrix, and cross-artifact consistency pass; no required
+defect remains; at least 12 actual hours remain before recording readiness;
+enough time remains before feature freeze; remaining work is conservatively at
+most four hours; and no core logic is duplicated.
+
+If any predicate fails, record `CUT_BY_PREAUTHORIZED_GATE`. Omit plugin code,
+docs, screenshots, install claims, and Devpost claims. The required shared MCP
+remains part of `CONNECTED_CHANGE_GO`.
+
+## 8. Exact A3 fallback sequence
+
+If C0 records `A3_RELEASE_FALLBACK`, every Connected Change, Apply, cross-layout,
+native-picker expansion, shared MCP, plugin, convergence, and Change File claim
+is cut. Continue only through these rows.
+
+### F1 — Complete paused A4 evidence and three-state product
+
+- **Requirements:** existing `AI-011`–`AI-012`, `UX-009`–`UX-012`,
+  `REL-009`, `CLAIM-004`–`CLAIM-005`; no Connected Change IDs.
+- **Dependencies:** exact fallback decision and preserved A3 `e3803d2`.
+- **Calculated target:** **Monday 20 July 2026 at 08:00 CEST**; record the
+  actual start and remaining margin when fallback is selected.
+- **User-visible integrated outcome:** final 24-file zero-question run, one
+  clarification run, exact replays, and truthful Start/Working/Done A3 product.
+- **Implementation responsibilities:** budget migration, final fixtures, two real
+  GPT-5.6 transactions/replays, release UI clarity, no Connected claims.
+- **Automated checks:** existing A4 acceptance without Change File/MCP/plugin;
+  full A3 regressions.
+- **Visual checks:** final three-state desktop/narrow product.
+- **Exact completion evidence:** two provider records/replays, final hero and
+  ambiguity results, browser QA, full suites, coherent commit.
+- **Downstream consumer:** F2.
+- **Owner:** primary integrator.
+- **Allowed cut:** presentation extras only.
+- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual verification:** `NOT RUN`.
+
+### F2 — Fallback feature freeze and hardening
+
+- **Requirements:** all required A3-derived release requirements.
+- **Dependencies:** verified F1.
+- **Calculated target:** no later than Monday 20 July 2026 at 14:00 CEST.
+- **User-visible integrated outcome:** honest AI-first A3 product is feature
+  frozen and hardened.
+- **Implementation responsibilities:** defects, accessibility, portability,
+  evidence clarity, release consistency, and removal of every Connected
+  surface/claim.
+- **Automated checks:** complete A3 plus F1 regressions, lock/lint/format/diff,
+  keyless replay/verify/reconstruct, no Connected route/CLI/MCP/plugin artifact.
+- **Visual checks:** final fallback browser at desktop and narrow widths.
+- **Exact completion evidence:** browser QA, full commands, exact cut/claim scan,
+  freeze timestamp, state update, coherent commit.
+- **Downstream consumer:** F3.
+- **Owner:** primary integrator.
+- **Allowed cut:** optional presentation only.
+- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual verification:** `NOT RUN`.
+
+### F3 — Fallback release candidate
+
+- **Requirements:** A3-derived clean release and claim boundaries.
+- **Dependencies:** F2.
+- **Calculated target:** Monday 20 July 2026 at 20:00 CEST.
+- **User-visible integrated outcome:** clean clone, replay/live, proof, verifier,
+  and reconstruction work with no Connected Change/MCP/plugin/native-picker
+  claim.
+- **Implementation responsibilities:** regenerate every stale release material
+  for the fallback profile; package and update the public revision without any
+  Connected surface or claim.
+- **Automated checks:** full release suite, clean install/clone, live/replay,
+  verifier/reconstruction, packaging, secret/path/claim scans, and copied README
+  commands.
+- **Visual checks:** recording browser, screenshots, README/judge path, no stale
+  Connected language.
+- **Exact completion evidence:** clean-clone log, final fallback artifacts,
+  screenshots, refreshed materials, release-candidate commit and public state.
+- **Downstream consumer:** F4.
+- **Owner:** primary integrator.
+- **Allowed cut:** nonessential docs only.
+- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual verification:** `NOT RUN`.
+
+### F4 — Fallback recording readiness
+
+- **Requirements:** complete honest A3 AI-first release.
+- **Dependencies:** accepted F3.
+- **Calculated target:** Tuesday 21 July 2026 at 02:00 CEST.
+- **User-visible integrated outcome:** only final video, voice, `/feedback`, due
+  diligence, hold release, and submission remain.
+- **Implementation responsibilities:** final clean run, strictly-under-three-
+  minute rehearsal, narration/shot list, screenshots, Devpost draft, Codex/GPT
+  contribution, provenance, and no Connected surface or claim.
+- **Automated checks:** final suite/lint/format/lock/diff, clean clone,
+  live/replay, verifier/reconstruction, secret/path/claim scans, exact artifact
+  fingerprints.
+- **Visual checks:** full recording rehearsal, narrow QA, narration timing, no
+  sensitive UI.
+- **Exact completion evidence:** final commit/public state, commands, artifacts,
+  rehearsal duration, narration/shot-list paths, draft fields, and
+  `RECORDING_READY` checkpoint.
+- **Downstream consumer:** protected final reserve.
+- **Owner:** primary integrator.
+- **Allowed cut:** none from fallback required scope.
+- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual verification:** `NOT RUN`.
+
+## 9. Protected final reserve and hold
+
+After C7 or F4, only the user's voice-over, final capture/edit/audio cleanup,
+public YouTube upload/playback verification, `/feedback`, final rules/claims/
+clean-run audit, Devpost completion, explicit submission-hold release, final
 submission, and receipt confirmation remain.
 
-Codex may prepare and update drafts after activation, but cannot submit while the
-hold is active. When every independent requirement is complete but release has
-not been granted, set `STATE.md` to `WAITING_FOR_SUBMISSION_HOLD_RELEASE`,
-request only the release, and preserve the accepted release unchanged.
+The demonstration must remain strictly below 03:00 because the higher-authority
+rules say “less than three minutes.” Codex can prepare and update drafts after
+C+0 but cannot submit while the hold is active. When every independently
+actionable product, video, due-diligence, and draft requirement is complete but
+the hold remains active, set `STATE.md` to
+`WAITING_FOR_SUBMISSION_HOLD_RELEASE`, request only the release, and preserve
+the accepted release unchanged.

@@ -1,127 +1,126 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 21:21:30 CEST**
+Checkpoint: **Saturday 18 July 2026 at 23:07:12 CEST**
 
-Phase: **WAITING_FOR_CONNECTED_CAPSULE_AND_MCP_REPLAN**
+Phase: **WAITING_FOR_CONNECTED_CHANGE_GOAL_ACTIVATION**
 
 Submission hold: **ACTIVE**
 
-## Activation and timing
+## Activation and fixed boundaries
 
-- Historical first-cycle H+0: **Friday 17 July 2026 at 17:16:25 CEST — PRESERVED**.
-- Historical second-cycle R+0: **Saturday 18 July 2026 at 00:51:51 CEST — PRESERVED**.
-- AI-first A+0: **Saturday 18 July 2026 at 15:37:55 CEST — PRESERVED**.
-- Amended AI-first goal: **ACTIVE THROUGH COMPLETED A3; AUTOMATIC CONTINUATION
-  PAUSED BY THE USER'S CURRENT TRANSITION INSTRUCTION**.
-- Recording-ready: **Tuesday 21 July 2026 at 02:00 CEST**.
-- Time remaining to recording-ready: **52 hours, 38 minutes, 30 seconds**.
+- Historical first-cycle H+0: **Friday 17 July 2026 at 17:16:25 CEST —
+  PRESERVED**.
+- Historical second-cycle R+0: **Saturday 18 July 2026 at 00:51:51 CEST —
+  PRESERVED**.
+- Historical AI-first A+0: **Saturday 18 July 2026 at 15:37:55 CEST —
+  PRESERVED**.
+- Previous AI-first goal: **COMPLETED THROUGH A3; SUPERSEDED FOR FUTURE
+  EXECUTION**.
+- Amended Connected Change goal: **INACTIVE**.
+- Connected Change C+0: **NOT_STARTED**.
+- Feature freeze: **Monday 20 July 2026 at 14:00 CEST**.
+- Time remaining to feature freeze at checkpoint: **38 hours, 52 minutes,
+  47 seconds**.
+- Recording ready: **Tuesday 21 July 2026 at 02:00 CEST**.
+- Time remaining to recording readiness at checkpoint: **50 hours, 52 minutes,
+  47 seconds**.
 - Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**.
-- Time remaining to submission: **76 hours, 38 minutes, 30 seconds**.
+- Time remaining to submission at checkpoint: **74 hours, 52 minutes,
+  47 seconds**.
 - Submission hold: **ACTIVE**.
 
-## Repository state represented by this checkpoint
+## Repository checkpoint
 
 - Repository: `/Users/nikolai/Desktop/Repos/reversible-name-atlas`.
 - Branch: `revision/ai-first-folder-refactor`.
-- Known-good public parent: `4baec1ed7b8553775527e3be506edab584b2b8b3`.
-- A3 checkpoint predecessor: `04f6b892abce059e4a9f7d6e7c3f593550ebf5e9`.
-- A3 checkpoint locator: subject `feat: complete A3 persistent proof
-  transaction`; its exact SHA is reported in the handoff and resolved from
-  fresh Git.
+- Completed A3 checkpoint:
+  `e3803d26d342f5c128f4e9876a7b7e35c35bde3c`.
+- A3 subject: `feat: complete A3 persistent proof transaction`.
+- Governance commit locator: parent
+  `e3803d26d342f5c128f4e9876a7b7e35c35bde3c` and subject
+  `docs: establish connected-change operating scaffold`; exact SHA is reported
+  in the handoff.
 - Local `main`, `origin/main`, and local/remote
   `revision/portable-change-receipt`: **PRESERVED AT `4baec1e` WHEN THIS
   CHECKPOINT WAS PREPARED**.
-- Push, promotion, merge, rebase, and force-push: **NOT PERFORMED**.
+- New branch/worktree, push, promotion, merge, rebase, force-push: **NOT
+  PERFORMED**.
 
-This file does not contain its own commit SHA or assert its own post-commit
-cleanliness. Fresh Git evidence overrides stale repository statements here.
+This file does not contain its own governance commit SHA or assert its own
+post-commit cleanliness. Fresh Git evidence controls current repository facts.
 
-## Verified implementation state
+## Observed product state
 
-- A1 ordinary-folder transaction: **COMPLETE**.
-- A2 connected-folder planner/compiler and exact Markdown adapter: **COMPLETE**.
-- A3 persistent proof transaction: **COMPLETE**.
-- `FolderRefactorJob` persistence, revision checks, process lock, restart,
-  staleness, exact result recovery, and terminal authority: **VERIFIED**.
-- Complete portable artifact family, path-neutral source snapshot, accepted
-  plan, evidence/reference/change ledgers, forward/reverse maps, report,
-  original rewritten Markdown bytes, offline proof, BagIt files, and immutable
-  acyclic receipt: **VERIFIED**.
-- Source-free keyless verifier: **VERIFIED** for the canonical result and an
-  unrelated-location copy.
-- Controlled BagIt-valid alteration: **BLOCKED BY NAME ATLAS WITH
-  `artifact_digest_mismatch:accepted_plan`**.
-- Exact original-layout reconstruction: **VERIFIED**.
-- Source and accepted result immutability: **VERIFIED**.
-- Start/Working/Done browser transaction, receiver-verification action, and
-  reconstruction action: **VERIFIED AT 1280×720 AND 390×844**.
-- A4 real-provider evidence, budget migration, final hero/ambiguity fixtures,
-  and release-facing polish: **NOT STARTED**.
-- Plugin gate: **NOT REACHED**.
-- Connected Change Capsule and MCP work: **NOT STARTED**.
-- A5–A7, release-material regeneration, promotion, video, and submission:
-  **NOT STARTED**.
-
-## A3 evidence
-
-- Stable evidence root:
-  `.name-atlas/a3-checkpoint-20260718T210307+0200/pytest/test_complete_a3_transaction_v0`.
-- Canonical verified result: `results/northstar-result` below that root.
-- Unrelated-location verified copy:
-  `.name-atlas/a3-checkpoint-20260718T210307+0200/pytest/test_complete_a3_transaction_v0/received-elsewhere/portable-result`.
-- Controlled alteration:
-  `.name-atlas/a3-checkpoint-20260718T210307+0200/pytest/test_complete_a3_transaction_v0/counterfactual/altered-result`.
-- Exact reconstruction: `results/recreated-original` below the stable root.
-- Receipt fingerprint:
+- A1 ordinary-folder walking transaction: **COMPLETE**.
+- A2 deterministic planner/compiler, protected members, exact Markdown adapter,
+  safe worker boundary, and source immutability: **COMPLETE**.
+- A3 persistent job, restart/revision/lock/staleness/terminal authority,
+  portable artifacts, original Markdown bytes, acyclic receipt, source-free
+  verifier, exact controlled alteration, unrelated-location verification,
+  receiver actions, reconstruction, and desktop/narrow browser transaction:
+  **COMPLETE AND VERIFIED**.
+- A3 receipt fingerprint:
   `52b4e3f5c15946d4c6940e585cdaec9264f11ab0dc4139afec2129716995f3ce`.
-- Source/restored commitment:
+- A3 reconstruction/source commitment:
   `306e142b7adbda90e0d54a1dc24e18a5aca456f03a9329474bb3ca7d5b542963`.
+- Name Atlas Change File: **NOT STARTED**.
+- Safe in-root parent-relative links: **NOT STARTED**.
+- Cross-layout receiver matcher: **NOT STARTED**.
+- `capsule_applied` provenance: **NOT STARTED**.
+- Native macOS picker/Finder bridge: **NOT STARTED**.
+- Required shared MCP: **NOT STARTED**.
+- Codex plugin gate: **NOT REACHED**.
+- Budget migration: **NOT STARTED**.
+- New GPT-5.6 zero-question and clarification evidence/replays: **NOT STARTED**.
+- Selected profile: **NOT SELECTED; C0 NOT STARTED**.
+- Feature freeze: **PENDING AFTER C+0**.
+- Release materials: **STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE
+  REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE**.
+- Current blocker: **NONE; WAITING FOR EXPLICIT ACTIVATION**.
 
-## Current verification and API state
+## Current verification, credentials, and budget
 
-- Final A3-focused suite: **129 passed in 6.62 seconds**.
-- Complete regression suite: **590 passed in 22.63 seconds**.
-- `uv lock --check`: **PASSED; 32 packages resolved from the existing lock in 5 ms**.
-- Ruff lint: **PASSED**.
-- Ruff format check: **PASSED; 100 files already formatted**.
-- `git diff --check`: **PASSED BEFORE THIS FACTUAL CHECKPOINT UPDATE; MUST PASS
-  AGAIN BEFORE COMMIT**.
-- Independent A3 correction re-audit: **GO; NO MATERIAL A3 DEFECT FOUND**.
-- Sole budget ledger: `gpt-budget.v1`, cumulative USD 10 cap, live-call cap 8,
-  one historical request/attempt reserved, USD 0.679 committed exposure, USD
-  0.0382 reported estimated cost; **NOT MIGRATED**.
-- Restricted key: **DECLARED NONEMPTY IN OWNER-ONLY IGNORED `.env.local`; NOT
-  LOADED IN THE CURRENT PROCESS ENVIRONMENT; VALUE NOT READ OR EXPOSED**.
-- New AI-first provider calls since A+0: **NONE**.
-- New A4 planner evidence/replays: **NOT STARTED**.
-- Product servers and browser QA sessions: **STOPPED**.
-- Current blocker: **NONE; WAITING FOR USER AUTHORIZATION**.
-- Submission hold: **ACTIVE**.
-- Devpost final submission: **NOT PERFORMED**.
+- `uv lock --check`: **PASSED; 32 packages resolved**.
+- `PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider`:
+  **590 passed in 21.39 seconds**.
+- `uv run --no-sync ruff check .`: **PASSED**.
+- `uv run --no-sync ruff format --check .`: **PASSED; 100 files already
+  formatted**.
+- `git diff --check`: **PASSED BEFORE GOVERNANCE EDITING; MUST PASS AGAIN BEFORE
+  COMMIT**.
+- Process `OPENAI_API_KEY`: **ABSENT**.
+- Ignored owner-only `.env.local`: **PRESENT; VALUE NOT READ OR LOADED**.
+- Live Connected Change planner-call readiness: **BLOCKED UNTIL C+0, C0,
+  CONTRACT STABILIZATION, AND JUSTIFIED CREDENTIAL PROVISIONING**.
+- Sole budget ledger: `gpt-budget.v1`; cumulative USD 10 cap; live-call cap 8;
+  one historical request/attempt; USD 0.679 committed exposure; USD 0.0382
+  reported estimated cost; **NOT MIGRATED**.
+- New provider calls since A+0: **NONE**.
+- Shared MCP dependency/install: **ABSENT / NOT STARTED**.
+- Server, browser, picker, MCP, plugin, GitHub, YouTube, Devpost, and final
+  submission mutations during this scaffold: **NOT PERFORMED**.
 
 ## Compact recovery capsule
 
-- Phase: `WAITING_FOR_CONNECTED_CAPSULE_AND_MCP_REPLAN`.
-- Branch/baseline: `revision/ai-first-folder-refactor` from `4baec1e`; A3
-  predecessor `04f6b89`; checkpoint located by the subject above.
-- Current milestone: `A1–A3 COMPLETE; STOPPED BEFORE A4`.
-- Last verified commands: 129 focused tests; 590 full tests; lock check; Ruff
-  lint; Ruff format; diff check; canonical/copied verifier; controlled negative;
-  reconstruction; desktop/narrow browser transaction.
-- Generic job: `A3 PERSISTENCE/RESTART/STALENESS/TERMINAL AUTHORITY VERIFIED`.
-- GPT planner/live/replay: `A2 BOUNDED CONTRACTS COMPLETE; A4 CALLS AND REPLAYS
-  NOT STARTED`.
-- Accepted plan/result: `A3 COMPLETE AND IMMUTABLE`.
-- Receipt/verifier/reconstruction: `A3 COMPLETE AND VERIFIED`.
-- Browser: `START/WORKING/DONE, VERIFY AGAIN, AND RECREATE ORIGINAL VERIFIED`.
-- Plugin gate: `NOT REACHED`.
-- Feature freeze: `PAUSED PENDING USER-AUTHORIZED REPLAN`.
-- Release materials: stale second-cycle material preserved; not regenerated.
+- Phase: `WAITING_FOR_CONNECTED_CHANGE_GOAL_ACTIVATION`.
+- Branch/A3 baseline: `revision/ai-first-folder-refactor` /
+  `e3803d26d342f5c128f4e9876a7b7e35c35bde3c`.
+- Active profile/current milestone: `NONE / C0 NOT STARTED`.
+- Latest checks: `590 tests; lock; Ruff lint; Ruff format; pre-commit diff
+  check`.
+- Change File/matcher: `NOT STARTED`.
+- Job/provenance: `A3 v1 VERIFIED; v2/capsule origin NOT STARTED`.
+- Receipt/verifier/reconstruction: `A3 VERIFIED; CONNECTED CHANGE NOT STARTED`.
+- Browser/native picker: `A3 THREE-STATE VERIFIED; NEW SURFACE NOT STARTED`.
+- GPT live/replay: `HISTORICAL EVIDENCE PRESERVED; NEW PLANNER EVIDENCE NOT
+  STARTED`.
+- MCP/plugin: `NOT STARTED / GATE NOT REACHED`.
+- Feature freeze/release materials: `PENDING / STALE`.
 - Submission hold: `ACTIVE`.
-- Blockers: none.
-- Next operation: authorize a bounded in-place scaffold revision for the
-  Connected Change Capsule and shared MCP product surface.
+- Blockers: `NONE`.
+- Next operation: user explicitly activates the complete amended goal at the
+  governance commit reported in the scaffold handoff.
 
 ## Exact next operation
 
-`Authorize a bounded in-place scaffold revision for the Connected Change Capsule and shared MCP product surface.`
+`User explicitly activates the complete amended docs/build/GOAL.md in this primary Codex task at the governance commit reported in the scaffold handoff.`

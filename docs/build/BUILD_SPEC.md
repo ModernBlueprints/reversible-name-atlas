@@ -1,16 +1,18 @@
-# Reversible Name Atlas — AI-first Build Specification
+# Reversible Name Atlas — Connected Change Build Specification
 
-Status: **AI-FIRST THIRD-CYCLE PRODUCT CONTRACT FROZEN; AMENDED GOAL INACTIVE**
+Status: **CONNECTED CHANGE PRODUCT CONTRACT FROZEN; AMENDED GOAL INACTIVE**
 
-This document is the sole authority for what the AI-first Reversible Name Atlas
-product is, what it supports, what it proves, and what must exist at recording
-readiness. `IMPLEMENTATION_PLAN.md` controls sequence, `GOAL.md` controls
-execution authority, `STATE.md` records observed current state, and
-`DECISIONS.md` records rationale only.
+This document is the sole authority for what the Connected Change revision of
+Reversible Name Atlas is, what it supports, what it proves, which completed
+A1–A3 behavior remains foundational, and what must exist at recording
+readiness. `IMPLEMENTATION_PLAN.md` controls sequence and the mutually exclusive
+profile decision, `GOAL.md` controls execution authority, `STATE.md` records
+observed current state, and `DECISIONS.md` records rationale only.
 
-No AI-first implementation is active merely because this specification exists
-or is committed. Only the user's later explicit activation of the complete
-amended `docs/build/GOAL.md` creates A+0.
+The preceding AI-first goal is complete only through verified A3 and is
+superseded for future execution. No Connected Change implementation is active
+merely because this specification exists or is committed. Only the user's later
+explicit activation of the complete amended `docs/build/GOAL.md` creates C+0.
 
 ## 1. Controlling sources and fixed boundaries
 
@@ -20,28 +22,40 @@ amended `docs/build/GOAL.md` creates A+0.
 |---|---|---:|---:|---:|---|---|
 | AI-first product direction | `/Users/nikolai/.codex/attachments/d9b8d3f0-8b24-4715-a744-5eef576e91e9/pasted-text.txt` | 971 | 970 | 45,569 | `7777dd7fd322cebe1deb0ff12e03c13c7a18cf2e5769ad71a7a2fef807d1d76b` | Complete; no final newline; final byte `.` |
 | Third-cycle operating model | `/Users/nikolai/.codex/attachments/47308821-f8b9-4101-b3cb-fff36b725471/pasted-text.txt` | 912 | 911 | 34,068 | `c6b18835cc0c63fa6be6fc7013ed498f72d4ed8133935a743c20cabedbf2d4b3` | Complete; no final newline; final byte `*` |
+| Connected Change File product direction | `/Users/nikolai/.codex/attachments/09e7eea4-1ab1-4c90-a200-52e6a8855f3b/pasted-text.txt` | 940 | 939 | 39,271 | `23e4717c1c9d90032428a7ce8552af52988bb3aa03746440514aa71b43960cad` | Complete; no final newline; final byte `*` |
+| In-place Connected Change operating model | `/Users/nikolai/.codex/attachments/f8841180-bcaa-4c74-ace2-d989ca57b24e/pasted-text.txt` | 897 | 896 | 30,548 | `cdbba77b841ea2e35a565acb8ef86721a00dc066f91c5724b788b379fd733cee` | Complete; no final newline; final byte `.` |
 
-Authority precedence is: current user instruction; the first attachment for
-product direction; the second attachment for operating structure; historical
-repository governance where it does not conflict; then observed state for
-facts.
+Authority precedence is: current user instruction; the Connected Change File
+product-direction attachment for product direction and accepted claims; its
+paired operating-model attachment for governance, sequencing, timing,
+activation, and stop conditions; completed A1–A3 governance where it does not
+conflict; fresh repository and product evidence for current facts; then older
+conversation or memory only when reverified. The earlier attachment pair remains
+the source for the implemented A1–A3 foundation, not the future sequence.
 
 ### Official sources
 
 - [Official Build Week rules](https://openai.devpost.com/rules)
 - [Build Week FAQ](https://openai.devpost.com/details/faqs)
+- [Build Week dates](https://openai.devpost.com/details/dates)
 - [GPT-5.6 Sol model documentation](https://developers.openai.com/api/docs/models/gpt-5.6-sol)
 - [OpenAI function-calling documentation](https://developers.openai.com/api/docs/guides/function-calling)
 - [OpenAI API data controls](https://platform.openai.com/docs/models/default-usage-policies-by-endpoint)
+- [Codex MCP documentation](https://developers.openai.com/codex/mcp)
 - [Codex plugin documentation](https://developers.openai.com/codex/plugins/build)
+- [Official MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [Apple native selection documentation](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaFileorFolder.html)
 
 The official deadline is Tuesday 21 July 2026 at 17:00 Pacific time, which is
 **Wednesday 22 July 2026 at 02:00 CEST**. The protected recording-ready
-boundary is **Tuesday 21 July 2026 at 02:00 CEST**.
+boundary is **Tuesday 21 July 2026 at 02:00 CEST**. Feature freeze is **Monday
+20 July 2026 at 14:00 CEST**, and the release-candidate boundary is **Monday 20
+July 2026 at 20:00 CEST**.
 
 The submission hold is active. Final Devpost submission is prohibited until the
-AI-first product, renewed release materials, video, due diligence, and
-submission package are complete and the user explicitly releases the hold.
+final selected product profile, renewed release materials, public video,
+`/feedback`, due diligence, and submission package are complete and the user
+explicitly releases the hold.
 
 ## 2. Historical requirement disposition
 
@@ -377,8 +391,10 @@ source and never edits a prior receipt in place.
 ### AI-008 — Provider and authority boundary
 
 Use exact `gpt-5.6` through the Responses API, strict function schemas,
-`store=false`, and `max_retries=0`. Record the returned model identifier. There
-is no Chat Completions or substitute-model fallback.
+`store=false`, and `max_retries=0`. Every tool sets `strict=true`; every object
+schema sets `additionalProperties=false`; every declared property is required
+and uses a nullable type when logically optional. Record the returned model
+identifier. There is no Chat Completions or substitute-model fallback.
 
 Persist complete observable output items needed for local multi-turn
 continuation, including returned reasoning items required by the API protocol,
@@ -472,9 +488,10 @@ Before **Plan and create copy**, display:
 
 Also display:
 
-> Name Atlas asks the Responses API not to retain the response as application state and keeps the working planning record locally. Standard OpenAI API data-retention policies may still apply.
+> Name Atlas sets `store=false`, so it does not ask OpenAI to store the generated response for later retrieval through the Responses API. OpenAI's standard abuse-monitoring and prompt-caching retention may still apply.
 
-Do not claim zero retention, full privacy, or that OpenAI stores nothing.
+Do not claim zero retention, full privacy, that OpenAI stores nothing, or that
+all processing records remain only on the user's computer.
 
 `.name-atlas/api_budget.json` remains the sole project budget authority. Migrate
 it atomically and monotonically without resetting history: preserve historical
@@ -578,7 +595,12 @@ Required result paths:
 - `name-atlas/original-content/<file-id>.bin` for every rewritten Markdown file
 - BagIt metadata and SHA-256 manifests.
 
-All portable artifacts use relative paths only.
+All portable artifacts use relative paths only. For `capsule_applied`, the v2
+artifact family omits `evidence_ledger.json` rather than fabricating GPT
+evidence; `execution_origin.json`, the exact imported Change File, and the match
+report are the receiver authority. The receiver still writes its local accepted
+plan, reference graph, maps, change ledger, verification report, receipt,
+offline proof, and required original Markdown bytes.
 
 ### VER-011 — Acyclic receipt and generation order
 
@@ -738,7 +760,7 @@ Regenerate README, limitations, provenance/pre-existing-work disclosure, Codex
 build log, screenshots, narration, Devpost copy, submission package, thumbnail,
 and hero artifacts. Until then they are:
 
-`STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER AI-FIRST FEATURE FREEZE`
+`STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE`
 
 Recording readiness requires clean public repository/clone, selected commit,
 final hero/result/receipt/verifier/restore, live and replay truthfulness, stable
@@ -802,3 +824,659 @@ materials agree with actual behavior and claim limits; the optional plugin is
 either fully accepted or exactly `CUT_BY_PREAUTHORIZED_GATE`; no planned code or
 design work remains; and final Devpost submission is still held for the user's
 voice, `/feedback`, due diligence, and explicit hold release.
+
+The preceding paragraph records the A3-derived fallback release contract. For
+future execution it is controlled by the mutually exclusive profile decision
+below. It does not authorize resumption of the former A4–A7 sequence.
+
+## 13. Connected Change extension and narrow supersessions
+
+The requirements in Sections 3–12 remain the implemented A1–A3 foundation
+except for the exact narrow supersessions below. A1–A3 are completed verified
+implementation, not proof of any Connected Change requirement in this section.
+
+| Existing clause | New controlling clause |
+|---|---|
+| `PRD-010` Start/Working/Done-only release surface | `PRD-013` and `UX-013`–`UX-016` add Home/Organize/Apply under `CONNECTED_CHANGE_GO`; it remains unchanged under fallback. |
+| `IO-011` blanket rejection of every `..` component | `IO-015` permits only lexically safe in-root parent-relative targets. |
+| `CASE-006` v1 sole-job wording | `CASE-010` makes v2 authoritative for new Connected Change jobs while finalized v1 jobs remain read-only evidence. |
+| `UX-009` exclusion of a native picker | `UX-015` requires a bounded macOS picker with a manual-path fallback. |
+| `UX-010`–`UX-012` GPT-only progress and three-state routing | `UX-013`–`UX-016` extend routing and require origin-specific progress under `CONNECTED_CHANGE_GO`; fallback retains the prior behavior. |
+| `VER-010`–`VER-011` v1-only artifact and receipt wording | `VER-015`–`VER-016` add strict v2 origin/receiver variants; v1 receipt verification remains supported. |
+| `REL-010` plugin-only MCP and four-tool contract | `REL-013` requires one shared seven-tool MCP server under `CONNECTED_CHANGE_GO`; `REL-014` separately gates plugin packaging. |
+| `REL-011` A-era future timing and release sequence | `REL-015` and the sole C plan control future timing; the old text remains fallback foundation only. |
+| `CLAIM-005` native-picker exclusion | Superseded only for the bounded picker in `UX-015`; every unrelated exclusion remains. |
+| Former A4–A7 sequence | `SUPERSEDED BEFORE START — REPLACED BY CONNECTED CHANGE OR EXACT A3 FALLBACK PROFILE`. |
+
+Only one of the following profiles can become active after C0:
+
+- `CONNECTED_CHANGE_GO`: every Connected Change requirement in this section is
+  required, including Change File generation/application, safe in-root parent
+  links, deterministic cross-layout matching, truthful provenance, native
+  picker, Organize/Apply browser journeys, shared MCP, new live/replay evidence,
+  convergence, verifier, receipt, and reconstruction. The Codex plugin remains
+  separately gated.
+- `A3_RELEASE_FALLBACK`: Change File, Apply flow, cross-layout matching,
+  native-picker expansion, shared MCP, plugin, and all Connected Change claims
+  are `CUT_BY_EXISTENTIAL_GATE`. The preserved A3 product follows the compact
+  fallback sequence in the sole plan. It still requires the new zero-question
+  and one-clarification GPT-5.6 planner records and replays before release.
+
+No provider call, budget migration, final UI work, MCP work, or plugin work can
+begin before C0 chooses one profile. The profiles cannot coexist.
+
+### PRD-011 — Connected Change identity and promise
+
+- Product: **Reversible Name Atlas**.
+- Primary tagline: **Describe the change once. Apply it wherever the same
+  project exists.**
+- Secondary line: **AI planning once. Deterministic execution everywhere.**
+- Track: **Work & Productivity**.
+- Category: **AI refactoring for connected project folders**.
+- Audience: people preparing complicated project folders for handoff or reuse,
+  including consultants, researchers, educators, journalists, designers,
+  photographers, small agencies, preservation workers, and technically capable
+  enthusiasts.
+
+Central definition:
+
+> Reversible Name Atlas is a local-first application that lets GPT-5.6 plan a connected-folder reorganization once, verifies and executes that plan through fixed code, and creates a payload-free Name Atlas Change File that can reproduce the same organized result on another equivalent copy of the project—even when that copy begins with different local paths.
+
+### PRD-012 — Origin and receiver transactions
+
+Required origin transaction:
+
+`local folder → plain-English request → bounded GPT-5.6 evidence → complete proposed plan → deterministic compilation → optional one-question clarification → separate verified result → Name Atlas Change File`
+
+Required receiver transaction:
+
+`Name Atlas Change File + differently arranged equivalent local project → keyless deterministic matching → receiver-local accepted plan → separate verified result → independent verification → receiver-specific reconstruction`
+
+The receiver transaction makes exactly zero GPT/provider calls, zero API
+requests, zero budget reservations, and zero external network connections, and
+transfers no project payload bytes. The browser still uses loopback HTTP, so the
+product cannot claim an unqualified absence of network activity.
+
+### PRD-013 — Required surfaces and existential fallback
+
+Under `CONNECTED_CHANGE_GO`, the browser Home, Organize, Apply, Working, and
+Done journeys; CLI Change File application; shared STDIO MCP; receipt,
+verification, convergence, and reconstruction; and live/replay planner evidence
+are required. The Codex plugin remains optional under `REL-014`.
+
+C0 is an existential product gate, not a unit-test gate. It permits the initial
+implementation plus two material corrections. If the full two-layout positive
+transaction and required refusal cases still do not pass, record exactly
+`A3_RELEASE_FALLBACK`, preserve the failed work and evidence in ordinary Git
+history, and exclude every Connected Change surface and claim from release.
+
+### IO-012 — Strict Name Atlas Change File input
+
+User-facing name: **Name Atlas Change File**. Technical name: **Connected Change
+Capsule**. Standalone files use `*.nameatlas-change.json`; the hero uses
+`northstar.nameatlas-change.json`; origin and receiver results store the exact
+envelope at `name-atlas/connected_change_capsule.json`.
+
+The raw file is at most 16 MiB and is strict UTF-8 JSON. Duplicate JSON keys,
+non-finite values, unknown fields, unsupported versions, invalid canonical
+fingerprints, invalid UTF-8, and oversize input block before scanning a receiver
+source. Strict Pydantic v2 contracts use `extra="forbid"` and strict mode.
+
+New schemas are:
+
+- `connected-change-core.v1`;
+- `connected-change-file.v1`;
+- `connected-change-match-report.v1`;
+- `folder-execution-origin.v1`;
+- `folder-accepted-plan.v2`;
+- `folder-refactor-job.v2`;
+- `folder-change-receipt.v2`; and
+- `folder-receipt-verification.v2`.
+
+Existing `folder-inventory.v1`, `folder-reference-graph.v1`, exact Markdown
+parsing, maps, and reconstruction mechanics remain reusable where their
+semantics are unchanged. Existing A3 `folder-change-receipt.v1` results remain
+verifiable and reconstructable by strict version dispatch. Existing verified
+`folder-refactor-job.v1` jobs are read-only evidence. A nonterminal v1 job fails
+with fresh-job guidance and is never silently migrated or reinterpreted.
+
+### IO-013 — Payload-free member descriptors and disclosure
+
+The immutable Change File Core contains schema and matching-rule versions; the
+original request and fingerprint; requested result-root name; one unique opaque
+Change File member ID per source file; origin relative paths as disclosed
+provenance only; accepted target paths; ordinary-file size and SHA-256; exact
+protected suffix and protected-member requirements; Markdown non-destination-
+byte commitment; ordered supported-link slots, relationships, kinds, syntax
+classes, fragments, and order; explicit empty-directory requirements; expected
+source/member/link counts; expected organized-tree commitment; bounded claims;
+and originating proof identifiers.
+
+Origin relative paths do not participate in receiver matching except for
+protected members and exact-path empty-directory requirements.
+
+The Change File contains no project payload bytes, absolute local paths,
+credentials, protected contents, arbitrary command or shell fragment, hidden
+reasoning, filesystem mutation authority, output-promotion authority, or GPT
+requirement.
+
+Required disclosure:
+
+> The Change File contains no project payload bytes. It does contain project names and structure, file sizes and hashes, supported link relationships, the original instruction, target names, and proof identifiers.
+
+Permitted privacy statement: **No project payload bytes are transferred.** The
+product must not say that nothing about the project is shared.
+
+### IO-014 — Deterministic path-independent receiver matching
+
+Each source member receives a deterministic opaque Change File member ID over a
+domain separator, accepted target path, member kind, protected suffix, and its
+ordinary payload descriptor or Markdown non-destination commitment. The ID can
+distinguish intended target roles, but neither the ID's accepted target path nor
+any origin path is matching evidence.
+
+The ordinary-file base descriptor is member kind, exact byte size, exact
+SHA-256, exact protected suffix, and protection status. Protected files also
+require exact original relative path and bytes.
+
+The Markdown base descriptor is the exact SHA-256 over ordered byte segments
+outside supported destination spans plus ordered link-slot count, inline-link
+or inline-image kind, syntax class, exact fragment, exact slot order, and
+source/target relationship structure. Only supported relative destination text
+can differ. Prose, labels, line endings, fragments, link order/count, and all
+non-destination bytes must match exactly.
+
+Matching uses this terminating fixed-point algorithm:
+
+1. Scan the complete origin descriptors and complete receiver source.
+2. Create initial equivalence classes from member kind and intrinsic descriptor.
+3. Include Markdown non-destination commitment and ordered link-slot metadata in
+   the Markdown base class.
+4. Iteratively refine each class with ordered outgoing edges colored by the
+   current target classes and sorted incoming-edge signatures colored by the
+   current source classes.
+5. Recompute canonical colors until a fixed point or at most `file_count`
+   rounds.
+6. Require equal origin and receiver class cardinalities.
+7. Accept only singleton class mappings.
+8. Block every remaining non-singleton class as ambiguous.
+
+Matching never uses origin path, receiver path, accepted target path, lexical
+ordering, filesystem iteration order, or arbitrary tie-breaking. It does not
+attempt general graph isomorphism or semantic-similarity matching.
+
+Receiver application blocks on any extra/missing member, ordinary payload
+change, Markdown non-destination change, supported relationship change,
+incompatible suffix, protected path/byte disagreement, empty-directory
+disagreement, ambiguous duplicate group, unsupported version, invalid
+fingerprint or target, source/output overlap, source or Change File change,
+output collision, or organized-tree convergence failure.
+
+Stable blocker IDs include:
+
+- `change_file_too_large`;
+- `change_file_schema_invalid`;
+- `change_file_fingerprint_mismatch`;
+- `receiver_member_missing`;
+- `receiver_member_extra`;
+- `receiver_payload_changed`;
+- `receiver_markdown_content_changed`;
+- `receiver_relationship_changed`;
+- `receiver_suffix_mismatch`;
+- `receiver_protected_member_mismatch`;
+- `receiver_empty_directory_mismatch`;
+- `receiver_ambiguous_duplicate_group`;
+- `receiver_target_invalid`;
+- `change_file_changed`; and
+- `organized_tree_commitment_mismatch`.
+
+A mismatch never invokes GPT and never becomes a user clarification.
+
+### IO-015 — Safe in-root parent-relative Markdown links
+
+This requirement supersedes only `IO-011`'s blanket traversal rejection. After
+one strict UTF-8 percent decode, split the destination into POSIX components,
+ignore `.`, process each `..` by popping one existing source-parent component,
+block a pop above the selected root, append ordinary components, resolve the
+normalized path case-sensitively against the logical inventory, and require
+exactly one regular-file target.
+
+Continue blocking root escape, absolute/root-relative paths, `file:` URLs,
+backslashes, query strings, malformed escapes, encoded slash/backslash
+ambiguity, decoded NUL, invalid UTF-8, directory or dangling targets, case
+mismatch, unsupported local-looking syntax, and reference-style local links or
+definitions. Exact-span scanning, right-to-left replacement, exact fragment
+preservation, and byte preservation outside destination spans remain unchanged.
+
+### TX-014 — Change File construction and canonical fingerprints
+
+Use the existing compact canonical JSON rules: JSON-mode values, every field
+including explicit null, UTF-8, `ensure_ascii=False`, sorted keys, separators
+`(",", ":")`, `allow_nan=False`, and no trailing newline.
+
+`core_fingerprint` is lowercase SHA-256 over canonical
+`ConnectedChangeCore` bytes. The transferable envelope contains
+`schema_version`, the complete `core`, `core_fingerprint`, the exact finalized
+originating receipt envelope, and `change_file_fingerprint`.
+`change_file_fingerprint` is lowercase SHA-256 over canonical envelope content
+excluding that fingerprint field.
+
+The standalone file proves its internal canonical fingerprint, its embedded
+receipt fingerprint, and that the embedded receipt commits the same Core
+fingerprint. It does not prove producer-source historical authenticity, sender
+identity, authorship, institutional authorization, signature validity, or the
+authenticity of absent payload artifacts.
+
+### TX-015 — Receiver application and deterministic plan rebinding
+
+Receiver application strictly verifies the Change File, scans the complete
+receiver source, runs `IO-014`, creates a complete receiver-local accepted plan,
+and reruns the existing compiler and all naming, overlap, source-stability,
+reference, copy, and promotion checks. Every receiver file participates exactly
+once. No file is invented, deleted, omitted, merged, or duplicated.
+
+The receiver creates an absent separate result and never edits the receiver
+source or Change File. It makes zero provider/API calls, zero budget
+reservations, and zero external-network calls. It does not fall back to model
+judgment or clarification when deterministic matching blocks.
+
+### TX-016 — Truthful execution origins
+
+`folder-execution-origin.v1` is a strict discriminated union:
+
+- `gpt_planned`: live, deterministic-development, or recorded-replay kind;
+  model alias and returned model identity where applicable; observable
+  tool/evidence transcript; clarification/answer where applicable; evidence
+  fingerprint; accepted plan; provider-call count; and API/store metadata where
+  applicable.
+- `capsule_applied`: Change File fingerprint; originating receipt fingerprint;
+  exact match-report fingerprint; receiver-local accepted-plan fingerprint;
+  provider-call count `0`; API use `false`; external-network use `false`; no
+  planner progress, model identity, or fabricated evidence ledger.
+
+Both origins use the same scanner, compiler, naming checks, reference rewriter,
+copy transaction, job store, receipt builder, independent verifier,
+reconstruction engine, and release proof. `FolderRefactorJob.v2` requires
+planner progress only for `gpt_planned` and forbids it for `capsule_applied`.
+
+### TX-017 — Origin and receiver result transactions
+
+Origin order is fixed:
+
+1. prove source equality;
+2. copy/rewrite into pending result;
+3. generate normal artifacts and preserved original Markdown bytes;
+4. run deterministic proof;
+5. compute organized-tree commitment;
+6. build and fingerprint immutable Change File Core;
+7. write final path-neutral verification report;
+8. build `FolderReceiptCore.v2`, committing the Core fingerprint but not future
+   envelope bytes;
+9. finalize origin receipt envelope;
+10. build/write the Change File envelope containing that receipt;
+11. render offline proof;
+12. rebuild tag manifest over receipt, Change File, and HTML;
+13. run final BagIt validation;
+14. run independent verifier;
+15. rescan source; and
+16. promote no-replace only after every check passes.
+
+The origin receipt raw-artifact commitment set excludes Change File envelope,
+receipt JSON, proof HTML, tag manifest, and later receiver-verification output.
+It commits the Change File Core fingerprint; the final tag manifest protects the
+completed envelope.
+
+Receiver order is fixed:
+
+1. strictly verify Change File and record raw digest/fingerprint;
+2. scan complete receiver source;
+3. build match report and receiver-local accepted plan;
+4. rerun compiler;
+5. copy/rewrite into absent pending result;
+6. write receiver artifacts, receiver original Markdown bytes, execution
+   origin, exact imported Change File, and match report;
+7. run deterministic proof;
+8. require organized-tree commitment equality;
+9. create a receiver-specific receipt committing the incoming Change File and
+   match report;
+10. rebuild tag manifest and run final BagIt/source-free verification;
+11. rescan receiver source and Change File; and
+12. promote no-replace only after all checks pass.
+
+Origin and receiver receipts differ. Their final organized-tree commitments are
+identical.
+
+### TX-018 — Receiver-specific reconstruction
+
+Receiver reconstruction verifies the receiver result, refuses an existing
+destination, uses receiver-specific reverse maps and original Markdown bytes,
+recreates receiver-specific empty directories, proves every receiver-source
+path/size/SHA-256, and promotes no-replace. It reconstructs the receiver's own
+original layout, not the producer's, and changes none of the sources, results,
+or Change File.
+
+### CASE-010 — Versioned job origin authority
+
+`folder-refactor-job.v2` is the sole mutable authority for both origin kinds and
+persists the exact execution-origin union, Change File/match-report bindings,
+receiver-local plan, result/receipt pointers, lifecycle, and every v1 persistence,
+lock, expected-revision, restart, staleness, immutability, and no-replace
+invariant. Terminal jobs remain immutable. Source or Change File change makes a
+receiver job stale or blocked and prevents continuation/promotion.
+
+### CASE-011 — Capsule job lifecycle and idempotent request binding
+
+Capsule application uses the existing lifecycle without a clarification state:
+planning/matching, executing, verified, stale, or blocked. It never initializes
+the planner. Durable mutation requests bind a caller idempotency-key hash to an
+exact canonical request fingerprint in the existing job authority. Identical
+retry returns the same durable job/result; conflicting reuse blocks. No second
+idempotency database or ledger is permitted.
+
+### CASE-012 — Cross-surface service authority
+
+Browser, CLI, shared MCP, and admitted plugin invoke the same domain services
+and persistent job. They cannot duplicate planner, compiler, persistence,
+receipt, verifier, reconstruction, or budget logic. A service/process restart
+rehydrates the job; status reads never trigger provider, budget, copy, or
+clarification work.
+
+### AI-013 — Planner versus Change File authority
+
+Only origin planning uses GPT-5.6. It preserves exact `gpt-5.6`, Responses API,
+strict tools, `store=false`, no fallback, no provider retry, the existing turn/
+evidence/repair/clarification bounds, and one cumulative budget ledger.
+
+Capsule application is mechanically forbidden from importing or initializing a
+planner/provider, credential, budget reservation, or external-network client.
+It records `capsule_applied`; it cannot display GPT planning progress or copy
+origin evidence as if generated on the receiver.
+
+After C0 and contract stabilization, release qualification requires one new real
+zero-question origin run and one new real one-clarification origin run, plus
+sanitized exact replays. The historical DecisionCard cannot qualify them. The
+sole budget ledger migrates monotonically from request cap 8 to 13 while
+preserving the one historical request/attempt, USD 0.679 committed exposure,
+USD 0.0382 reported estimated cost, every count, and the cumulative USD 10 cap.
+No second ledger or reset is permitted.
+
+### UX-013 — Home and Organize journey
+
+`GET /` renders Home when no job is active and otherwise routes by persisted
+state. Home offers **Organize a folder** and **Apply a shared change**.
+
+Organize shows **Choose folder…**, **What should change?**, a derived result
+next to the source, secondary **Change result location…**, and **Plan and create
+copy**. It visibly states:
+
+> Your original folder will not be changed. Name Atlas will create and verify a separate result.
+
+The accurate outbound-evidence and retention disclosure from `AI-012` remains
+collapsed but must be acknowledged before origin planning.
+
+### UX-014 — Apply, Working, and Done journeys
+
+Apply shows **Choose Change File…**, **Choose your project folder…**, derived
+result location with optional override, and **Apply change and create copy**. It
+visibly states:
+
+> Applying a Change File makes no GPT call, requires no API key, makes no external network request, and does not change your selected project folder.
+
+Working displays only true stages: Reading folder; GPT-5.6 is planning **or**
+Matching the shared change; Checking every file and destination; Creating the
+new folder; Updating supported links; Verifying the result. Apply never shows a
+fake GPT stage.
+
+Done leads with **Your new folder is ready** and shows file, changed-path, and
+updated-link counts; unchanged source; independent verification; Change File
+identity; and reconstruction statement. Actions are **Show in Finder**,
+**Download Change File**, **See changes**, **View proof**, **Verify again**, and
+**Recreate original layout**. Technical hashes, schemas, transcripts, BagIt,
+and receipt details stay collapsed.
+
+Required routes are `GET /`, `GET /start`, `POST /start`, `GET /apply`,
+`POST /apply`, `POST /choose-path`, `GET /working`, `GET /status`,
+`POST /clarify`, `GET /done`, `GET /download-change-file`,
+`POST /show-in-finder`, `POST /verify-again`, and
+`POST /recreate-original`.
+
+### UX-015 — Bounded native macOS picker and Finder bridge
+
+Keep the loopback FastAPI/Jinja/Blueprint application; do not introduce a native
+wrapper, Electron, Tauri, Swift, pywebview, PyObjC, React, or Vite.
+
+`POST /choose-path` is loopback-only and uses existing trusted-host,
+same-origin, cross-site, and CSRF protections. It accepts only role
+`source_folder`, `output_parent`, `change_file`, or `restore_destination`; maps
+that enum to one fixed application-owned AppleScript; invokes exact
+`/usr/bin/osascript` without a shell or browser-text interpolation; permits one
+picker process; enforces 120 seconds; terminates/reaps on timeout; distinguishes
+selected, cancelled, unavailable, timeout, and failed; returns no path on any
+non-selection; and performs no scan, hash, job creation, provider call, or copy.
+Directory roles use `choose folder`; Change File uses `choose file`. Because a
+native folder dialog selects an existing directory while reconstruction requires
+an absent destination, `restore_destination` treats the selected directory as
+the parent, derives and displays one absent child destination, and validates
+that derived path only when reconstruction is submitted. Every other selection
+is likewise validated only when its main form is submitted.
+
+Manual editable paths remain required on every platform and in judge
+automation. Unsupported platforms use them.
+
+`POST /show-in-finder` can invoke fixed `/usr/bin/open`, no shell, with a short
+timeout, only for a verified terminal-job path already held server-side. It
+cannot accept an arbitrary browser path. Unsupported platforms display/copy the
+path.
+
+### UX-016 — Responsive and truthful release experience
+
+FastAPI/Jinja/locally packaged Blueprint remains server-authoritative. Minimal
+JavaScript is limited to polling, disclosure, clipboard, and local filtering.
+Acceptance includes 1280×720 and 390×844, semantic/keyboard/focus/contrast
+review, and truthful origin-specific progress. Responsive layout is not a
+mobile app, remote phone access, or native-file-access claim.
+
+### VER-015 — Change File and organized-tree commitments
+
+Add `name-atlas/execution_origin.json`,
+`name-atlas/connected_change_capsule.json`, and, on receiver results only,
+`name-atlas/connected_change_match_report.json`.
+
+The organized-tree commitment is lowercase SHA-256 over canonical JSON for the
+sorted complete list of every regular member below `data/` with path, size, and
+SHA-256, plus every explicit empty directory with path and member kind. It is
+path-sensitive and is the cross-layout convergence authority. The A3 staged-
+data commitment remains for v1 compatibility.
+
+The acyclic dependency graph is:
+
+`Change File Core → origin receipt commits Core fingerprint → Change File envelope embeds origin receipt → envelope fingerprint excludes itself → final tag manifest protects envelope`
+
+No artifact commits its own bytes or fingerprint.
+
+### VER-016 — Independent Change File and receiver verification
+
+Strict source-free verification validates the incoming Change File fingerprints,
+embedded receipt binding, raw imported Change File digest, execution origin,
+match report, receiver-local accepted plan, complete bijection, naming,
+reference relationships, original Markdown bytes, receipt, BagIt, organized-
+tree commitment, and report agreement. It needs no GPT, API key, budget, job,
+browser, network, or original source. Optional source comparison adds current
+source equality only.
+
+Origin and receiver receipts use distinct v2 semantics and strict dispatch.
+Unrelated-location Change File application and result verification must pass.
+
+### VER-017 — Required convergence and refusal matrix
+
+Under `CONNECTED_CHANGE_GO`, release evidence includes exactly one polished
+24-file zero-question origin, one one-question origin, one Sofia-to-Martin
+differently arranged equivalent receiver, and refusals for changed payload,
+changed non-destination Markdown, changed supported relationship, symmetric
+duplicate, protected disagreement, invalid Change File fingerprint, and the
+existing receipt-integrity alteration.
+
+The Sofia/Martin transaction must prove different source commitments, the same
+supported logical project, zero receiver provider/API/budget/external-network
+use, both sources unchanged, both results independently verified, identical
+organized-tree commitments, and receiver reconstruction equal to Martin's own
+original paths and bytes.
+
+### VER-018 — Reconstruction and immutable-input proof
+
+Receiver reconstruction obeys `TX-018`. Origin and receiver source trees,
+origin and receiver results, and the Change File are rescanned at the required
+boundaries and remain unchanged. A failed match or transaction promotes no
+accepted result. Failure evidence stays outside immutable receipt domains.
+
+### REL-012 — Required CLI, fixtures, and profile dispatch
+
+Preserve existing stable commands and add:
+
+- `uv run name-atlas apply-change CHANGE_FILE --source SOURCE_ROOT [--output OUTPUT_PARENT] [--job JOB_FILE]`;
+- `uv run name-atlas mcp`.
+
+`apply-change` dispatches before planner, provider, credential, and budget
+initialization. Replay, Change File application, verifier, and reconstruction
+remain keyless. Missing live credentials cannot affect them. Live origin
+planning uses exact `gpt-5.6` without fallback.
+
+The final fixture surface is exactly the positive and refusal matrix in
+`VER-017`; do not create multiple polished projects.
+
+### REL-013 — Required shared STDIO MCP server
+
+Under `CONNECTED_CHANGE_GO`, use stable official Python MCP v1 with
+`mcp>=1.27,<2`. There is one STDIO server and one implementation of each domain
+service. It exposes exactly:
+
+- `plan_and_create_copy`;
+- `job_status`;
+- `answer_clarification`;
+- `get_change_file`;
+- `apply_change_file`;
+- `verify_result`; and
+- `recreate_original`.
+
+It exposes no arbitrary read/write/rename/move/delete, shell, raw planner
+evidence tool, compiler bypass, direct receipt creation, proof override, or
+approval bypass.
+
+`plan_and_create_copy` requires tool input
+`evidence_disclosure_acknowledged=true` for the exact bounded outbound-evidence
+and retention disclosure. Without literal boolean `true`, the server returns a
+structured non-mutating requirement and performs no scan, job mutation,
+provider call, or budget reservation.
+
+Every mutation tool accepts a caller idempotency key matching
+`^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$`, binds its SHA-256 to the canonical
+request fingerprint inside the existing job, returns the same durable
+job/result for an identical retry, and blocks conflicting reuse. Clarification
+answers bind expected revision and question fingerprint. Reconstruction stays
+no-replace. No second idempotency store exists.
+
+Long operations return a durable job handle promptly and use `job_status`.
+Process restart rehydrates the job. Status polling is read-only. Logs use
+STDERR; STDOUT is MCP protocol only. Credentials come only from local
+environment. Tool schemas reuse browser/CLI validation. The server
+`instructions` first 512 characters self-contain start → status → optional
+answer → status and fixed limits. An actual Codex invocation against this shared
+server is required before the plugin decision.
+
+### REL-014 — Optional Codex plugin gate
+
+After every required browser, CLI, MCP, GPT, Change File, receipt, verifier,
+reconstruction, C0-positive, and C0-negative surface passes with no material
+defect, adjudicate once as `GO` or `CUT_BY_PREAUTHORIZED_GATE`. `GO` additionally
+requires at least 12 actual hours before recording readiness, enough time before
+feature freeze, conservative work estimate at most four hours, and no duplicate
+core logic.
+
+If admitted, use the official plugin-creator workflow only after the gate. The
+plugin contains `.codex-plugin/plugin.json`, relative `.mcp.json`, no absolute
+developer path, and the same MCP server. Acceptance requires a repository
+marketplace entry in the clean public clone, `uv sync --frozen`, installation
+from that marketplace, app restart/refresh, a new Codex task, discovered tools,
+real invocation, keyless replay, clear missing-key live behavior, complete
+result, proof that the installed cache copy—not the developer checkout—ran, and
+working install/uninstall instructions. Codex is the mandatory tested client.
+Claude is only an optional smoke test; other hosts are not called tested without
+actual installation and invocation.
+
+### REL-015 — Timing, feature freeze, and recording readiness
+
+At C+0 calculate actual hours to feature freeze and recording readiness. The
+sole plan scales pre-freeze C0–C5 anchors, but these absolute boundaries do not
+move:
+
+- feature freeze: Monday 20 July 2026 at 14:00 CEST;
+- release candidate: Monday 20 July 2026 at 20:00 CEST;
+- recording ready: Tuesday 21 July 2026 at 02:00 CEST;
+- submission: Wednesday 22 July 2026 at 02:00 CEST.
+
+C0's latest decision is the earliest of its scaled target, C+8 hours, or the
+point when only 32 actual hours remain before feature freeze. If already past at
+C+0, select `A3_RELEASE_FALLBACK` immediately. Targets drive integration and
+cuts; they never prove completion.
+
+After selected-profile feature freeze, only defects, proof integrity,
+accessibility, visual QA, clean installation, documentation, screenshots,
+claims, rehearsal, packaging, and release work continue. Regenerate every stale
+release artifact. Recording readiness requires selected release commit, clean
+public repo/clone, final live/replay evidence, selected-profile fixtures,
+receipts, verifier, reconstruction, required shared MCP under Connected Change,
+admitted plugin only if fully passed, responsive/browser proof, timed narration,
+shot list, screenshots, Devpost drafts, Codex/GPT contribution, prior/new-work
+disclosure, known `/feedback` path, a rehearsed public-video duration strictly
+below three minutes, no planned code/design change, and the active submission
+hold.
+
+### CLAIM-006 — Permitted Connected Change claims
+
+When demonstrated under `CONNECTED_CHANGE_GO`, the product may say:
+
+> GPT-5.6 plans the connected-folder change once, and Name Atlas can deterministically apply and verify the same change on a differently arranged equivalent copy without another GPT call or transfer of project payload bytes.
+
+It may also state that every in-scope file is accounted for once; protected
+files remain fixed; demonstrated supported Markdown links reach the same
+logical files; originals remain unchanged; another person can apply the change
+without an API key; symmetric duplicates and changed relationships block; the
+origin and receiver converge to the same organized tree; and each receiver can
+reconstruct its own original layout.
+
+### CLAIM-007 — Connected Change limitations and exclusions
+
+Do not claim semantic equivalence, reconciliation of independently edited
+copies, extra/missing-file reconciliation, general graph isomorphism, universal
+format understanding, media/PDF/Office/spreadsheet semantic understanding,
+code-aware refactoring, arbitrary connection preservation, universal
+portability/reversibility, native Windows testing, mobile/remote phone access,
+zero API retention, full privacy, absence of disclosed metadata, sender/authors
+authentication, signatures, institutional authorization, historical
+authenticity, tamper-proofing, compliance, production readiness, universal
+zero-question behavior, unmeasured time savings, broad adoption, untested MCP
+clients, competitor nonexistence, or winning probability.
+
+Freeze out native desktop wrappers, hosted service/cloud sync,
+accounts/collaboration database, arbitrary filesystem MCP, general semantic
+matching, source reconciliation, independently modified copies,
+application-specific or AI-training-data adapters, JSONL/Parquet/Hugging Face,
+NER/ReFinED, repository/Archivematica integration, second planner/job/ledger/
+receipt/verifier/reconstruction engine, multiple client-specific MCP servers,
+multiple polished projects, further discovery, benchmark platform, or
+validation harness.
+
+Under `A3_RELEASE_FALLBACK`, only the implemented A3-derived AI-first claims in
+`CLAIM-004`–`CLAIM-005` survive. Every Change File, Apply, cross-layout, shared
+MCP, native-picker expansion, convergence, and plugin claim is excluded.
+
+## 14. Selected-profile recording-readiness Definition of Done
+
+The selected release profile is recording-ready only when C0 has an exact
+terminal profile; every non-cut requirement of that profile is integrated and
+semantically verified through its user-visible transactions and downstream
+consumers; full suites and clean-clone commands pass; regenerated release
+materials and claims match actual behavior; the optional plugin is either fully
+accepted or exactly cut; no planned product or design work remains; and final
+submission is still held for the user's voice, `/feedback`, due diligence, and
+explicit release.
