@@ -31,11 +31,23 @@ from name_atlas.verification import BagItPackageValidator
 from name_atlas.workflow import UnavailableReplayDecisionCardProvider, WorkflowSession
 
 LOGGER = logging.getLogger(__name__)
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-HERO_SOURCE_ROOT = PROJECT_ROOT / "sample_data" / "hero"
-REPLAY_RECORD_PATH = (
-    PROJECT_ROOT / "src" / "name_atlas" / "recordings" / "hero_decision_card.json"
-)
+
+
+def _runtime_roots(package_root: Path, working_directory: Path) -> tuple[Path, Path]:
+    """Return the writable project root and deterministic bundled hero root."""
+
+    checkout_root = package_root.parents[1]
+    running_from_checkout = (checkout_root / "pyproject.toml").is_file() and (
+        checkout_root / "src" / "name_atlas"
+    ).resolve() == package_root
+    if running_from_checkout:
+        return checkout_root, checkout_root / "sample_data" / "hero"
+    return working_directory, package_root / "sample_data" / "hero"
+
+
+PACKAGE_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT, HERO_SOURCE_ROOT = _runtime_roots(PACKAGE_ROOT, Path.cwd())
+REPLAY_RECORD_PATH = PACKAGE_ROOT / "recordings" / "hero_decision_card.json"
 OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "stages"
 BUDGET_LEDGER_PATH = PROJECT_ROOT / ".name-atlas" / "api_budget.json"
 CASE_DIRECTORY = PROJECT_ROOT / ".name-atlas" / "cases"
@@ -222,7 +234,17 @@ def run(
         print(f"Startup blocked: {exc}", file=sys.stderr)
         return 2
     try:
-        if (
+        durable_replay_record = (
+            mode is RunMode.REPLAY
+            and workflow.case is not None
+            and any(
+                record.display_origin is CardDisplayOrigin.RECORDED_REPLAY
+                for record in workflow.case.card_records
+            )
+        )
+        if durable_replay_record:
+            replay_record_configured = True
+        elif (
             mode is RunMode.REPLAY
             and replay_record_path is not None
             and replay_record_path.is_file()
@@ -233,12 +255,6 @@ def run(
                 print(f"Replay startup blocked: {exc}", file=sys.stderr)
                 return 2
             replay_record_configured = True
-        elif mode is RunMode.REPLAY and workflow.case is not None:
-            replay_record_configured = any(
-                record.display_origin is CardDisplayOrigin.RECORDED_REPLAY
-                for record in workflow.case.card_records
-            )
-
         config = RuntimeConfig.from_environment(
             mode=mode,
             port=args.port,

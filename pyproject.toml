@@ -33,6 +33,7 @@ packages = ["src/name_atlas"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "THIRD_PARTY_NOTICES.md" = "name_atlas/THIRD_PARTY_NOTICES.md"
+"sample_data/hero" = "name_atlas/sample_data/hero"
 
 [tool.pytest.ini_options]
 addopts = "-ra"

@@ -118,7 +118,8 @@ def test_wheel_configuration_includes_notice_and_package_assets() -> None:
 
     assert wheel["packages"] == ["src/name_atlas"]
     assert wheel["force-include"] == {
-        "THIRD_PARTY_NOTICES.md": "name_atlas/THIRD_PARTY_NOTICES.md"
+        "THIRD_PARTY_NOTICES.md": "name_atlas/THIRD_PARTY_NOTICES.md",
+        "sample_data/hero": "name_atlas/sample_data/hero",
     }
     assert not (PROJECT_ROOT / "package.json").exists()
     assert not (PROJECT_ROOT / "vite.config.js").exists()

@@ -1,5 +1,6 @@
 """Judge-facing CLI tests."""
 
+import asyncio
 import os
 import shutil
 from pathlib import Path
@@ -9,6 +10,34 @@ from typing import Any
 from name_atlas import cli
 from name_atlas.cases import CaseLifecycle, MigrationCaseStore
 from name_atlas.receiver_verifier import ReceiptVerificationStatus
+
+
+def test_runtime_roots_use_checkout_fixture_only_for_a_real_checkout(
+    tmp_path: Path,
+) -> None:
+    checkout_root = tmp_path / "checkout"
+    package_root = checkout_root / "src" / "name_atlas"
+    package_root.mkdir(parents=True)
+    (checkout_root / "pyproject.toml").touch()
+
+    project_root, hero_root = cli._runtime_roots(package_root, tmp_path / "runner")
+
+    assert project_root == checkout_root
+    assert hero_root == checkout_root / "sample_data" / "hero"
+
+
+def test_runtime_roots_prevent_invocation_directory_from_shadowing_wheel_hero(
+    tmp_path: Path,
+) -> None:
+    package_root = tmp_path / "venv" / "site-packages" / "name_atlas"
+    package_root.mkdir(parents=True)
+    working_directory = tmp_path / "runner"
+    (working_directory / "sample_data" / "hero").mkdir(parents=True)
+
+    project_root, hero_root = cli._runtime_roots(package_root, working_directory)
+
+    assert project_root == working_directory
+    assert hero_root == package_root / "sample_data" / "hero"
 
 
 def test_live_mode_fails_clearly_without_api_key(capsys: Any) -> None:
@@ -40,6 +69,72 @@ def test_replay_mode_runs_on_loopback(monkeypatch: Any) -> None:
     runtime_config = called["app"].state.runtime_config
     assert runtime_config.replay_record_configured is True
     assert runtime_config.provider_status == "Recorded GPT-5.6 response"
+
+
+def test_replay_cli_resumes_a_durable_post_decision_case(
+    monkeypatch: Any,
+    tmp_path: Path,
+) -> None:
+    case_path = tmp_path / "ready-case.json"
+    output = tmp_path / "stages"
+    workflow = cli.WorkflowSession(
+        source_root=cli.HERO_SOURCE_ROOT,
+        output_root=output,
+        decision_card_provider=cli.RecordedReplayDecisionCardProvider(
+            cli.REPLAY_RECORD_PATH.read_bytes()
+        ),
+        package_validator=cli.BagItPackageValidator(),
+        replay_record_path=cli.REPLAY_RECORD_PATH,
+        case_path=case_path,
+    )
+    try:
+        meaning_family = next(
+            family
+            for family in workflow.package.families
+            if family.canonical_identifier == "NA-0001"
+        )
+        collision_family = next(
+            family
+            for family in workflow.package.families
+            if family.canonical_identifier == "CASE-010"
+        )
+        asyncio.run(workflow.generate_card(meaning_family.family_id))
+        workflow.approve_low_risk()
+        workflow.edit(collision_family.family_id, "harbor-map-north")
+        workflow.approve_low_risk()
+        workflow.edit(meaning_family.family_id, "campaign-poster")
+    finally:
+        workflow.close()
+
+    called: dict[str, Any] = {}
+
+    def fake_run(app: Any, **kwargs: Any) -> None:
+        called["app"] = app
+        called.update(kwargs)
+
+    monkeypatch.setattr(cli.uvicorn, "run", fake_run)
+    exit_code = cli.run(
+        [
+            "demo",
+            "--mode",
+            "replay",
+            "--source",
+            str(cli.HERO_SOURCE_ROOT),
+            "--output",
+            str(output),
+            "--case",
+            str(case_path),
+        ],
+        environ={},
+    )
+
+    assert exit_code == 0
+    resumed = called["app"].state.workflow
+    assert resumed.view_model()["export_ready"] is True
+    assert called["app"].state.runtime_config.replay_record_configured is True
+    assert called["app"].state.runtime_config.provider_status == (
+        "Recorded GPT-5.6 response"
+    )
 
 
 def test_selected_supported_package_reaches_the_local_workbench(
