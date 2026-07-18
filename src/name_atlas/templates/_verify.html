@@ -1,73 +1,120 @@
+{% macro verification_group(name, detail, status='verified') -%}
+  <li class="verification-group verification-group--{{ status }}">
+    {% if status == 'verified' %}
+      <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
+    {% else %}
+      <img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true">
+    {% endif %}
+    <span><strong>{{ name }}</strong><small>{{ detail }}</small></span>
+  </li>
+{%- endmacro %}
+
 <section class="product-section" aria-labelledby="verify-title">
-  <div class="section-heading">
+  <header class="page-heading">
     <div>
       <p class="eyebrow">04 · Verify · {{ page_status }}</p>
-      <h2 id="verify-title">The handoff must earn its verdict.</h2>
+      <h1 id="verify-title">The handoff earns its verdict.</h1>
+      <p>Seven deterministic groups; one truthful result.</p>
     </div>
-    <p>Source · Payloads · References · Paths · Decisions · Package · Receipt</p>
-  </div>
+    <p class="page-heading__meta">Source to receipt</p>
+  </header>
 
   {% if view and shell.lifecycle == 'stale' %}
-    <article class="proof-card">
-      <header><span class="state state--red">BLOCKED</span><h3>This case cannot verify a current handoff.</h3></header>
-      <p>The source differs from the snapshot that established this Migration Case. No receipt or staged package from this stale workflow may be presented as current verification evidence.</p>
-      <div class="proof-grid" aria-label="Blocked verification groups">
-        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}<div><p><strong>{{ group }}</strong><small>BLOCKED · source staleness invalidates the current transaction</small></p></div>{% endfor %}
-      </div>
-      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    <article class="verdict-card verdict-card--blocked">
+      <header><img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true"><div><span>BLOCKED</span><h2>This case cannot verify a current handoff.</h2></div></header>
+      <p>The source differs from the snapshot that established this Migration Case.</p>
+      <ul class="verification-grid" aria-label="Blocked verification groups">
+        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}{{ verification_group(group, 'Source staleness blocks the current transaction.', 'blocked') }}{% endfor %}
+      </ul>
+      <a class="button bp6-button" href="/atlas">Inspect the exact source differences</a>
     </article>
   {% elif view and view.proof %}
-    <article class="proof-card{% if shell.handoff_ready %} proof-card--verified{% endif %}">
-      <header><span class="state {% if shell.handoff_ready %}state--green{% else %}state--amber{% endif %}">{% if shell.handoff_ready %}VERIFIED{% else %}INCOMPLETE{% endif %}</span><h3>{{ view.proof.report.claim }}</h3></header>
-      <p class="mono subtle">{{ view.stage_root }}</p>
-      <div class="proof-grid" aria-label="Verification groups">
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Source</strong><small>Initial, pre-stage, and post-copy commitments agree; the source remains unchanged.</small></p></div>
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Payloads</strong><small>{{ view.proof.report.content_object_count }} content objects · {{ view.proof.report.content_bytes }} bytes verified.</small></p></div>
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>References</strong><small>Declared staged metadata and derivative references resolve.</small></p></div>
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Paths</strong><small>{{ view.proof.report.map_row_count }} complete forward/reverse map rows round-trip.</small></p></div>
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Decisions</strong><small>Every required family has an explicit export-ready human action.</small></p></div>
-        <div><span class="checkmark" aria-hidden="true">✓</span><p><strong>Package</strong><small>{{ view.proof.report.bagit_validation.messages[0] }}</small></p></div>
-        <div>{% if shell.handoff_ready %}<span class="checkmark" aria-hidden="true">✓</span>{% endif %}<p><strong>Receipt</strong><small>{% if shell.handoff_ready %}Bound to {{ shell.receipt_fingerprint[:16] }}… and admitted by the receiver-verification transaction.{% else %}INCOMPLETE · staged proof exists, but no receipt-bound receiver-verification result is available.{% endif %}</small></p></div>
-      </div>
+    <article class="verdict-card {% if shell.receiver_current_verified %}verdict-card--verified{% elif shell.receiver_blocked %}verdict-card--blocked{% else %}verdict-card--incomplete{% endif %}">
+      <header>
+        {% if shell.receiver_current_verified %}
+          <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
+        {% else %}
+          <img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true">
+        {% endif %}
+        <div><span>{{ page_status }}</span><h2>{{ view.proof.report.claim }}</h2></div>
+      </header>
+      <p class="path-display mono">{{ shell.stage_root }}</p>
 
-      <details>
+      <ul class="verification-grid" aria-label="Verification groups">
+        {{ verification_group('Source', 'Initial, pre-stage, and post-copy commitments agree.') }}
+        {{ verification_group('Payloads', view.proof.report.content_object_count ~ ' content objects · ' ~ view.proof.report.content_bytes ~ ' bytes') }}
+        {{ verification_group('References', 'Declared staged metadata and derivative references resolve.') }}
+        {{ verification_group('Paths', view.proof.report.map_row_count ~ ' forward/reverse rows round-trip.') }}
+        {{ verification_group('Decisions', 'Every required family has a human-owned export-ready action.') }}
+        {{ verification_group('Package', view.proof.report.bagit_validation.messages[0] if view.proof.report.bagit_validation.messages else 'BagIt validation passed.') }}
+        {% if shell.receiver_current_verified %}
+          {{ verification_group('Receipt', 'Receiver verified · ' ~ shell.receipt_fingerprint[:16] ~ '…') }}
+        {% elif shell.receiver_blocked %}
+          {{ verification_group('Receipt', 'Current receiver verification is blocked.', 'blocked') }}
+        {% else %}
+          {{ verification_group('Receipt', 'Receipt-bound receiver verification is not available yet.', 'incomplete') }}
+        {% endif %}
+      </ul>
+
+      <details class="technical-disclosure">
         <summary>Technical verification evidence</summary>
-        <div class="proof-grid">
-          {% for check in view.proof.report.checks %}<div><span class="checkmark" aria-hidden="true">✓</span><p><strong>{{ check.label }}</strong><small>{{ check.detail }}</small></p></div>{% endfor %}
+        <div class="check-table table-scroll">
+          <table>
+            <thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Evidence</th></tr></thead>
+            <tbody>{% for check in view.proof.report.checks %}<tr><th scope="row">{{ check.label }}</th><td><span class="state state--green">PASS</span></td><td>{{ check.detail }}</td></tr>{% endfor %}</tbody>
+          </table>
         </div>
       </details>
 
-      <section class="artifact-shelf" aria-labelledby="artifact-title">
-        <div><p class="eyebrow">Proof artifacts</p><h4 id="artifact-title">Inspect the durable evidence.</h4></div>
+      <details class="artifact-shelf technical-disclosure">
+        <summary>Proof artifacts</summary>
         <ul>
           {% for artifact_path in view.proof.report.artifact_paths %}
             <li><code>{{ artifact_path }}</code><span><a href="/proof-artifacts/{{ artifact_path }}" target="_blank" rel="noopener">Open</a><a href="/proof-artifacts/{{ artifact_path }}" download>Download</a></span></li>
           {% endfor %}
         </ul>
-      </section>
-      <footer>{% if shell.handoff_ready %}<a href="/handoff">Continue to receiver handoff</a>{% else %}Handoff remains blocked until receipt finalization and receiver verification succeed.{% endif %}</footer>
+      </details>
+
+      {% if shell.handoff_ready %}<a class="button bp6-button bp6-intent-primary" href="/handoff">Continue to receiver handoff</a>{% else %}<p class="panel-note">Handoff remains blocked until receipt finalization and receiver verification succeed.</p>{% endif %}
     </article>
   {% elif view and shell.handoff_ready %}
-    <article class="proof-card proof-card--verified">
-      <header><span class="state state--green">VERIFIED</span><h3>The persistent case records a receiver-verified handoff.</h3></header>
-      <p>The detailed producer report is not loaded in this restarted browser process. The immutable receipt and verification evidence remain in the handoff package.</p>
-      <dl>
+    <article class="verdict-card {% if shell.receiver_current_verified %}verdict-card--verified{% elif shell.receiver_blocked %}verdict-card--blocked{% else %}verdict-card--incomplete{% endif %}">
+      <header>
+        <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg' if shell.receiver_current_verified else '/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true">
+        <div>
+          <span>{{ page_status }}</span>
+          {% if shell.receiver_current_verified %}<h2>A fresh receiver run verifies the finalized handoff.</h2>{% elif shell.receiver_blocked %}<h2>The case records finalization, but the current handoff is unavailable or blocked.</h2>{% else %}<h2>The persistent case records a receiver-verified handoff at finalization; current receiver verification has not been rerun.</h2>{% endif %}
+        </div>
+      </header>
+      <p>The detailed producer report is not loaded after restart. Rerun the keyless receiver verifier against the current handoff bytes.</p>
+      <dl class="fact-grid fact-grid--wide">
         <div><dt>Handoff</dt><dd class="mono">{{ shell.stage_root }}</dd></div>
-        <div><dt>Receipt fingerprint</dt><dd class="mono">{{ shell.receipt_fingerprint }}</dd></div>
+        <div><dt>Receipt</dt><dd class="mono">{{ shell.receipt_fingerprint }}</dd></div>
         <div><dt>Source commitment</dt><dd class="mono">{{ shell.source_commitment }}</dd></div>
         <div><dt>Case lifecycle</dt><dd>{{ shell.lifecycle }}</dd></div>
       </dl>
-      <details><summary>Why the detailed groups are not repeated here</summary><p>The Migration Case is local workflow authority, not a duplicate proof report. A receiver should run the keyless verifier against the immutable handoff to recompute the complete Source, Payloads, References, Paths, Decisions, Package, and Receipt findings.</p></details>
-      <footer><a href="/handoff">Open receiver handoff</a></footer>
+      <ul class="verification-grid" aria-label="Restarted verification groups">
+        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}
+          {% if shell.receiver_current_verified %}
+            {{ verification_group(group, 'Fresh receiver verification passed in this process.') }}
+          {% elif shell.receiver_blocked %}
+            {{ verification_group(group, 'Current receiver verification is unavailable or blocked.', 'blocked') }}
+          {% else %}
+            {{ verification_group(group, 'Verified at finalization; a fresh receiver rerun is pending.', 'incomplete') }}
+          {% endif %}
+        {% endfor %}
+      </ul>
+      <details class="technical-disclosure"><summary>Why detailed checks are not duplicated here</summary><p>The finalized case preserves historical transaction identity. A fresh receiver run recomputes Source, Payloads, References, Paths, Decisions, Package, and Receipt findings against the bytes currently at the handoff path.</p></details>
+      <a class="button bp6-button bp6-intent-primary" href="/handoff">Open receiver handoff</a>
     </article>
   {% else %}
-    <article class="proof-card">
-      <header><span class="state {% if view and view.hard_blocker_count %}state--red{% else %}state--amber{% endif %}">{% if view and view.hard_blocker_count %}BLOCKED{% else %}INCOMPLETE{% endif %}</span><h3>No verified staged handoff exists.</h3></header>
-      <p>Verify does not infer success from proposals or decisions. Stage the complete package before deterministic proof can be shown.</p>
-      <div class="proof-grid" aria-label="Incomplete verification groups">
-        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}<div><p><strong>{{ group }}</strong><small>INCOMPLETE · no finalized handoff evidence</small></p></div>{% endfor %}
-      </div>
-      {% if view and view.export_ready %}<p><a class="button" href="/stage">Continue to Stage</a></p>{% elif view %}<p><a class="button" href="/decide">Resolve decisions</a></p>{% else %}<p><a class="button" href="/atlas">Inspect Atlas blocker</a></p>{% endif %}
+    <article class="verdict-card {% if page_status == 'BLOCKED' %}verdict-card--blocked{% else %}verdict-card--incomplete{% endif %}">
+      <header><img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true"><div><span>{{ page_status }}</span><h2>No verified staged handoff exists.</h2></div></header>
+      <p>Verify never infers success from proposals or decisions.</p>
+      <ul class="verification-grid" aria-label="Incomplete verification groups">
+        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}{{ verification_group(group, 'No finalized handoff evidence.', 'incomplete') }}{% endfor %}
+      </ul>
+      {% if view and view.export_ready %}<a class="button bp6-button bp6-intent-primary" href="/stage">Continue to Stage</a>{% elif view %}<a class="button bp6-button bp6-intent-primary" href="/decide">Resolve decisions</a>{% else %}<a class="button bp6-button" href="/atlas">Inspect Atlas blocker</a>{% endif %}
     </article>
   {% endif %}
 </section>

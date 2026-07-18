@@ -178,6 +178,18 @@ def test_difference_contract_rejects_invented_rename() -> None:
         )
 
 
+def test_difference_contract_rejects_resized_member_with_same_digest() -> None:
+    before = _member("objects/resized.txt", b"short")
+    fabricated_after = before.model_copy(update={"size": before.size + 1})
+
+    with pytest.raises(ValidationError, match="different digest"):
+        SourceDifference(
+            kind=SourceDifferenceKind.RESIZED,
+            before=before,
+            after=fabricated_after,
+        )
+
+
 def test_case_lifecycle_requires_exact_stale_differences(tmp_path: Path) -> None:
     package = import_package(HERO_ROOT)
     case = new_migration_case(

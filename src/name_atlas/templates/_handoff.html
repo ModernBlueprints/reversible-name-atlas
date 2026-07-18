@@ -1,42 +1,81 @@
 <section class="product-section" aria-labelledby="handoff-title">
-  <div class="section-heading">
+  <header class="page-heading">
     <div>
       <p class="eyebrow">05 · Handoff · {{ page_status }}</p>
-      <h2 id="handoff-title">Give the receiver the package and the proof.</h2>
+      <h1 id="handoff-title">Hand over the proof.</h1>
+      <p>A portable receipt and a keyless verification path.</p>
     </div>
-    <p>Portable receipt · keyless verification · no browser authority</p>
-  </div>
+    <p class="page-heading__meta">Receiver view</p>
+  </header>
 
   {% if view and shell.lifecycle == 'stale' %}
-    <article class="proof-card">
-      <header><span class="state state--red">BLOCKED</span><h3>No current receiver handoff can be issued from this stale case.</h3></header>
-      <p>The source no longer matches the case snapshot. Handoff therefore exposes no receipt, fingerprint, verifier command, or restore action.</p>
-      <p>Preserve this case and create a fresh case at a different path before producing a receiver-ready package.</p>
-      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    <article class="status-panel status-panel--blocked">
+      <header><img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true"><div><span class="state state--red">BLOCKED</span><h2>No current receiver handoff can be issued from this stale case.</h2></div></header>
+      <p>The source no longer matches the case snapshot. No receipt or verifier action is exposed.</p>
+      <a class="button bp6-button" href="/atlas">Inspect the exact source differences</a>
     </article>
   {% elif view and shell.handoff_ready %}
-    <article class="proof-card proof-card--verified">
-      <header><span class="state state--green">VERIFIED</span><h3>The staged handoff is ready for receiver inspection.</h3></header>
-      <dl>
-        <div><dt>Local handoff</dt><dd class="mono">{{ shell.stage_root }}</dd></div>
-        <div><dt>Receipt fingerprint</dt><dd class="mono">{% if shell.receipt_fingerprint %}{{ shell.receipt_fingerprint }}{% else %}not exposed by current workflow result{% endif %}</dd></div>
-        <div><dt>Source commitment</dt><dd class="mono">{{ shell.source_commitment }}</dd></div>
-        <div><dt>Receiver dependencies</dt><dd>No API key, GPT call, network, browser, or local case</dd></div>
-      </dl>
-      <section class="artifact-shelf" aria-labelledby="handoff-actions-title">
-        <div><p class="eyebrow">Receiver actions</p><h4 id="handoff-actions-title">Inspect, copy, and verify.</h4></div>
-        <ul>
-          {% if view.proof and 'name-atlas/change_receipt.html' in view.proof.report.artifact_paths %}<li><code>name-atlas/change_receipt.html</code><span><a href="/proof-artifacts/name-atlas/change_receipt.html" target="_blank" rel="noopener">Open offline receipt</a></span></li>{% endif %}
-          <li><code>uv run name-atlas verify-receipt "{{ shell.stage_root }}"</code><span><a href="/verify">Inspect proof</a></span></li>
-        </ul>
+    <article class="receipt-card {% if shell.receiver_current_verified %}receipt-card--verified{% elif shell.receiver_blocked %}receipt-card--blocked{% else %}receipt-card--incomplete{% endif %}">
+      <header class="receipt-card__header">
+        <div class="receipt-verdict"><img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg' if shell.receiver_current_verified else '/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true"><span>{% if shell.receiver_current_verified %}<strong>VERIFIED HANDOFF</strong><small>Current handoff bytes passed receiver verification</small>{% elif shell.receiver_blocked %}<strong>RECEIVER CHECK BLOCKED</strong><small>The historical case remains finalized; the current handoff is unavailable or failed verification</small>{% else %}<strong>FINALIZED RECEIPT</strong><small>Verified at producer finalization; rerun against the current handoff bytes</small>{% endif %}</span></div>
+        <span class="state {% if shell.receiver_current_verified %}state--green{% elif shell.receiver_blocked %}state--red{% else %}state--amber{% endif %}">{{ page_status }}</span>
+      </header>
+
+      <section class="fingerprint-block" aria-labelledby="fingerprint-title">
+        <span id="fingerprint-title">Receipt fingerprint</span>
+        <code>{% if shell.receipt_fingerprint %}{{ shell.receipt_fingerprint }}{% else %}not exposed by current workflow result{% endif %}</code>
       </section>
-      <details><summary>Independent verification boundary</summary><p>The receiver verifier must inspect the copied bag without this browser session or the local Migration Case. Internal consistency does not authenticate sender identity or prove that the committed description is an authentic historical source.</p></details>
+
+      <dl class="fact-grid fact-grid--wide">
+        <div><dt>Local handoff</dt><dd class="mono">{{ shell.stage_root }}</dd></div>
+        <div><dt>Source commitment</dt><dd class="mono">{{ shell.source_commitment }}</dd></div>
+        <div><dt>Receiver dependencies</dt><dd>No API key, GPT, network, browser, or local case</dd></div>
+        <div><dt>Authority</dt><dd>Machine receipt and committed artifacts</dd></div>
+      </dl>
+
+      <section class="handoff-actions" aria-labelledby="handoff-actions-title">
+        <div class="group-heading">
+          <div><span class="group-kicker">Receiver actions</span><h2 id="handoff-actions-title">Inspect and verify</h2></div>
+        </div>
+
+        <div class="action-grid">
+          <article>
+            <img src="{{ url_for('static', path='/vendor/blueprint/icons/export.svg') }}" alt="" aria-hidden="true">
+            <div><h3>Open receipt</h3><p>Human-readable, offline, and explicitly non-authoritative.</p></div>
+            {% if shell.receipt_html_available %}<a class="button bp6-button" href="/proof-artifacts/name-atlas/change_receipt.html" target="_blank" rel="noopener">Open offline receipt</a>{% else %}<span class="state state--amber">Unavailable in this process</span>{% endif %}
+          </article>
+
+          <article>
+            <img src="{{ url_for('static', path='/vendor/blueprint/icons/history.svg') }}" alt="" aria-hidden="true">
+            <div><h3>Rerun verification</h3><p>Invoke the same pure receiver verifier on this handoff.</p></div>
+            <form method="post" action="/rerun-verifier"><button class="button bp6-button bp6-intent-primary" type="submit" {% if not shell.handoff_candidate_available %}disabled{% endif %}>Rerun verifier</button></form>
+          </article>
+        </div>
+        {% if receiver_verification %}
+          <p class="receiver-result {% if receiver_verification.status.value == 'verified' %}receiver-result--verified{% else %}receiver-result--blocked{% endif %}" role="status">
+            <strong>Latest receiver run: {{ receiver_verification.status.value|upper }}</strong>
+            {% if receiver_verification.status.value == 'verified' %}{{ receiver_verification.receipt_fingerprint }}{% else %}{{ receiver_verification.failed_check_ids|join(', ') }}{% endif %}
+          </p>
+        {% endif %}
+      </section>
+
+      <section class="command-card" aria-labelledby="verifier-command-title">
+        <div><img src="{{ url_for('static', path='/vendor/blueprint/icons/clipboard.svg') }}" alt="" aria-hidden="true"><span><strong id="verifier-command-title">Verify after copying the bag</strong><small>Run from a clean Name Atlas checkout.</small></span></div>
+        <label class="visually-hidden" for="verifier-command">Receiver verifier command</label>
+        <input id="verifier-command" class="bp6-input mono" type="text" readonly value="{{ shell.verifier_command }}">
+      </section>
+
+      <details class="technical-disclosure">
+        <summary>Independent verification boundary</summary>
+        <p>Internal consistency does not authenticate sender identity or prove that the committed description is an authentic historical source.</p>
+      </details>
+      <a class="text-link" href="/verify">Review producer verification</a>
     </article>
   {% else %}
-    <article class="proof-card">
-      <header><span class="state state--amber">INCOMPLETE</span><h3>No receiver-ready handoff exists.</h3></header>
-      <p>Handoff remains directly inspectable, but it cannot expose a receipt, fingerprint, verifier command, or restore action until staging and verification succeed.</p>
-      {% if view and view.export_ready %}<p><a class="button" href="/stage">Continue to Stage</a></p>{% elif view %}<p><a class="button" href="/decide">Resolve decisions</a></p>{% else %}<p><a class="button" href="/atlas">Inspect Atlas blocker</a></p>{% endif %}
+    <article class="status-panel {% if page_status == 'BLOCKED' %}status-panel--blocked{% else %}status-panel--incomplete{% endif %}">
+      <header><img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true"><div><span class="state {% if page_status == 'BLOCKED' %}state--red{% else %}state--amber{% endif %}">{{ page_status }}</span><h2>No receiver-ready handoff exists.</h2></div></header>
+      <p>The receipt, fingerprint, and verifier actions appear only after the complete staged transaction passes.</p>
+      {% if view and view.export_ready %}<a class="button bp6-button bp6-intent-primary" href="/stage">Continue to Stage</a>{% elif view %}<a class="button bp6-button bp6-intent-primary" href="/decide">Resolve decisions</a>{% else %}<a class="button bp6-button" href="/atlas">Inspect Atlas blocker</a>{% endif %}
     </article>
   {% endif %}
 </section>

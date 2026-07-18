@@ -127,6 +127,22 @@ async def test_root_and_stage_follow_server_owned_workflow_state(
         assert workflow.case is not None
         assert workflow.stage_result is not None
         stage_result_after_success = workflow.stage_result
+        report = workflow.stage_result.artifacts.report
+        empty_message_validation = report.bagit_validation.model_copy(
+            update={"messages": ()}
+        )
+        workflow.stage_result = workflow.stage_result.model_copy(
+            update={
+                "artifacts": workflow.stage_result.artifacts.model_copy(
+                    update={
+                        "report": report.model_copy(
+                            update={"bagit_validation": empty_message_validation}
+                        )
+                    }
+                )
+            }
+        )
+        empty_message_verify = await client.get("/verify")
         workflow.case = workflow.case.model_copy(
             update={
                 "lifecycle": CaseLifecycle.READY_TO_STAGE,
@@ -171,6 +187,8 @@ async def test_root_and_stage_follow_server_owned_workflow_state(
     assert ready_root.headers["location"] == "/stage"
     assert staged.status_code == 303
     assert staged.headers["location"] == "/verify"
+    assert empty_message_verify.status_code == 200
+    assert "BagIt validation passed." in empty_message_verify.text
     assert "INCOMPLETE" in verified.text
     assert "Verified round-trip integrity" in verified.text
     assert proof_only_root.headers["location"] == "/verify"
@@ -219,7 +237,7 @@ async def test_root_distinguishes_refused_review_from_stale_case(
         package_validator=BagItPackageValidator(),
         case_path=tmp_path / "case.json",
     )
-    workflow.refuse(workflow.package.families[0].family_id)
+    family_id = workflow.package.families[0].family_id
     config = RuntimeConfig.from_environment(mode=RunMode.REPLAY, environ={})
     transport = httpx.ASGITransport(app=create_app(config, workflow))
 
@@ -227,6 +245,10 @@ async def test_root_distinguishes_refused_review_from_stale_case(
         transport=transport,
         base_url="http://testserver",
     ) as client:
+        refused = await client.post(
+            f"/families/{family_id}/refuse",
+            follow_redirects=True,
+        )
         refused_root = await client.get("/")
         assert workflow.case is not None
         workflow.case = workflow.case.model_copy(
@@ -235,6 +257,10 @@ async def test_root_distinguishes_refused_review_from_stale_case(
         stale_root = await client.get("/")
         stale_atlas = await client.get("/atlas")
 
+    assert refused.status_code == 200
+    assert "Human refusal stored; complete export is blocked." in refused.text
+    assert "notice--error" in refused.text
+    assert "notice--success" not in refused.text
     assert refused_root.headers["location"] == "/decide"
     assert stale_root.headers["location"] == "/atlas"
     assert "Migration Case is stale" in stale_atlas.text

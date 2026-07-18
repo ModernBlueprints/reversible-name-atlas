@@ -219,6 +219,8 @@ class SourceDifference(_StrictFrozenCaseModel):
         if self.kind is SourceDifferenceKind.RESIZED:
             if self.before.size == self.after.size:
                 raise ValueError("A resized member must have a different byte size.")
+            if self.before.sha256 == self.after.sha256:
+                raise ValueError("A resized member must have a different digest.")
             return self
         if self.before.size != self.after.size:
             raise ValueError("A content-changed member must retain its byte size.")
@@ -727,9 +729,13 @@ class MigrationCase(_StrictFrozenCaseModel):
                     "A handoff-ready case requires stage, handoff, and receipt "
                     "pointers."
                 )
-        elif self.receipt_fingerprint is not None:
+        elif (
+            self.receipt_fingerprint is not None
+            or self.local_paths.handoff_path is not None
+        ):
             raise ValueError(
-                "Only a handoff-ready case may retain a receipt fingerprint."
+                "Only a handoff-ready case may retain a handoff pointer or receipt "
+                "fingerprint."
             )
         return self
 

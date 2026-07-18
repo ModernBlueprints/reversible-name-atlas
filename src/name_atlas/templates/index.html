@@ -3,54 +3,104 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#174f3d">
+    <meta name="theme-color" content="#111418">
     <title>{{ active_page|title }} · Reversible Name Atlas</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23174f3d%22/><text x=%2211%22 y=%2241%22 font-size=%2226%22 fill=%22white%22>NA</text></svg>">
-    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v=20260718-r1">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23111418%22/><path d=%22M18 43V21h5l18 22h5V21%22 fill=%22none%22 stroke=%22%2348aff0%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', path='/vendor/blueprint/blueprint.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v=20260718-r4">
   </head>
-  <body>
-    <main class="shell">
-      <header class="masthead">
-        <a class="wordmark" href="/" aria-label="Reversible Name Atlas next step">
-          <span class="mark" aria-hidden="true">NA</span>
-          <span>Reversible Name Atlas</span>
-        </a>
-        <span class="local-pill">Local · source untouched</span>
-      </header>
+  <body class="bp6-dark">
+    <a class="skip-link" href="#workbench-content">Skip to current step</a>
 
-      <section class="hero" aria-labelledby="page-title">
-        <div>
-          <p class="eyebrow">Linked-collection migration workbench</p>
-          <h1 id="page-title">Refactor the collection.<br>Hand over the proof.</h1>
-          <p class="lede">One server-owned path from visible change through human decision to independently inspectable handoff.</p>
-        </div>
-        <aside class="status-card" aria-label="Migration Case status">
-          <div class="status-card__header">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span>{{ shell.case_name }}</span>
-            <span class="state {% if shell.deterministic_status == 'VERIFIED' %}state--green{% elif shell.deterministic_status == 'BLOCKED' %}state--red{% else %}state--amber{% endif %}">{{ shell.deterministic_status }}</span>
+    <header class="app-bar">
+      <a class="wordmark" href="/" aria-label="Reversible Name Atlas next step">
+        <span class="mark" aria-hidden="true">NA</span>
+        <span class="wordmark__copy">
+          <strong>Reversible Name Atlas</strong>
+          <small>Refactor the collection. Hand over the proof.</small>
+        </span>
+      </a>
+
+      <div class="case-identity" aria-label="Current Migration Case">
+        <span class="case-identity__label">Migration Case</span>
+        <strong>{{ shell.case_name }}</strong>
+        <span class="mono">{{ shell.case_id_short }}</span>
+      </div>
+
+      <div class="app-bar__status">
+        <span class="mode-badge">{{ shell.mode_label }}</span>
+        <span class="state {% if shell.deterministic_status == 'VERIFIED' %}state--green{% elif shell.deterministic_status == 'BLOCKED' %}state--red{% else %}state--amber{% endif %}">{{ shell.deterministic_status }}</span>
+      </div>
+    </header>
+
+    <section class="mobile-case-summary" aria-label="Compact Migration Case status">
+      <span><small>Case</small><strong class="mono">{{ shell.case_id_short }}</strong></span>
+      <span><small>Source</small><strong class="mono">{{ shell.source_commitment_short }}</strong></span>
+      <span><small>Mode</small><strong>{{ shell.mode_compact_label }}</strong></span>
+      <span><small>Resolved</small><strong>{{ shell.resolved_count }}/{{ shell.resolved_count + shell.unresolved_count }}</strong></span>
+    </section>
+
+    <div class="workbench-shell">
+      <aside class="workflow-rail" aria-label="Case navigation and status">
+        <nav class="product-nav" aria-label="Migration Case steps">
+          {% for step in steps %}
+            <a class="product-nav__item{% if step.key == active_page %} product-nav__item--active{% endif %}" href="{{ step.path }}"{% if step.key == active_page %} aria-current="page"{% endif %}>
+              <span class="product-nav__number">{{ step.number }}</span>
+              {% if step.key == 'atlas' %}
+                <img src="{{ url_for('static', path='/vendor/blueprint/icons/diagram-tree.svg') }}" alt="" aria-hidden="true">
+              {% elif step.key == 'decide' %}
+                <img src="{{ url_for('static', path='/vendor/blueprint/icons/help.svg') }}" alt="" aria-hidden="true">
+              {% elif step.key == 'stage' %}
+                <img src="{{ url_for('static', path='/vendor/blueprint/icons/database.svg') }}" alt="" aria-hidden="true">
+              {% elif step.key == 'verify' %}
+                <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
+              {% else %}
+                <img src="{{ url_for('static', path='/vendor/blueprint/icons/export.svg') }}" alt="" aria-hidden="true">
+              {% endif %}
+              <span>{{ step.label }}</span>
+              <img class="product-nav__chevron" src="{{ url_for('static', path='/vendor/blueprint/icons/chevron-right.svg') }}" alt="" aria-hidden="true">
+            </a>
+          {% endfor %}
+        </nav>
+
+        <section class="case-pulse" aria-labelledby="case-pulse-title">
+          <div class="case-pulse__heading">
+            <span id="case-pulse-title">Case status</span>
+            <span>{{ shell.resolved_count }}/{{ shell.resolved_count + shell.unresolved_count }}</span>
           </div>
-          <dl>
-            <div><dt>Case ID</dt><dd class="mono">{{ shell.case_id_short }}</dd></div>
-            <div><dt>Source commitment</dt><dd class="mono">{{ shell.source_commitment_short }}</dd></div>
-            <div><dt>Provider mode</dt><dd>{{ shell.mode_label }}</dd></div>
-            <div><dt>Decisions</dt><dd>{{ shell.resolved_count }} resolved · {{ shell.unresolved_count }} unresolved</dd></div>
-            <div><dt>Network</dt><dd>{{ diagnostics.host }} · loopback only</dd></div>
+          <div class="progress-track" aria-label="{{ shell.resolved_count }} resolved and {{ shell.unresolved_count }} unresolved">
+            <span style="--resolved: {% if shell.resolved_count + shell.unresolved_count %}{{ (shell.resolved_count * 100 / (shell.resolved_count + shell.unresolved_count))|round }}{% else %}0{% endif %}%"></span>
+          </div>
+          <p><strong>{{ shell.resolved_count }} resolved</strong><span>{{ shell.unresolved_count }} remaining</span></p>
+          <dl class="rail-facts">
+            <div><dt>Source</dt><dd class="mono">{{ shell.source_commitment_short }}</dd></div>
+            <div><dt>Lifecycle</dt><dd>{{ shell.lifecycle or 'not started' }}</dd></div>
           </dl>
-          <p class="provider-status">{{ diagnostics.provider_status }}</p>
-        </aside>
-      </section>
+          <details class="runtime-details">
+            <summary>Runtime details</summary>
+            <p>{{ diagnostics.provider_status }}</p>
+            <p><span class="mono">{{ diagnostics.host }}</span> · loopback only</p>
+            <p>Local workflow · source untouched</p>
+          </details>
+        </section>
+      </aside>
 
-      {% if notice %}<p class="notice notice--success" role="status">{{ notice }}</p>{% endif %}
-      {% if action_error %}<p class="notice notice--error" role="alert">{{ action_error }}</p>{% endif %}
+      <main id="workbench-content" class="workbench-main" tabindex="-1">
+        {% if notice %}
+          <div class="notice notice--{{ notice_intent }}" role="status">
+            <img src="{{ url_for('static', path='/vendor/blueprint/icons/help.svg' if notice_intent == 'neutral' else '/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
+            <span>{{ notice }}</span>
+          </div>
+        {% endif %}
+        {% if action_error %}
+          <div class="notice notice--error" role="alert">
+            <img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true">
+            <span>{{ action_error }}</span>
+          </div>
+        {% endif %}
 
-      <nav class="product-nav" aria-label="Migration Case steps">
-        {% for step in steps %}
-          <a class="product-nav__item{% if step.key == active_page %} product-nav__item--active{% endif %}" href="{{ step.path }}"{% if step.key == active_page %} aria-current="page"{% endif %}>{{ step.number }} {{ step.label }}</a>
-        {% endfor %}
-      </nav>
-
-      {% include '_' ~ active_page ~ '.html' %}
-    </main>
+        {% include '_' ~ active_page ~ '.html' %}
+      </main>
+    </div>
   </body>
 </html>

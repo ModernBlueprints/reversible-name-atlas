@@ -31,6 +31,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/name_atlas"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"THIRD_PARTY_NOTICES.md" = "name_atlas/THIRD_PARTY_NOTICES.md"
+
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]

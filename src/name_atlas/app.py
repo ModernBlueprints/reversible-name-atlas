@@ -2,7 +2,8 @@
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from shlex import quote
 from urllib.parse import parse_qs
 
 from fastapi import FastAPI, HTTPException, Request
@@ -10,10 +11,27 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from name_atlas.cases import MigrationCaseError
+from name_atlas.cases import CaseLifecycle, MigrationCaseError
 from name_atlas.config import RuntimeConfig
 from name_atlas.decision_cards import DecisionCardProviderError
 from name_atlas.decisions import DecisionError
+from name_atlas.receipts import (
+    CHANGE_RECEIPT_HTML_PATH,
+    CHANGE_RECEIPT_PATH,
+    DECISION_LEDGER_PATH,
+    FORWARD_PATH_MAP_PATH,
+    ORIGINAL_METADATA_PATH,
+    ORIGINAL_NORMALIZATION_PATH,
+    PORTABLE_SOURCE_SNAPSHOT_PATH,
+    REVERSE_PATH_MAP_PATH,
+    VERIFICATION_REPORT_PATH,
+    VERIFICATION_SUMMARY_PATH,
+)
+from name_atlas.receiver_verifier import (
+    ReceiptCandidateError,
+    ReceiptVerificationStatus,
+    verify_receipt,
+)
 from name_atlas.staging import StagingError
 from name_atlas.workflow import WorkflowSession
 
@@ -26,6 +44,20 @@ WORKBENCH_STEPS = (
     {"number": "03", "key": "stage", "label": "Stage", "path": "/stage"},
     {"number": "04", "key": "verify", "label": "Verify", "path": "/verify"},
     {"number": "05", "key": "handoff", "label": "Handoff", "path": "/handoff"},
+)
+RECEIVER_ARTIFACT_PATHS = frozenset(
+    {
+        PORTABLE_SOURCE_SNAPSHOT_PATH,
+        DECISION_LEDGER_PATH,
+        FORWARD_PATH_MAP_PATH,
+        REVERSE_PATH_MAP_PATH,
+        VERIFICATION_REPORT_PATH,
+        VERIFICATION_SUMMARY_PATH,
+        CHANGE_RECEIPT_PATH,
+        CHANGE_RECEIPT_HTML_PATH,
+        ORIGINAL_METADATA_PATH,
+        ORIGINAL_NORMALIZATION_PATH,
+    }
 )
 
 
@@ -54,7 +86,10 @@ def create_app(
     app.state.runtime_config = config
     app.state.workflow = workflow
     app.state.notice = None
+    app.state.notice_intent = "success"
     app.state.action_error = None
+    app.state.receiver_verification = None
+    app.state.receiver_verification_attempted = False
     app.mount(
         "/static",
         StaticFiles(directory=PACKAGE_ROOT / "static"),
@@ -151,6 +186,7 @@ def create_app(
     @app.post("/families/{family_id}/generate", include_in_schema=False)
     async def generate_card(family_id: str) -> RedirectResponse:
         _clear_action_state(app)
+        app.state.notice_intent = "neutral"
         if workflow is None:
             app.state.action_error = _missing_case_message()
             return _redirect_to("/decide")
@@ -185,8 +221,10 @@ def create_app(
             return _redirect_to("/decide")
         try:
             decisions = workflow.approve_low_risk()
+            family_label = "family" if len(decisions) == 1 else "families"
             app.state.notice = (
-                f"Human batch approval stored for {len(decisions)} low-risk families."
+                f"Human batch approval stored for {len(decisions)} low-risk "
+                f"{family_label}."
             )
         except (DecisionError, MigrationCaseError) as exc:
             app.state.action_error = str(exc)
@@ -240,6 +278,7 @@ def create_app(
         try:
             workflow.refuse(family_id)
             app.state.notice = "Human refusal stored; complete export is blocked."
+            app.state.notice_intent = "error"
         except (DecisionError, MigrationCaseError) as exc:
             app.state.action_error = str(exc)
         return _redirect_to("/decide")
@@ -284,29 +323,54 @@ def create_app(
             return _redirect_to("/stage")
         return _redirect_to("/verify")
 
+    @app.post("/rerun-verifier", include_in_schema=False)
+    def rerun_verifier() -> RedirectResponse:
+        """Rerun the pure receiver verifier against the finalized handoff."""
+
+        _clear_action_state(app)
+        app.state.receiver_verification = None
+        app.state.receiver_verification_attempted = True
+        handoff_root = _workflow_handoff_root(workflow)
+        if handoff_root is None:
+            app.state.action_error = (
+                "No finalized handoff is available for receiver verification."
+            )
+            return _redirect_to("/handoff")
+        try:
+            result = verify_receipt(handoff_root)
+        except ReceiptCandidateError as exc:
+            app.state.action_error = str(exc)
+            return _redirect_to("/handoff")
+        app.state.receiver_verification = result
+        if result.status is ReceiptVerificationStatus.VERIFIED:
+            app.state.notice = (
+                "Independent receiver verification passed for receipt "
+                f"{result.receipt_fingerprint}."
+            )
+        else:
+            blockers = ", ".join(result.failed_check_ids)
+            app.state.action_error = f"Receiver verification BLOCKED: {blockers}."
+        return _redirect_to("/handoff")
+
     @app.get(
         "/proof-artifacts/{artifact_path:path}",
         response_class=FileResponse,
         include_in_schema=False,
     )
     async def proof_artifact(artifact_path: str) -> FileResponse:
-        if workflow is None:
+        stage_root = _workflow_handoff_root(workflow)
+        if stage_root is None:
             raise HTTPException(status_code=404, detail="No verified proof exists.")
-        stage_result = workflow.stage_result
-        if stage_result is None:
-            raise HTTPException(status_code=404, detail="No verified proof exists.")
-        if artifact_path not in stage_result.artifacts.report.artifact_paths:
+        stage_result = workflow.stage_result if workflow is not None else None
+        allowed_paths = RECEIVER_ARTIFACT_PATHS
+        if stage_result is not None:
+            allowed_paths = allowed_paths.union(
+                stage_result.artifacts.report.artifact_paths
+            )
+        if artifact_path not in allowed_paths:
             raise HTTPException(status_code=404, detail="Unknown proof artifact.")
-        stage_root = stage_result.stage_root.resolve()
-        candidate = (stage_root / artifact_path).resolve()
-        try:
-            candidate.relative_to(stage_root)
-        except ValueError as exc:
-            raise HTTPException(
-                status_code=404,
-                detail="Unknown proof artifact.",
-            ) from exc
-        if not candidate.is_file():
+        candidate = _resolve_regular_handoff_artifact(stage_root, artifact_path)
+        if candidate is None:
             raise HTTPException(status_code=404, detail="Proof artifact is absent.")
         return FileResponse(candidate)
 
@@ -322,7 +386,14 @@ def _render_workbench_page(
     active_page: str,
 ) -> HTMLResponse:
     view = workflow.view_model() if workflow is not None else None
-    shell = _shell_context(config=config, workflow=workflow, view=view)
+    receiver_verification = app.state.receiver_verification
+    shell = _shell_context(
+        config=config,
+        workflow=workflow,
+        view=view,
+        receiver_verification=receiver_verification,
+        receiver_verification_attempted=app.state.receiver_verification_attempted,
+    )
     return TEMPLATES.TemplateResponse(
         request=request,
         name="index.html",
@@ -335,7 +406,9 @@ def _render_workbench_page(
             "active_page": active_page,
             "page_status": _page_status(active_page=active_page, shell=shell),
             "notice": app.state.notice,
+            "notice_intent": app.state.notice_intent,
             "action_error": app.state.action_error,
+            "receiver_verification": receiver_verification,
         },
     )
 
@@ -345,6 +418,8 @@ def _shell_context(
     config: RuntimeConfig,
     workflow: WorkflowSession | None,
     view: dict[str, object] | None,
+    receiver_verification: object | None = None,
+    receiver_verification_attempted: bool = False,
 ) -> dict[str, object]:
     case = getattr(workflow, "case", None) if workflow is not None else None
     source_root = str(view["source_root"]) if view is not None else None
@@ -380,12 +455,32 @@ def _shell_context(
         and view is not None
         and bool(view.get("handoff_path"))
     )
+    handoff_root = _workflow_handoff_root(workflow)
+    handoff_candidate_available = _is_regular_handoff_artifact(
+        handoff_root,
+        CHANGE_RECEIPT_PATH,
+    )
+    receiver_status = _enum_text(getattr(receiver_verification, "status", None))
+    if receiver_verification_attempted:
+        receiver_current_verified = receiver_status == "verified"
+        receiver_blocked = not receiver_current_verified
+    else:
+        receiver_current_verified = (
+            proof_ready
+            and handoff_candidate_available
+            and receipt_fingerprint is not None
+        )
+        receiver_blocked = handoff_ready and not handoff_candidate_available
     stale_or_import_blocked = view is None or lifecycle == "stale"
     case_blocked = lifecycle == "blocked"
     if stale_or_import_blocked or case_blocked:
         deterministic_status = "BLOCKED"
-    elif handoff_ready:
+    elif handoff_ready and receiver_current_verified:
         deterministic_status = "VERIFIED"
+    elif handoff_ready and receiver_blocked:
+        deterministic_status = "BLOCKED"
+    elif handoff_ready:
+        deterministic_status = "RECEIPT FINALIZED"
     elif proof_ready:
         deterministic_status = "INCOMPLETE"
     elif hard_blocker_count:
@@ -396,13 +491,10 @@ def _shell_context(
         deterministic_status = "INCOMPLETE"
     snapshot = view["snapshot"] if view is not None else None
     commitment = getattr(snapshot, "commitment", None)
-    stage_root = _first_text(
-        (
-            workflow.stage_result.stage_root
-            if workflow is not None and workflow.stage_result is not None
-            else None
-        ),
-        view.get("handoff_path") if view is not None else None,
+    stage_root = str(handoff_root) if handoff_root is not None else None
+    receipt_html_available = _is_regular_handoff_artifact(
+        handoff_root,
+        CHANGE_RECEIPT_HTML_PATH,
     )
     output_root = str(workflow.output_root) if workflow is not None else None
     stale_differences = (
@@ -426,12 +518,16 @@ def _shell_context(
             if config.mode.value == "replay" and config.replay_record_configured
             else f"{config.mode.value.title()} mode"
         ),
+        "mode_compact_label": ("Replay" if config.mode.value == "replay" else "Live"),
         "resolved_count": resolved_count,
         "unresolved_count": unresolved_count,
         "hard_blocker_count": hard_blocker_count,
         "export_ready": export_ready,
         "proof_ready": proof_ready,
         "handoff_ready": handoff_ready,
+        "handoff_candidate_available": handoff_candidate_available,
+        "receiver_current_verified": receiver_current_verified,
+        "receiver_blocked": receiver_blocked,
         "stale_or_import_blocked": stale_or_import_blocked,
         "case_blocked": case_blocked,
         "lifecycle": lifecycle,
@@ -439,6 +535,12 @@ def _shell_context(
         "stage_root": stage_root,
         "output_root": output_root,
         "receipt_fingerprint": receipt_fingerprint,
+        "receipt_html_available": receipt_html_available,
+        "verifier_command": (
+            f"uv run name-atlas verify-receipt {quote(stage_root)}"
+            if stage_root is not None
+            else None
+        ),
         "stale_differences": stale_differences,
         "source_scan_blocker": source_scan_blocker,
     }
@@ -485,7 +587,11 @@ def _page_status(*, active_page: str, shell: dict[str, object]) -> str:
         )
     if active_page == "stage":
         if bool(shell["handoff_ready"]):
-            return "COMPLETE"
+            if bool(shell["receiver_current_verified"]):
+                return "VERIFIED"
+            if bool(shell["receiver_blocked"]):
+                return "BLOCKED"
+            return "INCOMPLETE"
         if bool(shell["proof_ready"]):
             return "COMPLETE"
         if bool(shell["export_ready"]):
@@ -496,8 +602,12 @@ def _page_status(*, active_page: str, shell: dict[str, object]) -> str:
             else "INCOMPLETE"
         )
     if active_page in {"verify", "handoff"}:
-        if bool(shell["handoff_ready"]):
+        if bool(shell["receiver_current_verified"]):
             return "VERIFIED"
+        if bool(shell["handoff_ready"]) and bool(shell["receiver_blocked"]):
+            return "BLOCKED"
+        if bool(shell["handoff_ready"]):
+            return "INCOMPLETE"
         if active_page == "verify" and bool(shell["proof_ready"]):
             return "INCOMPLETE"
         return (
@@ -534,6 +644,58 @@ def _receipt_fingerprint(
     return None
 
 
+def _workflow_handoff_root(workflow: WorkflowSession | None) -> Path | None:
+    if workflow is None:
+        return None
+    if workflow.stage_result is not None:
+        return workflow.stage_result.stage_root
+    case = getattr(workflow, "case", None)
+    if _enum_text(
+        getattr(case, "lifecycle", None)
+    ) != CaseLifecycle.HANDOFF_READY.value or not _is_sha256(
+        getattr(case, "receipt_fingerprint", None)
+    ):
+        return None
+    local_paths = getattr(case, "local_paths", None)
+    handoff_path = getattr(local_paths, "handoff_path", None)
+    return Path(handoff_path) if handoff_path is not None else None
+
+
+def _is_regular_handoff_artifact(root: Path | None, relative_path: str) -> bool:
+    return (
+        root is not None
+        and _resolve_regular_handoff_artifact(root, relative_path) is not None
+    )
+
+
+def _resolve_regular_handoff_artifact(
+    root: Path,
+    relative_path: str,
+) -> Path | None:
+    if root.is_symlink():
+        return None
+    try:
+        resolved_root = root.resolve(strict=True)
+        candidate = resolved_root
+        for part in PurePosixPath(relative_path).parts:
+            candidate /= part
+            if candidate.is_symlink():
+                return None
+        resolved_candidate = candidate.resolve(strict=True)
+        resolved_candidate.relative_to(resolved_root)
+    except (OSError, RuntimeError, ValueError):
+        return None
+    return resolved_candidate if resolved_candidate.is_file() else None
+
+
+def _is_sha256(value: object | None) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def _enum_text(value: object | None) -> str | None:
     enum_value = getattr(value, "value", value)
     return str(enum_value).lower() if enum_value is not None else None
@@ -556,4 +718,5 @@ def _missing_case_message() -> str:
 
 def _clear_action_state(app: FastAPI) -> None:
     app.state.notice = None
+    app.state.notice_intent = "success"
     app.state.action_error = None

@@ -182,6 +182,19 @@ def test_new_case_is_strict_path_neutral_and_deterministic(
         )
 
 
+def test_nonfinal_case_cannot_retain_a_handoff_pointer(
+    tmp_path: Path,
+    hero_contract: tuple[SourcePackage, tuple[PathProposal, ...]],
+) -> None:
+    case = _new_case(tmp_path, hero_contract)
+    local_paths = case.local_paths.model_copy(
+        update={"handoff_path": (tmp_path / "unverified-handoff").resolve()}
+    )
+
+    with pytest.raises(ValidationError, match="Only a handoff-ready case"):
+        _replace_case(case, local_paths=local_paths)
+
+
 def test_nested_evidence_card_and_human_binding_survive_restart(
     tmp_path: Path,
     hero_contract: tuple[SourcePackage, tuple[PathProposal, ...]],
