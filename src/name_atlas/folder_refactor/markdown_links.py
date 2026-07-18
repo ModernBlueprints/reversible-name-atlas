@@ -194,6 +194,16 @@ def derive_reference_rewrites(
             target_mapping.target_path,
             start=source_parent,
         )
+        resolved_target = _normalize_in_root_destination(
+            source_path=source_mapping.target_path,
+            components=relative_target.split("/"),
+        )
+        if resolved_target != target_mapping.target_path:
+            _reject(
+                "derived_reference_target_mismatch",
+                "Derived destination does not resolve to the accepted target for "
+                f"reference {reference.reference_id}.",
+            )
         encoded_target = _encode_relative_path(relative_target)
         proposed = encoded_target + (reference.fragment or "")
         status = (
@@ -206,12 +216,6 @@ def derive_reference_rewrites(
                 "protected_markdown_link_context_unsupported",
                 "A protected Markdown member would need a content rewrite to "
                 "preserve a supported local link.",
-            )
-        if ".." in PurePosixPath(relative_target).parts:
-            _reject(
-                "path_traversal_unsupported",
-                "Accepted paths would require an unsupported parent-traversal "
-                f"destination for reference {reference.reference_id}.",
             )
         derived.append(
             reference.model_copy(
@@ -578,20 +582,12 @@ def _resolve_destination(
         _reject(
             "unsupported_local_link_syntax", f"Empty path segment in {source_path}."
         )
-    if ".." in components:
-        if _traversal_escapes_root(source_path, components):
-            _reject(
-                "outside_root_path",
-                f"Link escapes the source root: {source_path}.",
-            )
-        _reject("path_traversal_unsupported", f"Path traversal in {source_path}.")
-    normalized_components = [component for component in components if component != "."]
-    if not normalized_components:
+    combined = _normalize_in_root_destination(
+        source_path=source_path,
+        components=components,
+    )
+    if not combined:
         _reject("directory_target", f"Link targets a directory in {source_path}.")
-    source_parent = PurePosixPath(source_path).parent
-    combined = PurePosixPath(source_parent, *normalized_components).as_posix()
-    if combined.startswith("../") or combined == "..":
-        _reject("outside_root_path", f"Link escapes the source root: {source_path}.")
     if combined in directory_paths:
         _reject("directory_target", f"Link targets directory {combined!r}.")
     target = files_by_path.get(combined)
@@ -824,7 +820,13 @@ def _directory_paths(inventory: FolderInventory) -> frozenset[str]:
     return frozenset(directories)
 
 
-def _traversal_escapes_root(source_path: str, components: list[str]) -> bool:
+def _normalize_in_root_destination(
+    *,
+    source_path: str,
+    components: Sequence[str],
+) -> str:
+    """Resolve lexical POSIX components without permitting a root escape."""
+
     stack = list(PurePosixPath(source_path).parent.parts)
     if stack == ["."]:
         stack = []
@@ -833,11 +835,14 @@ def _traversal_escapes_root(source_path: str, components: list[str]) -> bool:
             continue
         if component == "..":
             if not stack:
-                return True
+                _reject(
+                    "outside_root_path",
+                    f"Link escapes the source root: {source_path}.",
+                )
             stack.pop()
         else:
             stack.append(component)
-    return False
+    return PurePosixPath(*stack).as_posix() if stack else ""
 
 
 def _decode_utf8(payload: bytes, code: str) -> str:

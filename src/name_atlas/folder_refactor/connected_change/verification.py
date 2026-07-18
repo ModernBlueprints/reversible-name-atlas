@@ -1,0 +1,589 @@
+"""Independent source-free verification for Connected Change v2 results."""
+
+from __future__ import annotations
+
+import hashlib
+import stat
+import uuid
+from enum import StrEnum
+from pathlib import Path, PurePosixPath
+from typing import Literal, Self
+
+from pydantic import (
+    Field,
+    TypeAdapter,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+
+from name_atlas.folder_refactor.connected_change.accepted_plan import (
+    FolderAcceptedPlanV2,
+    validate_connected_accepted_plan,
+)
+from name_atlas.folder_refactor.connected_change.contracts import (
+    CapsuleAppliedExecutionOrigin,
+    ConnectedChangeMatchReport,
+    FolderExecutionOrigin,
+    GptPlannedExecutionOrigin,
+)
+from name_atlas.folder_refactor.connected_change.descriptors import (
+    build_connected_change_core,
+    parse_connected_change_file,
+)
+from name_atlas.folder_refactor.connected_change.matcher import (
+    match_connected_change,
+)
+from name_atlas.folder_refactor.connected_change.organized_tree import (
+    scan_organized_tree,
+)
+from name_atlas.folder_refactor.connected_change.receipt import (
+    CONNECTED_CHANGE_MATCH_REPORT_PATH,
+    CONNECTED_CHANGE_PATH,
+    EXECUTION_ORIGIN_PATH,
+)
+from name_atlas.folder_refactor.connected_change.receipt_contracts import (
+    FolderReceiptEnvelopeV2,
+)
+from name_atlas.folder_refactor.contracts import (
+    SHA256_PATTERN,
+    FolderInventory,
+    FolderVerificationReport,
+    StrictFrozenModel,
+)
+from name_atlas.folder_refactor.markdown_contracts import FolderReferenceGraph
+from name_atlas.folder_refactor.markdown_links import (
+    MARKDOWN_SUFFIXES,
+    build_reference_graph,
+    derive_reference_rewrites,
+    verify_reference_rewrites,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    ACCEPTED_PLAN_PATH,
+    CHANGE_LEDGER_PATH,
+    CHANGE_RECEIPT_PATH,
+    FORWARD_PATH_MAP_PATH,
+    ORIGINAL_CONTENT_ROOT,
+    REFERENCE_GRAPH_PATH,
+    REVERSE_PATH_MAP_PATH,
+    SOURCE_SNAPSHOT_PATH,
+    USER_REQUEST_PATH,
+    VERIFICATION_REPORT_PATH,
+    FolderPortableArtifactError,
+    canonical_portable_json_bytes,
+    parse_folder_path_map,
+    parse_portable_model,
+    read_regular_bytes,
+    regular_file_measurement,
+    staged_data_commitment,
+    staged_data_members,
+    strict_json_object,
+)
+from name_atlas.folder_refactor.receipt_builder import (
+    ObservedResultFile,
+    build_folder_path_rows_and_change_ledger,
+    contains_sender_local_path,
+)
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderChangeLedger,
+    FolderReceiptVerificationCheck,
+    FolderUserRequestArtifact,
+)
+from name_atlas.folder_refactor.serialization import canonical_sha256
+from name_atlas.verification.bagit_validator import (
+    BagItAdapterError,
+    BagItPackageValidator,
+)
+
+_EXECUTION_ORIGIN_ADAPTER = TypeAdapter(FolderExecutionOrigin)
+
+
+class ConnectedReceiptVerificationStatus(StrEnum):
+    """Independent v2 verification outcome."""
+
+    VERIFIED = "verified"
+    BLOCKED = "blocked"
+
+
+class ConnectedReceiptVerification(StrictFrozenModel):
+    """Write-free `folder-receipt-verification.v2` result."""
+
+    schema_version: Literal["folder-receipt-verification.v2"] = (
+        "folder-receipt-verification.v2"
+    )
+    status: ConnectedReceiptVerificationStatus
+    job_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+    receipt_fingerprint: str | None = Field(default=None, pattern=SHA256_PATTERN)
+    organized_tree_commitment: str | None = Field(
+        default=None,
+        pattern=SHA256_PATTERN,
+    )
+    checks: tuple[FolderReceiptVerificationCheck, ...] = Field(min_length=1)
+    failed_check_ids: tuple[str, ...] = ()
+
+    @field_validator("job_id")
+    @classmethod
+    def require_uuid4_hex(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        parsed = uuid.UUID(hex=value)
+        if parsed.version != 4 or parsed.hex != value:
+            raise ValueError("job_id must be lowercase UUID4 hexadecimal text.")
+        return value
+
+    @model_validator(mode="after")
+    def require_status_agreement(self) -> Self:
+        failed = tuple(check.check_id for check in self.checks if not check.passed)
+        if failed != self.failed_check_ids:
+            raise ValueError("Failed check IDs do not match v2 verification checks.")
+        if self.status is ConnectedReceiptVerificationStatus.VERIFIED:
+            if (
+                self.job_id is None
+                or self.receipt_fingerprint is None
+                or self.organized_tree_commitment is None
+                or self.failed_check_ids
+            ):
+                raise ValueError("A verified v2 result requires complete identities.")
+        elif not self.failed_check_ids:
+            raise ValueError("A blocked v2 result requires at least one failure.")
+        return self
+
+
+def verify_connected_result(result_root: Path) -> ConnectedReceiptVerification:
+    """Verify a v2 result without a job, source, GPT, API key, network, or writes."""
+
+    checks: list[FolderReceiptVerificationCheck] = []
+    try:
+        root = _require_candidate_root(result_root)
+        bagit = BagItPackageValidator().validate(root)
+        if not bagit.valid:
+            return _blocked(
+                checks,
+                "bagit_validation_failed",
+                "; ".join(bagit.messages),
+            )
+        _passed(checks, "bagit_valid", "BagIt validation passed.")
+
+        receipt_bytes = read_regular_bytes(root, CHANGE_RECEIPT_PATH)
+        envelope = parse_portable_model(receipt_bytes, FolderReceiptEnvelopeV2)
+        if canonical_portable_json_bytes(envelope) != receipt_bytes:
+            return _blocked(
+                checks,
+                "receipt_serialization_invalid",
+                "The v2 receipt is not canonical JSON.",
+                envelope=envelope,
+            )
+        _passed(
+            checks,
+            "receipt_fingerprint_valid",
+            "The v2 receipt fingerprint matches.",
+        )
+        core = envelope.receipt
+
+        for commitment in core.artifact_commitments:
+            size, digest = regular_file_measurement(root, commitment.path)
+            if size != commitment.size or digest != commitment.sha256:
+                slug = commitment.path.rsplit("/", 1)[-1].split(".", 1)[0]
+                return _blocked(
+                    checks,
+                    f"artifact_digest_mismatch:{slug}",
+                    f"Receipt-bound bytes changed: {commitment.path}",
+                    envelope=envelope,
+                )
+        _passed(
+            checks,
+            "artifact_commitments_valid",
+            f"All {len(core.artifact_commitments)} raw commitments match.",
+        )
+
+        artifacts = _parse_authorities(root)
+        _validate_authorities(root, envelope, artifacts)
+        _passed(
+            checks,
+            "portable_authorities_valid",
+            "Every v2 authority is strict, canonical, complete, and mutually bound.",
+        )
+
+        actual_staged = staged_data_members(root)
+        if actual_staged != core.staged_data_members or (
+            staged_data_commitment(actual_staged) != core.staged_data_commitment
+        ):
+            raise ValueError("Staged data commitment differs from the receipt.")
+        _verify_payloads(root, artifacts)
+        _passed(
+            checks,
+            "complete_file_bijection",
+            "Every committed source file appears exactly once with verified bytes.",
+        )
+
+        organized = scan_organized_tree(root / "data")
+        if organized != core.organized_tree:
+            raise ValueError("Organized tree differs from the receipt commitment.")
+        _passed(
+            checks,
+            "organized_tree_commitment_valid",
+            "Files, paths, bytes, and explicit empty directories match.",
+        )
+
+        _validate_connected_authority(root, envelope, artifacts)
+        _passed(
+            checks,
+            "connected_change_authority_valid",
+            "Change File, execution origin, and receiver bindings are exact.",
+        )
+        return _result(
+            checks,
+            envelope=envelope,
+            organized_tree_commitment=organized.commitment,
+        )
+    except (FolderPortableArtifactError, ValidationError, ValueError, OSError) as exc:
+        return _blocked(checks, "connected_receipt_invalid", str(exc))
+    except BagItAdapterError as exc:
+        return _blocked(checks, "bagit_validation_error", str(exc))
+
+
+class _Authorities:
+    def __init__(
+        self,
+        *,
+        inventory: FolderInventory,
+        request: FolderUserRequestArtifact,
+        plan: FolderAcceptedPlanV2,
+        graph: FolderReferenceGraph,
+        rows: tuple,
+        ledger: FolderChangeLedger,
+        report: FolderVerificationReport,
+        execution_origin: FolderExecutionOrigin,
+    ) -> None:
+        self.inventory = inventory
+        self.request = request
+        self.plan = plan
+        self.graph = graph
+        self.rows = rows
+        self.ledger = ledger
+        self.report = report
+        self.execution_origin = execution_origin
+
+
+def _parse_authorities(root: Path) -> _Authorities:
+    origin_bytes = read_regular_bytes(root, EXECUTION_ORIGIN_PATH)
+    strict_json_object(origin_bytes)
+    origin = _EXECUTION_ORIGIN_ADAPTER.validate_json(origin_bytes, strict=True)
+    return _Authorities(
+        inventory=parse_portable_model(
+            read_regular_bytes(root, SOURCE_SNAPSHOT_PATH), FolderInventory
+        ),
+        request=parse_portable_model(
+            read_regular_bytes(root, USER_REQUEST_PATH), FolderUserRequestArtifact
+        ),
+        plan=parse_portable_model(
+            read_regular_bytes(root, ACCEPTED_PLAN_PATH), FolderAcceptedPlanV2
+        ),
+        graph=parse_portable_model(
+            read_regular_bytes(root, REFERENCE_GRAPH_PATH), FolderReferenceGraph
+        ),
+        rows=parse_folder_path_map(
+            read_regular_bytes(root, FORWARD_PATH_MAP_PATH), reverse=False
+        ),
+        ledger=parse_portable_model(
+            read_regular_bytes(root, CHANGE_LEDGER_PATH), FolderChangeLedger
+        ),
+        report=parse_portable_model(
+            read_regular_bytes(root, VERIFICATION_REPORT_PATH),
+            FolderVerificationReport,
+        ),
+        execution_origin=origin,
+    )
+
+
+def _validate_authorities(
+    root: Path,
+    envelope: FolderReceiptEnvelopeV2,
+    artifacts: _Authorities,
+) -> None:
+    core = envelope.receipt
+    reverse = parse_folder_path_map(
+        read_regular_bytes(root, REVERSE_PATH_MAP_PATH), reverse=True
+    )
+    if reverse != artifacts.rows:
+        raise ValueError("Forward and reverse maps are not exact inverses.")
+    validate_connected_accepted_plan(
+        inventory=artifacts.inventory,
+        request=artifacts.request.request,
+        plan=artifacts.plan,
+    )
+    derived = derive_reference_rewrites(artifacts.graph, artifacts.plan)
+    if derived != artifacts.graph:
+        raise ValueError("Reference graph does not equal deterministic derivation.")
+    observed = {
+        row.file_id: ObservedResultFile(
+            relative_path=row.result_path,
+            size=row.result_size,
+            sha256=row.result_sha256,
+        )
+        for row in artifacts.rows
+    }
+    expected_rows, expected_ledger = build_folder_path_rows_and_change_ledger(
+        inventory=artifacts.inventory,
+        accepted_plan=artifacts.plan,
+        reference_graph=artifacts.graph,
+        observed_result_files=observed,
+    )
+    if expected_rows != artifacts.rows or expected_ledger != artifacts.ledger:
+        raise ValueError("Maps or change ledger do not recompute exactly.")
+    if not (
+        core.source_commitment == artifacts.inventory.source_commitment
+        and core.request_fingerprint == artifacts.request.request_fingerprint
+        and core.evidence_fingerprint == artifacts.plan.evidence_fingerprint
+        and core.accepted_plan_fingerprint == canonical_sha256(artifacts.plan)
+        and core.reference_graph_fingerprint == canonical_sha256(artifacts.graph)
+        and core.execution_origin_fingerprint
+        == canonical_sha256(artifacts.execution_origin)
+        and core.change_ledger_fingerprint == canonical_sha256(artifacts.ledger)
+        and core.verification_report_fingerprint == canonical_sha256(artifacts.report)
+        and artifacts.report.staged_data_commitment == core.staged_data_commitment
+    ):
+        raise ValueError("Receipt fingerprints do not bind the parsed authorities.")
+    if contains_sender_local_path(
+        (
+            envelope,
+            artifacts.inventory,
+            artifacts.request,
+            artifacts.plan,
+            artifacts.graph,
+            artifacts.ledger,
+            artifacts.report,
+            artifacts.execution_origin,
+        )
+    ):
+        raise ValueError("Portable v2 proof contains a sender-local absolute path.")
+
+
+def _verify_payloads(root: Path, artifacts: _Authorities) -> None:
+    plan_by_id = {item.file_id: item for item in artifacts.plan.file_mappings}
+    inventory_by_id = {item.file_id: item for item in artifacts.inventory.files}
+    if set(plan_by_id) != set(inventory_by_id) or len(artifacts.rows) != len(
+        inventory_by_id
+    ):
+        raise ValueError("Source-to-result file accounting is incomplete.")
+    for row in artifacts.rows:
+        mapping = plan_by_id[row.file_id]
+        source = inventory_by_id[row.file_id]
+        if not (
+            row.original_path == source.relative_path == mapping.original_path
+            and row.result_path == mapping.target_path
+            and row.original_size == source.size
+            and row.original_sha256 == source.sha256
+        ):
+            raise ValueError("A path-map row differs from source or accepted plan.")
+        size, digest = regular_file_measurement(root, f"data/{row.result_path}")
+        if size != row.result_size or digest != row.result_sha256:
+            raise ValueError("Observed result bytes differ from the complete map.")
+        if row.markdown_rewritten:
+            original = read_regular_bytes(
+                root,
+                f"{ORIGINAL_CONTENT_ROOT}/{row.file_id}.bin",
+            )
+            if (
+                len(original) != row.original_size
+                or hashlib.sha256(original).hexdigest() != row.original_sha256
+            ):
+                raise ValueError("Original rewritten Markdown bytes differ.")
+            staged = read_regular_bytes(root, f"data/{row.result_path}")
+            verify_reference_rewrites(
+                original,
+                staged,
+                source_file_id=row.file_id,
+                graph=artifacts.graph,
+            )
+        elif row.result_sha256 != row.original_sha256:
+            raise ValueError("An unchanged payload differs from its source bytes.")
+
+
+def _validate_connected_authority(
+    root: Path,
+    envelope: FolderReceiptEnvelopeV2,
+    artifacts: _Authorities,
+) -> None:
+    core = envelope.receipt
+    change_bytes = read_regular_bytes(root, CONNECTED_CHANGE_PATH)
+    change_file = parse_connected_change_file(change_bytes)
+    if change_file.core_fingerprint != core.connected_change_core_fingerprint:
+        raise ValueError("Receipt and Change File Core fingerprints differ.")
+    if (
+        change_file.core.expected_organized_tree_commitment
+        != core.organized_tree.commitment
+    ):
+        raise ValueError("Result does not converge to the Change File organized tree.")
+    markdown_payloads = _original_markdown_payloads(root, artifacts)
+    source_graph = build_reference_graph(artifacts.inventory, markdown_payloads)
+    expected_result_graph = derive_reference_rewrites(source_graph, artifacts.plan)
+    if expected_result_graph != artifacts.graph:
+        raise ValueError(
+            "Reference graph does not recompute from original Markdown bytes."
+        )
+    if core.execution_role == "origin":
+        if (
+            artifacts.plan.execution_authority != "gpt_plan"
+            or not isinstance(artifacts.execution_origin, GptPlannedExecutionOrigin)
+            or change_file.originating_receipt != envelope
+        ):
+            raise ValueError("Origin receipt, plan, or embedded receipt is untruthful.")
+        expected_core = build_connected_change_core(
+            artifacts.inventory,
+            source_graph,
+            artifacts.plan,
+            request=artifacts.request.request,
+            markdown_payloads=markdown_payloads,
+            expected_organized_tree_commitment=core.organized_tree.commitment,
+            origin_proof_identifiers=(
+                artifacts.execution_origin.evidence_fingerprint,
+                artifacts.execution_origin.accepted_plan_fingerprint,
+            ),
+        )
+        if expected_core != change_file.core:
+            raise ValueError(
+                "Change File Core does not recompute from the origin authorities."
+            )
+        return
+    if artifacts.plan.execution_authority != "change_file" or not isinstance(
+        artifacts.execution_origin, CapsuleAppliedExecutionOrigin
+    ):
+        raise ValueError("Receiver result does not declare capsule authority.")
+    if (
+        hashlib.sha256(change_bytes).hexdigest() != core.imported_change_file_sha256
+        or change_file.change_file_fingerprint != core.imported_change_file_fingerprint
+        or change_file.originating_receipt.receipt_fingerprint
+        != core.originating_receipt_fingerprint
+    ):
+        raise ValueError("Imported Change File receiver bindings differ.")
+    report_bytes = read_regular_bytes(root, CONNECTED_CHANGE_MATCH_REPORT_PATH)
+    report = parse_portable_model(report_bytes, ConnectedChangeMatchReport)
+    if (
+        hashlib.sha256(report_bytes).hexdigest() != core.match_report_sha256
+        or report.match_report_fingerprint != core.match_report_fingerprint
+        or report.status != "matched"
+        or report.receiver_source_commitment != artifacts.inventory.source_commitment
+        or report.core_fingerprint != change_file.core_fingerprint
+    ):
+        raise ValueError("Receiver match report differs from the receipt.")
+    recomputed_report = match_connected_change(
+        change_file,
+        artifacts.inventory,
+        source_graph,
+        markdown_payloads=markdown_payloads,
+    )
+    if recomputed_report != report:
+        raise ValueError(
+            "Receiver match report does not recompute from committed source evidence."
+        )
+    expected = {
+        item.receiver_file_id: (item.receiver_original_path, item.target_relative_path)
+        for item in report.mappings
+    }
+    actual = {
+        item.file_id: (item.original_path, item.target_path)
+        for item in artifacts.plan.file_mappings
+    }
+    if expected != actual:
+        raise ValueError("Receiver plan does not exactly rebind the match report.")
+    origin = artifacts.execution_origin
+    if not (
+        origin.change_file_fingerprint == change_file.change_file_fingerprint
+        and origin.originating_receipt_fingerprint
+        == core.originating_receipt_fingerprint
+        and origin.match_report_fingerprint == report.match_report_fingerprint
+        and origin.receiver_accepted_plan_fingerprint
+        == canonical_sha256(artifacts.plan)
+    ):
+        raise ValueError("capsule_applied provenance differs from receiver proof.")
+
+
+def _original_markdown_payloads(
+    root: Path,
+    artifacts: _Authorities,
+) -> dict[str, bytes]:
+    """Recover exact receiver-source Markdown bytes from portable proof."""
+
+    rows_by_id = {row.file_id: row for row in artifacts.rows}
+    payloads: dict[str, bytes] = {}
+    for source_file in artifacts.inventory.files:
+        if PurePosixPath(source_file.relative_path).suffix.casefold() not in (
+            MARKDOWN_SUFFIXES
+        ):
+            continue
+        row = rows_by_id.get(source_file.file_id)
+        if row is None:
+            raise ValueError("Markdown source has no complete path-map row.")
+        relative_path = (
+            f"{ORIGINAL_CONTENT_ROOT}/{source_file.file_id}.bin"
+            if row.markdown_rewritten
+            else f"data/{row.result_path}"
+        )
+        payload = read_regular_bytes(root, relative_path)
+        if (
+            len(payload) != source_file.size
+            or hashlib.sha256(payload).hexdigest() != source_file.sha256
+        ):
+            raise ValueError("Recovered Markdown source bytes differ from snapshot.")
+        payloads[source_file.relative_path] = payload
+    return payloads
+
+
+def _require_candidate_root(value: Path) -> Path:
+    if not isinstance(value, Path):
+        raise ValueError("Result root must be a pathlib.Path.")
+    metadata = value.lstat()
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError("Result root must be a non-symlink directory.")
+    return value.resolve(strict=True)
+
+
+def _passed(
+    checks: list[FolderReceiptVerificationCheck],
+    check_id: str,
+    detail: str,
+) -> None:
+    checks.append(
+        FolderReceiptVerificationCheck(check_id=check_id, passed=True, detail=detail)
+    )
+
+
+def _blocked(
+    checks: list[FolderReceiptVerificationCheck],
+    check_id: str,
+    detail: str,
+    *,
+    envelope: FolderReceiptEnvelopeV2 | None = None,
+) -> ConnectedReceiptVerification:
+    checks.append(
+        FolderReceiptVerificationCheck(
+            check_id=check_id,
+            passed=False,
+            detail=detail or "Verification blocked.",
+        )
+    )
+    return _result(checks, envelope=envelope)
+
+
+def _result(
+    checks: list[FolderReceiptVerificationCheck],
+    *,
+    envelope: FolderReceiptEnvelopeV2 | None = None,
+    organized_tree_commitment: str | None = None,
+) -> ConnectedReceiptVerification:
+    failed = tuple(check.check_id for check in checks if not check.passed)
+    return ConnectedReceiptVerification(
+        status=(
+            ConnectedReceiptVerificationStatus.BLOCKED
+            if failed
+            else ConnectedReceiptVerificationStatus.VERIFIED
+        ),
+        job_id=None if envelope is None else envelope.receipt.job_id,
+        receipt_fingerprint=(
+            None if envelope is None else envelope.receipt_fingerprint
+        ),
+        organized_tree_commitment=organized_tree_commitment,
+        checks=tuple(checks),
+        failed_check_ids=failed,
+    )

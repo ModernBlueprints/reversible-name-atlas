@@ -333,11 +333,29 @@ def test_resolution_is_logical_and_case_sensitive(tmp_path: Path) -> None:
     assert "docs/Case.txt" in raised.value.message
 
 
-def test_in_root_parent_traversal_is_still_outside_supported_subset(
+def test_in_root_parent_relative_destination_resolves_to_logical_target(
     tmp_path: Path,
 ) -> None:
     source = tmp_path / "source"
-    markdown = b"[target](../target.txt)\n"
+    markdown = b"[target](../../assets/target%20file.txt#exact)\n"
+    inventory = _write_source(
+        source,
+        {
+            "notes/deep/index.md": markdown,
+            "assets/target file.txt": b"target",
+        },
+    )
+
+    graph = build_reference_graph(inventory, {"notes/deep/index.md": markdown})
+
+    assert len(graph.references) == 1
+    assert graph.references[0].target_path == "assets/target file.txt"
+    assert graph.references[0].fragment == "#exact"
+
+
+def test_parent_relative_destination_cannot_escape_source_root(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    markdown = b"[target](../../target.txt)\n"
     inventory = _write_source(
         source,
         {"sub/notes.md": markdown, "target.txt": b"target"},
@@ -346,7 +364,44 @@ def test_in_root_parent_traversal_is_still_outside_supported_subset(
     with pytest.raises(MarkdownLinkError) as raised:
         build_reference_graph(inventory, {"sub/notes.md": markdown})
 
-    assert raised.value.code == "path_traversal_unsupported"
+    assert raised.value.code == "outside_root_path"
+
+
+def test_derived_parent_relative_rewrite_stays_inside_result_root(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    markdown = b"[target](target.txt#section)\n"
+    inventory = _write_source(
+        source,
+        {"notes.md": markdown, "target.txt": b"target"},
+    )
+    graph = build_reference_graph(inventory, {"notes.md": markdown})
+    plan = _accepted_plan(
+        inventory,
+        {
+            "notes.md": "notes/deep/index.md",
+            "target.txt": "assets/final target.txt",
+        },
+    )
+
+    derived = derive_reference_rewrites(graph, plan)
+    rewritten = apply_reference_rewrites(
+        markdown,
+        source_file_id=graph.references[0].source_file_id,
+        graph=derived,
+    )
+
+    assert derived.references[0].proposed_destination == (
+        "../../assets/final%20target.txt#section"
+    )
+    assert rewritten == b"[target](../../assets/final%20target.txt#section)\n"
+    verify_reference_rewrites(
+        markdown,
+        rewritten,
+        source_file_id=graph.references[0].source_file_id,
+        graph=derived,
+    )
 
 
 @pytest.mark.parametrize(

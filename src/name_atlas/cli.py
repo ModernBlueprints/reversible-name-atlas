@@ -220,6 +220,19 @@ def run(
     if args.command == "verify-receipt":
         received_bag = args.received_bag.expanduser()
         supplied_source = args.source.expanduser() if args.source is not None else None
+        folder_receipt_schema = _folder_receipt_schema(received_bag)
+        if folder_receipt_schema == "folder-change-receipt.v2":
+            from name_atlas.folder_refactor.connected_change.verification import (
+                ConnectedReceiptVerificationStatus,
+                verify_connected_result,
+            )
+
+            connected_result = verify_connected_result(received_bag)
+            if connected_result.status is ConnectedReceiptVerificationStatus.VERIFIED:
+                print(f"VERIFIED {connected_result.receipt_fingerprint}")
+                return 0
+            print(f"BLOCKED {' '.join(connected_result.failed_check_ids)}")
+            return 1
         if _is_folder_receipt(received_bag):
             try:
                 folder_result = verify_folder_receipt(
@@ -251,6 +264,22 @@ def run(
     if args.command == "restore-receipt":
         received_bag = args.received_bag.expanduser()
         restore_destination = args.restore_destination.expanduser()
+        if _folder_receipt_schema(received_bag) == "folder-change-receipt.v2":
+            try:
+                connected_report = _restore_connected_receipt(
+                    received_bag,
+                    restore_destination,
+                )
+            except _FolderRestoreBlocked as exc:
+                details = " ".join((exc.code, *exc.failed_check_ids))
+                print(f"RESTORE BLOCKED {details}", file=sys.stderr)
+                return 1
+            print(
+                "RESTORED "
+                f"{connected_report.receipt_fingerprint} "
+                f"{connected_report.destination}"
+            )
+            return 0
         if _is_folder_receipt(received_bag):
             try:
                 folder_report = _restore_folder_receipt(
@@ -410,20 +439,10 @@ def run(
 def _is_folder_receipt(candidate: Path) -> bool:
     """Detect the generic receipt schema without initializing runtime services."""
 
-    try:
-        raw_receipt = read_folder_artifact_bytes(
-            candidate,
-            FOLDER_CHANGE_RECEIPT_PATH,
-        )
-        envelope = strict_folder_json_object(raw_receipt)
-    except FolderPortableArtifactError:
-        envelope = {}
-    receipt = envelope.get("receipt")
-    receipt_matches = (
-        isinstance(receipt, dict)
-        and receipt.get("schema_version") == "folder-change-receipt.v1"
-    )
-    if receipt_matches:
+    if _folder_receipt_schema(candidate) in {
+        "folder-change-receipt.v1",
+        "folder-change-receipt.v2",
+    }:
         return True
     try:
         snapshot_bytes = read_folder_artifact_bytes(
@@ -434,6 +453,24 @@ def _is_folder_receipt(candidate: Path) -> bool:
     except FolderPortableArtifactError:
         return False
     return snapshot.get("schema_version") == "folder-inventory.v1"
+
+
+def _folder_receipt_schema(candidate: Path) -> str | None:
+    """Read only the strict receipt discriminator for early command dispatch."""
+
+    try:
+        raw_receipt = read_folder_artifact_bytes(
+            candidate,
+            FOLDER_CHANGE_RECEIPT_PATH,
+        )
+        envelope = strict_folder_json_object(raw_receipt)
+    except FolderPortableArtifactError:
+        return None
+    receipt = envelope.get("receipt")
+    if not isinstance(receipt, dict):
+        return None
+    schema_version = receipt.get("schema_version")
+    return schema_version if isinstance(schema_version, str) else None
 
 
 def _restore_folder_receipt(result_root: Path, destination: Path) -> object:
@@ -455,6 +492,26 @@ def _restore_folder_receipt(result_root: Path, destination: Path) -> object:
             ) from exc
         failed_check_ids = tuple(exc.failed_check_ids)
         raise _FolderRestoreBlocked(code, failed_check_ids) from exc
+
+
+def _restore_connected_receipt(result_root: Path, destination: Path) -> object:
+    """Call v2 reconstruction and retain the bounded folder failure surface."""
+
+    from name_atlas.folder_refactor.connected_change.reconstruction import (
+        restore_connected_result,
+    )
+    from name_atlas.folder_refactor.reconstruction import FolderReconstructionError
+
+    try:
+        return restore_connected_result(result_root, destination)
+    except FolderReconstructionError as exc:
+        raw_code = exc.code
+        code = raw_code.value if hasattr(raw_code, "value") else str(raw_code)
+        if code not in _FOLDER_RECONSTRUCTION_CODES:
+            raise RuntimeError(
+                "Connected Change reconstruction returned an unknown failure code."
+            ) from exc
+        raise _FolderRestoreBlocked(code, tuple(exc.failed_check_ids)) from exc
 
 
 def _run_development_folder_app(args: argparse.Namespace) -> int:

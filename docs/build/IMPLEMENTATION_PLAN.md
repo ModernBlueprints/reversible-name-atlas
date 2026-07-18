@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C0 IN PROGRESS**
+Status: **EXECUTION ACTIVE; C1 IN PROGRESS**
 
-Phase: **C0_EXISTENTIAL_CROSS_LAYOUT_GATE**
+Phase: **C1_COMPLETE_CONNECTED_CHANGE_ENGINE**
 
 Submission hold: **ACTIVE**
 
@@ -67,8 +67,8 @@ The former A4, plugin gate, and A5–A7 are:
 
 Before C+0, Connected Change, native-picker expansion, shared MCP, plugin
 packaging, budget migration, new provider calls, promotion, video, and
-submission had not begun. C0 now authorizes only the bounded existential engine
-and proof transaction; every later surface remains deferred.
+submission had not begun. C0 subsequently selected `CONNECTED_CHANGE_GO`; C1
+now owns final engine hardening while every later surface remains deferred.
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -427,18 +427,46 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
   non-overlapping contracts.
 - **Allowed cut:** none inside the gate. Permit the initial implementation,
   correction 1, and correction 2 only.
-- **Actual status:** `IN PROGRESS — INITIAL IMPLEMENTATION ATTEMPT` from C+0 on
-  Saturday 18 July 2026 at 23:31:39 CEST.
-- **Actual verification:** activation objective matches committed `GOAL.md`
-  apart from the expected `/goal` prefix and final-newline representation;
-  branch/worktree were clean and local/upstream refs were identical at
-  `121789a` immediately before activation edits; official deadline is valid;
-  activation baseline passed with 590 tests, lock, Ruff lint, Ruff format, and
-  `git diff --check`. The C0 product transaction is not yet proven.
-- **Terminal decision:** record exactly `CONNECTED_CHANGE_GO` if the complete
-  positive and negative transaction passes. If the same material premise still
-  fails after correction 2, record exactly `A3_RELEASE_FALLBACK`, preserve all
-  work/evidence in ordinary commits, and continue only through Section 8.
+- **Actual status:** `COMPLETE — CONNECTED_CHANGE_GO` on Sunday 19 July 2026 at
+  00:48:01 CEST, before the binding C0 decision deadline.
+- **Actual verification:** the preserved product-native checkpoint is
+  `.name-atlas/c0-checkpoint-20260719T004724+0200`. Sofia source commitment
+  `195a4e8436b4be3a203ce6e4bd05b5e28620e2ed23c0b42b1829bcab17085639`
+  and Martin source commitment
+  `dbcfb34ed34683bd4498d7cd002a311faaa4da600b65469b75512fb4bd441dd4`
+  differ. Change File Core fingerprint
+  `92d9a90c9a00d06e98c327887610a5a8cea2f8b69feff8eea97b268cb5774d12`,
+  Change File fingerprint
+  `cc41fea82d834e2810e3170dc42ee96a8e8a90a2e0566ab72e03719001b4be62`,
+  match-report fingerprint
+  `2dd3380470726fe95446ea70b6f96d69b1328136e0b372d0076d2102434f7f7c`,
+  and receiver accepted-plan fingerprint
+  `ea0afcaacdc01e85e487ec392f02cffde44680dc069c5d0dadee78d42f852aa5`
+  are exact. Origin receipt
+  `66d057709960acd96a35860ed4196c1d711a100f3d34a6a582aa8be5d04c88a5`
+  and receiver receipt
+  `6771e218dba2edab03150a75f27f76a30894bdf697b5915e64a982d723f165da`
+  differ while both source-free verifiers and an unrelated-location verifier
+  return `VERIFIED`. Both results converge to organized-tree commitment
+  `1b63bc5bfafea89086fb0aa05e120f647cdd7f27096738279dd13a0505d9bc09`.
+  Martin reconstruction exactly restores commitment
+  `dbcfb34ed34683bd4498d7cd002a311faaa4da600b65469b75512fb4bd441dd4`.
+  Receiver provider calls are `0`, API and external-network use are false, and
+  independent fresh-process guards observed no planner/provider/OpenAI/budget
+  import, no budget-byte change, and no socket connection attempt. Exact
+  blockers passed for changed payload, Markdown prose, supported relationship,
+  protected member, symmetric duplicate group, and Change File fingerprint.
+  A BagIt-valid self-consistent falsified match authority and a separately
+  BagIt-valid forged Markdown relationship graph both fail the source-free Name
+  Atlas verifier. The initial adversarial audit returned `NO-GO`; correction 1
+  closed strict receipt, matcher, CLI dispatch, and import-authority defects;
+  correction 2 closed independently reconstructed relationship authority. The
+  final independent re-audit returned `GO`. **121 expanded downstream-focused
+  tests and 636 full-suite tests passed**; `uv lock --check`, Ruff lint, Ruff
+  format, and `git diff --check` passed. The sole budget ledger remained
+  byte-identical at SHA-256
+  `4d76febd4c8e967445e6691a85d2d8cca5cda2f1908d018baa8c2c62cd509328`.
+- **Terminal decision:** `CONNECTED_CHANGE_GO`.
 
 ### C1 — Complete Connected Change engine
 
@@ -469,8 +497,12 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator with bounded schema/matcher/verifier reviews.
 - **Allowed cut:** extra diagnostic presentation and redundant negative
   permutations only.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS` from Sunday 19 July 2026 at 00:48:01 CEST.
+- **Actual verification:** the complete C0 transaction is the verified engine
+  foundation. C1 still owns final v2 job/restart/staleness authority, exact
+  role-specific portable artifact sets, optional v2 `--source` comparison,
+  unrestricted valid reconstruction destinations, strict format/version
+  negatives, and the complete final mismatch matrix.
 
 ### C2 — Complete browser and native experience
 

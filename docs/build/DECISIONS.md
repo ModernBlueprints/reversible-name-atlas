@@ -754,3 +754,14 @@ overrides those artifacts.
   branch backup does not activate the goal, select a product profile, alter
   `main`, open a pull request, promote a release, or release the submission
   hold.
+
+## D-079 — C0 selects `CONNECTED_CHANGE_GO`
+
+- Date: 19 July 2026
+- Decision: Select `CONNECTED_CHANGE_GO` after the complete Sofia/Martin
+  transaction, convergence, receiver reconstruction, exact refusal matrix,
+  provider/API/budget/network isolation, and adversarial source-free verifier
+  cases passed following the two allowed corrections.
+- Rationale: The existential cross-layout premise is proven end to end before
+  the C0 deadline. The final independent re-audit found no remaining material
+  C0 defect; C1 now owns the separately classified engine-hardening work.

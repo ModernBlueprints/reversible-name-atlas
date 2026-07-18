@@ -12,12 +12,17 @@ from contextlib import suppress
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
+from name_atlas.domain import PackageValidationResult
 from name_atlas.folder_refactor.compiler import (
     PlanCompilationError,
     compile_plan,
     validate_accepted_plan,
+)
+from name_atlas.folder_refactor.connected_change.accepted_plan import (
+    FolderAcceptedPlanV2,
+    validate_connected_accepted_plan,
 )
 from name_atlas.folder_refactor.contracts import (
     FolderAcceptedPlan,
@@ -44,10 +49,6 @@ from name_atlas.folder_refactor.markdown_links import (
     build_reference_graph_from_reader,
     derive_reference_rewrites,
     verify_reference_rewrites,
-)
-from name_atlas.folder_refactor.planner import (
-    FolderPlanner,
-    initial_evidence_fingerprint,
 )
 from name_atlas.folder_refactor.portable_artifacts import (
     CHANGE_LEDGER_PATH as PORTABLE_CHANGE_LEDGER_PATH,
@@ -85,8 +86,11 @@ from name_atlas.folder_refactor.receipt_builder import (
 from name_atlas.folder_refactor.receipt_contracts import (
     FolderChangeLedger,
     FolderEvidenceLedger,
+    FolderPathMapRow,
     FolderReceiptVerification,
     FolderReceiptVerificationStatus,
+    FolderStagedDataMember,
+    FolderUserRequestArtifact,
 )
 from name_atlas.folder_refactor.serialization import (
     canonical_json_bytes,
@@ -97,6 +101,9 @@ from name_atlas.ports import PackageValidator
 from name_atlas.verification.bag_writer import BagItWriter, BagItWriteResult
 from name_atlas.verification.bagit_validator import BagItPackageValidator
 from name_atlas.verification.promotion import promote_directory_no_replace
+
+if TYPE_CHECKING:
+    from name_atlas.folder_refactor.planner import FolderPlanner
 
 SOURCE_SNAPSHOT_PATH = Path("name-atlas/source_snapshot.json")
 USER_REQUEST_PATH = Path("name-atlas/user_request.json")
@@ -111,6 +118,8 @@ CHANGE_LEDGER_PATH = Path(PORTABLE_CHANGE_LEDGER_PATH)
 CHANGE_RECEIPT_PATH = Path(PORTABLE_CHANGE_RECEIPT_PATH)
 PROOF_AND_RESTORE_HTML_PATH = Path(PORTABLE_PROOF_HTML_PATH)
 MINIMUM_FREE_MARGIN_BYTES = 256 * 1024 * 1024
+
+ExecutableFolderAcceptedPlan = FolderAcceptedPlan | FolderAcceptedPlanV2
 
 
 class FolderTransactionError(RuntimeError):
@@ -163,7 +172,7 @@ class FolderRunResult:
 
     result_root: Path
     data_root: Path
-    accepted_plan: FolderAcceptedPlan
+    accepted_plan: ExecutableFolderAcceptedPlan
     report: FolderVerificationReport
     reference_graph: FolderReferenceGraph
     change_ledger: FolderChangeLedger | None = None
@@ -189,6 +198,34 @@ class FolderReceiptContext:
             raise ValueError("Pending and final result paths must differ.")
 
 
+class FolderProofFinalizer(Protocol):
+    """Finalize one non-v1 portable proof before common no-replace promotion."""
+
+    def finalize(
+        self,
+        *,
+        pending_root: Path,
+        initial_scan: FolderScan,
+        user_request: FolderUserRequestArtifact,
+        accepted_plan: ExecutableFolderAcceptedPlan,
+        reference_graph: FolderReferenceGraph,
+        path_rows: tuple[FolderPathMapRow, ...],
+        change_ledger: FolderChangeLedger,
+        report: FolderVerificationReport,
+        staged_members: tuple[FolderStagedDataMember, ...],
+        staged_data_commitment: str,
+        producer_bagit_validation: PackageValidationResult,
+        bag_writer: FolderBagWriter,
+        package_validator: PackageValidator,
+    ) -> str:
+        """Write, bind, validate, and independently verify the final proof."""
+        ...
+
+    def validate_before_promotion(self) -> None:
+        """Revalidate any non-source authority immediately before promotion."""
+        ...
+
+
 async def run_folder_refactor(
     *,
     source_root: Path,
@@ -199,6 +236,8 @@ async def run_folder_refactor(
     package_validator: PackageValidator | None = None,
 ) -> FolderRunResult:
     """Plan, compile, copy, prove, and promote one generic folder result."""
+
+    from name_atlas.folder_refactor.planner import initial_evidence_fingerprint
 
     try:
         request_fingerprint(request)
@@ -381,15 +420,20 @@ def execute_accepted_folder_plan(
     initial_scan: FolderScan,
     output_parent: Path,
     request: str,
-    accepted_plan: FolderAcceptedPlan,
+    accepted_plan: ExecutableFolderAcceptedPlan,
     reference_graph: FolderReferenceGraph,
     bag_writer: FolderBagWriter,
     package_validator: PackageValidator,
     progress_callback: FolderTransactionProgress | None = None,
     receipt_context: FolderReceiptContext | None = None,
+    proof_finalizer: FolderProofFinalizer | None = None,
 ) -> FolderRunResult:
     """Create one verified copy from an already mechanically accepted plan."""
 
+    if receipt_context is not None and proof_finalizer is not None:
+        raise FolderTransactionError(
+            "A transaction cannot use both v1 and Connected Change proof authority."
+        )
     if not isinstance(reference_graph, FolderReferenceGraph):
         raise FolderTransactionError(
             "A complete source-bound Markdown reference graph is required."
@@ -400,7 +444,14 @@ def execute_accepted_folder_plan(
             raise FolderTransactionError(
                 "Markdown reference graph is incomplete or differs from the source."
             )
-        validate_accepted_plan(initial_scan.inventory, request, accepted_plan)
+        if isinstance(accepted_plan, FolderAcceptedPlanV2):
+            validate_connected_accepted_plan(
+                inventory=initial_scan.inventory,
+                request=request,
+                plan=accepted_plan,
+            )
+        else:
+            validate_accepted_plan(initial_scan.inventory, request, accepted_plan)
         derived_graph = derive_reference_rewrites(
             current_reference_graph,
             accepted_plan,
@@ -533,9 +584,10 @@ def execute_accepted_folder_plan(
                 FolderTransactionPhase.UPDATING_SUPPORTED_LINKS,
             )
 
+        has_portable_proof = receipt_context is not None or proof_finalizer is not None
         request_artifact = (
             build_folder_user_request_artifact(request)
-            if receipt_context is not None
+            if has_portable_proof
             else {
                 "schema_version": "folder-user-request.v1",
                 "request": request,
@@ -550,15 +602,17 @@ def execute_accepted_folder_plan(
         )
         _write_portable_json(ACCEPTED_PLAN_PATH, accepted_plan, pending_root)
         _write_portable_json(REFERENCE_GRAPH_PATH, derived_graph, pending_root)
-        if receipt_context is not None:
+        if has_portable_proof:
+            portable_values: tuple[object, ...] = (
+                initial_scan.inventory,
+                request_artifact,
+                accepted_plan,
+                derived_graph,
+            )
+            if receipt_context is not None:
+                portable_values = (*portable_values, receipt_context.evidence_ledger)
             if contains_exact_local_path(
-                (
-                    initial_scan.inventory,
-                    request_artifact,
-                    receipt_context.evidence_ledger,
-                    accepted_plan,
-                    derived_graph,
-                ),
+                portable_values,
                 sender_local_paths={
                     str(initial_scan.source_root),
                     str(output_parent),
@@ -569,6 +623,7 @@ def execute_accepted_folder_plan(
                 raise FolderTransactionError(
                     "Portable proof authority contains a sender-local path."
                 )
+        if receipt_context is not None:
             _write_portable_json(
                 EVIDENCE_LEDGER_PATH,
                 receipt_context.evidence_ledger,
@@ -599,7 +654,7 @@ def execute_accepted_folder_plan(
             for mapping in accepted_plan.file_mappings
         )
         path_rows = ()
-        if receipt_context is not None:
+        if has_portable_proof:
             copied_by_path = {str(record["path"]): record for record in copied_records}
             observed_result_files = {
                 mapping.file_id: ObservedResultFile(
@@ -658,10 +713,10 @@ def execute_accepted_folder_plan(
             reference_graph=derived_graph,
         )
         _replace_portable_json(VERIFICATION_REPORT_PATH, report, pending_root)
-        if receipt_context is None:
+        if not has_portable_proof:
             bag_writer.refresh_tagmanifest(pending_root)
             final_package_result = package_validator.validate(pending_root)
-        else:
+        elif receipt_context is not None:
             assert change_ledger is not None
             original_content_ids = tuple(
                 sorted(
@@ -698,6 +753,27 @@ def execute_accepted_folder_plan(
             )
             bag_writer.finalize_tagmanifest(pending_root)
             final_package_result = package_validator.validate(pending_root)
+        else:
+            assert proof_finalizer is not None
+            assert isinstance(request_artifact, FolderUserRequestArtifact)
+            assert change_ledger is not None
+            receipt_fingerprint = proof_finalizer.finalize(
+                pending_root=pending_root,
+                initial_scan=initial_scan,
+                user_request=request_artifact,
+                accepted_plan=accepted_plan,
+                reference_graph=derived_graph,
+                path_rows=path_rows,
+                change_ledger=change_ledger,
+                report=report,
+                staged_members=staged_members,
+                staged_data_commitment=staged_data_commitment,
+                producer_bagit_validation=initial_package_result,
+                bag_writer=bag_writer,
+                package_validator=package_validator,
+            )
+            receipt_finalized = True
+            final_package_result = package_validator.validate(pending_root)
         if not final_package_result.valid:
             raise FolderTransactionError(
                 "Final BagIt validation blocked the result: "
@@ -724,6 +800,8 @@ def execute_accepted_folder_plan(
 
         final_source_scan = scan_folder(initial_scan.source_root)
         _require_same_source(initial_scan, final_source_scan, "before promotion")
+        if proof_finalizer is not None:
+            proof_finalizer.validate_before_promotion()
         promote_directory_no_replace(pending_root, final_root)
         return FolderRunResult(
             result_root=final_root,
@@ -904,7 +982,7 @@ def _read_portable_model(
 def _build_report(
     *,
     initial_scan: FolderScan,
-    accepted_plan: FolderAcceptedPlan,
+    accepted_plan: ExecutableFolderAcceptedPlan,
     staged_data_commitment: str,
     path_change_count: int,
     data_root: Path,
@@ -1003,7 +1081,7 @@ def _verify_staged_payloads(
     *,
     data_root: Path,
     initial_scan: FolderScan,
-    accepted_plan: FolderAcceptedPlan,
+    accepted_plan: ExecutableFolderAcceptedPlan,
     reference_graph: FolderReferenceGraph,
     proof_root: Path,
 ) -> list[dict[str, str | int]]:
