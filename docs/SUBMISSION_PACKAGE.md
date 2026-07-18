@@ -1,14 +1,17 @@
 # Reversible Name Atlas — revised Build Week submission package
 
-Status: **R7 DRAFT — RELEASE CANDIDATE, REHEARSAL, SCREENSHOTS, AND THUMBNAIL
-COMPLETE; PUBLIC ALIGNMENT, VIDEO, USER ACTIONS, AND SUBMISSION PENDING**
+Status: **R7 RECORDING-READY — PRODUCT, PUBLIC REPOSITORY, REHEARSAL,
+SCREENSHOTS, THUMBNAIL, NARRATION DRAFT, AND SHOT LIST COMPLETE; VIDEO, USER
+ACTIONS, HOLD RELEASE, AND SUBMISSION PENDING**
 
 Submission hold: **ACTIVE — DO NOT SUBMIT UNTIL THE USER EXPLICITLY RELEASES
 THE HOLD**
 
 This is the one working package for the revised demo, Devpost draft, screenshot
-set, and final due-diligence pass. It is not a product specification or a claim
-of final release readiness. Product truth and claim authority remain in
+set, and final due-diligence pass. It is not a product specification. Its R7
+status means the product, public repository, and recording materials are ready;
+the actual video, user-owned fields, hold release, and submission are not.
+Product truth and claim authority remain in
 [`build/BUILD_SPEC.md`](build/BUILD_SPEC.md) and
 [`LIMITATIONS.md`](LIMITATIONS.md).
 
@@ -46,9 +49,9 @@ representative authority when applicable, and every other personal attestation.
 | One-line summary | A local migration workbench that turns a risky change to a linked digital collection into a persistent human-reviewed case and a portable receipt another person can independently verify. |
 | Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> |
 | License | MIT |
-| Current known-good public baseline | `827b0f6f93174d3c34aedfd98d8467a299ab2669`; revised release not yet promoted at this draft checkpoint |
+| Historical first-cycle public fallback | `827b0f6f93174d3c34aedfd98d8467a299ab2669` |
 | Accepted R6 product candidate | `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c` |
-| Final revised release SHA | `[PENDING: fill only after the recording-ready release checkpoint is committed and public alignment passes]` |
+| Selected recording-ready release SHA | `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4` — [exact public commit](https://github.com/ModernBlueprints/reversible-name-atlas/commit/6591d57e254a21944fb0c4bdfb2f7a4eec18eda4) |
 | Final demo receipt fingerprint | `2ba5d8316f970d0a8f220a57fef1b7f77c167213146eeef2639284f251f0509a` |
 | Final screenshot hashes | Recorded in the revised screenshot inventory below; recheck only after a deliberate recapture |
 | Devpost thumbnail | `docs/submission-thumbnail.png` — 1500×1000 PNG, 3:2, 210,124 bytes, SHA-256 `1eee93fe81037843ca80453574d9f488a8aef97c0ad542ea615cfcd045a78ca0` |
@@ -223,9 +226,13 @@ undeclared references, embedded links, or arbitrary filesystem state.
 - a complete R7 browser/terminal rehearsal produced selected receipt
   `2ba5d8316f970d0a8f220a57fef1b7f77c167213146eeef2639284f251f0509a`.
 
-Public revised SHA and unauthenticated public-clone alignment remain pending.
-The selected recording receipt is fixed above. No product code, feature, or
-design work remains planned.
+The selected release was normally fast-forward promoted and a credential-
+disabled HTTPS clone resolved exactly to `6591d57`. That public clone passed
+frozen Python 3.11 sync, all 265 tests, Ruff, compilation, build, the unchanged
+wheel hash, selected-receipt verification, and keyless five-route replay
+startup. The selected recording receipt is fixed above. No product code,
+feature, design, screenshot, thumbnail, narration-draft, or shot-list work
+remains planned.
 
 ## Technology list
 
@@ -395,7 +402,7 @@ of this release.
 | Submitter type | `[USER CONFIRM: Individual / Team of Individuals / Organization]` |
 | Country | `[USER CONFIRM; do not infer]` |
 | Plugin/developer-tool fields | `Not applicable — Work & Productivity standalone local browser application.` |
-| Final release SHA | `[PENDING PUBLIC ALIGNMENT]` |
+| Final release SHA | `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4` |
 | Submission hold | `ACTIVE — final submit prohibited until explicit user release` |
 
 ## Three-minute demo storyboard
@@ -597,17 +604,17 @@ Do not claim:
 | Bounded restore | Verify-first unmocked restore, exact 30-member snapshot equality, no overwrite, source/handoff unchanged | Verified at R5 and twice from exact detached `eb54f3a` clean clones |
 | Real GPT-5.6 card | Canonical record SHA, evidence fingerprint, usage, and live/replay build evidence | Verified; no new call made or needed |
 | 265 passing tests | Fresh R6 release-hardening full-suite output | Verified by the primary integrator after the final path-selection correction |
-| Final public release | Selected SHA, clean branch, public alignment, unauthenticated clone | `[PENDING PUBLIC ALIGNMENT]` |
+| Final public release | Selected SHA, clean branch, public alignment, credential-disabled HTTPS clone | Verified at `6591d57`; closure changes only evidence/status documents, not the selected product or media |
 | Final video and submission | Public playback, `/feedback`, personal attestations, explicit hold release, Devpost receipt | `[USER ACTIONS AND FINAL CLOSURE PENDING]` |
 
 ## Due-diligence checklist
 
 ### Product and repository
 
-- [ ] Recording-ready release SHA selected and recorded above
-- [ ] Revision fast-forward promoted only after release acceptance
-- [ ] Public repository resolves to the selected SHA
-- [ ] Public repository is MIT-licensed and third-party notices are present
+- [x] Recording-ready release SHA selected and recorded above
+- [x] Revision fast-forward promoted only after release acceptance
+- [x] Exact public commit resolves and public `main` contains the selected SHA
+- [x] Public repository is MIT-licensed and third-party notices are present
 - [x] `uv sync --frozen` passes in an exact detached clean clone
 - [x] Complete keyless hero replay passes from that clean clone
 - [x] Copied-bag `verify-receipt` passes from that clean clone

@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **ACTIVE / R7 IN PROGRESS — R6 RELEASE CANDIDATE ACCEPTED**
+Status: **ACTIVE / R7 COMPLETE — RECORDING-READY**
 
 Amended production goal: **ACTIVE**
 
@@ -481,7 +481,7 @@ hardening.
 - **Owner:** primary integrator; user owns voice recording and `/feedback`.
 - **Allowed cut:** no required release surface; restore remains absent if already
   gate-cut.
-- **Actual status:** `IN_PROGRESS`.
+- **Actual status:** `COMPLETE`.
 - **Actual verification:** the accepted product candidate is `eb54f3a`. A
   complete browser rehearsal at a 1280×720 capture viewport traversed Atlas,
   explicit low-risk approval, mechanical collision edit, the exact recorded
@@ -494,9 +494,22 @@ hardening.
   with all 30 source members byte-identical and the copied handoff unchanged.
   The 0:00–2:45 visual storyboard was rehearsed at its specified shot holds;
   the 356-word narration remains a user-owned recording and timing action.
-  Remaining R7 work is the final governance/release commit, normal
-  fast-forward promotion, unauthenticated public-clone confirmation, and exact
-  public release handoff. No product code, feature, or design work remains.
+  Recording-ready release checkpoint
+  `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4` has parent `eb54f3a` and
+  contains the final R7 documents and 3:2 thumbnail. An exact detached local
+  clone passed frozen Python 3.11 sync, all 265 tests, Ruff lint/format,
+  compilation, build, the unchanged wheel SHA-256, local-link checks, both
+  selected-receipt verifier modes, and keyless five-route replay startup. It
+  was then normally fast-forward promoted without force or history rewrite.
+  A credential-disabled HTTPS clone of the public GitHub repository resolved
+  exactly to `6591d57` and independently passed the same 265 tests, build,
+  wheel hash, selected-receipt verification, and keyless five-route replay
+  smoke. The public `main` and revision branch both contained the selected
+  checkpoint before this governance-only closure. No product code, feature,
+  design, screenshot, thumbnail, narration-draft, or shot-list work remains.
+  The remaining work is the user-owned voice recording and `/feedback`, final
+  video capture/edit/public playback, personal attestations, explicit hold
+  release, and submission.
 
 ## Protected submission reserve
 
@@ -509,6 +522,11 @@ releases the active submission hold.
 If every independent requirement is complete while the hold remains active, set
 the phase to `WAITING_FOR_SUBMISSION_HOLD_RELEASE`, request only that release,
 and preserve the completed release unchanged.
+
+R7 is complete. The current protected-reserve boundary is the user's voice
+recording and `/feedback`; `WAITING_FOR_SUBMISSION_HOLD_RELEASE` is not reached
+until the final public video, due diligence, and all other pre-submission fields
+are complete.
 
 ## Milestone closure protocol
 

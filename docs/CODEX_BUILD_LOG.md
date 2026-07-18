@@ -75,6 +75,7 @@ revision was built on `revision/portable-change-receipt`.
 | `b10445138baf47ee4156a5a5ed151d0cb7819d4e` | Added verify-first `restore-receipt`, strict `restore-report.v1`, exact original-control restoration, complete snapshot proof, and no-replace promotion. | 262 tests. An unmocked restore reconstructed 30 members and 23,621 bytes exactly; source and handoff remained unchanged; isolated-wheel execution and adversarial race/failure matrices passed. |
 | `d034b27b8b47224c4f7bff5d8be4717241522618` | Closed R5 and began frozen R6 release hardening. | Feature freeze active; only proof integrity, release QA, documentation, screenshots, rehearsal, and submission preparation remain. |
 | `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c` | Hardened the revised release candidate, packaged the hero in the wheel, corrected durable replay restart and installed-wheel source selection, replaced the first-cycle release copy, and installed the seven revised screenshots. | 265 tests; two final independent audits; exact detached clean-clone, build, installed-wheel, complete receipt, controlled-failure, restore, link, license, path, secret, and screenshot checks all returned `GO`. |
+| `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4` | Selected the recording-ready release checkpoint with the rehearsed transaction, final R7 package, seven screenshots, and 3:2 thumbnail. | Exact detached local clone and credential-disabled public HTTPS clone each passed frozen install, 265 tests, build, wheel, receipt verification, and keyless five-route replay startup. |
 
 ### Current verified checkpoint
 
@@ -160,6 +161,41 @@ It uses only project-native text and vector shapes in the established dark
 visual system, and its visible abbreviated digest is the selected recording
 receipt `2ba5…f0509a`, not a decorative invented value.
 
+### Public recording-ready release
+
+The selected recording-ready checkpoint is
+`6591d57e254a21944fb0c4bdfb2f7a4eec18eda4`, with parent `eb54f3a`. It was
+tested first from an exact detached local clone and then fast-forward promoted
+normally to both `revision/portable-change-receipt` and public `main`. No force
+push, rebase, or history rewrite occurred.
+
+A credential-disabled HTTPS clone from
+<https://github.com/ModernBlueprints/reversible-name-atlas> resolved exactly to
+`6591d57`. In that public clone:
+
+- `uv sync --frozen --python 3.11` passed;
+- all 265 pytest tests passed in 14.18 seconds;
+- Ruff lint/format, compilation, and Git whitespace passed;
+- the wheel retained SHA-256
+  `1ed641680a164196bf0fc07d894389713d0033ad28ffda27cba7253e2c0e266b`;
+- the selected receipt `2ba5…f0509a` verified source-free and against the
+  exact hero source; and
+- keyless replay truthfully reported exact `gpt-5.6`, **Recorded GPT-5.6
+  response**, redirected `/` to `/decide`, and served all five workbench routes
+  plus local Blueprint and Name Atlas CSS.
+
+An earlier diagnostic invocation cloned the exact commit but did not change
+its shell working directory before running the toolchain. No clean-clone gate
+was claimed from that run. The complete check was rerun with the clone as the
+explicit working directory and passed, followed by the independent public-clone
+run above.
+
+The R7 closure after `6591d57` changes only evidence and status in the build
+log, submission package, implementation plan, and state checkpoint. It changes
+no product code, screenshot, thumbnail, narration draft, or storyboard. Its
+exact public HEAD is resolved from fresh Git and reported in the handoff because
+a commit cannot contain its own hash.
+
 ### Revised screenshot replacement record
 
 R6 regenerated one coherent seven-frame release set from the synthetic hero
@@ -220,6 +256,7 @@ runtime dependency on the ephemeral spike.
 
 This log does not claim semantic correctness, sender authentication,
 compliance, production readiness, universal archival support, universal
-reversibility, or measured time savings. Final release commit, public-repository
-alignment, video, `/feedback` ID, and Devpost submission remain pending until
-separately verified. The submission hold remains active.
+reversibility, or measured time savings. The recording-ready release commit and
+public-repository alignment are complete. Video, `/feedback` ID, personal
+attestations, explicit hold release, and Devpost submission remain pending.
+The submission hold remains active.

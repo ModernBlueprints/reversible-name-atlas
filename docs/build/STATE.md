@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 06:43:54 CEST**
+Checkpoint: **Saturday 18 July 2026 at 06:54:42 CEST**
 
-Phase: **R7_RECORDING_READINESS**
+Phase: **RECORDING_READY — WAITING FOR USER VIDEO AND FEEDBACK**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
@@ -18,8 +18,8 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 67 hours 16 minutes 6 seconds
-- Time to submission: 91 hours 16 minutes 6 seconds
+- Time to recording-ready: 67 hours 5 minutes 18 seconds
+- Time to submission: 91 hours 5 minutes 18 seconds
 - Protected submission reserve: 24 hours
 - Protected pre-recording contingency: 4 hours
 
@@ -27,27 +27,24 @@ Submission hold: **ACTIVE**
 
 - Repository: `/Users/nikolai/Desktop/Repos/reversible-name-atlas`
 - Revision branch: `revision/portable-change-receipt`
-- Known-good public predecessor: `827b0f6f93174d3c34aedfd98d8467a299ab2669`
-- Local `main` and `origin/main`: still at the known-good predecessor
-- Accepted R6 candidate: `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c`
-- Candidate subject: `feat: harden revised release candidate`
-- Candidate checkout state immediately after commit: clean
+- Historical public predecessor:
+  `827b0f6f93174d3c34aedfd98d8467a299ab2669`
+- Accepted R6 product candidate:
+  `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c`
+- Selected recording-ready release checkpoint:
+  `6591d57e254a21944fb0c4bdfb2f7a4eec18eda4`
+- Selected release subject: `docs: prepare revised recording-ready release`
+- Selected release parent: `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c`
 - Public repository: `https://github.com/ModernBlueprints/reversible-name-atlas`
-- Revised public alignment: **NOT YET PERFORMED**
+- Before this governance-only closure, local `main`, `origin/main`, the local
+  revision branch, and its remote branch all resolved to `6591d57`.
+- The exact current governance-closure SHA cannot be embedded in its own file;
+  resolve it from fresh Git and the handoff after the normal push.
 - Python: 3.11.9
 - `OPENAI_API_KEY` in the current environment: **ABSENT**; no value was read or
   exposed
 
-Milestone product commits:
-
-- R1: `2495a6fabd38e2695d574c02ac8a8130717eb729`
-- R2: `5949a0f3255e181fdde46ca206d86a6c41bb5eb6`
-- R3: `b59b9efd5752b4038c89db6e2b0fd6f19e1b5a47`
-- R4: `0e7543af1f46e06a55ccd22d75c647b44b68d102`
-- R5: `b10445138baf47ee4156a5a5ed151d0cb7819d4e`
-- R6 candidate: `eb54f3a2b3ab60bc690d3151e7f5bce0ad28aa0c`
-
-## Verified release state
+## Verified recording-ready state
 
 - Persistent case, exact staleness, evidence/card/human binding: **COMPLETE**
 - Portable receipt, path-neutral artifacts, original controls: **COMPLETE**
@@ -58,78 +55,87 @@ Milestone product commits:
 - Restore applicability gate: **GO — RECORDED ONCE AT 04:19:07 CEST**
 - Revised feature freeze: **ACTIVE**
 - R6 release hardening: **COMPLETE**
-- R7 recording readiness: **IN PROGRESS**
-- Product code, feature, and design work remaining: **NONE PLANNED**
+- R7 recording readiness: **COMPLETE**
+- Product code, feature, design, screenshot, thumbnail, narration-draft, and
+  shot-list work remaining: **NONE**
 
-R6 candidate evidence:
+Selected release evidence:
 
-- exact detached clean clone and `uv sync --frozen`: pass;
-- 265/265 tests, lock, Ruff lint/format, compilation, and Git whitespace: pass;
-- build and wheel integrity: pass;
+- exact detached local clone and `uv sync --frozen --python 3.11`: pass;
+- 265/265 tests, Ruff lint/format, compilation, build, and Git whitespace: pass;
 - wheel SHA-256:
   `1ed641680a164196bf0fc07d894389713d0033ad28ffda27cba7253e2c0e266b`;
-- installed-wheel default replay from an unrelated and deliberately shadowing
-  working directory: pass;
-- live startup with no key: truthful exit `2`;
-- live startup with a non-secret placeholder: exact `gpt-5.6`, zero provider
-  requests, and no budget-ledger creation;
-- primary exact-commit receipt:
-  `9279dd11742f73518bf6a27f6a2fa41d3a15659fc3fe27592c6bf8a0499334da`;
-- independent clean-clone receipt:
-  `e68229f3cc7d3cef736823a138c3099617e4a325aaaae016e91704141b8bf5f0`;
-- both copied handoffs verified source-free and with their exact source;
-- both exact altered-ledger copies passed BagIt and blocked only on
-  `artifact_digest_mismatch:decision_ledger`;
-- both restores reproduced all 30 source members and 23,621 bytes exactly;
-- two independent final audits: `GO`;
-- seven final 1440×900 screenshots: complete and verified; and
-- 1500×1000 3:2 submission thumbnail: complete and verified.
-
-R7 rehearsal evidence:
-
 - selected recording receipt:
   `2ba5d8316f970d0a8f220a57fef1b7f77c167213146eeef2639284f251f0509a`;
-- browser transaction at 1280×720: Atlas → Decide → Stage → Verify → Handoff
-  → offline receipt, complete with no horizontal overflow;
-- copied selected handoff: `VERIFIED` in 0.95 seconds;
-- controlled selected alteration: BagIt pass plus exact Name Atlas blocker;
-- selected logical restore: `RESTORED` in 0.74 seconds, 30/30 members exact;
-- storyboard: continuous 0:00–2:45 visual schedule rehearsed;
-- narration: 356-word draft complete; actual voice recording and timing remain
-  user-owned; and
-- final public promotion and unauthenticated public clone: pending.
+- selected receipt verified source-free and with the exact hero source;
+- keyless replay reported exact `gpt-5.6`, **Recorded GPT-5.6 response**, and
+  served all five workbench routes plus local CSS;
+- 1280×720 browser rehearsal and continuous 0:00–2:45 storyboard: pass;
+- copied selected handoff verification: pass;
+- exact controlled selected alteration: BagIt pass plus only
+  `artifact_digest_mismatch:decision_ledger`;
+- selected logical restore: 30/30 members byte-identical;
+- seven revised screenshots and 1500×1000 3:2 thumbnail: complete; and
+- 356-whitespace-word English narration draft and capture shot list: complete.
+
+Public alignment evidence:
+
+- revision branch pushed normally at `6591d57`;
+- local `main` fast-forwarded from `827b0f6` to `6591d57`;
+- public `main` pushed normally with no force, rebase, or history rewrite;
+- credential-disabled HTTPS clone resolved exactly to `6591d57`;
+- that public clone passed frozen sync, all 265 tests, Ruff, compilation, build,
+  identical wheel hash, both selected-receipt verifier modes, and keyless
+  five-route replay startup; and
+- local source checkout and both verification clones were clean after their
+  checks.
 
 Release materials are current for the revised release: README, limitations,
-build log, submission draft, seven screenshots, narration, shot list, claim
-matrix, and thumbnail. Final video, `/feedback`, personal attestations, explicit
-submission-hold release, and submission remain user-owned or protected actions.
+provenance, build log, submission draft, seven screenshots, narration draft,
+shot list, claim matrix, and thumbnail.
 
-Current blocker: **NONE for independent release work**.
+Remaining user-owned or protected work:
+
+- record and approve the final English voice-over;
+- obtain `/feedback` from this primary build task;
+- confirm entrant type, country, eligibility, ownership, and other personal
+  attestations;
+- release the submission hold only after the complete video and final due
+  diligence pass; and
+- authorize final Devpost submission.
+
+Remaining joint finalization after voice audio exists: capture/edit the final
+under-three-minute video, upload it publicly to YouTube, verify full playback,
+insert its URL, run the final claim/rule/clean-run audit, and complete the draft
+form without submitting while the hold remains active.
+
+Current blocker: **USER-OWNED VOICE RECORDING AND `/feedback`; NO INDEPENDENT
+PRODUCT OR REPOSITORY BLOCKER**.
 
 ## Compact recovery capsule
 
-- Phase: `R7_RECORDING_READINESS`
-- Branch/baseline: revision branch at accepted R6 candidate `eb54f3a`; public
-  `main` and `origin/main` remain `827b0f6`
-- Current milestone: R7 in progress
-- Last verified commands: exact clean-clone sync, 265 tests, Ruff, compilation,
-  build, wheel install, replay/live startup, complete hero transaction,
-  verifier, controlled failure, restore, browser rehearsal — all passed
+- Phase: `RECORDING_READY — WAITING FOR USER VIDEO AND FEEDBACK`
+- Branch/release: revision lineage with selected public release `6591d57`;
+  exact governance-closure HEAD comes from fresh Git
+- Current milestone: R7 complete; video/submission reserve active
+- Last verified commands: exact local and credential-disabled public clean-clone
+  sync, 265 tests, Ruff, compilation, build, verifier, and keyless route smoke
 - Case status: complete and restart-safe
 - Receipt/verifier status: complete; selected fingerprint `2ba5d831…f0509a`
 - UI status: complete; five routes and offline receipt rehearsed
 - Restore gate/status: `GO` / complete
 - Feature-freeze status: active
-- Release-material status: revised materials complete; public alignment pending
+- Release-material status: recording-ready; public video and `/feedback` pending
 - Submission hold: active
-- Blockers: none for independent work
-- Next operation: commit the R7 release-material checkpoint, verify that exact
-  commit, fast-forward-promote it normally to public `main`, run an
-  unauthenticated public clean-clone judge check, and close R7 without submitting
+- Blockers: user voice and `/feedback`; no independent product blocker
+- Next operation: user records and supplies or approves the final narration
+  audio from `docs/SUBMISSION_PACKAGE.md`, and runs `/feedback` in this primary
+  task; no submission occurs
 
 ## Exact next operation
 
-Create and verify the final no-feature release checkpoint from the accepted R6
-candidate and current R7 materials. Promote only after that verification; then
-confirm the public repository from an unauthenticated clone and stop at the
-remaining video/user-action boundary with the submission hold still active.
+The user records and supplies or approves the final English narration audio for
+the 2:45 rehearsed shot plan and runs `/feedback` in this primary build task.
+Then complete video capture/edit/public playback and due diligence while the
+submission hold remains active. Do not submit until the user explicitly releases
+that hold.
