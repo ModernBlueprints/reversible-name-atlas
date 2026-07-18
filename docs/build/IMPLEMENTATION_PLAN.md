@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole AI-first Implementation Plan
 
-Status: **EXECUTION-READY; AI-FIRST GOAL INACTIVE**
+Status: **ACTIVE — A2 IN PROGRESS**
 
-Phase: **WAITING_FOR_AI_FIRST_GOAL_ACTIVATION**
+Phase: **A2 — CONNECTED-FOLDER AND PLANNER HARDENING**
 
 Submission hold: **ACTIVE**
 
@@ -50,6 +50,21 @@ A+0 is the Europe/Oslo timestamp when the user explicitly activates the complete
 amended `docs/build/GOAL.md` in this primary Codex task. Meta-plan approval,
 scaffold creation, branch creation, commit, or goal reproduction do not start
 A+0.
+
+Actual A+0: **Saturday 18 July 2026 at 15:37:55 CEST**.
+
+Activation calculation:
+
+- available and planned product window: **58 hours, 22 minutes, 5 seconds**;
+- scale: **0.972800926**;
+- A1 target: **Sunday 19 July 2026 at 01:21:35 CEST**;
+- A2 target: **Sunday 19 July 2026 at 14:58:45 CEST**;
+- A3 target: **Monday 20 July 2026 at 00:42:25 CEST**;
+- A4 and plugin-gate target: **Monday 20 July 2026 at 08:29:22 CEST**;
+- scaled A5 target: **Monday 20 July 2026 at 14:19:35 CEST**;
+- mandatory earlier feature freeze: **Monday 20 July 2026 at 14:00:00 CEST**;
+- A6 target: **Monday 20 July 2026 at 20:09:47 CEST**;
+- A7 and recording-ready target: **Tuesday 21 July 2026 at 02:00:00 CEST**.
 
 At activation calculate:
 
@@ -152,7 +167,7 @@ installation, or release hardening.
   `TX-010`, `TX-012`, `AI-008`, `AI-009`, `REL-008`.
 - **Dependencies:** explicit goal activation; exact governance commit; clean
   branch; inherited scanner, provider Protocol, promotion, and proof mechanics.
-- **Calculated target:** standard A+0–10; scale at actual A+0.
+- **Calculated target:** **Sunday 19 July 2026 at 01:21:35 CEST**.
 - **User-visible outcome:** a small ordinary folder plus plain request runs
   through generic inventory, a deterministic fake/replay planner, complete
   compiled map, separate result copy, and one visible proof while source remains
@@ -176,15 +191,27 @@ installation, or release hardening.
 - **Owner:** primary integrator; bounded subagents only for isolated scanner or
   contract tests.
 - **Allowed cut:** no optional UI decoration or metrics.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `COMPLETE` on Saturday 18 July 2026 at 16:44:41 CEST.
+- **Actual verification:** the installed
+  `uv run --no-sync name-atlas run --mode development` command starts the
+  loopback Start/Working/Done product with an explicit no-API planner label. The
+  committed four-file fixture produced a separate valid BagIt result with source
+  commitment `92d497c40ca785b550e9bd3986f841855ca1046edefc027ade991cd362056222`,
+  four of four files present once, three path changes, protected paths fixed,
+  an explicit empty directory preserved, no portable absolute path, and every
+  report check passing. Directory replacement is bound through local directory
+  identities. **108 focused tests and 359 full-suite tests passed**; lock, Ruff
+  lint, Ruff format, and `git diff --check` passed. Browser QA passed at
+  1280×720 and 390×844. The independent audit found and the correction pass
+  closed both the command-integration and directory-replacement defects, then
+  returned `GO` for material A1 correction.
 
 ### A2 — Connected-folder and planner hardening
 
 - **Requirements:** `IO-006`–`IO-011`, `TX-009`–`TX-012`, `CASE-006`–`CASE-009`,
   `AI-008`–`AI-010`, `CLAIM-004`–`CLAIM-005`.
 - **Dependencies:** verified A1 walking transaction and frozen generic contracts.
-- **Calculated target:** standard A+10–24; scale at actual A+0.
+- **Calculated target:** **Sunday 19 July 2026 at 14:58:45 CEST**.
 - **User-visible outcome:** Name Atlas plans a complete ordinary-folder change,
   automatically repairs mechanical plan defects within bounds, updates
   supported Markdown links when notes/targets move, and asks at most one useful
@@ -214,8 +241,10 @@ installation, or release hardening.
   subagent permitted.
 - **Allowed cut:** decorative progress behavior, advanced filters, and extra
   evidence presentation only.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS` from Saturday 18 July 2026 at 16:44:41 CEST.
+- **Actual verification:** A1 generic contracts and the continuously runnable
+  product are verified inputs; Markdown/reference, bounded planner repair, and
+  clarification work has not yet passed A2 acceptance.
 
 ### A3 — Persistent proof transaction
 
@@ -223,7 +252,7 @@ installation, or release hardening.
   `VER-010`–`VER-014`, `REL-008`, `CLAIM-004`–`CLAIM-005`.
 - **Dependencies:** verified A2 planner/compiler/reference behavior; inherited
   atomic case, BagIt, receipt, verifier, promotion, and restore mechanics.
-- **Calculated target:** standard A+24–34; scale at actual A+0.
+- **Calculated target:** **Monday 20 July 2026 at 00:42:25 CEST**.
 - **User-visible outcome:** a job survives refresh/restart; a verified result
   carries its complete request, evidence, accepted plan, changes, proof, and
   exact original Markdown bytes; another process can verify it without GPT or a
@@ -259,7 +288,7 @@ installation, or release hardening.
   `REL-008`–`REL-009`, and `CLAIM` requirements.
 - **Dependencies:** verified A3 transaction; stable new schemas/tools/prompts;
   existing cumulative budget ledger; justified live credentials.
-- **Calculated target:** standard A+34–42; scale at actual A+0.
+- **Calculated target:** **Monday 20 July 2026 at 08:29:22 CEST**.
 - **User-visible outcome:** the complete 24-file hero accepts one request and
   creates a verified usable result without a question; the separate ambiguity
   fixture asks exactly one question; both have truthful live and recorded
@@ -299,7 +328,7 @@ installation, or release hardening.
 
 - **Requirements:** `REL-010`.
 - **Dependencies:** verified A4 with no required defect.
-- **Calculated target:** scaled A4; standard A+42.
+- **Calculated target:** **Monday 20 July 2026 at 08:29:22 CEST**.
 - **Predicates:** both GPT paths; restart; Markdown preservation; receipt;
   keyless verifier; exact controlled negative; reconstruction; coherent
   three-state UI; no cross-artifact defect; at least twelve actual hours before
@@ -316,8 +345,8 @@ installation, or release hardening.
 - **Requirements:** `REL-010` if admitted; otherwise all required active
   requirements; `REL-011` feature-freeze surface.
 - **Dependencies:** recorded plugin-gate decision and verified A4.
-- **Calculated target:** standard A+42–48; scale at actual A+0; freeze no later
-  than twelve actual hours before recording readiness.
+- **Calculated target:** scaled A5 is Monday 20 July 2026 at 14:19:35 CEST;
+  mandatory earlier feature freeze is **Monday 20 July 2026 at 14:00:00 CEST**.
 - **User-visible outcome:** either one fully installable Codex plugin invokes the
   same Name Atlas transaction, or the required browser product receives the
   full interval for defects, accessibility, clarity, and portability. In both
@@ -350,7 +379,7 @@ installation, or release hardening.
 - **Requirements:** all required active requirements; admitted plugin only if
   gate GO; `REL-011`; `CLAIM-004`–`CLAIM-005`.
 - **Dependencies:** feature freeze; stable required product.
-- **Calculated target:** standard A+48–54; scale at actual A+0.
+- **Calculated target:** **Monday 20 July 2026 at 20:09:47 CEST**.
 - **User-visible outcome:** a judge can clone, install, run keyless replay,
   understand the product, inspect the exact proof, verify/reconstruct the result,
   and optionally install the admitted plugin without developer intervention.
@@ -383,8 +412,7 @@ installation, or release hardening.
 
 - **Requirements:** complete `REL-011` and every non-cut active requirement.
 - **Dependencies:** accepted A6 release candidate.
-- **Calculated target:** standard A+54–60; scale at actual A+0; absolute target
-  Tuesday 21 July 2026 at 02:00 CEST.
+- **Calculated target:** **Tuesday 21 July 2026 at 02:00:00 CEST**.
 - **User-visible outcome:** the only remaining work is final capture, the user's
   voice, editing/upload, `/feedback`, due diligence, hold release, and submission.
 - **Implementation responsibilities:** select final release commit; run final

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101317">
+    <title>{% block title %}Reversible Name Atlas{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/vendor/blueprint/blueprint.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/folder.css') }}?v=20260718-a1">
+  </head>
+  <body class="bp6-dark folder-app">
+    <a class="folder-skip-link" href="#main-content">Skip to main content</a>
+    <header class="folder-header">
+      <a class="folder-wordmark" href="/" aria-label="Reversible Name Atlas home">
+        <span class="folder-mark" aria-hidden="true">NA</span>
+        <span>
+          <strong>Reversible Name Atlas</strong>
+          <small>Describe the change. Keep supported Markdown links. Prove the result.</small>
+        </span>
+      </a>
+      <span class="folder-mode">{{ planner_label }}</span>
+    </header>
+    <main id="main-content" class="folder-main" tabindex="-1">
+      {% if notice %}
+        <div class="folder-notice" role="status">
+          <img src="{{ url_for('static', path='/vendor/blueprint/icons/help.svg') }}" alt="" aria-hidden="true">
+          <span>{{ notice }}</span>
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

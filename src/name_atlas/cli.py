@@ -20,6 +20,11 @@ from name_atlas.decision_cards import (
     ReplayProviderError,
 )
 from name_atlas.domain import RunMode
+from name_atlas.folder_app import (
+    PLANNER_LABEL,
+    DeterministicFolderRunService,
+    create_folder_app,
+)
 from name_atlas.package_import import PackageImportError
 from name_atlas.receiver_verifier import (
     ReceiptCandidateError,
@@ -47,8 +52,10 @@ def _runtime_roots(package_root: Path, working_directory: Path) -> tuple[Path, P
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT, HERO_SOURCE_ROOT = _runtime_roots(PACKAGE_ROOT, Path.cwd())
+FOLDER_A1_SOURCE_ROOT = HERO_SOURCE_ROOT.parent / "folder_a1"
 REPLAY_RECORD_PATH = PACKAGE_ROOT / "recordings" / "hero_decision_card.json"
 OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "stages"
+FOLDER_OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "folder-results"
 BUDGET_LEDGER_PATH = PROJECT_ROOT / ".name-atlas" / "api_budget.json"
 CASE_DIRECTORY = PROJECT_ROOT / ".name-atlas" / "cases"
 
@@ -92,6 +99,35 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Migration Case file (default: deterministic .name-atlas/cases path).",
+    )
+
+    folder_run = subparsers.add_parser(
+        "run",
+        help="Run the AI-first connected-folder application.",
+    )
+    folder_run.add_argument(
+        "--mode",
+        choices=("development",),
+        required=True,
+        help="Use the truthful deterministic A1 planner with no API call.",
+    )
+    folder_run.add_argument(
+        "--port",
+        type=int,
+        default=DEFAULT_PORT,
+        help=f"Loopback port (default: {DEFAULT_PORT}).",
+    )
+    folder_run.add_argument(
+        "--source",
+        type=Path,
+        default=FOLDER_A1_SOURCE_ROOT,
+        help="Ordinary folder root (default: the included A1 folder).",
+    )
+    folder_run.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Existing result parent (default: .name-atlas/folder-results).",
     )
 
     verify = subparsers.add_parser(
@@ -156,6 +192,9 @@ def run(
             return 1
         print(f"RESTORED {report.receipt_fingerprint} {report.destination}")
         return 0
+
+    if args.command == "run":
+        return _run_development_folder_app(args)
 
     mode = RunMode(args.mode)
     selected_environment = os.environ if environ is None else environ
@@ -276,6 +315,48 @@ def run(
         return 0
     finally:
         workflow.close()
+
+
+def _run_development_folder_app(args: argparse.Namespace) -> int:
+    """Start the truthful deterministic A1 browser product on loopback."""
+
+    if not 1 <= args.port <= 65_535:
+        print("Startup blocked: port must be between 1 and 65535.", file=sys.stderr)
+        return 2
+    try:
+        source_root = args.source.expanduser().resolve(strict=True)
+        if args.output is None:
+            FOLDER_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+            output_parent = FOLDER_OUTPUT_ROOT.resolve(strict=True)
+        else:
+            output_parent = args.output.expanduser().resolve(strict=True)
+    except OSError as exc:
+        print(f"Startup blocked: folder path cannot be opened: {exc}", file=sys.stderr)
+        return 2
+    if not source_root.is_dir() or not output_parent.is_dir():
+        print(
+            "Startup blocked: source and result location must be directories.",
+            file=sys.stderr,
+        )
+        return 2
+
+    app = create_folder_app(
+        DeterministicFolderRunService(),
+        initial_source=source_root,
+        initial_output_parent=output_parent,
+        planner_label=PLANNER_LABEL,
+    )
+    logging.basicConfig(level=logging.INFO)
+    LOGGER.info("Starting AI-first A1 Reversible Name Atlas on loopback; no API call.")
+    print(f"Reversible Name Atlas: http://{LOOPBACK_HOST}:{args.port}")
+    print(PLANNER_LABEL)
+    uvicorn.run(
+        app,
+        host=LOOPBACK_HOST,
+        port=args.port,
+        log_level="info",
+    )
+    return 0
 
 
 def main() -> None:

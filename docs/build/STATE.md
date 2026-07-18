@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 15:07:32 CEST**
+Checkpoint: **Saturday 18 July 2026 at 16:44:41 CEST**
 
-Phase: **WAITING_FOR_AI_FIRST_GOAL_ACTIVATION**
+Phase: **A2 — CONNECTED-FOLDER AND PLANNER HARDENING**
 
 Submission hold: **ACTIVE**
 
@@ -11,17 +11,20 @@ Submission hold: **ACTIVE**
 - Historical first-cycle H+0: **Friday 17 July 2026 at 17:16:25 CEST — PRESERVED**.
 - Historical second-cycle R+0: **Saturday 18 July 2026 at 00:51:51 CEST — PRESERVED**.
 - First- and second-cycle execution: **COMPLETE HISTORICAL BASELINE; SUPERSEDED FOR AI-FIRST FUTURE EXECUTION**.
-- Amended AI-first production goal: **INACTIVE**.
-- AI-first A+0: **NOT_STARTED**.
-- AI-first product implementation: **NOT STARTED**.
+- Amended AI-first production goal: **ACTIVE**.
+- AI-first A+0: **Saturday 18 July 2026 at 15:37:55 CEST**.
+- AI-first product implementation: **A1 COMPLETE; A2 IN PROGRESS**.
 
 ## Absolute boundaries at checkpoint
 
 - Recording-ready: **Tuesday 21 July 2026 at 02:00 CEST**.
-- Time remaining to recording-ready: **58 hours, 52 minutes, 27 seconds**.
+- Time remaining to recording-ready: **57 hours, 15 minutes, 18 seconds**.
 - Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**.
-- Time remaining to submission: **82 hours, 52 minutes, 27 seconds**.
-- Targets will be recalculated from actual A+0 and are not cancellation timers.
+- Time remaining to submission: **81 hours, 15 minutes, 18 seconds**.
+- Planned product window: **58 hours, 22 minutes, 5 seconds** from A+0.
+- A1 target: **Sunday 19 July 2026 at 01:21:35 CEST**.
+- Mandatory feature freeze: **Monday 20 July 2026 at 14:00:00 CEST**.
+- Targets are integration signals, not cancellation timers.
 
 ## Repository state represented by this checkpoint
 
@@ -56,30 +59,35 @@ future commit SHA. Fresh Git overrides stale repository statements here.
 
 ## New AI-first capability state
 
-- Ordinary-folder input and protected-member rules: **NOT STARTED**.
-- Generic identities, inventory, and accepted-plan compiler: **NOT STARTED**.
-- Bounded complete GPT-5.6 planner: **NOT STARTED**.
+- Ordinary-folder input and protected-member rules: **A1 COMPLETE**.
+- Generic identities, inventory, and accepted-plan compiler: **A1 COMPLETE**.
+- Bounded complete GPT-5.6 planner: **A2 IN PROGRESS; NO PROVIDER CALL YET**.
 - New live zero-question record and replay: **NOT STARTED**.
 - New live clarification record and replay: **NOT STARTED**.
-- Markdown reference graph and exact rewriting: **NOT STARTED**.
+- Markdown reference graph and exact rewriting: **A2 IN PROGRESS**.
 - Persistent `FolderRefactorJob`: **NOT STARTED**.
-- Generic result, receipt, and original-content artifacts: **NOT STARTED**.
+- Generic separate BagIt-backed A1 result: **COMPLETE FOR THE WALKING SLICE**.
+- Generic receipt and original-content artifacts: **NOT STARTED**.
 - Generic source-free verifier and controlled negative: **NOT STARTED**.
 - Generic original-layout reconstruction: **NOT STARTED**.
-- Start/Working/Done release experience: **NOT STARTED**.
+- Start/Working/Done experience: **A1 WALKING SLICE COMPLETE; FINAL A4
+  EXPERIENCE PENDING**.
 - 24-file hero and ambiguity fixture: **NOT STARTED**.
 - Optional Codex plugin gate: **NOT REACHED**.
 - AI-first feature freeze: **REOPENED ONLY FOR THE APPROVED SCOPE AFTER A+0**.
 
 ## API and release state
 
-- `OPENAI_API_KEY` in current environment at scaffold checkpoint: **ABSENT**.
-- No credential value was inspected or exposed.
-- Live AI-first call readiness: **BLOCKED UNTIL GOAL ACTIVATION AND LOCAL CREDENTIAL PROVISIONING**.
-- No API call, key creation/change/revocation, budget migration, server, browser,
-  dependency installation, product artifact, push, GitHub mutation, YouTube
-  mutation, Devpost mutation, video work, or submission occurred in the
-  meta-stage.
+- Restricted project key: **CONFIGURED IN IGNORED, UNTRACKED `.env.local` WITH
+  OWNER-ONLY PERMISSIONS**.
+- No credential value was printed, inspected, or committed.
+- Live AI-first call readiness: **CREDENTIAL CONFIGURED; PROVIDER CALL DEFERRED
+  UNTIL SOLE-BUDGET-LEDGER MIGRATION AND A4 LIVE QUALIFICATION**.
+- Since A+0, one restricted key was created and configured locally; **no OpenAI
+  provider call has been made**. A1 local server and browser QA completed and all
+  product servers are stopped. No budget migration, dependency installation,
+  push, GitHub mutation, YouTube mutation, Devpost mutation, video work, or
+  submission has occurred.
 - README, limitations, provenance/pre-existing-work disclosure, Codex build log,
   screenshots, narration, Devpost copy, submission package, thumbnail, and hero
   artifacts:
@@ -92,23 +100,26 @@ future commit SHA. Fresh Git overrides stale repository statements here.
 
 ## Compact recovery capsule
 
-- Phase: `WAITING_FOR_AI_FIRST_GOAL_ACTIVATION`.
+- Phase: `A2 — CONNECTED-FOLDER AND PLANNER HARDENING`.
 - Branch/baseline: `revision/ai-first-folder-refactor` from `4baec1e`.
-- Current milestone: `A1 NOT STARTED`.
-- Last verified commands: `uv lock --check`; 265 pytest tests; Ruff lint; Ruff
-  format check; `git diff --check`.
+- Current milestone: `A1 COMPLETE; A2 IN PROGRESS`.
+- Last verified commands: `uv lock --check`; **108 focused tests**; **359 full
+  pytest tests**; Ruff lint; Ruff format check; `git diff --check`;
+  `name-atlas run --mode development` browser transaction.
 - Generic job: `NOT STARTED`.
 - GPT planner/live/replay: `NOT STARTED`.
-- Accepted plan/result: `NOT STARTED`.
+- Accepted plan/result: `A1 COMPLETE`; A2 link-aware plan pending.
 - Receipt/verifier/reconstruction: `NOT STARTED`.
-- Browser: `NOT STARTED`.
+- Browser: `A1 START/WORKING/DONE VERIFIED AT DESKTOP AND NARROW VIEWPORTS`.
 - Plugin gate: `NOT REACHED`.
-- Feature freeze: reopened after A+0 only.
+- Feature freeze: reopened for approved scope; mandatory freeze Monday 20 July
+  2026 at 14:00:00 CEST.
 - Release materials: stale second-cycle material preserved.
 - Submission hold: `ACTIVE`.
 - Blockers: none.
-- Next operation: user activation below.
+- Next operation: implement and verify the A2 exact Markdown reference graph,
+  bounded planner repair, and one-question clarification transaction.
 
 ## Exact next operation
 
-`User explicitly activates the complete amended docs/build/GOAL.md in this primary Codex task at the governance commit reported in the scaffold handoff.`
+`Implement and verify the A2 exact Markdown reference graph and rewrite → bounded planner tools and repair → one-question clarification → source-stale blockers, while keeping the A1 product runnable.`

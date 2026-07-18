@@ -1,0 +1,5 @@
+Northstar project notes
+
+- Preserve the source folder.
+- Keep every file.
+- Make the result easy to hand over.

@@ -1,0 +1,37 @@
+{% extends "folder/base.html" %}
+{% block title %}Start · Reversible Name Atlas{% endblock %}
+{% block content %}
+  <section class="folder-panel folder-panel--start" aria-labelledby="start-title">
+    <div class="folder-kicker">New verified result</div>
+    <h1 id="start-title">Organize a connected project folder</h1>
+    <p class="folder-lede">Describe the result you want. Name Atlas plans a complete copy without changing your original folder.</p>
+
+    {% if state.blocker %}
+      <div class="folder-alert" role="alert">
+        <img src="{{ url_for('static', path='/vendor/blueprint/icons/warning-sign.svg') }}" alt="" aria-hidden="true">
+        <span>{{ state.blocker }}</span>
+      </div>
+    {% endif %}
+
+    <form class="folder-form" method="post" action="/start">
+      <label for="source-root">Folder to organize</label>
+      <input class="bp6-input" id="source-root" name="source_root" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.source_value }}" placeholder="/absolute/path/to/project">
+
+      <label for="user-request">What should change?</label>
+      <textarea class="bp6-input" id="user-request" name="user_request" rows="5" maxlength="8000" required placeholder="Prepare this project for handoff. Keep every file and every supported Markdown link working.">{{ state.request_value }}</textarea>
+
+      <label for="output-parent">Result location</label>
+      <input class="bp6-input" id="output-parent" name="output_parent" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.output_value }}" placeholder="/absolute/path/for/result">
+
+      <div class="folder-disclosure" aria-label="How the operation works">
+        <p><strong>Your original folder will not be changed.</strong> Name Atlas will create and verify a separate result. It sends GPT-5.6 your instruction, relative file names and folder structure, selected excerpts from eligible text and Markdown files, and supported Markdown-link context needed to plan the change. It does not send every file's bytes.</p>
+        <p>Name Atlas asks the Responses API not to retain the response as application state and keeps the working planning record locally. Standard OpenAI API data-retention policies may still apply.</p>
+        <p class="folder-development-note"><strong>This A1 development build uses a deterministic planner and makes no API call.</strong> Live GPT-5.6 planning is introduced and verified in the later A4 milestone.</p>
+      </div>
+
+      <button class="bp6-button bp6-intent-primary bp6-large folder-primary-action" type="submit">
+        Plan and create copy
+      </button>
+    </form>
+  </section>
+{% endblock %}

@@ -71,6 +71,98 @@ def test_replay_mode_runs_on_loopback(monkeypatch: Any) -> None:
     assert runtime_config.provider_status == "Recorded GPT-5.6 response"
 
 
+def test_ai_first_development_run_is_a_supported_loopback_command(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    called: dict[str, Any] = {}
+    source = tmp_path / "ordinary-folder"
+    source.mkdir()
+    (source / "note.txt").write_text("one file\n", encoding="utf-8")
+    output = tmp_path / "results"
+    output.mkdir()
+
+    def fake_run(app: Any, **kwargs: Any) -> None:
+        called["app"] = app
+        called.update(kwargs)
+
+    def fail_if_provider_initializes(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("A1 development mode must not initialize a provider.")
+
+    monkeypatch.setattr(cli.uvicorn, "run", fake_run)
+    monkeypatch.setattr(
+        cli.LiveDecisionCardProvider,
+        "from_api_key",
+        fail_if_provider_initializes,
+    )
+
+    exit_code = cli.run(
+        [
+            "run",
+            "--mode",
+            "development",
+            "--source",
+            str(source),
+            "--output",
+            str(output),
+            "--port",
+            "8124",
+        ],
+        environ={},
+    )
+
+    assert exit_code == 0
+    assert called["host"] == "127.0.0.1"
+    assert called["port"] == 8124
+    assert called["app"].title == "Reversible Name Atlas"
+    assert called["app"].state.folder_run_service.result_folder_name == (
+        "name-atlas-organized-copy"
+    )
+    captured = capsys.readouterr()
+    assert "Deterministic development planner — no API call" in captured.out
+
+
+def test_ai_first_development_run_rejects_invalid_startup_paths_and_port(
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    output = tmp_path / "results"
+    output.mkdir()
+
+    missing_exit = cli.run(
+        [
+            "run",
+            "--mode",
+            "development",
+            "--source",
+            str(tmp_path / "missing"),
+            "--output",
+            str(output),
+        ],
+        environ={},
+    )
+    invalid_port_exit = cli.run(
+        [
+            "run",
+            "--mode",
+            "development",
+            "--source",
+            str(tmp_path),
+            "--output",
+            str(output),
+            "--port",
+            "70000",
+        ],
+        environ={},
+    )
+
+    assert missing_exit == 2
+    assert invalid_port_exit == 2
+    assert "Startup blocked:" in capsys.readouterr().err
+
+
 def test_replay_cli_resumes_a_durable_post_decision_case(
     monkeypatch: Any,
     tmp_path: Path,
