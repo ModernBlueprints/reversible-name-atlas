@@ -1,10 +1,12 @@
 """Judge-facing CLI tests."""
 
+import shutil
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
 from name_atlas import cli
+from name_atlas.cases import CaseLifecycle, MigrationCaseStore
 from name_atlas.receiver_verifier import ReceiptVerificationStatus
 
 
@@ -161,6 +163,128 @@ def test_invalid_selected_package_fails_before_server_start(
     assert exit_code == 2
     assert server_started is False
     assert "Startup blocked:" in capsys.readouterr().err
+
+
+def test_existing_case_records_disappeared_source_and_starts_blocked_view(
+    monkeypatch: Any,
+    tmp_path: Path,
+) -> None:
+    started_apps: list[Any] = []
+
+    def fake_run(app: Any, **kwargs: Any) -> None:
+        del kwargs
+        started_apps.append(app)
+
+    monkeypatch.setattr(cli.uvicorn, "run", fake_run)
+    source = tmp_path / "case-source"
+    output = tmp_path / "case-stages"
+    case_path = tmp_path / "persisted-case.json"
+    shutil.copytree(cli.HERO_SOURCE_ROOT, source)
+    arguments = [
+        "demo",
+        "--mode",
+        "replay",
+        "--source",
+        str(source),
+        "--output",
+        str(output),
+        "--case",
+        str(case_path),
+    ]
+
+    assert cli.run(arguments, environ={}) == 0
+    assert case_path.is_file()
+    shutil.rmtree(source)
+
+    assert cli.run(arguments, environ={}) == 0
+
+    resumed_workflow = started_apps[-1].state.workflow
+    assert resumed_workflow.case is not None
+    assert resumed_workflow.case.lifecycle is CaseLifecycle.STALE
+    assert resumed_workflow.case.source_scan_blocker is not None
+    assert resumed_workflow.case.source_scan_blocker.code.value == "source_scan_failed"
+    assert str(source.resolve(strict=False)) in (
+        resumed_workflow.case.source_scan_blocker.detail
+    )
+    durable_case = MigrationCaseStore(case_path).load()
+    assert durable_case.lifecycle is CaseLifecycle.STALE
+    assert durable_case.source_scan_blocker == (
+        resumed_workflow.case.source_scan_blocker
+    )
+
+
+def test_default_case_resumes_after_source_disappears(
+    monkeypatch: Any,
+    tmp_path: Path,
+) -> None:
+    started_apps: list[Any] = []
+
+    def fake_run(app: Any, **kwargs: Any) -> None:
+        del kwargs
+        started_apps.append(app)
+
+    monkeypatch.setattr(cli.uvicorn, "run", fake_run)
+    monkeypatch.setattr(cli, "CASE_DIRECTORY", tmp_path / "cases")
+    source = tmp_path / "default-case-source"
+    output = tmp_path / "default-case-stages"
+    shutil.copytree(cli.HERO_SOURCE_ROOT, source)
+    arguments = [
+        "demo",
+        "--mode",
+        "replay",
+        "--source",
+        str(source),
+        "--output",
+        str(output),
+    ]
+
+    assert cli.run(arguments, environ={}) == 0
+    created_case_path = started_apps[-1].state.workflow.case_store.path
+    assert created_case_path.is_file()
+    shutil.rmtree(source)
+
+    assert cli.run(arguments, environ={}) == 0
+    resumed = started_apps[-1].state.workflow
+    assert resumed.case is not None
+    assert resumed.case.lifecycle is CaseLifecycle.STALE
+    assert resumed.case.source_scan_blocker is not None
+    assert resumed.case_store is not None
+    assert resumed.case_store.path == created_case_path
+
+
+def test_absent_case_still_requires_a_resolvable_source(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    server_started = False
+
+    def fake_run(app: Any, **kwargs: Any) -> None:
+        nonlocal server_started
+        del app, kwargs
+        server_started = True
+
+    monkeypatch.setattr(cli.uvicorn, "run", fake_run)
+    missing_source = tmp_path / "missing-source"
+    absent_case = tmp_path / "absent-case.json"
+
+    exit_code = cli.run(
+        [
+            "demo",
+            "--mode",
+            "replay",
+            "--source",
+            str(missing_source),
+            "--case",
+            str(absent_case),
+        ],
+        environ={},
+    )
+
+    assert exit_code == 2
+    assert server_started is False
+    assert absent_case.exists() is False
+    assert "source package cannot be opened" in capsys.readouterr().err
 
 
 def test_replay_compatibility_failure_releases_case_writer(

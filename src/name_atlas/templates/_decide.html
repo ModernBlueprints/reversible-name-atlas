@@ -13,6 +13,12 @@
       <header><span class="state state--red">BLOCKED</span><h3>No imported collection is available for human review.</h3></header>
       <p>Open Atlas after starting a supported Migration Case. The browser cannot create decision authority on its own.</p>
     </article>
+  {% elif shell.lifecycle == 'stale' %}
+    <article class="proof-card">
+      <header><span class="state state--red">BLOCKED</span><h3>Decision controls are unavailable for this stale case.</h3></header>
+      <p>The current source no longer matches the case snapshot. The server will not accept a card request, approval, edit, refusal, or batch decision from this case.</p>
+      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    </article>
   {% else %}
     <form class="batch-action" method="post" action="/approve-low-risk">
       <p><strong>{{ view.eligible_low_risk_count }} low-risk {% if view.eligible_low_risk_count == 1 %}family is{% else %}families are{% endif %} eligible.</strong> Approve the visible fixed-profile proposals as one explicit human action. This never calls GPT-5.6.</p>

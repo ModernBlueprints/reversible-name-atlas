@@ -7,7 +7,16 @@
     <p>Source · Payloads · References · Paths · Decisions · Package · Receipt</p>
   </div>
 
-  {% if view and view.proof %}
+  {% if view and shell.lifecycle == 'stale' %}
+    <article class="proof-card">
+      <header><span class="state state--red">BLOCKED</span><h3>This case cannot verify a current handoff.</h3></header>
+      <p>The source differs from the snapshot that established this Migration Case. No receipt or staged package from this stale workflow may be presented as current verification evidence.</p>
+      <div class="proof-grid" aria-label="Blocked verification groups">
+        {% for group in ['Source', 'Payloads', 'References', 'Paths', 'Decisions', 'Package', 'Receipt'] %}<div><p><strong>{{ group }}</strong><small>BLOCKED · source staleness invalidates the current transaction</small></p></div>{% endfor %}
+      </div>
+      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    </article>
+  {% elif view and view.proof %}
     <article class="proof-card{% if shell.handoff_ready %} proof-card--verified{% endif %}">
       <header><span class="state {% if shell.handoff_ready %}state--green{% else %}state--amber{% endif %}">{% if shell.handoff_ready %}VERIFIED{% else %}INCOMPLETE{% endif %}</span><h3>{{ view.proof.report.claim }}</h3></header>
       <p class="mono subtle">{{ view.stage_root }}</p>

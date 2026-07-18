@@ -125,12 +125,23 @@ def run(
     mode = RunMode(args.mode)
     selected_environment = os.environ if environ is None else environ
     try:
-        source_root = args.source.expanduser().resolve(strict=True)
         output_root = args.output.expanduser().resolve(strict=False)
-        case_path = (
+        source_candidate = args.source.expanduser().resolve(strict=False)
+        explicit_case_path = (
             args.case.expanduser().resolve(strict=False)
             if args.case is not None
-            else default_case_path(source_root, case_directory=CASE_DIRECTORY)
+            else None
+        )
+        case_path = (
+            explicit_case_path
+            if explicit_case_path is not None
+            else default_case_path(source_candidate, case_directory=CASE_DIRECTORY)
+        )
+        resuming_existing_case = os.path.lexists(case_path)
+        source_root = (
+            source_candidate
+            if resuming_existing_case
+            else args.source.expanduser().resolve(strict=True)
         )
     except OSError as exc:
         print(

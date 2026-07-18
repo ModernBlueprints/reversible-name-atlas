@@ -7,7 +7,14 @@
     <p>Portable receipt · keyless verification · no browser authority</p>
   </div>
 
-  {% if view and shell.handoff_ready %}
+  {% if view and shell.lifecycle == 'stale' %}
+    <article class="proof-card">
+      <header><span class="state state--red">BLOCKED</span><h3>No current receiver handoff can be issued from this stale case.</h3></header>
+      <p>The source no longer matches the case snapshot. Handoff therefore exposes no receipt, fingerprint, verifier command, or restore action.</p>
+      <p>Preserve this case and create a fresh case at a different path before producing a receiver-ready package.</p>
+      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    </article>
+  {% elif view and shell.handoff_ready %}
     <article class="proof-card proof-card--verified">
       <header><span class="state state--green">VERIFIED</span><h3>The staged handoff is ready for receiver inspection.</h3></header>
       <dl>

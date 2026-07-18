@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import tempfile
 from contextlib import suppress
@@ -19,14 +20,21 @@ from name_atlas.cases import (
     CaseDecisionCardRecord,
     CaseDecisionMethod,
     CaseEvidenceRecord,
+    CaseFinalizedError,
     CaseLifecycle,
+    CaseRevisionError,
     CaseSourceSnapshot,
     MigrationCase,
     MigrationCaseError,
     MigrationCaseStore,
     MigrationCaseWriter,
+    SourceDifference,
+    SourceScanBlocker,
     card_fingerprint,
+    compare_source_snapshots,
+    format_source_differences,
     new_migration_case,
+    source_package_from_case,
 )
 from name_atlas.decision_cards import (
     MODEL_ALIAS,
@@ -57,9 +65,15 @@ from name_atlas.decisions import (
     unresolved_family,
 )
 from name_atlas.domain import DecisionCard, EvidencePacket, PackageValidationResult
-from name_atlas.package_import import ObjectFamily, SourcePackage, import_package
+from name_atlas.package_import import (
+    ObjectFamily,
+    PackageImportError,
+    SourcePackage,
+    import_package,
+)
 from name_atlas.proposals import PathProposal, RiskCategory, build_proposals
-from name_atlas.staging import StageResult, stage_package
+from name_atlas.source import SourceError, snapshot_tree
+from name_atlas.staging import StageResult, StagingError, stage_package
 
 DEFAULT_LIVE_CALL_CAP = 8
 PROJECT_COST_CAP_USD = 10.0
@@ -114,15 +128,13 @@ class WorkflowSession:
             raise ValueError("Live call cap must be at least one.")
         if not 0 < cost_cap_usd <= PROJECT_COST_CAP_USD:
             raise ValueError("Cost cap must be positive and no more than USD 10.")
-        self.package: SourcePackage = import_package(source_root)
-        self.proposals: tuple[PathProposal, ...] = build_proposals(
-            self.package.families
-        )
-        self.initial_proposals = self.proposals
         self.output_root = output_root.resolve(strict=False)
         self.decision_card_provider = decision_card_provider
         self.package_validator = package_validator
         self.replay_record_path = replay_record_path
+        self.package: SourcePackage
+        self.proposals: tuple[PathProposal, ...] = ()
+        self.initial_proposals: tuple[PathProposal, ...] = ()
         self.cards: dict[str, DecisionCard] = {}
         self.card_fingerprints: dict[str, str] = {}
         self.card_errors: dict[str, str] = {}
@@ -155,12 +167,37 @@ class WorkflowSession:
         self.case_store: MigrationCaseStore | None = None
         self.case_writer: MigrationCaseWriter | None = None
         self.case: MigrationCase | None = None
+        self._durable_case_digest: str | None = None
         self._card_cache: dict[str, DecisionCard] = {}
         self._pending_live_records: dict[
             str,
             tuple[DecisionCard, RecordedDecisionCard],
         ] = {}
         self._usage_recorded_fingerprints: set[str] = set()
+        self._recordable_packet: EvidencePacket | None = None
+        self._recordable_fingerprint: str | None = None
+        resolved_case_path = (
+            case_path.resolve(strict=False) if case_path is not None else None
+        )
+        if resolved_case_path is not None and os.path.lexists(resolved_case_path):
+            self._initialize_existing_case(
+                source_root=source_root,
+                case_path=resolved_case_path,
+            )
+        else:
+            self.package = import_package(source_root)
+            self.initial_proposals = build_proposals(self.package.families)
+            self.proposals = self.initial_proposals
+            if resolved_case_path is not None:
+                self._initialize_new_case(
+                    resolved_case_path,
+                    case_name=case_name or f"{self.package.root.name} migration",
+                )
+        self._configure_recordable_packet()
+
+    def _configure_recordable_packet(self) -> None:
+        """Bind replay compatibility to the current deterministic package view."""
+
         recordable_packets = tuple(
             self.evidence_packet(family.family_id)
             for family in self.package.families
@@ -168,7 +205,7 @@ class WorkflowSession:
         )
         self._recordable_packet = (
             recordable_packets[0]
-            if replay_record_path is not None and len(recordable_packets) == 1
+            if self.replay_record_path is not None and len(recordable_packets) == 1
             else None
         )
         self._recordable_fingerprint = (
@@ -176,37 +213,75 @@ class WorkflowSession:
             if self._recordable_packet is not None
             else None
         )
-        if case_path is not None:
-            self._initialize_case(
-                case_path,
-                case_name=case_name or f"{self.package.root.name} migration",
-            )
 
-    def _initialize_case(self, case_path: Path, *, case_name: str) -> None:
-        """Create or strictly rehydrate the sole durable workflow authority."""
+    def _initialize_new_case(self, case_path: Path, *, case_name: str) -> None:
+        """Create and retain writer authority for one absent case path."""
 
         store = MigrationCaseStore(case_path)
         writer = store.writer()
         writer.__enter__()
         try:
-            if store.path.exists():
-                case = writer.load()
-                self._require_case_matches_current_source(case)
-            else:
-                candidate = new_migration_case(
-                    self.package,
-                    self.proposals,
-                    case_path=store.path,
-                    output_root=self.output_root,
-                    case_name=case_name,
-                )
-                case = writer.save(candidate, expected_revision=None)
+            candidate = new_migration_case(
+                self.package,
+                self.proposals,
+                case_path=store.path,
+                output_root=self.output_root,
+                case_name=case_name,
+            )
+            case = writer.save(candidate, expected_revision=None)
         except Exception:
             writer.__exit__(None, None, None)
             raise
         self.case_store = store
         self.case_writer = writer
         self.case = case
+        self._durable_case_digest = self._case_file_digest(store.path)
+        self._rehydrate_from_case(case)
+
+    def _initialize_existing_case(
+        self,
+        *,
+        source_root: Path,
+        case_path: Path,
+    ) -> None:
+        """Load case authority before inspecting a potentially changed source."""
+
+        store = MigrationCaseStore(case_path)
+        writer = store.writer()
+        writer.__enter__()
+        try:
+            case = writer.load()
+            selected_source = source_root.resolve(strict=False)
+            if case.source_root != selected_source:
+                raise MigrationCaseError(
+                    "Migration Case source root does not match the selected package."
+                )
+            if case.local_paths.output_root != self.output_root:
+                raise MigrationCaseError(
+                    "Migration Case output root does not match the selected output."
+                )
+            self.package = source_package_from_case(case)
+            self.initial_proposals = case.proposals
+            self.proposals = case.proposals
+            if case.lifecycle is not CaseLifecycle.HANDOFF_READY:
+                case = self._revalidate_case_on_load(case, writer=writer)
+            elif case.source_root.exists():
+                with suppress(SourceError):
+                    current_snapshot = snapshot_tree(case.source_root)
+                    if not compare_source_snapshots(
+                        case.source_snapshot,
+                        current_snapshot,
+                    ):
+                        current_package = import_package(case.source_root)
+                        self._require_case_matches_package(case, current_package)
+                        self.package = current_package
+        except Exception:
+            writer.__exit__(None, None, None)
+            raise
+        self.case_store = store
+        self.case_writer = writer
+        self.case = case
+        self._durable_case_digest = self._case_file_digest(store.path)
         self._rehydrate_from_case(case)
 
     def close(self) -> None:
@@ -217,28 +292,275 @@ class WorkflowSession:
         if writer is not None:
             writer.__exit__(None, None, None)
 
-    def _require_case_matches_current_source(self, case: MigrationCase) -> None:
-        """Fail closed when durable authority no longer matches deterministic input."""
+    @staticmethod
+    def _case_file_digest(path: Path) -> str:
+        """Hash the exact durable case bytes without exposing their local content."""
 
-        if case.source_root != self.package.root:
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise MigrationCaseError(
+                "Migration Case bytes cannot be read for revision validation."
+            ) from exc
+
+    def _adopt_durable_case(self, case: MigrationCase) -> None:
+        """Replace every runtime projection from one strictly loaded authority."""
+
+        self.case = case
+        self.package = source_package_from_case(case)
+        self.initial_proposals = case.proposals
+        self.proposals = case.proposals
+        self._rehydrate_from_case(case)
+        if self.case_store is not None:
+            self._durable_case_digest = self._case_file_digest(self.case_store.path)
+
+    def _raise_stale_case(self, case: MigrationCase) -> None:
+        """Raise one exact terminal stale-state message from durable authority."""
+
+        if case.source_scan_blocker is not None:
+            details = (
+                f"{case.source_scan_blocker.code.value}: "
+                f"{case.source_scan_blocker.detail}"
+            )
+        else:
+            details = "; ".join(format_source_differences(case.stale_differences))
+        raise MigrationCaseError(
+            "Migration Case is stale; preserve it and create a fresh case at a "
+            f"different path. Source changes: {details}"
+        )
+
+    def _persist_stale_case(
+        self,
+        *,
+        differences: tuple[SourceDifference, ...] = (),
+        scan_blocker: SourceScanBlocker | None = None,
+    ) -> None:
+        """Persist the first exact pre-handoff source blocker and stop mutation."""
+
+        if self.case is None or self.case_writer is None:
+            raise MigrationCaseError("Persistent case authority is unavailable.")
+        candidate = self.case.model_copy(
+            update={
+                "lifecycle": CaseLifecycle.STALE,
+                "stale_differences": differences,
+                "source_scan_blocker": scan_blocker,
+            }
+        )
+        saved = self.case_writer.save(
+            candidate,
+            expected_revision=self.case.revision,
+        )
+        self._adopt_durable_case(saved)
+        self._raise_stale_case(saved)
+
+    def _persist_import_failure_as_stale(
+        self,
+        case: MigrationCase,
+        error: PackageImportError,
+    ) -> None:
+        """Convert a failed second import into exact differences or one blocker."""
+
+        try:
+            final_snapshot = snapshot_tree(case.source_root)
+        except SourceError as scan_error:
+            self._persist_stale_case(
+                scan_blocker=SourceScanBlocker(
+                    detail=(
+                        "Source failed deterministic re-import and follow-up scan: "
+                        f"{error}; {scan_error}"
+                    )
+                )
+            )
+            raise AssertionError("stale persistence must raise") from scan_error
+        differences = compare_source_snapshots(
+            case.source_snapshot,
+            final_snapshot,
+        )
+        if differences:
+            self._persist_stale_case(differences=differences)
+            raise AssertionError("stale persistence must raise")
+        self._persist_stale_case(
+            scan_blocker=SourceScanBlocker(
+                detail=f"Source failed deterministic re-import: {error}"
+            )
+        )
+        raise AssertionError("stale persistence must raise")
+
+    def _require_current_case_for_mutation(self) -> None:
+        """Reload, rescan, rebuild, and rehydrate before any durable mutation."""
+
+        if self.case is None:
+            return
+        if self.case_writer is None or self.case_store is None:
+            raise MigrationCaseError("Persistent case writer authority is unavailable.")
+
+        durable = self.case_writer.load()
+        durable_digest = self._case_file_digest(self.case_store.path)
+        if durable != self.case or durable_digest != self._durable_case_digest:
+            prior_revision = self.case.revision
+            self._adopt_durable_case(durable)
+            raise CaseRevisionError(
+                "Migration Case durable authority changed outside this workflow "
+                f"(runtime revision {prior_revision}, durable revision "
+                f"{durable.revision}); retry from the rehydrated case."
+            )
+        if durable.lifecycle is CaseLifecycle.HANDOFF_READY:
+            raise CaseFinalizedError(
+                "A handoff-ready Migration Case is read-only; create a new case."
+            )
+        if durable.lifecycle is CaseLifecycle.STALE:
+            self._raise_stale_case(durable)
+
+        try:
+            current_snapshot = snapshot_tree(durable.source_root)
+        except SourceError as exc:
+            self._persist_stale_case(
+                scan_blocker=SourceScanBlocker(detail=str(exc)),
+            )
+            raise AssertionError("stale persistence must raise") from exc
+        differences = compare_source_snapshots(
+            durable.source_snapshot,
+            current_snapshot,
+        )
+        if differences:
+            self._persist_stale_case(differences=differences)
+            raise AssertionError("stale persistence must raise")
+
+        try:
+            current_package = import_package(durable.source_root)
+        except PackageImportError as exc:
+            self._persist_import_failure_as_stale(durable, exc)
+            raise AssertionError("stale persistence must raise") from exc
+        import_differences = compare_source_snapshots(
+            durable.source_snapshot,
+            current_package.snapshot,
+        )
+        if import_differences:
+            self._persist_stale_case(differences=import_differences)
+            raise AssertionError("stale persistence must raise")
+        self._require_case_matches_package(durable, current_package)
+        self.package = current_package
+        self.case = durable
+        self._rehydrate_from_case(durable)
+
+    def _revalidate_case_on_load(
+        self,
+        case: MigrationCase,
+        *,
+        writer: MigrationCaseWriter,
+    ) -> MigrationCase:
+        """Persist exact pre-handoff staleness before exposing a case-backed view."""
+
+        if case.lifecycle is CaseLifecycle.STALE:
+            return case
+        try:
+            current_snapshot = snapshot_tree(case.source_root)
+        except SourceError as exc:
+            candidate = case.model_copy(
+                update={
+                    "lifecycle": CaseLifecycle.STALE,
+                    "stale_differences": (),
+                    "source_scan_blocker": SourceScanBlocker(detail=str(exc)),
+                }
+            )
+            return writer.save(candidate, expected_revision=case.revision)
+
+        differences = compare_source_snapshots(case.source_snapshot, current_snapshot)
+        if differences:
+            candidate = case.model_copy(
+                update={
+                    "lifecycle": CaseLifecycle.STALE,
+                    "stale_differences": differences,
+                    "source_scan_blocker": None,
+                }
+            )
+            return writer.save(candidate, expected_revision=case.revision)
+
+        try:
+            current_package = import_package(case.source_root)
+        except PackageImportError as exc:
+            return self._persist_import_failure_on_load(
+                case,
+                writer=writer,
+                error=exc,
+            )
+        import_differences = compare_source_snapshots(
+            case.source_snapshot,
+            current_package.snapshot,
+        )
+        if import_differences:
+            candidate = case.model_copy(
+                update={
+                    "lifecycle": CaseLifecycle.STALE,
+                    "stale_differences": import_differences,
+                    "source_scan_blocker": None,
+                }
+            )
+            return writer.save(candidate, expected_revision=case.revision)
+        self._require_case_matches_package(case, current_package)
+        self.package = current_package
+        return case
+
+    def _persist_import_failure_on_load(
+        self,
+        case: MigrationCase,
+        *,
+        writer: MigrationCaseWriter,
+        error: PackageImportError,
+    ) -> MigrationCase:
+        """Persist exact post-import source drift before exposing a loaded case."""
+
+        differences: tuple[SourceDifference, ...] = ()
+        blocker: SourceScanBlocker | None = None
+        try:
+            final_snapshot = snapshot_tree(case.source_root)
+        except SourceError as scan_error:
+            blocker = SourceScanBlocker(
+                detail=(
+                    "Source failed deterministic re-import and follow-up scan: "
+                    f"{error}; {scan_error}"
+                )
+            )
+        else:
+            differences = compare_source_snapshots(
+                case.source_snapshot,
+                final_snapshot,
+            )
+            if not differences:
+                blocker = SourceScanBlocker(
+                    detail=f"Source failed deterministic re-import: {error}"
+                )
+        candidate = case.model_copy(
+            update={
+                "lifecycle": CaseLifecycle.STALE,
+                "stale_differences": differences,
+                "source_scan_blocker": blocker,
+            }
+        )
+        return writer.save(candidate, expected_revision=case.revision)
+
+    def _require_case_matches_package(
+        self,
+        case: MigrationCase,
+        package: SourcePackage,
+    ) -> None:
+        """Fail closed when deterministic rebuild differs from durable authority."""
+
+        if case.source_root != package.root:
             raise MigrationCaseError(
                 "Migration Case source root does not match the selected package."
             )
-        if case.local_paths.output_root != self.output_root:
-            raise MigrationCaseError(
-                "Migration Case output root does not match the selected output."
-            )
         if case.source_snapshot != CaseSourceSnapshot.from_source_snapshot(
-            self.package.snapshot
+            package.snapshot
         ):
             raise MigrationCaseError(
                 "Migration Case source snapshot is stale; create a new case path."
             )
-        if case.families != self.package.families:
+        if case.families != package.families:
             raise MigrationCaseError(
                 "Migration Case object-family graph differs from the current source."
             )
-        if case.proposals != build_proposals(self.package.families):
+        if case.proposals != build_proposals(package.families):
             raise MigrationCaseError(
                 "Migration Case proposals do not match deterministic rehydration."
             )
@@ -255,13 +577,15 @@ class WorkflowSession:
             record.family_id: record for record in case.card_records
         }
         self.cards = {record.family_id: record.card for record in case.card_records}
+        self.card_errors = {}
         self.card_fingerprints = {
             record.family_id: record.evidence_fingerprint
             for record in case.card_records
         }
-        self._card_cache.update(
-            {record.evidence_fingerprint: record.card for record in case.card_records}
-        )
+        self._card_cache = {
+            record.evidence_fingerprint: record.card for record in case.card_records
+        }
+        self._pending_live_records = {}
         self.decisions = {
             binding.family_id: binding.decision for binding in case.decisions
         }
@@ -365,6 +689,8 @@ class WorkflowSession:
                 candidate,
                 expected_revision=self.case.revision,
             )
+            if self.case_store is not None:
+                self._durable_case_digest = self._case_file_digest(self.case_store.path)
         except (MigrationCaseError, ValidationError):
             self.case = durable_case
             self._rehydrate_from_case(durable_case)
@@ -459,6 +785,7 @@ class WorkflowSession:
     async def generate_card(self, family_id: str) -> DecisionCard:
         """Run the selected provider only after the explicit UI action."""
 
+        self._require_current_case_for_mutation()
         packet = self.evidence_packet(family_id)
         self.cards_requested += 1
         self.replay_record_error = None
@@ -481,6 +808,13 @@ class WorkflowSession:
         if cached is not None:
             self.cache_hits += 1
             self._bind_card(family_id, fingerprint, cached)
+            durable_record = self.case_card_records.get(family_id)
+            if (
+                durable_record is not None
+                and durable_record.evidence_fingerprint == fingerprint
+                and durable_record.card == cached
+            ):
+                return cached
             self._record_provider_usage(
                 provider_kind,
                 fingerprint=fingerprint,
@@ -520,7 +854,9 @@ class WorkflowSession:
         try:
             provider_card = await self.decision_card_provider.generate(packet)
             card = validate_decision_card(provider_card, packet)
+            self._require_current_case_for_mutation()
         except DecisionCardProviderError as exc:
+            self._require_current_case_for_mutation()
             self._store_card_failure(family_id, exc)
             raise
         live_record: RecordedDecisionCard | None = None
@@ -536,6 +872,7 @@ class WorkflowSession:
                     record=live_record,
                 )
             except ReplayRecordWriteError as exc:
+                self._require_current_case_for_mutation()
                 if live_record is not None:
                     self._pending_live_records[fingerprint] = (card, live_record)
                 self.replay_record_error = str(exc)
@@ -570,6 +907,7 @@ class WorkflowSession:
     def approve(self, family_id: str) -> HumanDecision:
         """Apply the human's explicit atomic approval."""
 
+        self._require_current_case_for_mutation()
         family = self.family(family_id)
         decision = approve_family(
             family,
@@ -584,6 +922,7 @@ class WorkflowSession:
     def edit(self, family_id: str, descriptor: str) -> HumanDecision:
         """Apply one exact human descriptor to every role in the family."""
 
+        self._require_current_case_for_mutation()
         family = self.family(family_id)
         other_targets = tuple(
             proposal.proposed_relative_path
@@ -605,6 +944,7 @@ class WorkflowSession:
     def approve_low_risk(self) -> tuple[HumanDecision, ...]:
         """Apply one explicit batch action to every currently eligible family."""
 
+        self._require_current_case_for_mutation()
         decisions: list[HumanDecision] = []
         for family in self.package.families:
             if not self._low_risk_batch_eligible(family.family_id):
@@ -640,6 +980,7 @@ class WorkflowSession:
     def refuse(self, family_id: str) -> HumanDecision:
         """Record an explicit refusal and block complete export."""
 
+        self._require_current_case_for_mutation()
         self.family(family_id)
         if self.family_requires_card(family_id) and not self._card_is_current(
             family_id
@@ -657,6 +998,7 @@ class WorkflowSession:
     def stage(self) -> StageResult:
         """Run the copy-only transaction from stored family decisions."""
 
+        self._require_current_case_for_mutation()
         self.stage_result = None
         ordered_decisions = tuple(
             self.decisions.get(
@@ -665,13 +1007,17 @@ class WorkflowSession:
             )
             for family in self.package.families
         )
-        result = stage_package(
-            self.package,
-            ordered_decisions,
-            output_root=self.output_root,
-            package_validator=self.package_validator,
-            migration_case=self.case,
-        )
+        try:
+            result = stage_package(
+                self.package,
+                ordered_decisions,
+                output_root=self.output_root,
+                package_validator=self.package_validator,
+                migration_case=self.case,
+            )
+        except StagingError:
+            self._require_current_case_for_mutation()
+            raise
         if self.case is not None:
             self._finalize_case_handoff(result)
         self.stage_result = result
@@ -708,11 +1054,17 @@ class WorkflowSession:
             candidate,
             expected_revision=self.case.revision,
         )
+        if self.case_store is not None:
+            self._durable_case_digest = self._case_file_digest(self.case_store.path)
 
     def view_model(self) -> dict[str, object]:
         """Build the exact connected view from current domain and proof objects."""
 
         self._sync_budget(self.budget_ledger.snapshot)
+        mutation_allowed = self.case is None or self.case.lifecycle not in {
+            CaseLifecycle.STALE,
+            CaseLifecycle.HANDOFF_READY,
+        }
         risk_counts = {
             category.value: len(
                 {
@@ -764,19 +1116,26 @@ class WorkflowSession:
                     "ready": ready,
                     "mechanically_blocked": bool(mechanical_categories),
                     "approve_enabled": (
-                        model_requirement_met
+                        mutation_allowed
+                        and model_requirement_met
                         and not mechanical_categories
                         and not ready
                     ),
                     "edit_enabled": (
-                        model_requirement_met
+                        mutation_allowed
+                        and model_requirement_met
                         and mechanical_categories.issubset({RiskCategory.COLLISION})
                     ),
                 }
             )
         ready_count = sum(bool(item["ready"]) for item in families)
-        eligible_low_risk_count = sum(
-            self._low_risk_batch_eligible(item["family"].family_id) for item in families
+        eligible_low_risk_count = (
+            sum(
+                self._low_risk_batch_eligible(item["family"].family_id)
+                for item in families
+            )
+            if mutation_allowed
+            else 0
         )
         hard_blocker_count = sum(
             bool(item["mechanically_blocked"])
@@ -815,6 +1174,19 @@ class WorkflowSession:
             "case_lifecycle": (
                 self.case.lifecycle.value if self.case is not None else None
             ),
+            "stale_differences": (
+                format_source_differences(self.case.stale_differences)
+                if self.case is not None
+                else ()
+            ),
+            "source_scan_blocker": (
+                (
+                    f"{self.case.source_scan_blocker.code.value}: "
+                    f"{self.case.source_scan_blocker.detail}"
+                )
+                if self.case is not None and self.case.source_scan_blocker is not None
+                else None
+            ),
             "receipt_fingerprint": (
                 self.case.receipt_fingerprint if self.case is not None else None
             ),
@@ -835,9 +1207,13 @@ class WorkflowSession:
             "families": families,
             "decision_items": decision_items,
             "eligible_low_risk_count": eligible_low_risk_count,
-            "hard_blocker_count": hard_blocker_count,
+            "hard_blocker_count": (
+                max(1, hard_blocker_count)
+                if self.case is not None and self.case.lifecycle is CaseLifecycle.STALE
+                else hard_blocker_count
+            ),
             "ready_count": ready_count,
-            "export_ready": ready_count == len(families),
+            "export_ready": mutation_allowed and ready_count == len(families),
             "cards_requested": self.cards_requested,
             "decision_metrics": {
                 "model": MODEL_ALIAS,

@@ -525,7 +525,7 @@ result may not remain an independent authority.
 
 ### CASE-004 — Rehydration and source staleness
 
-On load and before every mutation:
+Before a case reaches `handoff_ready`, on load and before every mutation:
 
 1. parse the case strictly;
 2. rescan the configured source;
@@ -539,6 +539,15 @@ case `stale`, reports the exact differences, and blocks decision mutation,
 staging, and receipt generation. Preserve the stale case. The supported
 recovery is a fresh case at a different explicit case path. Do not implement
 case rebasing, automatic reconciliation, or decision carry-forward.
+
+`handoff_ready` is the deliberate terminal exception to source-staleness
+mutation. Its case and receipt describe an already finalized historical
+transaction and remain byte-immutable even if the sender later changes or
+removes the source tree. Reloading such a case must still validate its strict
+internal bindings, but it must neither rewrite the case to `stale` nor imply
+that its committed source description matches the sender's current filesystem.
+Current-source comparison is a separate verifier operation using `--source`.
+Any subsequent migration requires a fresh case and receipt.
 
 ### CASE-005 — Authority and spending separation
 

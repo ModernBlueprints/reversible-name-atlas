@@ -9,8 +9,9 @@ import json
 import os
 import stat
 import tempfile
+import unicodedata
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from contextlib import suppress
 from datetime import datetime
 from enum import StrEnum
@@ -38,10 +39,22 @@ from name_atlas.decision_cards.models import (
     MODEL_ALIAS,
     ReplayUsage,
 )
-from name_atlas.decisions import HumanAction, HumanDecision
-from name_atlas.domain import DecisionCard, EvidencePacket
-from name_atlas.package_import import ObjectFamily, SourcePackage
-from name_atlas.proposals import PathProposal, RiskCategory
+from name_atlas.decision_cards.service import build_evidence_packet
+from name_atlas.decisions import (
+    DecisionError,
+    HumanAction,
+    HumanDecision,
+    edit_family,
+    proposals_after_decision,
+)
+from name_atlas.domain import DecisionCard, EvidencePacket, MemberKind
+from name_atlas.package_import import (
+    MetadataRow,
+    NormalizationRow,
+    ObjectFamily,
+    SourcePackage,
+)
+from name_atlas.proposals import PathProposal, RiskCategory, build_proposals
 from name_atlas.source import SourceMember, SourceSnapshot
 
 MIGRATION_CASE_SCHEMA_VERSION = "migration-case.v1"
@@ -87,6 +100,22 @@ class CaseLifecycle(StrEnum):
     BLOCKED = "blocked"
 
 
+class SourceDifferenceKind(StrEnum):
+    """The complete set of source changes that invalidate a Migration Case."""
+
+    ADDED = "added"
+    REMOVED = "removed"
+    RENAMED = "renamed"
+    RESIZED = "resized"
+    CONTENT_CHANGED = "content_changed"
+
+
+class SourceScanBlockerCode(StrEnum):
+    """Stable reason a source could not be safely snapshotted."""
+
+    SOURCE_SCAN_FAILED = "source_scan_failed"
+
+
 class CardDisplayOrigin(StrEnum):
     """Truthful source of the exact card presented to the human."""
 
@@ -107,6 +136,13 @@ class _StrictFrozenCaseModel(BaseModel):
     """Immutable fail-closed base for every serialized case contract."""
 
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+
+
+class SourceScanBlocker(_StrictFrozenCaseModel):
+    """One exact scanner failure without invented source-member facts."""
+
+    code: SourceScanBlockerCode = SourceScanBlockerCode.SOURCE_SCAN_FAILED
+    detail: str = Field(min_length=1, max_length=2_000)
 
 
 def _require_oslo_timestamp(value: datetime, *, label: str) -> datetime:
@@ -144,6 +180,50 @@ class CaseSourceSnapshot(_StrictFrozenCaseModel):
             raise ValueError(
                 "Case source-snapshot commitment does not match its members."
             )
+        return self
+
+
+class SourceDifference(_StrictFrozenCaseModel):
+    """One exact path-neutral difference from the case's immutable snapshot."""
+
+    kind: SourceDifferenceKind
+    before: SourceMember | None = None
+    after: SourceMember | None = None
+
+    @model_validator(mode="after")
+    def require_exact_transition(self) -> Self:
+        if self.kind is SourceDifferenceKind.ADDED:
+            if self.before is not None or self.after is None:
+                raise ValueError("An added member requires only an after record.")
+            return self
+        if self.kind is SourceDifferenceKind.REMOVED:
+            if self.before is None or self.after is not None:
+                raise ValueError("A removed member requires only a before record.")
+            return self
+        if self.before is None or self.after is None:
+            raise ValueError(
+                "Renamed, resized, and content-changed members require both records."
+            )
+        if self.before.role != self.after.role or self.before.kind != self.after.kind:
+            raise ValueError("A source difference cannot silently change role or kind.")
+        if self.kind is SourceDifferenceKind.RENAMED:
+            if self.before.relative_path == self.after.relative_path:
+                raise ValueError("A renamed member requires two different paths.")
+            if _member_payload_identity(self.before) != _member_payload_identity(
+                self.after
+            ):
+                raise ValueError("A renamed member must retain exact payload identity.")
+            return self
+        if self.before.relative_path != self.after.relative_path:
+            raise ValueError("A changed member must retain its relative path.")
+        if self.kind is SourceDifferenceKind.RESIZED:
+            if self.before.size == self.after.size:
+                raise ValueError("A resized member must have a different byte size.")
+            return self
+        if self.before.size != self.after.size:
+            raise ValueError("A content-changed member must retain its byte size.")
+        if self.before.sha256 == self.after.sha256:
+            raise ValueError("A content-changed member must have a different digest.")
         return self
 
 
@@ -255,12 +335,22 @@ class CaseDecisionBinding(_StrictFrozenCaseModel):
             raise ValueError(
                 "Evidence and card fingerprints must both be present or absent."
             )
-        if (
-            self.decision.action
-            in {HumanAction.APPROVED, HumanAction.EDITED, HumanAction.REFUSED}
-            and self.decision_timestamp is None
-        ):
+        explicit_action = self.decision.action in {
+            HumanAction.APPROVED,
+            HumanAction.EDITED,
+            HumanAction.REFUSED,
+        }
+        if explicit_action and self.decision_timestamp is None:
             raise ValueError("An explicit human action requires its Oslo timestamp.")
+        if not explicit_action and self.decision_timestamp is not None:
+            raise ValueError(
+                "Pending or unresolved decisions cannot retain a human-action "
+                "timestamp."
+            )
+        if not explicit_action and self.evidence_fingerprint is not None:
+            raise ValueError(
+                "Pending or unresolved decisions cannot claim evidence/card provenance."
+            )
         expected_methods = {
             HumanAction.APPROVED: {
                 CaseDecisionMethod.BATCH_APPROVAL,
@@ -316,6 +406,8 @@ class MigrationCase(_StrictFrozenCaseModel):
         pattern=r"^[a-f0-9]{64}$",
     )
     lifecycle: CaseLifecycle = CaseLifecycle.REVIEW
+    stale_differences: tuple[SourceDifference, ...] = ()
+    source_scan_blocker: SourceScanBlocker | None = None
 
     @field_validator("case_id")
     @classmethod
@@ -347,14 +439,38 @@ class MigrationCase(_StrictFrozenCaseModel):
         if self.updated_at < self.created_at:
             raise ValueError("updated_at cannot precede created_at.")
 
+        if self.lifecycle is CaseLifecycle.STALE:
+            if not self.stale_differences and self.source_scan_blocker is None:
+                raise ValueError(
+                    "A stale case requires exact source differences or a scan blocker."
+                )
+            if self.stale_differences and self.source_scan_blocker is not None:
+                raise ValueError(
+                    "A stale case cannot mix exact differences with a scan blocker."
+                )
+        elif self.stale_differences or self.source_scan_blocker is not None:
+            raise ValueError(
+                "Only a stale case may retain source differences or a scan blocker."
+            )
+        if self.stale_differences != _sort_source_differences(self.stale_differences):
+            raise ValueError("Case source differences must use deterministic order.")
+        if len(self.stale_differences) != len(set(self.stale_differences)):
+            raise ValueError("Case source differences must be unique.")
+
         family_ids = tuple(family.family_id for family in self.families)
         if len(family_ids) != len(set(family_ids)):
             raise ValueError("Migration Case family IDs must be unique.")
         known_family_ids = set(family_ids)
+        families_by_id = {family.family_id: family for family in self.families}
 
         snapshot_members = {
             member.relative_path: member for member in self.source_snapshot.members
         }
+        if self.stale_differences:
+            _require_stale_differences_match_snapshot(
+                self.stale_differences,
+                snapshot_members=snapshot_members,
+            )
         for family in self.families:
             for member in family.members:
                 if snapshot_members.get(member.relative_path) != member:
@@ -372,6 +488,18 @@ class MigrationCase(_StrictFrozenCaseModel):
             proposal.family_id not in known_family_ids for proposal in self.proposals
         ):
             raise ValueError("Case proposal references an unknown family.")
+        try:
+            deterministic_proposals = build_proposals(self.families)
+        except ValueError as exc:
+            raise ValueError(
+                "Migration Case families cannot reproduce the frozen profile."
+            ) from exc
+        if self.proposals != deterministic_proposals:
+            raise ValueError(
+                "Migration Case proposals do not match deterministic reconstruction."
+            )
+
+        historical_package = source_package_from_case(self)
 
         evidence_by_fingerprint = _unique_records(
             self.evidence_records,
@@ -388,6 +516,22 @@ class MigrationCase(_StrictFrozenCaseModel):
             key=lambda record: record.family_id,
             label="decision family",
         )
+        for binding in self.decisions:
+            family = families_by_id.get(binding.family_id)
+            if family is None:
+                raise ValueError("Human decision references an unknown family.")
+            if binding.decision.export_ready and set(
+                binding.decision.resolved_targets
+            ) != {member.role for member in family.members}:
+                raise ValueError(
+                    "Resolved targets must cover every present family role exactly."
+                )
+        resolved_case_proposals = self.proposals
+        for binding in self.decisions:
+            resolved_case_proposals = proposals_after_decision(
+                resolved_case_proposals,
+                binding.decision,
+            )
 
         meaning_family_ids = {
             proposal.family_id
@@ -407,6 +551,20 @@ class MigrationCase(_StrictFrozenCaseModel):
                     "Only one current evidence packet is allowed per family."
                 )
             evidence_families.add(record.family_id)
+            family = next(
+                family
+                for family in self.families
+                if family.family_id == record.family_id
+            )
+            expected_packet = build_evidence_packet(
+                historical_package,
+                family,
+                self.proposals,
+            )
+            if record.packet != expected_packet:
+                raise ValueError(
+                    "Case evidence does not match deterministic family evidence."
+                )
 
         card_families: set[str] = set()
         for record in self.card_records:
@@ -424,21 +582,60 @@ class MigrationCase(_StrictFrozenCaseModel):
                 raise ValueError(
                     "Decision card violates its persisted evidence boundary."
                 ) from exc
+        if evidence_families != card_families:
+            raise ValueError(
+                "Case evidence and decision cards must form exact family pairs."
+            )
 
         for binding in self.decisions:
-            if binding.family_id not in known_family_ids:
-                raise ValueError("Human decision references an unknown family.")
-            family = next(
-                family
-                for family in self.families
-                if family.family_id == binding.family_id
-            )
-            if binding.decision.export_ready and set(
-                binding.decision.resolved_targets
-            ) != {member.role for member in family.members}:
+            family = families_by_id[binding.family_id]
+            try:
+                if binding.decision.action is HumanAction.APPROVED:
+                    initial_family_proposals = tuple(
+                        proposal
+                        for proposal in self.proposals
+                        if proposal.family_id == family.family_id
+                    )
+                    expected_targets = {
+                        proposal.role: proposal.proposed_relative_path
+                        for proposal in initial_family_proposals
+                    }
+                    if dict(binding.decision.resolved_targets) != expected_targets:
+                        raise ValueError(
+                            "Approved targets do not match the frozen proposals."
+                        )
+                    resolved_family_proposals = tuple(
+                        proposal
+                        for proposal in resolved_case_proposals
+                        if proposal.family_id == family.family_id
+                    )
+                    if any(
+                        proposal.mechanical_blockers
+                        for proposal in resolved_family_proposals
+                    ):
+                        raise ValueError(
+                            "Approved decision retains an unresolvable mechanical "
+                            "blocker."
+                        )
+                elif binding.decision.action is HumanAction.EDITED:
+                    assert binding.decision.human_input is not None
+                    expected_decision = edit_family(
+                        family,
+                        self.proposals,
+                        descriptor=binding.decision.human_input,
+                        semantic_card_available=(
+                            binding.evidence_fingerprint is not None
+                            and binding.card_fingerprint is not None
+                        ),
+                    )
+                    if binding.decision != expected_decision:
+                        raise ValueError(
+                            "Edited targets do not match the exact human descriptor."
+                        )
+            except DecisionError as exc:
                 raise ValueError(
-                    "Resolved targets must cover every present family role exactly."
-                )
+                    "Human decision is not valid against its frozen proposals."
+                ) from exc
             is_explicit_action = binding.decision.action in {
                 HumanAction.APPROVED,
                 HumanAction.EDITED,
@@ -459,6 +656,20 @@ class MigrationCase(_StrictFrozenCaseModel):
                 raise ValueError(
                     "Mechanical decisions cannot contain fabricated GPT provenance."
                 )
+            if binding.decision_method is CaseDecisionMethod.BATCH_APPROVAL:
+                resolved_family_proposals = tuple(
+                    proposal
+                    for proposal in resolved_case_proposals
+                    if proposal.family_id == binding.family_id
+                )
+                if binding.family_id in meaning_family_ids or any(
+                    proposal.mechanical_blockers
+                    for proposal in resolved_family_proposals
+                ):
+                    raise ValueError(
+                        "Batch approval is permitted only for mechanically low-risk "
+                        "families."
+                    )
             if binding.evidence_fingerprint is not None:
                 evidence = evidence_by_fingerprint.get(binding.evidence_fingerprint)
                 card = cards_by_fingerprint.get(binding.card_fingerprint or "")
@@ -472,6 +683,26 @@ class MigrationCase(_StrictFrozenCaseModel):
                     raise ValueError(
                         "Human decision evidence/card binding is not exact."
                     )
+
+        resolved_targets = tuple(
+            target
+            for binding in self.decisions
+            if binding.decision.export_ready
+            for target in binding.decision.resolved_targets.values()
+        )
+        _require_unique_resolved_targets(resolved_targets)
+
+        derived_lifecycle = _derived_working_lifecycle(
+            decisions_by_family=decisions_by_family,
+            known_family_ids=known_family_ids,
+        )
+        if (
+            self.lifecycle not in {CaseLifecycle.STALE, CaseLifecycle.HANDOFF_READY}
+            and self.lifecycle is not derived_lifecycle
+        ):
+            raise ValueError(
+                "Migration Case lifecycle does not match its durable decisions."
+            )
 
         if self.lifecycle in {
             CaseLifecycle.READY_TO_STAGE,
@@ -503,6 +734,170 @@ class MigrationCase(_StrictFrozenCaseModel):
         return self
 
 
+def source_package_from_case(case: MigrationCase) -> SourcePackage:
+    """Reconstruct the immutable historical package view retained by a case."""
+
+    metadata_rows_by_number: dict[int, MetadataRow] = {}
+    metadata_header: tuple[str, ...] | None = None
+    normalization_rows_by_number: dict[int, NormalizationRow] = {}
+    for family in case.families:
+        row = family.metadata_row
+        if metadata_header is None:
+            metadata_header = row.header
+        elif row.header != metadata_header:
+            raise ValueError("Migration Case metadata headers are inconsistent.")
+        existing_row = metadata_rows_by_number.setdefault(row.row_number, row)
+        if existing_row != row:
+            raise ValueError("Migration Case metadata row numbers are ambiguous.")
+
+        row_number = family.normalization_row_number
+        if row_number is None:
+            if family.access is not None or family.preservation is not None:
+                raise ValueError(
+                    "A derivative family requires its normalization-row identity."
+                )
+            continue
+        normalization_row = NormalizationRow(
+            row_number=row_number,
+            original_path=family.original.relative_path,
+            access_path=(
+                family.access.relative_path if family.access is not None else None
+            ),
+            preservation_path=(
+                family.preservation.relative_path
+                if family.preservation is not None
+                else None
+            ),
+        )
+        existing_normalization = normalization_rows_by_number.setdefault(
+            row_number,
+            normalization_row,
+        )
+        if existing_normalization != normalization_row:
+            raise ValueError("Migration Case normalization row numbers are ambiguous.")
+
+    if metadata_header is None:
+        raise ValueError("Migration Case contains no metadata authority.")
+    normalization_present = any(
+        member.relative_path == "normalization.csv"
+        for member in case.source_snapshot.members
+    )
+    if normalization_present != bool(normalization_rows_by_number):
+        raise ValueError(
+            "Migration Case normalization control and relationships disagree."
+        )
+    family_members = {
+        member.relative_path for family in case.families for member in family.members
+    }
+    snapshot_content_members = {
+        member.relative_path
+        for member in case.source_snapshot.members
+        if member.kind is MemberKind.CONTENT_OBJECT
+    }
+    if family_members != snapshot_content_members:
+        raise ValueError(
+            "Migration Case families do not account for every source content member."
+        )
+    if "metadata/metadata.csv" not in {
+        member.relative_path for member in case.source_snapshot.members
+    }:
+        raise ValueError("Migration Case source snapshot lacks metadata authority.")
+
+    return SourcePackage(
+        root=case.source_root,
+        snapshot=SourceSnapshot(
+            source_root=case.source_root,
+            members=case.source_snapshot.members,
+            commitment=case.source_snapshot.commitment,
+        ),
+        metadata_header=metadata_header,
+        metadata_rows=tuple(
+            metadata_rows_by_number[number]
+            for number in sorted(metadata_rows_by_number)
+        ),
+        normalization_rows=tuple(
+            normalization_rows_by_number[number]
+            for number in sorted(normalization_rows_by_number)
+        ),
+        normalization_present=normalization_present,
+        families=case.families,
+    )
+
+
+def _derived_working_lifecycle(
+    *,
+    decisions_by_family: dict[str, CaseDecisionBinding],
+    known_family_ids: set[str],
+) -> CaseLifecycle:
+    if set(decisions_by_family) == known_family_ids and all(
+        binding.decision.export_ready for binding in decisions_by_family.values()
+    ):
+        return CaseLifecycle.READY_TO_STAGE
+    if any(
+        binding.decision.action in {HumanAction.REFUSED, HumanAction.UNRESOLVED}
+        for binding in decisions_by_family.values()
+    ):
+        return CaseLifecycle.BLOCKED
+    return CaseLifecycle.REVIEW
+
+
+def _require_unique_resolved_targets(targets: tuple[str, ...]) -> None:
+    comparisons = (
+        ("exact", lambda value: value),
+        ("NFC", lambda value: unicodedata.normalize("NFC", value)),
+        (
+            "NFC casefold",
+            lambda value: unicodedata.normalize("NFC", value).casefold(),
+        ),
+    )
+    for label, comparison in comparisons:
+        keys = tuple(comparison(target) for target in targets)
+        if len(keys) != len(set(keys)):
+            raise ValueError(f"Resolved targets collide under {label} comparison.")
+
+
+def _require_stale_differences_match_snapshot(
+    differences: tuple[SourceDifference, ...],
+    *,
+    snapshot_members: dict[str, SourceMember],
+) -> None:
+    """Prove every persisted stale transition starts at the case snapshot."""
+
+    before_paths = tuple(
+        difference.before.relative_path
+        for difference in differences
+        if difference.before is not None
+    )
+    after_paths = tuple(
+        difference.after.relative_path
+        for difference in differences
+        if difference.after is not None
+    )
+    if len(before_paths) != len(set(before_paths)):
+        raise ValueError("Stale differences repeat a source-snapshot path.")
+    if len(after_paths) != len(set(after_paths)):
+        raise ValueError("Stale differences repeat a current-source path.")
+
+    for difference in differences:
+        before = difference.before
+        after = difference.after
+        if before is not None and snapshot_members.get(before.relative_path) != before:
+            raise ValueError(
+                "Stale-difference before records must exactly match the case "
+                "source snapshot."
+            )
+        if difference.kind in {
+            SourceDifferenceKind.ADDED,
+            SourceDifferenceKind.RENAMED,
+        }:
+            assert after is not None
+            if after.relative_path in snapshot_members:
+                raise ValueError(
+                    "Added or renamed target paths must be absent from the case "
+                    "source snapshot."
+                )
+
+
 def _source_snapshot_commitment(members: tuple[SourceMember, ...]) -> str:
     payload = json.dumps(
         [member.model_dump(mode="json") for member in members],
@@ -512,6 +907,154 @@ def _source_snapshot_commitment(members: tuple[SourceMember, ...]) -> str:
         allow_nan=False,
     ).encode()
     return hashlib.sha256(payload).hexdigest()
+
+
+def compare_source_snapshots(
+    previous: CaseSourceSnapshot,
+    current: SourceSnapshot,
+) -> tuple[SourceDifference, ...]:
+    """Return exact deterministic differences from persisted to current source."""
+
+    current_portable = CaseSourceSnapshot.from_source_snapshot(current)
+    persisted_by_path = {member.relative_path: member for member in previous.members}
+    current_by_path = {
+        member.relative_path: member for member in current_portable.members
+    }
+    differences: list[SourceDifference] = []
+
+    shared_paths = persisted_by_path.keys() & current_by_path.keys()
+    for relative_path in sorted(shared_paths):
+        before = persisted_by_path[relative_path]
+        after = current_by_path[relative_path]
+        if before == after:
+            continue
+        if before.role != after.role or before.kind != after.kind:
+            raise ValueError(
+                "A current source member changed role or kind at an unchanged path: "
+                f"{relative_path}"
+            )
+        kind = (
+            SourceDifferenceKind.RESIZED
+            if before.size != after.size
+            else SourceDifferenceKind.CONTENT_CHANGED
+        )
+        differences.append(SourceDifference(kind=kind, before=before, after=after))
+
+    removed = {
+        path: persisted_by_path[path]
+        for path in persisted_by_path.keys() - current_by_path.keys()
+    }
+    added = {
+        path: current_by_path[path]
+        for path in current_by_path.keys() - persisted_by_path.keys()
+    }
+
+    removed_by_identity = _members_by_rename_identity(removed.values())
+    added_by_identity = _members_by_rename_identity(added.values())
+    for identity in sorted(removed_by_identity.keys() & added_by_identity.keys()):
+        before_candidates = removed_by_identity[identity]
+        after_candidates = added_by_identity[identity]
+        if len(before_candidates) != 1 or len(after_candidates) != 1:
+            continue
+        before = before_candidates[0]
+        after = after_candidates[0]
+        differences.append(
+            SourceDifference(
+                kind=SourceDifferenceKind.RENAMED,
+                before=before,
+                after=after,
+            )
+        )
+        del removed[before.relative_path]
+        del added[after.relative_path]
+
+    differences.extend(
+        SourceDifference(
+            kind=SourceDifferenceKind.REMOVED,
+            before=member,
+        )
+        for member in removed.values()
+    )
+    differences.extend(
+        SourceDifference(
+            kind=SourceDifferenceKind.ADDED,
+            after=member,
+        )
+        for member in added.values()
+    )
+    return _sort_source_differences(tuple(differences))
+
+
+def format_source_differences(
+    differences: tuple[SourceDifference, ...],
+) -> tuple[str, ...]:
+    """Render stable compact descriptions without sender-local path disclosure."""
+
+    summaries: list[str] = []
+    for difference in _sort_source_differences(differences):
+        before_path = (
+            difference.before.relative_path if difference.before is not None else None
+        )
+        after_path = (
+            difference.after.relative_path if difference.after is not None else None
+        )
+        if difference.kind is SourceDifferenceKind.ADDED:
+            summaries.append(f"added: {after_path}")
+        elif difference.kind is SourceDifferenceKind.REMOVED:
+            summaries.append(f"removed: {before_path}")
+        elif difference.kind is SourceDifferenceKind.RENAMED:
+            summaries.append(f"renamed: {before_path} -> {after_path}")
+        elif difference.kind is SourceDifferenceKind.RESIZED:
+            assert difference.before is not None and difference.after is not None
+            summaries.append(
+                f"resized: {before_path} "
+                f"({difference.before.size} -> {difference.after.size} bytes)"
+            )
+        else:
+            summaries.append(f"content_changed: {before_path}")
+    return tuple(summaries)
+
+
+def _member_payload_identity(member: SourceMember) -> tuple[int, str]:
+    return member.size, member.sha256
+
+
+def _member_rename_identity(member: SourceMember) -> tuple[str, str, int, str]:
+    return (
+        member.role.value,
+        member.kind.value,
+        member.size,
+        member.sha256,
+    )
+
+
+def _members_by_rename_identity(
+    members: Iterable[SourceMember],
+) -> dict[tuple[str, str, int, str], tuple[SourceMember, ...]]:
+    grouped: dict[tuple[str, str, int, str], list[SourceMember]] = {}
+    for member in members:
+        identity = _member_rename_identity(member)
+        grouped.setdefault(identity, []).append(member)
+    return {
+        identity: tuple(sorted(values, key=lambda member: member.relative_path))
+        for identity, values in grouped.items()
+    }
+
+
+def _source_difference_sort_key(
+    difference: SourceDifference,
+) -> tuple[str, str, str]:
+    before_path = (
+        difference.before.relative_path if difference.before is not None else ""
+    )
+    after_path = difference.after.relative_path if difference.after is not None else ""
+    return before_path or after_path, difference.kind.value, after_path
+
+
+def _sort_source_differences(
+    differences: tuple[SourceDifference, ...],
+) -> tuple[SourceDifference, ...]:
+    return tuple(sorted(differences, key=_source_difference_sort_key))
 
 
 def _unique_records(
@@ -538,7 +1081,7 @@ def default_case_path(
 
     if not isinstance(source_root, Path):
         raise TypeError("source_root must be a pathlib.Path")
-    resolved_source_root = source_root.resolve(strict=True)
+    resolved_source_root = source_root.resolve(strict=False)
     digest = hashlib.sha256(
         f"case-root\0{resolved_source_root.as_posix()}".encode()
     ).hexdigest()[:16]
@@ -723,14 +1266,32 @@ class MigrationCaseWriter:
                 raise CaseFinalizedError(
                     "A handoff-ready Migration Case is read-only; create a new case."
                 )
+            if current.lifecycle is CaseLifecycle.STALE:
+                raise CaseFinalizedError(
+                    "A stale Migration Case is terminal; preserve it and create a "
+                    "new case at a different path."
+                )
             if (
                 case.case_id != current.case_id
                 or case.created_at != current.created_at
                 or case.source_root != current.source_root
                 or case.source_snapshot != current.source_snapshot
+                or case.package_contract_id != current.package_contract_id
+                or case.profile_id != current.profile_id
+                or case.families != current.families
+                or case.proposals != current.proposals
+                or case.local_paths.output_root != current.local_paths.output_root
+                or case.local_paths.case_path != current.local_paths.case_path
             ):
                 raise CaseRevisionError(
                     "Mutation attempted to change immutable Migration Case identity."
+                )
+            if (
+                case.lifecycle is CaseLifecycle.HANDOFF_READY
+                and current.lifecycle is not CaseLifecycle.READY_TO_STAGE
+            ):
+                raise CaseRevisionError(
+                    "Only a ready-to-stage case may become handoff-ready."
                 )
             updated_at = self._clock()
             _require_oslo_timestamp(updated_at, label="updated_at")

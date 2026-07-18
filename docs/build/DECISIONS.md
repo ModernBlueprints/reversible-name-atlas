@@ -288,3 +288,15 @@ overrides those artifacts.
   tests, Ruff checks, and Git whitespace check all passed before R1 began.
 - Active authority: activated `GOAL.md`, the sole implementation plan, and
   current `STATE.md`.
+
+## D-030 — Finalized handoff remains historical and immutable
+
+- Date: 18 July 2026
+- Decision: Apply mandatory source-staleness mutation only before
+  `handoff_ready`; after finalization, later sender-source drift cannot rewrite
+  the case or receipt and may be assessed only as a separate current-source
+  comparison.
+- Rationale: A finalized receipt must remain an immutable record of the proved
+  transaction. Retroactively converting it to a mutable stale case would
+  contradict the read-only lifecycle and destroy stable handoff provenance.
+- Active authority: `CASE-002`, corrected `CASE-004`, and `VER-007 --source`.

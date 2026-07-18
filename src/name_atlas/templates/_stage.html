@@ -12,6 +12,13 @@
       <header><span class="state state--red">BLOCKED</span><h3>No Migration Case can be staged.</h3></header>
       <p>Import a supported package before requesting any copy operation.</p>
     </article>
+  {% elif shell.lifecycle == 'stale' %}
+    <article class="proof-card">
+      <header><span class="state state--red">BLOCKED</span><h3>This stale case cannot create a staged handoff.</h3></header>
+      <p>The current source no longer matches the case snapshot. No copy, receipt, or receiver-verification transaction can begin from this case.</p>
+      <p>The source remains untouched. Preserve this case and create a fresh case at a different path.</p>
+      <p><a class="button" href="/atlas">Inspect the exact source differences</a></p>
+    </article>
   {% elif shell.handoff_ready %}
     <article class="proof-card proof-card--verified">
       <header><span class="state state--green">COMPLETE</span><h3>A verified staged handoff already exists.</h3></header>

@@ -120,11 +120,16 @@ def create_app(
 
     @app.get("/healthz")
     async def health() -> dict[str, str | bool | int]:
-        ready = (
+        provider_ready = (
             config.replay_record_configured
             if config.mode.value == "replay"
             else config.api_key_configured
         )
+        workflow_view = workflow.view_model() if workflow is not None else None
+        case_lifecycle = _enum_text(
+            workflow_view.get("case_lifecycle") if workflow_view is not None else None
+        )
+        ready = provider_ready and case_lifecycle not in {"stale", "blocked"}
         response: dict[str, str | bool | int] = {
             "status": "ready" if ready else "blocked",
             "mode": config.mode.value,
@@ -139,6 +144,8 @@ def create_app(
                     "stage_verified": workflow.stage_result is not None,
                 }
             )
+            if case_lifecycle is not None:
+                response["case_lifecycle"] = case_lifecycle
         return response
 
     @app.post("/families/{family_id}/generate", include_in_schema=False)
@@ -398,6 +405,14 @@ def _shell_context(
         view.get("handoff_path") if view is not None else None,
     )
     output_root = str(workflow.output_root) if workflow is not None else None
+    stale_differences = (
+        tuple(str(item) for item in view.get("stale_differences", ()))
+        if view is not None
+        else ()
+    )
+    source_scan_blocker = _first_text(
+        view.get("source_scan_blocker") if view is not None else None
+    )
     return {
         "case_name": case_name,
         "case_id": case_id,
@@ -424,6 +439,8 @@ def _shell_context(
         "stage_root": stage_root,
         "output_root": output_root,
         "receipt_fingerprint": receipt_fingerprint,
+        "stale_differences": stale_differences,
+        "source_scan_blocker": source_scan_blocker,
     }
 
 

@@ -19,6 +19,15 @@
       <article class="proof-card">
         <header><span class="state state--red">BLOCKED</span><h3>The Migration Case is stale.</h3></header>
         <p>The current source no longer matches the case snapshot. Decisions, staging, and receipt generation remain blocked; preserve this case and create a fresh case at a different path.</p>
+        {% if shell.source_scan_blocker %}
+          <h4>Source scan blocker</h4>
+          <p class="mono">{{ shell.source_scan_blocker }}</p>
+        {% elif shell.stale_differences %}
+          <h4>Exact source differences</h4>
+          <ul class="blocker-list" aria-label="Exact source differences">
+            {% for difference in shell.stale_differences %}<li><code>{{ difference }}</code></li>{% endfor %}
+          </ul>
+        {% endif %}
       </article>
     {% endif %}
     <div class="metric-grid" aria-label="Risk counts">
