@@ -20,13 +20,18 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from name_atlas.folder_refactor.planner import DeterministicDevelopmentPlanner
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderReceiptVerification,
+    FolderReceiptVerificationStatus,
+    FolderRestoreReport,
+)
 from name_atlas.folder_refactor.transaction import run_folder_refactor
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=PACKAGE_ROOT / "templates")
 MAX_FORM_BODY_BYTES = 32_768
 MAX_REQUEST_CHARACTERS = 8_000
-PLANNER_LABEL = "Deterministic A2 planner — no API call"
+PLANNER_LABEL = "Deterministic A3 planner — no API call"
 WORKING_STAGES = (
     "Reading folder",
     "Name Atlas is planning",
@@ -39,7 +44,7 @@ _ServiceResult = TypeVar("_ServiceResult")
 
 
 class FolderWebLifecycle(StrEnum):
-    """Server-owned A1/A2 presentation states."""
+    """Server-owned A1–A3 presentation states."""
 
     IDLE = "idle"
     PLANNING = "planning"
@@ -237,9 +242,22 @@ class ProgressReportingFolderRunService(FolderRunService, Protocol):
         ...
 
 
+@runtime_checkable
+class FolderResultActionService(FolderRunService, Protocol):
+    """Run proof and reconstruction actions against one verified result."""
+
+    def verify_again(self) -> FolderReceiptVerification:
+        """Re-run the source-free, keyless verifier without mutating the job."""
+        ...
+
+    def recreate_original(self, destination: Path) -> FolderRestoreReport:
+        """Create one separately verified original-layout reconstruction."""
+        ...
+
+
 @dataclass(frozen=True, slots=True)
 class DeterministicFolderRunService:
-    """Bridge the browser shell to the complete deterministic A2 transaction."""
+    """Bridge the browser shell to the complete deterministic A3 transaction."""
 
     result_folder_name: str = "name-atlas-organized-copy"
     target_prefix: str = "organized"
@@ -257,7 +275,7 @@ class DeterministicFolderRunService:
         output_parent: Path,
         request: str,
     ) -> FolderRunPresentation:
-        """Run the truthful no-API A2 planner and expose verified facts only."""
+        """Run the truthful no-API A3 planner and expose verified facts only."""
 
         planner = DeterministicDevelopmentPlanner(
             result_folder_name=self.result_folder_name,
@@ -369,7 +387,7 @@ def create_folder_app(
         description=(
             "Describe the change. Keep supported Markdown links. Prove the result."
         ),
-        version="0.2.0-a2",
+        version="0.3.0-a3",
         docs_url=None,
         redoc_url=None,
         lifespan=lifespan,
@@ -553,18 +571,73 @@ def create_folder_app(
         )
 
     @app.post("/verify-again", include_in_schema=False)
-    async def verify_again() -> HTMLResponse:
-        return HTMLResponse(
-            "Independent keyless verification is introduced in A3.",
-            status_code=409,
-        )
+    async def verify_again(request: Request) -> Response:
+        if state.lifecycle is not FolderWebLifecycle.VERIFIED or state.result is None:
+            return HTMLResponse("A verified result is required.", status_code=409)
+        try:
+            await _parse_result_action_form(
+                request,
+                expected_csrf_token=state.csrf_token,
+                require_destination=False,
+            )
+        except FolderFormError as exc:
+            return HTMLResponse(str(exc), status_code=422)
+        if not isinstance(service, FolderResultActionService):
+            return HTMLResponse(
+                "Independent keyless verification is unavailable.",
+                status_code=409,
+            )
+        try:
+            verification = await asyncio.to_thread(service.verify_again)
+        except Exception as exc:  # noqa: BLE001 - exact service blocker is displayed
+            _block_browser_result(
+                state,
+                f"Independent verification blocked: {_safe_error_text(exc)}",
+            )
+        else:
+            if verification.status is FolderReceiptVerificationStatus.VERIFIED:
+                state.notice = (
+                    "Independent keyless verification passed. Receipt "
+                    f"{verification.receipt_fingerprint}."
+                )
+            else:
+                failures = ", ".join(verification.failed_check_ids)
+                _block_browser_result(
+                    state,
+                    f"Independent verification blocked: {failures or 'unknown'}.",
+                )
+        return _redirect(_next_path(state))
 
     @app.post("/recreate-original", include_in_schema=False)
-    async def recreate_original() -> HTMLResponse:
-        return HTMLResponse(
-            "Original-layout reconstruction is introduced in A3.",
-            status_code=409,
-        )
+    async def recreate_original(request: Request) -> Response:
+        if state.lifecycle is not FolderWebLifecycle.VERIFIED or state.result is None:
+            return HTMLResponse("A verified result is required.", status_code=409)
+        try:
+            destination = await _parse_result_action_form(
+                request,
+                expected_csrf_token=state.csrf_token,
+                require_destination=True,
+            )
+        except FolderFormError as exc:
+            return HTMLResponse(str(exc), status_code=422)
+        if destination is None:
+            raise AssertionError("Reconstruction destination was not parsed.")
+        if not isinstance(service, FolderResultActionService):
+            return HTMLResponse(
+                "Original-layout reconstruction is unavailable.",
+                status_code=409,
+            )
+        try:
+            report = await asyncio.to_thread(service.recreate_original, destination)
+        except Exception as exc:  # noqa: BLE001 - exact service blocker is displayed
+            state.notice = (
+                f"Original-layout reconstruction blocked: {_safe_error_text(exc)}"
+            )
+        else:
+            state.notice = (
+                f"Original layout recreated and verified at {report.destination}."
+            )
+        return _redirect("/done")
 
     return app
 
@@ -893,6 +966,53 @@ async def _parse_clarification_form(
     return answer
 
 
+async def _parse_result_action_form(
+    request: Request,
+    *,
+    expected_csrf_token: str,
+    require_destination: bool,
+) -> Path | None:
+    """Parse one CSRF-bound Done action without accepting extra authority."""
+
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip()
+    if content_type != "application/x-www-form-urlencoded":
+        raise FolderFormError("The result action must use URL-encoded local fields.")
+    body = await request.body()
+    if not body or len(body) > MAX_FORM_BODY_BYTES:
+        raise FolderFormError("The result action is empty or too large.")
+    try:
+        fields = parse_qs(
+            body.decode("utf-8", errors="strict"),
+            strict_parsing=True,
+            max_num_fields=2,
+            keep_blank_values=True,
+        )
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise FolderFormError(
+            "The result action is not valid UTF-8 form data."
+        ) from exc
+    expected = (
+        {"csrf_token", "restore_destination"} if require_destination else {"csrf_token"}
+    )
+    if set(fields) != expected or any(len(fields[key]) != 1 for key in expected):
+        raise FolderFormError(
+            "Exactly the displayed result-action fields are required."
+        )
+    if not hmac.compare_digest(fields["csrf_token"][0], expected_csrf_token):
+        raise FolderFormError("The result-action security token is invalid or expired.")
+    if not require_destination:
+        return None
+    destination_text = fields["restore_destination"][0].strip()
+    if not destination_text or "\x00" in destination_text:
+        raise FolderFormError(
+            "The reconstruction destination must be a nonempty local path."
+        )
+    destination = Path(destination_text).expanduser()
+    if not destination.is_absolute():
+        raise FolderFormError("The reconstruction destination must be absolute.")
+    return destination
+
+
 def _base_context(
     *,
     state: _FolderWebState,
@@ -928,6 +1048,15 @@ def _next_path(state: _FolderWebState) -> str:
     if state.lifecycle is FolderWebLifecycle.VERIFIED:
         return "/done"
     return "/working"
+
+
+def _block_browser_result(state: _FolderWebState, blocker: str) -> None:
+    """Make the latest failed receiver check the browser's visible authority."""
+
+    state.lifecycle = FolderWebLifecycle.BLOCKED
+    state.blocker = blocker
+    state.result = None
+    state.notice = None
 
 
 def _redirect(path: str) -> RedirectResponse:

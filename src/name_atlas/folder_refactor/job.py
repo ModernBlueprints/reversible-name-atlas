@@ -23,7 +23,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    JsonValue,
     ValidationError,
     field_validator,
     model_validator,
@@ -62,7 +61,16 @@ from name_atlas.folder_refactor.planner_evidence import (
     append_evidence_execution,
     create_initial_evidence_ledger,
 )
-from name_atlas.folder_refactor.serialization import request_fingerprint
+from name_atlas.folder_refactor.receipt_contracts import (
+    RECEIPT_JSON_PATH,
+    FolderChangeLedger,
+    FolderReceiptVerification,
+    FolderReceiptVerificationStatus,
+)
+from name_atlas.folder_refactor.serialization import (
+    canonical_sha256,
+    request_fingerprint,
+)
 
 FOLDER_REFACTOR_JOB_SCHEMA_VERSION = "folder-refactor-job.v1"
 DEFAULT_JOB_DIRECTORY = Path(".name-atlas/jobs")
@@ -93,6 +101,12 @@ class FolderJobFinalizedError(FolderJobWriteError):
     """A terminal job cannot be changed in place."""
 
 
+class _StrictFrozenJobModel(BaseModel):
+    """Immutable fail-closed base for serialized local job records."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+
+
 class FolderJobLifecycle(StrEnum):
     """Complete lifecycle for the AI-first local job authority."""
 
@@ -110,6 +124,67 @@ class FolderJobLifecycle(StrEnum):
         return self in {self.VERIFIED, self.STALE, self.BLOCKED}
 
 
+class FolderJobRecoveryState(StrEnum):
+    """Exact read-only recovery classification for persisted execution paths."""
+
+    READY_TO_EXECUTE = "ready_to_execute"
+    VERIFIED_FINAL = "verified_final"
+    RECEIPT_FINALIZED_PENDING = "receipt_finalized_pending"
+    INCOMPLETE_OWNED_PENDING = "incomplete_owned_pending"
+    AMBIGUOUS = "ambiguous"
+
+
+class FolderJobRecoveryError(FolderJobError):
+    """Persisted result paths cannot be inspected without weakening ownership."""
+
+
+class FolderJobRecoveryClassification(_StrictFrozenJobModel):
+    """One deterministic structural recovery decision with no mutation authority."""
+
+    state: FolderJobRecoveryState
+    detail: str = Field(min_length=1, max_length=2_000)
+
+
+class FolderJobFinalization(_StrictFrozenJobModel):
+    """Strict receiver-verified facts required for one terminal job transition."""
+
+    job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    source_commitment: str = Field(pattern=SHA256_PATTERN)
+    request_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    evidence_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    accepted_plan_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    pending_result_path: Path
+    final_result_path: Path
+    change_ledger: FolderChangeLedger
+    receipt_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    receipt_verification: FolderReceiptVerification
+
+    @field_validator("job_id")
+    @classmethod
+    def require_uuid4_hex(cls, value: str) -> str:
+        _require_uuid4_hex(value)
+        return value
+
+    @field_validator("pending_result_path", "final_result_path")
+    @classmethod
+    def require_absolute_paths(cls, value: Path) -> Path:
+        if not value.is_absolute():
+            raise ValueError("Finalization paths must be absolute.")
+        return value
+
+    @model_validator(mode="after")
+    def require_successful_receiver_verification(self) -> Self:
+        if (
+            self.receipt_verification.status
+            is not FolderReceiptVerificationStatus.VERIFIED
+            or self.receipt_verification.receipt_fingerprint != self.receipt_fingerprint
+        ):
+            raise ValueError(
+                "Job finalization requires matching successful receipt verification."
+            )
+        return self
+
+
 class JobSourceDifferenceKind(StrEnum):
     """Stable source-change classes that invalidate an active job."""
 
@@ -119,12 +194,6 @@ class JobSourceDifferenceKind(StrEnum):
     RESIZED = "resized"
     CONTENT_CHANGED = "content_changed"
     REPLACED = "replaced"
-
-
-class _StrictFrozenJobModel(BaseModel):
-    """Immutable fail-closed base for serialized local job records."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
 
 class JobLocalFileIdentity(_StrictFrozenJobModel):
@@ -270,7 +339,7 @@ class FolderRefactorJob(_StrictFrozenJobModel):
     user_request: str = Field(min_length=1, max_length=8_000)
     planner_progress: FolderPlannerProgress | None = None
     accepted_plan: FolderAcceptedPlan | None = None
-    change_ledger: JsonValue | None = None
+    change_ledger: FolderChangeLedger | None = None
     pending_result_path: Path | None = None
     final_result_path: Path | None = None
     receipt_fingerprint: str | None = Field(default=None, pattern=SHA256_PATTERN)
@@ -415,6 +484,10 @@ class FolderRefactorJob(_StrictFrozenJobModel):
                     "Accepted plan no longer matches the job inventory authority."
                 ) from exc
 
+        _require_exact_result_pointers(self)
+        if self.change_ledger is not None:
+            _require_change_ledger_binding(self)
+
         self._require_lifecycle_fields()
         return self
 
@@ -461,28 +534,45 @@ class FolderRefactorJob(_StrictFrozenJobModel):
         ):
             raise ValueError("Execution requires one accepted planner result.")
 
-        if self.lifecycle is FolderJobLifecycle.VERIFIED:
+        has_pending = self.pending_result_path is not None
+        has_final = self.final_result_path is not None
+        if self.lifecycle is FolderJobLifecycle.EXECUTING:
+            if has_pending != has_final:
+                raise ValueError(
+                    "An executing job must retain both result paths or neither."
+                )
+        elif self.lifecycle is FolderJobLifecycle.VERIFIED:
             if (
-                self.final_result_path is None
+                not has_final
                 or self.receipt_fingerprint is None
                 or self.change_ledger is None
-                or self.pending_result_path is not None
+                or has_pending
             ):
                 raise ValueError(
                     "A verified job requires final result, receipt, and change ledger."
                 )
-        elif self.final_result_path is not None or self.receipt_fingerprint is not None:
-            raise ValueError("Only a verified job may retain a finalized result.")
-
-        if self.lifecycle is not FolderJobLifecycle.EXECUTING and (
-            self.pending_result_path is not None
-        ):
-            raise ValueError("Only an executing job may retain a pending result path.")
-        if self.change_ledger is not None and self.lifecycle in {
-            FolderJobLifecycle.PLANNING,
-            FolderJobLifecycle.AWAITING_CLARIFICATION,
+        elif self.lifecycle in {
+            FolderJobLifecycle.BLOCKED,
+            FolderJobLifecycle.STALE,
         }:
-            raise ValueError("A change ledger requires execution to have started.")
+            if has_pending != has_final:
+                raise ValueError(
+                    "A terminal interrupted execution must retain both result "
+                    "paths or neither."
+                )
+            if has_pending and self.accepted_plan is None:
+                raise ValueError("Terminal result paths require an accepted plan.")
+            if self.receipt_fingerprint is not None or self.change_ledger is not None:
+                raise ValueError("Only a verified job may retain finalized proof.")
+        elif has_pending or has_final:
+            raise ValueError(
+                "Only an executing or blocked job may retain result paths."
+            )
+
+        if self.lifecycle is not FolderJobLifecycle.VERIFIED and (
+            self.receipt_fingerprint is not None or self.change_ledger is not None
+        ):
+            raise ValueError("Only a verified job may retain finalized proof.")
 
         sorted_differences = _sort_differences(self.stale_differences)
         if self.stale_differences != sorted_differences:
@@ -514,6 +604,20 @@ def default_job_path(
     _require_uuid4_hex(identifier)
     base = base_directory if base_directory is not None else Path.cwd()
     return (base / DEFAULT_JOB_DIRECTORY / f"{identifier}.json").resolve()
+
+
+def expected_pending_result_path(job: FolderRefactorJob) -> Path:
+    """Return the only pending-result path owned by this job."""
+
+    return job.output_parent / f".name-atlas-{job.job_id}.pending"
+
+
+def expected_final_result_path(job: FolderRefactorJob) -> Path:
+    """Return the only accepted final-result path owned by this job."""
+
+    if job.accepted_plan is None:
+        raise FolderJobWriteError("A final result path requires an accepted plan.")
+    return job.output_parent / job.accepted_plan.result_folder_name
 
 
 def build_new_job(
@@ -741,6 +845,7 @@ class FolderRefactorJobWriter:
             if rehydrated.lifecycle is FolderJobLifecycle.STALE:
                 raise FolderJobBecameStaleError(rehydrated)
             _require_immutable_identity(current=current, candidate=job)
+            _require_execution_authority_unchanged(current=current, candidate=job)
             _require_planner_progress_successor(
                 current,
                 job,
@@ -754,6 +859,174 @@ class FolderRefactorJobWriter:
 
         _atomic_write_job(self.path, updated)
         return updated
+
+    def begin_execution(
+        self,
+        job: FolderRefactorJob,
+        *,
+        pending_result_path: Path,
+        final_result_path: Path,
+        expected_revision: int,
+    ) -> FolderRefactorJob:
+        """Persist exact owned result paths before any result write begins."""
+
+        self._require_lock()
+        current = self._require_exact_current(
+            job,
+            expected_revision=expected_revision,
+        )
+        if current.lifecycle.terminal:
+            raise FolderJobFinalizedError(
+                "Terminal FolderRefactorJob is immutable; create a fresh job."
+            )
+        if current.lifecycle is not FolderJobLifecycle.EXECUTING:
+            raise FolderJobRevisionError(
+                "Execution paths require an accepted executing job."
+            )
+        if (
+            current.pending_result_path is not None
+            or current.final_result_path is not None
+        ):
+            raise FolderJobRevisionError("Execution paths were already persisted.")
+        rehydrated = self._rehydrate_current(current)
+        if rehydrated.lifecycle is FolderJobLifecycle.STALE:
+            raise FolderJobBecameStaleError(rehydrated)
+
+        expected_pending = expected_pending_result_path(current)
+        expected_final = expected_final_result_path(current)
+        if pending_result_path != expected_pending:
+            raise FolderJobWriteError(
+                "Pending result path is not the exact job-owned pending path."
+            )
+        if final_result_path != expected_final:
+            raise FolderJobWriteError(
+                "Final result path is not the accepted result-folder path."
+            )
+        _require_absent_result_root(expected_pending, label="Pending result")
+        _require_absent_result_root(expected_final, label="Final result")
+
+        candidate = FolderRefactorJob.model_validate(
+            {
+                **current.model_dump(mode="python"),
+                "pending_result_path": expected_pending,
+                "final_result_path": expected_final,
+                "revision": expected_revision + 1,
+                "updated_at": self._now(),
+            },
+            strict=True,
+        )
+        _atomic_write_job(self.path, candidate)
+        return candidate
+
+    def finalize_verified(
+        self,
+        job: FolderRefactorJob,
+        finalization: FolderJobFinalization,
+        *,
+        expected_revision: int,
+    ) -> FolderRefactorJob:
+        """Persist an immutable verified terminal state after no-replace promotion."""
+
+        self._require_lock()
+        current = self._require_exact_current(
+            job,
+            expected_revision=expected_revision,
+        )
+        if current.lifecycle.terminal:
+            raise FolderJobFinalizedError(
+                "Terminal FolderRefactorJob is immutable; create a fresh job."
+            )
+        if (
+            current.lifecycle is not FolderJobLifecycle.EXECUTING
+            or current.pending_result_path is None
+            or current.final_result_path is None
+        ):
+            raise FolderJobRevisionError(
+                "Verification finalization requires persisted execution paths."
+            )
+        _require_finalization_binding(current, finalization)
+        if os.path.lexists(current.pending_result_path):
+            raise FolderJobWriteError(
+                "Pending result still exists after claimed final promotion."
+            )
+        _require_real_directory(
+            current.final_result_path,
+            label="Final result",
+        )
+
+        candidate = FolderRefactorJob.model_validate(
+            {
+                **current.model_dump(mode="python"),
+                "pending_result_path": None,
+                "change_ledger": finalization.change_ledger,
+                "receipt_fingerprint": finalization.receipt_fingerprint,
+                "lifecycle": FolderJobLifecycle.VERIFIED,
+                "revision": expected_revision + 1,
+                "updated_at": self._now(),
+            },
+            strict=True,
+        )
+        _atomic_write_job(self.path, candidate)
+        return candidate
+
+    def mark_execution_blocked(
+        self,
+        job: FolderRefactorJob,
+        *,
+        code: str,
+        message: str,
+        expected_revision: int,
+    ) -> FolderRefactorJob:
+        """Terminally block execution while preserving owned recovery pointers."""
+
+        self._require_lock()
+        current = self._require_exact_current(
+            job,
+            expected_revision=expected_revision,
+        )
+        if current.lifecycle.terminal:
+            raise FolderJobFinalizedError(
+                "Terminal FolderRefactorJob is immutable; create a fresh job."
+            )
+        if current.lifecycle is not FolderJobLifecycle.EXECUTING:
+            raise FolderJobRevisionError(
+                "Only an executing job can record an execution blocker."
+            )
+        candidate = FolderRefactorJob.model_validate(
+            {
+                **current.model_dump(mode="python"),
+                "lifecycle": FolderJobLifecycle.BLOCKED,
+                "blocker_code": code,
+                "blocker_message": message,
+                "revision": expected_revision + 1,
+                "updated_at": self._now(),
+            },
+            strict=True,
+        )
+        _atomic_write_job(self.path, candidate)
+        return candidate
+
+    def _require_exact_current(
+        self,
+        supplied: FolderRefactorJob,
+        *,
+        expected_revision: int,
+    ) -> FolderRefactorJob:
+        """Reject stale or same-revision out-of-band job replacement."""
+
+        current = load_job(self.path)
+        if (
+            current.revision != expected_revision
+            or supplied.revision != expected_revision
+        ):
+            raise FolderJobRevisionError(
+                "FolderRefactorJob revision changed before this mutation."
+            )
+        if current != supplied:
+            raise FolderJobRevisionError(
+                "Durable FolderRefactorJob differs from the supplied checkpoint."
+            )
+        return current
 
     def _rehydrate_current(self, current: FolderRefactorJob) -> FolderRefactorJob:
         differences, blocker = _rescan_job(current)
@@ -779,7 +1052,6 @@ class FolderRefactorJobWriter:
                 "source_scan_blocker": blocker,
                 "blocker_code": None,
                 "blocker_message": None,
-                "pending_result_path": None,
                 "revision": current.revision + 1,
                 "updated_at": self._now(),
             },
@@ -812,6 +1084,119 @@ class FolderRefactorJobWriter:
             raise FolderJobLockError(
                 "FolderRefactorJob writes require an active writer lock."
             )
+
+
+def classify_job_recovery_state(
+    job: FolderRefactorJob,
+    *,
+    final_verification: FolderReceiptVerification | None = None,
+) -> FolderJobRecoveryClassification:
+    """Classify exact owned result roots without writing or deleting anything."""
+
+    if job.accepted_plan is None:
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.AMBIGUOUS,
+            detail="Job has no accepted plan and therefore owns no result roots.",
+        )
+    if job.lifecycle not in {
+        FolderJobLifecycle.EXECUTING,
+        FolderJobLifecycle.VERIFIED,
+        FolderJobLifecycle.BLOCKED,
+    }:
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.AMBIGUOUS,
+            detail="Job lifecycle does not permit result recovery.",
+        )
+
+    owns_execution_paths = (
+        job.pending_result_path is not None and job.final_result_path is not None
+    )
+    owns_verified_final = (
+        job.lifecycle is FolderJobLifecycle.VERIFIED
+        and job.pending_result_path is None
+        and job.final_result_path is not None
+    )
+    pending = job.pending_result_path or expected_pending_result_path(job)
+    final = job.final_result_path or expected_final_result_path(job)
+    pending_exists = os.path.lexists(pending)
+    final_exists = os.path.lexists(final)
+    if pending_exists:
+        _require_real_directory(pending, label="Pending result")
+    if final_exists:
+        _require_real_directory(final, label="Final result")
+
+    if not owns_execution_paths and not owns_verified_final:
+        if pending_exists or final_exists:
+            return FolderJobRecoveryClassification(
+                state=FolderJobRecoveryState.AMBIGUOUS,
+                detail=(
+                    "A result root exists but ownership was not persisted before "
+                    "the write."
+                ),
+            )
+        if job.lifecycle is FolderJobLifecycle.EXECUTING:
+            return FolderJobRecoveryClassification(
+                state=FolderJobRecoveryState.READY_TO_EXECUTE,
+                detail="Neither exact result root exists; execution may begin.",
+            )
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.AMBIGUOUS,
+            detail="Terminal job owns no inspectable result root.",
+        )
+
+    if pending_exists and final_exists:
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.AMBIGUOUS,
+            detail=(
+                "Both exact owned result roots exist; no automatic recovery is safe."
+            ),
+        )
+    if final_exists:
+        if (
+            final_verification is not None
+            and final_verification.status is FolderReceiptVerificationStatus.VERIFIED
+            and final_verification.job_id == job.job_id
+            and final_verification.receipt_fingerprint is not None
+            and (
+                job.receipt_fingerprint is None
+                or final_verification.receipt_fingerprint == job.receipt_fingerprint
+            )
+        ):
+            return FolderJobRecoveryClassification(
+                state=FolderJobRecoveryState.VERIFIED_FINAL,
+                detail="Exact final result exists and independent verification passed.",
+            )
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.AMBIGUOUS,
+            detail=(
+                "Exact final result exists without matching successful verification."
+            ),
+        )
+    if pending_exists:
+        receipt_path = pending / RECEIPT_JSON_PATH
+        if not os.path.lexists(receipt_path):
+            return FolderJobRecoveryClassification(
+                state=FolderJobRecoveryState.INCOMPLETE_OWNED_PENDING,
+                detail="Exact owned pending result exists without a finalized receipt.",
+            )
+        _require_real_directory(
+            receipt_path.parent,
+            label="Pending receipt directory",
+        )
+        _require_real_file(receipt_path, label="Pending receipt")
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.RECEIPT_FINALIZED_PENDING,
+            detail="Exact owned pending result contains a finalized receipt.",
+        )
+    if job.lifecycle is FolderJobLifecycle.EXECUTING:
+        return FolderJobRecoveryClassification(
+            state=FolderJobRecoveryState.READY_TO_EXECUTE,
+            detail="Neither exact owned result root exists; execution may begin.",
+        )
+    return FolderJobRecoveryClassification(
+        state=FolderJobRecoveryState.AMBIGUOUS,
+        detail="Terminal job has no inspectable result root.",
+    )
 
 
 def compare_job_source(
@@ -1074,6 +1459,28 @@ def _require_immutable_identity(
     ):
         raise FolderJobRevisionError(
             "Mutation attempted to change immutable FolderRefactorJob identity."
+        )
+
+
+def _require_execution_authority_unchanged(
+    *,
+    current: FolderRefactorJob,
+    candidate: FolderRefactorJob,
+) -> None:
+    """Reserve execution pointers and proof fields for dedicated writer methods."""
+
+    dedicated_fields = (
+        "pending_result_path",
+        "final_result_path",
+        "change_ledger",
+        "receipt_fingerprint",
+    )
+    if any(
+        getattr(current, field_name) != getattr(candidate, field_name)
+        for field_name in dedicated_fields
+    ):
+        raise FolderJobRevisionError(
+            "Execution pointers and proof require dedicated job-writer methods."
         )
 
 
@@ -1658,6 +2065,121 @@ def _require_result_pointer(
         raise ValueError("Result pointers must be below the selected output parent.")
     if _paths_overlap(path, source_root) or _paths_overlap(path, job_path.parent):
         raise ValueError("Result pointers cannot overlap source or mutable job state.")
+
+
+def _require_exact_result_pointers(job: FolderRefactorJob) -> None:
+    pending = job.pending_result_path
+    final = job.final_result_path
+    if pending is not None and pending != expected_pending_result_path(job):
+        raise ValueError("Pending result pointer is not exactly owned by this job.")
+    if final is not None:
+        if job.accepted_plan is None:
+            raise ValueError("A final result pointer requires an accepted plan.")
+        if final != expected_final_result_path(job):
+            raise ValueError(
+                "Final result pointer differs from the accepted result name."
+            )
+
+
+def _require_change_ledger_binding(job: FolderRefactorJob) -> None:
+    ledger = job.change_ledger
+    plan = job.accepted_plan
+    if ledger is None:
+        return
+    if plan is None:
+        raise ValueError("A change ledger requires an accepted plan.")
+    if (
+        ledger.source_commitment != job.source_inventory.source_commitment
+        or ledger.request_fingerprint != request_fingerprint(job.user_request)
+        or ledger.evidence_fingerprint != plan.evidence_fingerprint
+        or ledger.accepted_plan_fingerprint != canonical_sha256(plan)
+    ):
+        raise ValueError("Change ledger is bound to another job transaction.")
+    expected_mappings = tuple(
+        (
+            mapping.file_id,
+            mapping.original_path,
+            mapping.target_path,
+            mapping.protected,
+        )
+        for mapping in plan.file_mappings
+    )
+    ledger_mappings = tuple(
+        (
+            entry.file_id,
+            entry.original_path,
+            entry.result_path,
+            entry.protected,
+        )
+        for entry in ledger.entries
+    )
+    if ledger_mappings != expected_mappings:
+        raise ValueError("Change ledger does not match the complete accepted map.")
+    source_by_path = {
+        source_file.relative_path: source_file
+        for source_file in job.source_inventory.files
+    }
+    if any(
+        entry.original_size != source_by_path[entry.original_path].size
+        or entry.original_sha256 != source_by_path[entry.original_path].sha256
+        for entry in ledger.entries
+    ):
+        raise ValueError(
+            "Change ledger original bytes differ from the source snapshot."
+        )
+
+
+def _require_finalization_binding(
+    job: FolderRefactorJob,
+    finalization: FolderJobFinalization,
+) -> None:
+    plan = job.accepted_plan
+    if plan is None:
+        raise FolderJobWriteError("Job finalization requires an accepted plan.")
+    expected = {
+        "job_id": job.job_id,
+        "source_commitment": job.source_inventory.source_commitment,
+        "request_fingerprint": request_fingerprint(job.user_request),
+        "evidence_fingerprint": plan.evidence_fingerprint,
+        "accepted_plan_fingerprint": canonical_sha256(plan),
+        "pending_result_path": job.pending_result_path,
+        "final_result_path": job.final_result_path,
+    }
+    if any(
+        getattr(finalization, field_name) != value
+        for field_name, value in expected.items()
+    ):
+        raise FolderJobWriteError("Finalization facts are bound to another job.")
+    if finalization.receipt_verification.job_id != job.job_id:
+        raise FolderJobWriteError("Receiver verification is bound to another job.")
+
+
+def _require_absent_result_root(path: Path, *, label: str) -> None:
+    _require_real_directory(path.parent, label="Output parent")
+    if os.path.lexists(path):
+        raise FolderJobWriteError(f"{label} path must be absent before execution.")
+
+
+def _require_real_directory(path: Path, *, label: str) -> None:
+    try:
+        metadata = path.lstat()
+    except OSError as exc:
+        raise FolderJobRecoveryError(f"{label} is missing or unreadable.") from exc
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        raise FolderJobRecoveryError(
+            f"{label} must be a real directory, not a link or special file."
+        )
+
+
+def _require_real_file(path: Path, *, label: str) -> None:
+    try:
+        metadata = path.lstat()
+    except OSError as exc:
+        raise FolderJobRecoveryError(f"{label} is missing or unreadable.") from exc
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+        raise FolderJobRecoveryError(
+            f"{label} must be a real file, not a link or special member."
+        )
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:

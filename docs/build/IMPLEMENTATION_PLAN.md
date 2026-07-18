@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole AI-first Implementation Plan
 
-Status: **ACTIVE — A3 IN PROGRESS**
+Status: **PAUSED — A3 COMPLETE; WAITING FOR CONNECTED CAPSULE AND MCP REPLAN**
 
-Phase: **A3 — PERSISTENT PROOF TRANSACTION**
+Phase: **WAITING_FOR_CONNECTED_CAPSULE_AND_MCP_REPLAN**
 
 Submission hold: **ACTIVE**
 
@@ -43,6 +43,12 @@ Devpost copy, submission package, thumbnail, and hero artifacts are:
 `STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER AI-FIRST FEATURE FREEZE`
 
 Final submission remains prohibited while the submission hold is active.
+
+The user's transition instruction of Saturday 18 July 2026 supersedes the
+goal's automatic continuation after A3. A1–A3 remain the completed AI-first
+implementation baseline. A4, the plugin gate, A5–A7, Connected Change Capsule
+work, MCP work, public promotion, and submission have not begun and are not
+authorized by this plan in its current paused state.
 
 ## 2. Activation and timing model
 
@@ -298,16 +304,37 @@ installation, or release hardening.
 - **Completion evidence:** restart transcript; canonical result; portable copy
   verifier output; ordinary BagIt and exact negative output; reconstruction
   report and complete snapshot equality; focused/full suites; coherent commit.
-- **Downstream consumer:** A4 final product and real provider evidence.
+- **Downstream consumer:** a user-authorized bounded in-place scaffold revision
+  for the Connected Change Capsule and shared MCP product surface.
 - **Owner:** primary integrator; bounded receipt/verifier adversarial reviewer
   permitted after implementation.
 - **Allowed cut:** extra verifier display formats and negative permutations only.
-- **Actual status:** `IN PROGRESS` from Saturday 18 July 2026 at 19:43:09 CEST.
-- **Actual verification:** verified A2 planner, reference, initial job,
-  transaction, and restart behavior are the active inputs. The new portable
-  artifact family, immutable receipt DAG, source-free verifier, controlled
-  negative, exact reconstruction, and terminal `verified` job authority have not
-  yet passed A3 acceptance.
+- **Actual status:** `COMPLETE` at the Saturday 18 July 2026 at 21:21:30 CEST
+  checkpoint; automatic continuation is paused by the user's transition
+  instruction.
+- **Actual verification:** `FolderRefactorJob` now owns strict versioned
+  persistence, expected-revision saves, process-held locking, restart,
+  source-staleness transitions, exact pending/final result recovery, and
+  immutable terminal authority. The canonical A3 result at
+  `.name-atlas/a3-checkpoint-20260718T210307+0200/pytest/test_complete_a3_transaction_v0/results/northstar-result`
+  contains the complete path-neutral artifact family, exact original rewritten
+  Markdown bytes, an acyclic immutable receipt, and a BagIt-backed result. The
+  source-free keyless verifier returned `VERIFIED` with receipt fingerprint
+  `52b4e3f5c15946d4c6940e585cdaec9264f11ab0dc4139afec2129716995f3ce`
+  for both the canonical result and an unrelated-location copy. The controlled
+  alteration remained BagIt-valid and returned `BLOCKED
+  artifact_digest_mismatch:accepted_plan`. Reconstruction recreated four files
+  and one empty directory with source and restored commitment
+  `306e142b7adbda90e0d54a1dc24e18a5aca456f03a9329474bb3ca7d5b542963`.
+  Restart, staleness, wrong-job recovery, terminal immutability, receipt replay
+  binding, source/result immutability, and downstream browser actions passed.
+  Desktop 1280×720 and narrow 390×844 Start/Working/Done inspection showed no
+  horizontal overflow; browser rerun verification and reconstruction both
+  passed. **129 final focused tests and 590 full-suite tests passed**; `uv lock
+  --check`, Ruff lint, Ruff format, and `git diff --check` passed. The bounded
+  independent correction re-audit returned `GO`. No provider call, budget-ledger
+  migration, A4 operation, plugin-gate decision, Connected Change Capsule work,
+  or MCP work occurred.
 
 ### A4 — Complete product experience and real GPT evidence
 
@@ -348,7 +375,7 @@ installation, or release hardening.
   permitted after facts exist.
 - **Allowed cut:** motion, metrics, filters, extra evidence presentation; not any
   required transaction or fixture.
-- **Actual status:** `NOT STARTED`.
+- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
 - **Actual verification:** `NOT RUN`.
 
 ### Plugin gate — one-time decision at A4
@@ -364,7 +391,7 @@ installation, or release hardening.
 - **Decision:** record exactly `GO` or `CUT_BY_PREAUTHORIZED_GATE` once.
 - **Evidence:** predicate-by-predicate current outputs, Europe/Oslo time, time
   calculation, estimate, and architecture inspection.
-- **Actual status:** `NOT REACHED`.
+- **Actual status:** `NOT REACHED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
 - **Actual verification:** `NOT RUN`.
 
 ### A5 — Optional plugin or core hardening; feature freeze
@@ -398,7 +425,7 @@ installation, or release hardening.
 - **Owner:** primary integrator. Plugin work may be delegated only after GO and
   must use the official plugin-creator instructions; integration remains primary.
 - **Allowed cut:** plugin itself; all other optional presentation items.
-- **Actual status:** `NOT STARTED`.
+- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
 - **Actual verification:** `NOT RUN`.
 
 ### A6 — Release candidate
@@ -432,7 +459,7 @@ installation, or release hardening.
   claims reviewers may work in parallel on non-mutating audits.
 - **Allowed cut:** no new features; only nonessential documentation beyond judge,
   provenance, license, and submission needs.
-- **Actual status:** `NOT STARTED`.
+- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
 - **Actual verification:** `NOT RUN`.
 
 ### A7 — Recording readiness
@@ -460,7 +487,7 @@ installation, or release hardening.
 - **Owner:** primary integrator, with user-only voice and `/feedback` deferred.
 - **Allowed cut:** none from required product; optional plugin must already be
   accepted or cut.
-- **Actual status:** `NOT STARTED`.
+- **Actual status:** `NOT STARTED — PAUSED PENDING USER-AUTHORIZED REPLAN`.
 - **Actual verification:** `NOT RUN`.
 
 ## 6. Protected final reserve and hold

@@ -5,11 +5,12 @@ from __future__ import annotations
 import builtins
 
 import pytest
+from pydantic import ValidationError
 
 from name_atlas.folder_refactor.planner_contracts import (
-    FolderEvidenceLedger,
     FolderPlannerTurnInput,
     ListInventoryPageCall,
+    PlannerEvidenceState,
     PlannerObservableTurn,
     ProviderBlockedResponse,
     ProviderToolResponse,
@@ -33,7 +34,7 @@ from name_atlas.folder_refactor.serialization import (
 REQUEST = "Prepare this folder for handoff."
 
 
-def _ledger() -> FolderEvidenceLedger:
+def _ledger() -> PlannerEvidenceState:
     initial_evidence = {
         "files": [
             {
@@ -46,7 +47,7 @@ def _ledger() -> FolderEvidenceLedger:
         ]
     }
     initial_bytes = len(canonical_json_bytes(initial_evidence))
-    unbound = FolderEvidenceLedger.model_construct(
+    unbound = PlannerEvidenceState.model_construct(
         source_commitment="a" * 64,
         request_fingerprint=request_fingerprint(REQUEST),
         initial_evidence=initial_evidence,
@@ -56,7 +57,7 @@ def _ledger() -> FolderEvidenceLedger:
         total_outbound_evidence_bytes=initial_bytes,
         evidence_fingerprint="d" * 64,
     )
-    return FolderEvidenceLedger(
+    return PlannerEvidenceState(
         source_commitment=unbound.source_commitment,
         request_fingerprint=unbound.request_fingerprint,
         initial_evidence=unbound.initial_evidence,
@@ -215,3 +216,43 @@ async def test_script_and_input_types_are_strict() -> None:
     assert provider.received_inputs == ()
     assert provider.consumed_count == 0
     assert provider.remaining_count == 1
+
+
+def test_recorded_replay_preserves_original_model_identity() -> None:
+    response = ProviderToolResponse(
+        provider_kind="recorded_replay",
+        returned_model="gpt-5.6-2026-07-01",
+        observable_output_items=({"type": "recorded-output"},),
+        tool_calls=(
+            ListInventoryPageCall(
+                call_id="recorded-inventory",
+                cursor=None,
+                page_size=25,
+            ),
+        ),
+    )
+
+    assert response.returned_model == "gpt-5.6-2026-07-01"
+    with pytest.raises(ValidationError, match="preserve.*model ID"):
+        ProviderToolResponse(
+            provider_kind="recorded_replay",
+            tool_calls=(
+                ListInventoryPageCall(
+                    call_id="missing-model",
+                    cursor=None,
+                    page_size=25,
+                ),
+            ),
+        )
+    with pytest.raises(ValidationError, match="deterministic response"):
+        ProviderToolResponse(
+            provider_kind="deterministic",
+            returned_model="gpt-5.6-2026-07-01",
+            tool_calls=(
+                ListInventoryPageCall(
+                    call_id="false-model",
+                    cursor=None,
+                    page_size=25,
+                ),
+            ),
+        )

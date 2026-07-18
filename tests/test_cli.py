@@ -9,6 +9,7 @@ from typing import Any
 
 from name_atlas import cli
 from name_atlas.cases import CaseLifecycle, MigrationCaseStore
+from name_atlas.folder_refactor import reconstruction
 from name_atlas.receiver_verifier import ReceiptVerificationStatus
 
 
@@ -122,7 +123,7 @@ def test_ai_first_development_run_is_a_supported_loopback_command(
     assert called["app"].title == "Reversible Name Atlas"
     assert called["app"].state.folder_run_service.job_path == job_path.resolve()
     captured = capsys.readouterr()
-    assert "Deterministic A2 planner — no API call" in captured.out
+    assert cli.PLANNER_LABEL in captured.out
     assert f"FolderRefactorJob: {job_path.resolve()}" in captured.out
 
 
@@ -367,6 +368,265 @@ def test_verify_receipt_reports_stable_blockers(
     )
 
 
+def test_folder_verify_receipt_dispatches_before_all_runtime_initialization(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    source = tmp_path / "optional-source"
+    source.mkdir()
+    called: dict[str, Any] = {}
+
+    def fail_runtime_initialization(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("Receipt verification initialized a runtime service.")
+
+    def fake_verify(
+        result_root: Path,
+        *,
+        source_root: Path | None = None,
+    ) -> SimpleNamespace:
+        called["result_root"] = result_root
+        called["source_root"] = source_root
+        return SimpleNamespace(
+            status=cli.FolderReceiptVerificationStatus.VERIFIED,
+            receipt_fingerprint="c" * 64,
+            failed_check_ids=(),
+        )
+
+    monkeypatch.setattr(cli, "verify_folder_receipt", fake_verify)
+    monkeypatch.setattr(cli, "verify_receipt", fail_runtime_initialization)
+    monkeypatch.setattr(
+        cli.LiveDecisionCardProvider,
+        "from_api_key",
+        fail_runtime_initialization,
+    )
+    monkeypatch.setattr(cli, "WorkflowSession", fail_runtime_initialization)
+    monkeypatch.setattr(cli, "JobBackedFolderRunService", fail_runtime_initialization)
+    monkeypatch.setattr(cli.uvicorn, "run", fail_runtime_initialization)
+
+    exit_code = cli.run(
+        ["verify-receipt", str(candidate), "--source", str(source)],
+        environ={"OPENAI_API_KEY": "must-not-be-read"},
+    )
+
+    assert exit_code == 0
+    assert called == {"result_root": candidate, "source_root": source}
+    captured = capsys.readouterr()
+    assert captured.out == f"VERIFIED {'c' * 64}\n"
+    assert captured.err == ""
+
+
+def test_folder_verify_receipt_reports_stable_blockers(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    monkeypatch.setattr(
+        cli,
+        "verify_folder_receipt",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=cli.FolderReceiptVerificationStatus.BLOCKED,
+            receipt_fingerprint="d" * 64,
+            failed_check_ids=("artifact_digest_mismatch:accepted_plan",),
+        ),
+    )
+
+    exit_code = cli.run(["verify-receipt", str(candidate)], environ={})
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == "BLOCKED artifact_digest_mismatch:accepted_plan\n"
+    assert captured.err == ""
+
+
+def test_folder_verify_receipt_candidate_error_returns_two(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+
+    def fail_candidate(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise cli.FolderReceiptCandidateError("candidate cannot be opened")
+
+    monkeypatch.setattr(cli, "verify_folder_receipt", fail_candidate)
+
+    exit_code = cli.run(["verify-receipt", str(candidate)], environ={})
+
+    assert exit_code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "Receipt input error: candidate cannot be opened\n"
+
+
+def test_damaged_folder_receipt_still_dispatches_by_portable_snapshot(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = tmp_path / "damaged-folder-result"
+    proof_root = candidate / "name-atlas"
+    proof_root.mkdir(parents=True)
+    (proof_root / "change_receipt.json").write_bytes(b"{")
+    (proof_root / "source_snapshot.json").write_text(
+        '{"schema_version":"folder-inventory.v1"}',
+        encoding="utf-8",
+    )
+
+    def fail_archive_dispatch(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("Damaged generic receipt reached archive verification.")
+
+    monkeypatch.setattr(cli, "verify_receipt", fail_archive_dispatch)
+    monkeypatch.setattr(
+        cli,
+        "verify_folder_receipt",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=cli.FolderReceiptVerificationStatus.BLOCKED,
+            receipt_fingerprint=None,
+            failed_check_ids=("receipt_schema_invalid",),
+        ),
+    )
+
+    exit_code = cli.run(["verify-receipt", str(candidate)], environ={})
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == "BLOCKED receipt_schema_invalid\n"
+    assert captured.err == ""
+
+
+def test_folder_restore_receipt_dispatches_before_all_runtime_initialization(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    destination = tmp_path / "recreated-original"
+    called: dict[str, Path] = {}
+
+    def fail_runtime_initialization(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("Reconstruction initialized a runtime service.")
+
+    def fake_restore(result_root: Path, restore_destination: Path) -> SimpleNamespace:
+        called["result_root"] = result_root
+        called["destination"] = restore_destination
+        return SimpleNamespace(
+            receipt_fingerprint="e" * 64,
+            destination=restore_destination.resolve(),
+        )
+
+    monkeypatch.setattr(cli, "_restore_folder_receipt", fake_restore)
+    monkeypatch.setattr(cli, "restore_receipt", fail_runtime_initialization)
+    monkeypatch.setattr(
+        cli.LiveDecisionCardProvider,
+        "from_api_key",
+        fail_runtime_initialization,
+    )
+    monkeypatch.setattr(cli, "WorkflowSession", fail_runtime_initialization)
+    monkeypatch.setattr(cli, "JobBackedFolderRunService", fail_runtime_initialization)
+    monkeypatch.setattr(cli.uvicorn, "run", fail_runtime_initialization)
+
+    exit_code = cli.run(
+        ["restore-receipt", str(candidate), str(destination)],
+        environ={"OPENAI_API_KEY": "must-not-be-read"},
+    )
+
+    assert exit_code == 0
+    assert called == {"result_root": candidate, "destination": destination}
+    captured = capsys.readouterr()
+    assert captured.out == f"RESTORED {'e' * 64} {destination.resolve()}\n"
+    assert captured.err == ""
+
+
+def test_folder_restore_receipt_exposes_bounded_failure_code(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    destination = tmp_path / "recreated-original"
+
+    def fail_restore(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise cli._FolderRestoreBlocked(
+            "receipt_verification_blocked",
+            ("artifact_digest_mismatch:accepted_plan",),
+        )
+
+    monkeypatch.setattr(cli, "_restore_folder_receipt", fail_restore)
+
+    exit_code = cli.run(
+        ["restore-receipt", str(candidate), str(destination)],
+        environ={},
+    )
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == (
+        "RESTORE BLOCKED receipt_verification_blocked "
+        "artifact_digest_mismatch:accepted_plan\n"
+    )
+
+
+def test_folder_restore_receipt_candidate_error_returns_two(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    destination = tmp_path / "recreated-original"
+
+    def fail_candidate(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise cli.FolderReceiptCandidateError("candidate cannot be opened")
+
+    monkeypatch.setattr(cli, "_restore_folder_receipt", fail_candidate)
+
+    exit_code = cli.run(
+        ["restore-receipt", str(candidate), str(destination)],
+        environ={},
+    )
+
+    assert exit_code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "Restore input error: candidate cannot be opened\n"
+
+
+def test_folder_restore_adapter_preserves_reconstruction_failure_code(
+    monkeypatch: Any,
+    tmp_path: Path,
+    capsys: Any,
+) -> None:
+    candidate = _receipt_schema_candidate(tmp_path, "folder-change-receipt.v1")
+    destination = tmp_path / "recreated-original"
+
+    def fail_reparse(_result_root: Path, _destination: Path) -> None:
+        raise reconstruction.FolderReconstructionError(
+            "receipt_reparse_failed",
+            "portable authorities changed",
+        )
+
+    monkeypatch.setattr(reconstruction, "restore_folder_receipt", fail_reparse)
+
+    exit_code = cli.run(
+        ["restore-receipt", str(candidate), str(destination)],
+        environ={},
+    )
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "RESTORE BLOCKED receipt_reparse_failed\n"
+
+
 def test_verify_receipt_symlink_loop_is_a_usage_error(
     tmp_path: Path,
     capsys: Any,
@@ -558,3 +818,18 @@ def test_replay_compatibility_failure_releases_case_writer(
     assert exit_code == 2
     assert state == {"closed": True, "server_started": False}
     assert "Replay startup blocked: record mismatch" in capsys.readouterr().err
+
+
+def _receipt_schema_candidate(tmp_path: Path, schema_version: str) -> Path:
+    candidate = tmp_path / f"candidate-{schema_version}"
+    receipt = candidate / "name-atlas" / "change_receipt.json"
+    receipt.parent.mkdir(parents=True)
+    receipt.write_text(
+        '{"receipt":{"schema_version":"'
+        f"{schema_version}"
+        '"},"receipt_fingerprint":"'
+        f"{'0' * 64}"
+        '"}',
+        encoding="utf-8",
+    )
+    return candidate

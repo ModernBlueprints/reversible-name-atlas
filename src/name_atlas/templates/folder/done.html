@@ -4,7 +4,7 @@
   <section class="folder-panel folder-panel--done" aria-labelledby="done-title">
     <div class="folder-verdict">
       <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
-      <span><small>Deterministic A2 proof</small><strong>VERIFIED</strong></span>
+      <span><small>Independent receipt verification</small><strong>VERIFIED</strong></span>
     </div>
     <h1 id="done-title">Your separate result is ready</h1>
     <p class="folder-lede">Name Atlas created the separate copy, preserved supported links, and checked the facts it can prove.</p>
@@ -17,6 +17,7 @@
       <div><dt>Original folder</dt><dd>Unchanged</dd></div>
       <div><dt>Files removed or overwritten</dt><dd>None</dd></div>
       <div><dt>Result proof</dt><dd>Deterministic checks passed</dd></div>
+      <div><dt>Independent verification</dt><dd>{% if state.result.independent_verification_passed %}Passed without GPT or an API key{% else %}Not available for this result{% endif %}</dd></div>
     </dl>
 
     <section class="folder-result-path" aria-labelledby="result-path-title">
@@ -42,14 +43,33 @@
           </dl>
         {% endif %}
       </details>
-      <div>
-        <button class="bp6-button" type="button" disabled aria-describedby="verify-later">Verify again</button>
-        <small id="verify-later">Independent keyless verification is added in A3.</small>
-      </div>
-      <div>
-        <button class="bp6-button" type="button" disabled aria-describedby="restore-later">Recreate original layout</button>
-        <small id="restore-later">Exact reconstruction is added in A3.</small>
-      </div>
+      {% if state.result.independent_verification_passed %}
+        <form method="post" action="/verify-again">
+          <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
+          <strong>Check the result again</strong>
+          <small>Runs the independent verifier without GPT, an API key, or the original folder.</small>
+          <button class="bp6-button" type="submit">Verify again</button>
+        </form>
+      {% else %}
+        <div>
+          <button class="bp6-button" type="button" disabled aria-describedby="verify-unavailable">Verify again</button>
+          <small id="verify-unavailable">Independent verification is unavailable for this result.</small>
+        </div>
+      {% endif %}
+      {% if state.result.reconstruction_available %}
+        <form method="post" action="/recreate-original">
+          <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
+          <label for="restore-destination"><strong>Recreate original layout</strong></label>
+          <small>Creates another folder matching the original paths and bytes. It does not change the original folder or the organized result.</small>
+          <input class="bp6-input" id="restore-destination" name="restore_destination" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.result.result_root }}-original-layout">
+          <button class="bp6-button" type="submit">Recreate original layout</button>
+        </form>
+      {% else %}
+        <div>
+          <button class="bp6-button" type="button" disabled aria-describedby="restore-unavailable">Recreate original layout</button>
+          <small id="restore-unavailable">Exact reconstruction is unavailable for this result.</small>
+        </div>
+      {% endif %}
     </div>
   </section>
 {% endblock %}

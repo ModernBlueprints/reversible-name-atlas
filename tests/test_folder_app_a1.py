@@ -113,7 +113,7 @@ async def test_start_is_plain_exact_and_truthful(tmp_path: Path) -> None:
     assert "Standard OpenAI API data-retention policies may still apply." in (
         response.text
     )
-    assert "Deterministic A2 planner — no API call" in response.text
+    assert "Deterministic A3 planner — no API call" in response.text
     assert str(tmp_path / "preselected-source") in response.text
     assert str(tmp_path / "preselected-results") in response.text
     assert "upload" not in response.text.lower()
@@ -169,7 +169,7 @@ async def test_server_owned_start_working_done_transaction(tmp_path: Path) -> No
         "Verifying result",
     ):
         assert stage in working.text
-    assert "GPT-5.6 is not called in this A2 development transaction." in working.text
+    assert "GPT-5.6 is not called in this A3 development transaction." in working.text
     assert status.json()["lifecycle"] == "planning"
     assert duplicate.status_code == 303
     assert duplicate.headers["location"] == "/working"

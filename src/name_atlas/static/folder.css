@@ -441,6 +441,16 @@ body.folder-app {
   align-content: start;
 }
 
+.folder-actions form .bp6-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.folder-actions form .bp6-button {
+  justify-self: start;
+  margin-top: 0.25rem;
+}
+
 .folder-technical-facts div {
   display: grid;
   gap: 0.25rem;

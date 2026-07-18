@@ -25,9 +25,9 @@ from name_atlas.folder_refactor.planner_contracts import (
     MAX_EVIDENCE_RESULT_BYTES,
     MAX_TOTAL_OUTBOUND_EVIDENCE_BYTES,
     EvidenceCallRecord,
-    FolderEvidenceLedger,
     InspectMarkdownLinksCall,
     ListInventoryPageCall,
+    PlannerEvidenceState,
     PlannerInventoryFile,
     ReadTextExcerptCall,
     evidence_ledger_payload,
@@ -74,7 +74,7 @@ class EvidenceService(Protocol):
 def create_initial_evidence_ledger(
     inventory: FolderInventory,
     request: str,
-) -> FolderEvidenceLedger:
+) -> PlannerEvidenceState:
     """Create the exact initial path-and-metadata evidence envelope."""
 
     request_id = request_fingerprint(request)
@@ -103,23 +103,23 @@ def create_initial_evidence_ledger(
         "initial_evidence_bytes": initial_bytes,
         "records": (),
         "request_fingerprint": request_id,
-        "schema_version": "folder-evidence-ledger.v1",
+        "schema_version": "folder-planner-evidence-state.v1",
         "source_commitment": inventory.source_commitment,
         "total_outbound_evidence_bytes": initial_bytes,
     }
-    return FolderEvidenceLedger(
+    return PlannerEvidenceState(
         **payload,
         evidence_fingerprint=canonical_sha256(payload),
     )
 
 
 def append_evidence_execution(
-    ledger: FolderEvidenceLedger,
+    ledger: PlannerEvidenceState,
     *,
     response_turn: int,
     call: ListInventoryPageCall | ReadTextExcerptCall | InspectMarkdownLinksCall,
     execution: EvidenceExecution,
-) -> FolderEvidenceLedger:
+) -> PlannerEvidenceState:
     """Number, bind, and append one counted evidence invocation."""
 
     arguments = _call_arguments(call)
@@ -184,7 +184,7 @@ def append_evidence_execution(
         "source_commitment": ledger.source_commitment,
         "total_outbound_evidence_bytes": total,
     }
-    candidate = FolderEvidenceLedger(
+    candidate = PlannerEvidenceState(
         aggregate_result_bytes=aggregate,
         initial_evidence=ledger.initial_evidence,
         initial_evidence_bytes=ledger.initial_evidence_bytes,

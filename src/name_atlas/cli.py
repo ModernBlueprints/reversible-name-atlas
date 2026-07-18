@@ -26,6 +26,28 @@ from name_atlas.folder_app import (
 )
 from name_atlas.folder_job_service import JobBackedFolderRunService
 from name_atlas.folder_refactor.job import default_job_path
+from name_atlas.folder_refactor.portable_artifacts import (
+    CHANGE_RECEIPT_PATH as FOLDER_CHANGE_RECEIPT_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    SOURCE_SNAPSHOT_PATH as FOLDER_SOURCE_SNAPSHOT_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    FolderPortableArtifactError,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    read_regular_bytes as read_folder_artifact_bytes,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    strict_json_object as strict_folder_json_object,
+)
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderReceiptVerificationStatus,
+)
+from name_atlas.folder_refactor.receipt_verifier import (
+    FolderReceiptCandidateError,
+    verify_folder_receipt,
+)
 from name_atlas.package_import import PackageImportError
 from name_atlas.receiver_verifier import (
     ReceiptCandidateError,
@@ -59,6 +81,32 @@ OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "stages"
 FOLDER_OUTPUT_ROOT = PROJECT_ROOT / ".name-atlas" / "folder-results"
 BUDGET_LEDGER_PATH = PROJECT_ROOT / ".name-atlas" / "api_budget.json"
 CASE_DIRECTORY = PROJECT_ROOT / ".name-atlas" / "cases"
+_FOLDER_RECONSTRUCTION_CODES = frozenset(
+    {
+        "destination_exists",
+        "destination_must_be_absolute",
+        "destination_must_share_result_parent",
+        "destination_overlaps_result",
+        "destination_parent_invalid",
+        "destination_type_invalid",
+        "pending_cleanup_failed",
+        "pending_destination_conflict",
+        "promotion_failed",
+        "receipt_verification_blocked",
+        "receipt_reparse_failed",
+        "reconstructed_inventory_mismatch",
+        "reconstruction_copy_failed",
+    }
+)
+
+
+class _FolderRestoreBlocked(RuntimeError):
+    """Stable CLI projection of one generic-folder reconstruction blocker."""
+
+    def __init__(self, code: str, failed_check_ids: tuple[str, ...] = ()) -> None:
+        super().__init__(code)
+        self.code = code
+        self.failed_check_ids = failed_check_ids
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -170,11 +218,23 @@ def run(
 
     args = build_parser().parse_args(argv)
     if args.command == "verify-receipt":
+        received_bag = args.received_bag.expanduser()
+        supplied_source = args.source.expanduser() if args.source is not None else None
+        if _is_folder_receipt(received_bag):
+            try:
+                folder_result = verify_folder_receipt(
+                    received_bag,
+                    source_root=supplied_source,
+                )
+            except FolderReceiptCandidateError as exc:
+                print(f"Receipt input error: {exc}", file=sys.stderr)
+                return 2
+            if folder_result.status is FolderReceiptVerificationStatus.VERIFIED:
+                print(f"VERIFIED {folder_result.receipt_fingerprint}")
+                return 0
+            print(f"BLOCKED {' '.join(folder_result.failed_check_ids)}")
+            return 1
         try:
-            received_bag = args.received_bag.expanduser()
-            supplied_source = (
-                args.source.expanduser() if args.source is not None else None
-            )
             result = verify_receipt(
                 received_bag,
                 source_root=supplied_source,
@@ -189,10 +249,30 @@ def run(
         return 1
 
     if args.command == "restore-receipt":
+        received_bag = args.received_bag.expanduser()
+        restore_destination = args.restore_destination.expanduser()
+        if _is_folder_receipt(received_bag):
+            try:
+                folder_report = _restore_folder_receipt(
+                    received_bag,
+                    restore_destination,
+                )
+            except FolderReceiptCandidateError as exc:
+                print(f"Restore input error: {exc}", file=sys.stderr)
+                return 2
+            except _FolderRestoreBlocked as exc:
+                details = " ".join((exc.code, *exc.failed_check_ids))
+                print(f"RESTORE BLOCKED {details}", file=sys.stderr)
+                return 1
+            print(
+                "RESTORED "
+                f"{folder_report.receipt_fingerprint} {folder_report.destination}"
+            )
+            return 0
         try:
             report = restore_receipt(
-                args.received_bag.expanduser(),
-                args.restore_destination.expanduser(),
+                received_bag,
+                restore_destination,
             )
         except ReceiptCandidateError as exc:
             print(f"Restore input error: {exc}", file=sys.stderr)
@@ -325,6 +405,56 @@ def run(
         return 0
     finally:
         workflow.close()
+
+
+def _is_folder_receipt(candidate: Path) -> bool:
+    """Detect the generic receipt schema without initializing runtime services."""
+
+    try:
+        raw_receipt = read_folder_artifact_bytes(
+            candidate,
+            FOLDER_CHANGE_RECEIPT_PATH,
+        )
+        envelope = strict_folder_json_object(raw_receipt)
+    except FolderPortableArtifactError:
+        envelope = {}
+    receipt = envelope.get("receipt")
+    receipt_matches = (
+        isinstance(receipt, dict)
+        and receipt.get("schema_version") == "folder-change-receipt.v1"
+    )
+    if receipt_matches:
+        return True
+    try:
+        snapshot_bytes = read_folder_artifact_bytes(
+            candidate,
+            FOLDER_SOURCE_SNAPSHOT_PATH,
+        )
+        snapshot = strict_folder_json_object(snapshot_bytes)
+    except FolderPortableArtifactError:
+        return False
+    return snapshot.get("schema_version") == "folder-inventory.v1"
+
+
+def _restore_folder_receipt(result_root: Path, destination: Path) -> object:
+    """Call generic reconstruction and retain only its bounded failure surface."""
+
+    from name_atlas.folder_refactor.reconstruction import (
+        FolderReconstructionError,
+        restore_folder_receipt,
+    )
+
+    try:
+        return restore_folder_receipt(result_root, destination)
+    except FolderReconstructionError as exc:
+        raw_code = exc.code
+        code = raw_code.value if hasattr(raw_code, "value") else str(raw_code)
+        if code not in _FOLDER_RECONSTRUCTION_CODES:
+            raise RuntimeError(
+                "Generic reconstruction returned an unknown failure code."
+            ) from exc
+        failed_check_ids = tuple(exc.failed_check_ids)
+        raise _FolderRestoreBlocked(code, failed_check_ids) from exc
 
 
 def _run_development_folder_app(args: argparse.Namespace) -> int:

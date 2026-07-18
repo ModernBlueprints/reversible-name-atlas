@@ -49,6 +49,45 @@ from name_atlas.folder_refactor.planner import (
     FolderPlanner,
     initial_evidence_fingerprint,
 )
+from name_atlas.folder_refactor.portable_artifacts import (
+    CHANGE_LEDGER_PATH as PORTABLE_CHANGE_LEDGER_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    CHANGE_RECEIPT_PATH as PORTABLE_CHANGE_RECEIPT_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    EVIDENCE_LEDGER_PATH as PORTABLE_EVIDENCE_LEDGER_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    FORWARD_PATH_MAP_PATH as PORTABLE_FORWARD_PATH_MAP_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    PROOF_AND_RESTORE_HTML_PATH as PORTABLE_PROOF_HTML_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    REVERSE_PATH_MAP_PATH as PORTABLE_REVERSE_PATH_MAP_PATH,
+)
+from name_atlas.folder_refactor.portable_artifacts import (
+    artifact_commitments,
+    contains_exact_local_path,
+    staged_data_members,
+)
+from name_atlas.folder_refactor.receipt_builder import (
+    ObservedResultFile,
+    build_folder_path_rows_and_change_ledger,
+    build_folder_receipt,
+    build_folder_user_request_artifact,
+    compute_folder_staged_data_commitment,
+    render_folder_proof_html,
+    render_forward_path_map_csv,
+    render_reverse_path_map_csv,
+)
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderChangeLedger,
+    FolderEvidenceLedger,
+    FolderReceiptVerification,
+    FolderReceiptVerificationStatus,
+)
 from name_atlas.folder_refactor.serialization import (
     canonical_json_bytes,
     canonical_sha256,
@@ -65,6 +104,12 @@ ACCEPTED_PLAN_PATH = Path("name-atlas/accepted_plan.json")
 VERIFICATION_REPORT_PATH = Path("name-atlas/verification_report.json")
 REFERENCE_GRAPH_PATH = Path("name-atlas/reference_graph.json")
 ORIGINAL_CONTENT_ROOT = Path("name-atlas/original-content")
+EVIDENCE_LEDGER_PATH = Path(PORTABLE_EVIDENCE_LEDGER_PATH)
+FORWARD_PATH_MAP_PATH = Path(PORTABLE_FORWARD_PATH_MAP_PATH)
+REVERSE_PATH_MAP_PATH = Path(PORTABLE_REVERSE_PATH_MAP_PATH)
+CHANGE_LEDGER_PATH = Path(PORTABLE_CHANGE_LEDGER_PATH)
+CHANGE_RECEIPT_PATH = Path(PORTABLE_CHANGE_RECEIPT_PATH)
+PROOF_AND_RESTORE_HTML_PATH = Path(PORTABLE_PROOF_HTML_PATH)
 MINIMUM_FREE_MARGIN_BYTES = 256 * 1024 * 1024
 
 
@@ -99,6 +144,10 @@ class FolderBagWriter(Protocol):
         """Refresh the tag manifest after final report replacement."""
         ...
 
+    def finalize_tagmanifest(self, pending_root: Path) -> BagItWriteResult:
+        """Bind the complete immutable tag-file set after receipt creation."""
+        ...
+
 
 class _Digest(Protocol):
     """Minimal hashlib-compatible streaming digest boundary."""
@@ -117,6 +166,27 @@ class FolderRunResult:
     accepted_plan: FolderAcceptedPlan
     report: FolderVerificationReport
     reference_graph: FolderReferenceGraph
+    change_ledger: FolderChangeLedger | None = None
+    receipt_fingerprint: str | None = None
+    receiver_verification: FolderReceiptVerification | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class FolderReceiptContext:
+    """Local execution identity plus portable planner evidence for A3 proof."""
+
+    job_id: str
+    evidence_ledger: FolderEvidenceLedger
+    pending_root: Path
+    final_root: Path
+
+    def __post_init__(self) -> None:
+        if self.evidence_ledger.job_id != self.job_id:
+            raise ValueError("Receipt evidence belongs to another job.")
+        if not self.pending_root.is_absolute() or not self.final_root.is_absolute():
+            raise ValueError("Receipt transaction paths must be absolute.")
+        if self.pending_root == self.final_root:
+            raise ValueError("Pending and final result paths must differ.")
 
 
 async def run_folder_refactor(
@@ -316,6 +386,7 @@ def execute_accepted_folder_plan(
     bag_writer: FolderBagWriter,
     package_validator: PackageValidator,
     progress_callback: FolderTransactionProgress | None = None,
+    receipt_context: FolderReceiptContext | None = None,
 ) -> FolderRunResult:
     """Create one verified copy from an already mechanically accepted plan."""
 
@@ -356,12 +427,39 @@ def execute_accepted_folder_plan(
         source_bytes=initial_scan.inventory.total_bytes,
         rewritten_markdown_original_bytes=rewritten_original_bytes,
     )
-    final_root = output_parent / accepted_plan.result_folder_name
+    expected_final_root = output_parent / accepted_plan.result_folder_name
+    if receipt_context is None:
+        final_root = expected_final_root
+        pending_root = output_parent / (
+            f".{accepted_plan.result_folder_name}.pending-{uuid.uuid4().hex}"
+        )
+    else:
+        final_root = receipt_context.final_root
+        pending_root = receipt_context.pending_root
+        if final_root != expected_final_root:
+            raise FolderTransactionError(
+                "Persisted final result path does not match the accepted plan."
+            )
+        if pending_root.parent != output_parent or pending_root.name in {"", ".", ".."}:
+            raise FolderTransactionError(
+                "Persisted pending result is not a direct output-parent child."
+            )
+        if receipt_context.evidence_ledger.source_commitment != (
+            initial_scan.inventory.source_commitment
+        ) or receipt_context.evidence_ledger.request_fingerprint != (
+            accepted_plan.request_fingerprint
+        ):
+            raise FolderTransactionError(
+                "Portable planner evidence does not match the source and request."
+            )
+        if receipt_context.evidence_ledger.accepted_plan_fingerprint != (
+            canonical_sha256(accepted_plan)
+        ):
+            raise FolderTransactionError(
+                "Portable planner evidence does not match the accepted plan."
+            )
     if os.path.lexists(final_root):
         raise FolderTransactionError(f"Final result already exists: {final_root}")
-    pending_root = output_parent / (
-        f".{accepted_plan.result_folder_name}.pending-{uuid.uuid4().hex}"
-    )
     if os.path.lexists(pending_root):
         raise FolderTransactionError(f"Pending result already exists: {pending_root}")
 
@@ -376,6 +474,10 @@ def execute_accepted_folder_plan(
             for reference in derived_graph.references
             if reference.source_file_id == source_file_id
         )
+    receipt_finalized = False
+    change_ledger: FolderChangeLedger | None = None
+    receipt_fingerprint: str | None = None
+    receiver_verification: FolderReceiptVerification | None = None
     try:
         _report_transaction_progress(
             progress_callback,
@@ -431,18 +533,47 @@ def execute_accepted_folder_plan(
                 FolderTransactionPhase.UPDATING_SUPPORTED_LINKS,
             )
 
-        _write_portable_json(SOURCE_SNAPSHOT_PATH, initial_scan.inventory, pending_root)
-        _write_portable_json(
-            USER_REQUEST_PATH,
-            {
+        request_artifact = (
+            build_folder_user_request_artifact(request)
+            if receipt_context is not None
+            else {
                 "schema_version": "folder-user-request.v1",
                 "request": request,
                 "request_fingerprint": request_fingerprint(request),
-            },
+            }
+        )
+        _write_portable_json(SOURCE_SNAPSHOT_PATH, initial_scan.inventory, pending_root)
+        _write_portable_json(
+            USER_REQUEST_PATH,
+            request_artifact,
             pending_root,
         )
         _write_portable_json(ACCEPTED_PLAN_PATH, accepted_plan, pending_root)
         _write_portable_json(REFERENCE_GRAPH_PATH, derived_graph, pending_root)
+        if receipt_context is not None:
+            if contains_exact_local_path(
+                (
+                    initial_scan.inventory,
+                    request_artifact,
+                    receipt_context.evidence_ledger,
+                    accepted_plan,
+                    derived_graph,
+                ),
+                sender_local_paths={
+                    str(initial_scan.source_root),
+                    str(output_parent),
+                    str(pending_root),
+                    str(final_root),
+                },
+            ):
+                raise FolderTransactionError(
+                    "Portable proof authority contains a sender-local path."
+                )
+            _write_portable_json(
+                EVIDENCE_LEDGER_PATH,
+                receipt_context.evidence_ledger,
+                pending_root,
+            )
 
         _report_transaction_progress(
             progress_callback,
@@ -457,11 +588,44 @@ def execute_accepted_folder_plan(
         )
         staged_source_scan = scan_folder(initial_scan.source_root)
         _require_same_source(initial_scan, staged_source_scan, "during staging")
-        staged_data_commitment = canonical_sha256(copied_records)
+        staged_members = staged_data_members(pending_root)
+        staged_data_commitment = compute_folder_staged_data_commitment(staged_members)
+        if staged_data_commitment != canonical_sha256(copied_records):
+            raise FolderTransactionError(
+                "Independent staged-data enumeration differs from transaction proof."
+            )
         path_change_count = sum(
             mapping.original_path != mapping.target_path
             for mapping in accepted_plan.file_mappings
         )
+        path_rows = ()
+        if receipt_context is not None:
+            copied_by_path = {str(record["path"]): record for record in copied_records}
+            observed_result_files = {
+                mapping.file_id: ObservedResultFile(
+                    relative_path=mapping.target_path,
+                    size=int(copied_by_path[mapping.target_path]["size"]),
+                    sha256=str(copied_by_path[mapping.target_path]["sha256"]),
+                )
+                for mapping in accepted_plan.file_mappings
+            }
+            path_rows, change_ledger = build_folder_path_rows_and_change_ledger(
+                inventory=initial_scan.inventory,
+                accepted_plan=accepted_plan,
+                reference_graph=derived_graph,
+                observed_result_files=observed_result_files,
+            )
+            _write_portable_bytes(
+                FORWARD_PATH_MAP_PATH,
+                render_forward_path_map_csv(path_rows),
+                pending_root,
+            )
+            _write_portable_bytes(
+                REVERSE_PATH_MAP_PATH,
+                render_reverse_path_map_csv(path_rows),
+                pending_root,
+            )
+            _write_portable_json(CHANGE_LEDGER_PATH, change_ledger, pending_root)
         provisional_report = _build_report(
             initial_scan=initial_scan,
             accepted_plan=accepted_plan,
@@ -494,13 +658,69 @@ def execute_accepted_folder_plan(
             reference_graph=derived_graph,
         )
         _replace_portable_json(VERIFICATION_REPORT_PATH, report, pending_root)
-        bag_writer.refresh_tagmanifest(pending_root)
-        final_package_result = package_validator.validate(pending_root)
+        if receipt_context is None:
+            bag_writer.refresh_tagmanifest(pending_root)
+            final_package_result = package_validator.validate(pending_root)
+        else:
+            assert change_ledger is not None
+            original_content_ids = tuple(
+                sorted(
+                    entry.file_id
+                    for entry in change_ledger.entries
+                    if entry.markdown_rewritten
+                )
+            )
+            commitments = artifact_commitments(
+                pending_root,
+                original_content_file_ids=original_content_ids,
+            )
+            envelope = build_folder_receipt(
+                job_id=receipt_context.job_id,
+                inventory=initial_scan.inventory,
+                user_request=request_artifact,
+                evidence_ledger=receipt_context.evidence_ledger,
+                accepted_plan=accepted_plan,
+                reference_graph=derived_graph,
+                path_rows=path_rows,
+                change_ledger=change_ledger,
+                verification_report=report,
+                artifact_commitments=commitments,
+                staged_data_members=staged_members,
+                staged_data_commitment=staged_data_commitment,
+                producer_bagit_validation=initial_package_result,
+            )
+            _write_portable_json(CHANGE_RECEIPT_PATH, envelope, pending_root)
+            receipt_finalized = True
+            _write_portable_bytes(
+                PROOF_AND_RESTORE_HTML_PATH,
+                render_folder_proof_html(envelope, change_ledger, report),
+                pending_root,
+            )
+            bag_writer.finalize_tagmanifest(pending_root)
+            final_package_result = package_validator.validate(pending_root)
         if not final_package_result.valid:
             raise FolderTransactionError(
                 "Final BagIt validation blocked the result: "
                 + "; ".join(final_package_result.messages)
             )
+
+        if receipt_context is not None:
+            from name_atlas.folder_refactor.receipt_verifier import (
+                verify_folder_receipt,
+            )
+
+            receiver_verification = verify_folder_receipt(pending_root)
+            if (
+                receiver_verification.status
+                is not FolderReceiptVerificationStatus.VERIFIED
+                or receiver_verification.receipt_fingerprint
+                != envelope.receipt_fingerprint
+            ):
+                failures = ", ".join(receiver_verification.failed_check_ids)
+                raise FolderTransactionError(
+                    f"Independent receiver verification blocked the result: {failures}"
+                )
+            receipt_fingerprint = envelope.receipt_fingerprint
 
         final_source_scan = scan_folder(initial_scan.source_root)
         _require_same_source(initial_scan, final_source_scan, "before promotion")
@@ -511,10 +731,13 @@ def execute_accepted_folder_plan(
             accepted_plan=accepted_plan,
             report=report,
             reference_graph=derived_graph,
+            change_ledger=change_ledger,
+            receipt_fingerprint=receipt_fingerprint,
+            receiver_verification=receiver_verification,
         )
     except Exception as exc:
-        if pending_root.exists():
-            shutil.rmtree(pending_root)
+        if not receipt_finalized:
+            _remove_regenerable_pending(pending_root)
         if isinstance(exc, FolderTransactionError):
             raise
         raise FolderTransactionError(f"Copy transaction blocked: {exc}") from exc
@@ -1271,6 +1494,28 @@ def _write_portable_json(relative_path: Path, value: object, root: Path) -> None
         ) from exc
 
 
+def _write_portable_bytes(relative_path: Path, payload: bytes, root: Path) -> None:
+    """Exclusively write one exact non-JSON portable artifact."""
+
+    path = root / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(path, flags, 0o600)
+        _write_all(descriptor, payload)
+        os.fsync(descriptor)
+    except OSError as exc:
+        raise FolderTransactionError(
+            f"Portable proof artifact cannot be written: {relative_path.as_posix()}"
+        ) from exc
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
 def _replace_portable_json(relative_path: Path, value: object, root: Path) -> None:
     path = root / relative_path
     temporary = path.with_name(f".{path.name}.tmp-{uuid.uuid4().hex}")
@@ -1313,6 +1558,20 @@ def _fsync_directory(path: Path) -> None:
         pass
     finally:
         os.close(descriptor)
+
+
+def _remove_regenerable_pending(pending_root: Path) -> None:
+    """Remove only a transaction-owned real pending directory before receipt."""
+
+    if not os.path.lexists(pending_root):
+        return
+    try:
+        metadata = pending_root.lstat()
+    except OSError:
+        return
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        return
+    shutil.rmtree(pending_root)
 
 
 def _contains(parent: Path, child: Path) -> bool:

@@ -139,11 +139,15 @@ class ProviderBlockedResponse(StrictFrozenModel):
 
     @model_validator(mode="after")
     def require_truthful_model_origin(self) -> Self:
-        if self.provider_kind == "live" and self.returned_model is None:
-            raise ValueError("A live blocker must record its returned model ID.")
-        if self.provider_kind != "live" and self.returned_model is not None:
+        if self.provider_kind in {"live", "recorded_replay"} and (
+            self.returned_model is None
+        ):
             raise ValueError(
-                "Only a live blocker may claim a returned provider model ID."
+                "A provider-observed blocker must record its returned model ID."
+            )
+        if self.provider_kind == "deterministic" and self.returned_model is not None:
+            raise ValueError(
+                "A deterministic blocker cannot claim a returned model ID."
             )
         return self
 
@@ -192,10 +196,12 @@ class EvidenceCallRecord(StrictFrozenModel):
         return self
 
 
-class FolderEvidenceLedger(StrictFrozenModel):
-    """Complete path-neutral evidence authority for one planner session."""
+class PlannerEvidenceState(StrictFrozenModel):
+    """Internal evidence-call state embedded in the restart-safe planner cursor."""
 
-    schema_version: Literal["folder-evidence-ledger.v1"] = "folder-evidence-ledger.v1"
+    schema_version: Literal["folder-planner-evidence-state.v1"] = (
+        "folder-planner-evidence-state.v1"
+    )
     source_commitment: str = Field(pattern=SHA256_PATTERN)
     request_fingerprint: str = Field(pattern=SHA256_PATTERN)
     initial_evidence: JsonValue
@@ -365,7 +371,7 @@ class FolderPlannerProgress(StrictFrozenModel):
         le=MAX_TOTAL_OUTBOUND_EVIDENCE_BYTES,
     )
     plan_submissions: int = Field(ge=0, le=MAX_PLAN_SUBMISSIONS)
-    evidence_ledger: FolderEvidenceLedger
+    evidence_ledger: PlannerEvidenceState
     turns: tuple[PlannerObservableTurn, ...] = ()
     compiler_failures: tuple[PlannerCompilerFailure, ...] = ()
     clarification_question: str | None = Field(
@@ -572,7 +578,7 @@ class FolderPlannerTurnInput(StrictFrozenModel):
     request: str = Field(min_length=1, max_length=8_000)
     request_fingerprint: str = Field(pattern=SHA256_PATTERN)
     source_commitment: str = Field(pattern=SHA256_PATTERN)
-    evidence_ledger: FolderEvidenceLedger
+    evidence_ledger: PlannerEvidenceState
     prior_turns: tuple[PlannerTurnHistoryItem, ...]
     compiler_failures: tuple[PlannerCompilerFailure, ...]
     clarification_question: str | None = None
@@ -619,7 +625,7 @@ def evidence_record_payload(record: EvidenceCallRecord) -> dict[str, JsonValue]:
     }
 
 
-def evidence_ledger_payload(ledger: FolderEvidenceLedger) -> dict[str, JsonValue]:
+def evidence_ledger_payload(ledger: PlannerEvidenceState) -> dict[str, JsonValue]:
     """Return the ledger hash domain without its own fingerprint."""
 
     return {
@@ -709,8 +715,12 @@ def _require_response_shape(
             "A live response must record its returned model ID unless the "
             "request failed before a provider response was observed."
         )
-    if provider_kind != "live" and returned_model is not None:
-        raise ValueError("Only a live response may claim a returned model ID.")
+    if provider_kind == "recorded_replay" and returned_model is None:
+        raise ValueError(
+            "A recorded replay must preserve the original returned model ID."
+        )
+    if provider_kind == "deterministic" and returned_model is not None:
+        raise ValueError("A deterministic response cannot claim a returned model ID.")
 
 
 def _validate_turn_input_payload(payload: JsonValue) -> FolderPlannerTurnInput:
