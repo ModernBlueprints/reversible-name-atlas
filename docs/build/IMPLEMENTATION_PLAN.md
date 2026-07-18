@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Revised Integrated Implementation Plan
 
-Status: **ACTIVE / R3 IN PROGRESS**
+Status: **ACTIVE / R4 IN PROGRESS**
 
 Amended production goal: **ACTIVE**
 
@@ -248,10 +248,27 @@ hardening.
 - **Owner:** primary integrator; independent bounded verifier reviewer allowed.
 - **Allowed cut:** extra negative permutations only; no additional public output
   format is permitted.
-- **Actual status:** `IN_PROGRESS`.
-- **Actual verification:** R2 dependency is verified and committed at
-  `5949a0f`; R3 artifact-DAG, schema, offline-receipt, and complete
-  receiver-verifier hardening are the current operation.
+- **Actual status:** `COMPLETE`.
+- **Actual verification:** committed at `b59b9ef`. The receiver now rebuilds
+  the strict package, deterministic families/proposals, chronological human
+  actions, Meaning evidence/card authority, exact staged proof findings, maps,
+  controls, payloads, summary, and offline receipt without a case, source,
+  provider, network, browser, or API key. A copied hero handoff verified
+  source-free and with the exact source at receipt fingerprint `69c1d00e…`; a
+  separate keyless subprocess changed no bag byte. The exact altered-ledger
+  copy remained BagIt-valid and blocked with only
+  `artifact_digest_mismatch:decision_ledger`. Path-neutrality was scanned over
+  the real hero output, post-finalization failure preserved every bag byte, and
+  malformed/schema/fingerprint/digest/data/cross-artifact/source negatives
+  returned stable blockers. Five independently reproduced false-positive
+  attacks—pre-card decisions, two invalid collision chronologies, fabricated
+  producer prose, and prohibited claim boundaries—now fail closed. The primary
+  and independent final runs each passed 215 tests plus lock, Ruff lint/format,
+  Python compilation, and Git whitespace checks. The Browser control surface
+  declined a standalone `file://` visual open by policy; deterministic HTML
+  reconstruction and static content inspection passed, and visual rendering is
+  carried forward into R4's required browser QA rather than bypassing that
+  policy.
 
 ### R4 — Five-state product experience
 
@@ -277,8 +294,10 @@ hardening.
 - **Owner:** primary integrator; bounded visual QA reviewer allowed.
 - **Allowed cut:** motion, second theme, advanced filters, thumbnails, extra
   relationship visuals, case conveniences.
-- **Actual status:** `PENDING / INACTIVE`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN_PROGRESS`.
+- **Actual verification:** R3 is verified and committed at `b59b9ef`; the
+  existing five-route shell and packaging surface have been inspected and the
+  dark Blueprint workbench is the current operation.
 
 ### Restore gate — one-time applicability decision
 

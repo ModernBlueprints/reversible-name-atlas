@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Saturday 18 July 2026 at 02:21:28 CEST**
+Checkpoint: **Saturday 18 July 2026 at 03:09:02 CEST**
 
-Phase: **R3_RECEIPT_AND_VERIFIER_COMPLETION**
+Phase: **R4_FIVE_STATE_PRODUCT_EXPERIENCE**
 
 Historical first-cycle goal: **SUPERSEDED FOR REVISED FUTURE EXECUTION**
 
@@ -18,8 +18,8 @@ Submission hold: **ACTIVE**
 
 - Recording-ready: Tuesday 21 July 2026 at 02:00 CEST
 - Submission due: Wednesday 22 July 2026 at 02:00 CEST
-- Time to recording-ready: 71 hours 38 minutes 32 seconds
-- Time to submission: 95 hours 38 minutes 32 seconds
+- Time to recording-ready: 70 hours 50 minutes 57 seconds
+- Time to submission: 94 hours 50 minutes 57 seconds
 - Final submission reserve: 24 hours
 - Planned revision window: 69 hours 8 minutes 9 seconds
 - Protected pre-recording contingency: 4 hours
@@ -52,6 +52,8 @@ Submission hold: **ACTIVE**
 - R2 case-authority hardening is committed at
   `5949a0f3255e181fdde46ca206d86a6c41bb5eb6`; the revision branch was clean
   immediately after that product commit.
+- R3 receipt and receiver-verifier completion is committed at
+  `b59b9efd5752b4038c89db6e2b0fd6f19e1b5a47`.
 
 ## Inherited verified baseline
 
@@ -76,10 +78,10 @@ Submission hold: **ACTIVE**
 - Atomic persistence, locking, and revision checks: **COMPLETE (R2)**
 - Exact staleness differences and before-mutation revalidation: **COMPLETE (R2)**
 - Evidence/card/human-decision receipt binding: **COMPLETE (R1)**
-- Path-neutral `v2` artifacts and original controls: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
-- Acyclic Portable Change Receipt and offline HTML: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
-- Independent keyless receiver verifier: **WALKING SLICE COMPLETE; R3 HARDENING PENDING**
-- BagIt-valid altered-ledger counterfactual: **COMPLETE (R1)**
+- Path-neutral `v2` artifacts and original controls: **COMPLETE (R3)**
+- Acyclic Portable Change Receipt and offline HTML: **COMPLETE (R3)**
+- Independent keyless receiver verifier: **COMPLETE (R3)**
+- BagIt-valid altered-ledger counterfactual: **COMPLETE (R1/R3)**
 - Five-state Atlas/Decide/Stage/Verify/Handoff workbench: **PLAIN FLOW COMPLETE (R1)**
 - Blueprint dark visual layer and packaged assets: **NOT STARTED**
 - Restore applicability gate: **NOT EVALUATED**
@@ -95,30 +97,31 @@ implementation is now authorized by the activated goal. Current blocker:
 
 ## Compact recovery capsule
 
-- Phase: `R3_RECEIPT_AND_VERIFIER_COMPLETION`
+- Phase: `R4_FIVE_STATE_PRODUCT_EXPERIENCE`
 - Branch and baseline: `revision/portable-change-receipt` at governance commit
-  `fbe6dea`, with R1 at `2495a6f` and R2 at `5949a0f`, from public predecessor
-  `827b0f6`
-- Current milestone: R3 in progress; target Sunday 19 July 2026 at 14:23:42 CEST
-- Last verified commands: lock check; 184 pytest tests; Ruff lint/format; Git
-  whitespace check — all passed after the bounded R2 adversarial correction
+  `fbe6dea`, with R1 at `2495a6f`, R2 at `5949a0f`, and R3 at `b59b9ef`, from
+  public predecessor `827b0f6`
+- Current milestone: R4 in progress; target Monday 20 July 2026 at 04:13:19 CEST
+- Last verified commands: lock check; 215 pytest tests; Ruff lint/format; Python
+  compilation in the independent review; Git whitespace check — all passed
 - Case status: strict restart, exact staleness, binding revalidation, zero-call
   card reuse, writer/revision conflicts, and finalized immutability complete
-- Receipt/verifier status: receipt `c660aff8…` verified after copy; exact valid
-  altered-ledger copy blocked with `artifact_digest_mismatch:decision_ledger`
-- UI status: five plain routes pass; Blueprint redesign remains R4
+- Receipt/verifier status: receipt `69c1d00e…` verified after copy, source-free
+  and with exact source; exact BagIt-valid altered-ledger copy blocked with
+  `artifact_digest_mismatch:decision_ledger`; full negative matrix passed
+- UI status: five plain routes pass; dark Blueprint redesign is in progress
 - Restore gate: not evaluated
 - Feature-freeze status: reopened only for the approved revision
 - Release-material status: first-cycle materials preserved but stale
 - Submission hold: active
 - Blockers: none
-- Next operation: complete the path-neutral v2 artifacts, original controls,
-  acyclic receipt finalization order, offline HTML, and full source-free
-  receiver-verification matrix while preserving the R2 case authority.
+- Next operation: implement the connected exception-first dark Blueprint Atlas,
+  Decide, Stage, Verify, and Handoff experience with locally packaged assets,
+  server-owned transitions, progressive disclosure, and full route/visual QA.
 
 ## Exact next operation
 
-Implement and verify R3 receipt completion: final strict schemas, path-neutral
-artifacts and report, byte-exact original controls, the acyclic ReceiptCore
-envelope and generation order, offline HTML, complete source-free verifier,
-optional source comparison, and the required BagIt-valid altered-ledger blocker.
+Implement and verify R4: locally package the frozen Blueprint core and icon
+assets, refactor the five server-rendered states into a streamlined dark
+exception-first workbench, preserve server-side authority and route guards, and
+complete route, wheel, accessibility, responsive, and browser visual QA.
