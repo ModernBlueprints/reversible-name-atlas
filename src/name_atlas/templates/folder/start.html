@@ -2,9 +2,9 @@
 {% block title %}Start · Reversible Name Atlas{% endblock %}
 {% block content %}
   <section class="folder-panel folder-panel--start" aria-labelledby="start-title">
-    <div class="folder-kicker">New verified result</div>
-    <h1 id="start-title">Organize a connected project folder</h1>
-    <p class="folder-lede">Describe the result you want. Name Atlas plans a complete copy without changing your original folder.</p>
+    <div class="folder-kicker">Organize a folder</div>
+    <h1 id="start-title">Describe the result you want</h1>
+    <p class="folder-lede">Name Atlas plans the complete change and creates a separate result without changing your original folder.</p>
 
     {% if state.blocker %}
       <div class="folder-alert" role="alert">
@@ -15,21 +15,50 @@
 
     <form class="folder-form" method="post" action="/start">
       <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
-      <label for="source-root">Folder to organize</label>
-      <input class="bp6-input" id="source-root" name="source_root" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.source_value }}" placeholder="/absolute/path/to/project">
+      <fieldset class="folder-path-control">
+        <legend>Folder to organize</legend>
+        <button class="bp6-button folder-picker-button" type="button" data-picker-role="source_folder" data-picker-target="source-root" data-derive-output-target="output-parent">Choose folder…</button>
+        <label for="source-root">Or enter the absolute path</label>
+        <input class="bp6-input" id="source-root" name="source_root" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.source_value }}" placeholder="/absolute/path/to/project" data-derive-output-target="output-parent">
+        <small data-picker-status aria-live="polite">Manual paths always work, including when native selection is unavailable.</small>
+      </fieldset>
 
       <label for="user-request">What should change?</label>
       <textarea class="bp6-input" id="user-request" name="user_request" rows="5" maxlength="8000" required placeholder="Prepare this project for handoff. Keep every file and every supported Markdown link working.">{{ state.request_value }}</textarea>
       <p class="folder-field-help">Every source file is always kept exactly once. This request controls only file renaming and folder grouping. Deletion, omission, merging, conversion, and document-body editing are not supported.</p>
 
-      <label for="output-parent">Result location</label>
-      <input class="bp6-input" id="output-parent" name="output_parent" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.output_value }}" placeholder="/absolute/path/for/result">
+      <fieldset class="folder-path-control folder-path-control--secondary">
+        <legend>Result location</legend>
+        <p class="folder-derived-path">Name Atlas derives a separate result next to the selected source. You can choose another existing parent folder.</p>
+        <button class="bp6-button folder-picker-button" type="button" data-picker-role="output_parent" data-picker-target="output-parent">Change result location…</button>
+        <label for="output-parent">Absolute result-parent path</label>
+        <input class="bp6-input" id="output-parent" name="output_parent" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.output_value }}" placeholder="Derived from your selected folder">
+        <small data-picker-status aria-live="polite"></small>
+      </fieldset>
 
-      <div class="folder-disclosure" aria-label="How the operation works">
-        <p><strong>Your original folder will not be changed.</strong> Name Atlas will create and verify a separate result. It sends GPT-5.6 your instruction, relative file names and folder structure, basic file metadata used to bind the plan, selected excerpts from eligible text and Markdown files, and supported Markdown-link context needed to plan the change. It does not send every file's bytes. Raw content hashes are kept local.</p>
-        <p>Name Atlas asks the Responses API not to retain the response as application state and keeps the working planning record locally. Standard OpenAI API data-retention policies may still apply.</p>
-        <p class="folder-development-note"><strong>This A3 development build makes no API call and its deterministic planner accepts only the exact demonstration request shown in this field.</strong> Other requests block rather than produce a misleading result. General bounded GPT-5.6 planning is introduced and verified in A4.</p>
-      </div>
+      <p class="folder-source-promise"><strong>Your original folder will not be changed.</strong> Name Atlas will create and verify a separate result.</p>
+
+      <details class="folder-disclosure">
+        <summary>What may be shared with GPT-5.6 in live mode?</summary>
+        <div>
+          {% if not state.outbound_evidence_will_be_sent %}
+            <p><strong>This displayed development run makes no GPT or OpenAI API call.</strong> The disclosure below describes the live planning mode that will use the same bounded evidence contract.</p>
+          {% endif %}
+          <p>Your original folder will not be changed. Name Atlas will create and verify a separate result. It sends GPT-5.6 your instruction, relative file names and folder structure, basic file metadata used to bind the plan, selected excerpts from eligible text and Markdown files, and supported Markdown-link context needed to plan the change. It does not send every file's bytes. Raw content hashes are kept local.</p>
+          <p>Name Atlas sets <code>store=false</code>, so it does not ask OpenAI to store the generated response for later retrieval through the Responses API. OpenAI's standard abuse-monitoring and prompt-caching retention may still apply.</p>
+        </div>
+      </details>
+
+      {% if evidence_disclosure_required %}
+        <label class="folder-consent" for="evidence-disclosure-acknowledged">
+          <input id="evidence-disclosure-acknowledged" name="evidence_disclosure_acknowledged" type="checkbox" value="true" required>
+          {% if state.outbound_evidence_will_be_sent %}
+            <span>I understand what Name Atlas sends to GPT-5.6 for this planning run.</span>
+          {% else %}
+            <span>I understand the live-mode disclosure and that this displayed development run makes no GPT or OpenAI API call.</span>
+          {% endif %}
+        </label>
+      {% endif %}
 
       <button class="bp6-button bp6-intent-primary bp6-large folder-primary-action" type="submit">
         Plan and create copy

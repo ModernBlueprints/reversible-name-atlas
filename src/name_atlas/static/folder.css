@@ -141,6 +141,52 @@ body.folder-app {
   letter-spacing: -0.045em;
 }
 
+.folder-home-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.folder-choice {
+  display: grid;
+  min-width: 0;
+  min-height: 12rem;
+  align-content: space-between;
+  gap: 0.8rem;
+  padding: 1.25rem;
+  border: 1px solid var(--folder-border);
+  border-radius: 0.8rem;
+  background: var(--folder-panel-raised);
+  color: var(--folder-text);
+  text-decoration: none;
+}
+
+.folder-choice:hover {
+  border-color: rgb(72 175 240 / 72%);
+  background: rgb(72 175 240 / 9%);
+}
+
+.folder-choice:focus-visible {
+  outline: 3px solid var(--folder-focus);
+  outline-offset: 3px;
+}
+
+.folder-choice strong {
+  font-size: 1.3rem;
+}
+
+.folder-choice small {
+  color: var(--folder-muted);
+  line-height: 1.5;
+}
+
+.folder-choice-number {
+  color: var(--folder-blue);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
 .folder-lede {
   max-width: 60ch;
   margin: 1rem 0 2rem;
@@ -159,10 +205,50 @@ body.folder-app {
   font-weight: 700;
 }
 
+.folder-path-control {
+  display: grid;
+  min-width: 0;
+  gap: 0.55rem;
+  margin: 0.75rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--folder-border);
+  border-radius: 0.7rem;
+  background: rgb(16 20 25 / 55%);
+}
+
+.folder-path-control legend {
+  padding: 0 0.35rem;
+  color: var(--folder-text);
+  font-weight: 750;
+}
+
+.folder-path-control label {
+  margin-top: 0.25rem;
+  color: var(--folder-muted);
+  font-size: 0.78rem;
+}
+
+.folder-path-control small,
+.folder-derived-path {
+  margin: 0;
+  color: var(--folder-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.folder-path-control--secondary {
+  border-style: dashed;
+}
+
+.folder-picker-button {
+  justify-self: start;
+}
+
 .folder-form .bp6-input {
   width: 100%;
   min-height: 2.8rem;
-  border: 1px solid #4a5561;
+  border: 1px solid #66717d;
   background: #101419;
   color: var(--folder-text);
   font: inherit;
@@ -176,33 +262,72 @@ body.folder-app {
 }
 
 .folder-form .bp6-input:focus,
+.folder-picker-button:focus-visible,
+.folder-consent:focus-within,
 .folder-primary-action:focus-visible,
 .folder-actions button:focus-visible,
+.folder-actions a:focus-visible,
 .folder-result-path button:focus-visible,
 .folder-actions summary:focus-visible,
+.folder-disclosure summary:focus-visible,
 .folder-wordmark:focus-visible {
   outline: 3px solid var(--folder-focus);
   outline-offset: 3px;
 }
 
-.folder-disclosure {
-  display: grid;
-  gap: 0.7rem;
+.folder-source-promise {
   margin: 1.15rem 0 0.5rem;
   padding: 1rem;
   border-left: 3px solid var(--folder-blue);
   background: rgb(72 175 240 / 6%);
   color: #cbd3da;
+  line-height: 1.55;
+}
+
+.folder-disclosure {
+  margin-top: 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--folder-border);
+  border-radius: 0.6rem;
+  background: rgb(72 175 240 / 4%);
+  color: #cbd3da;
   font-size: 0.83rem;
   line-height: 1.55;
+}
+
+.folder-disclosure summary {
+  cursor: pointer;
+  color: var(--folder-text);
+  font-weight: 700;
+}
+
+.folder-disclosure > div {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
 }
 
 .folder-disclosure p {
   margin: 0;
 }
 
-.folder-development-note {
-  color: #e5c365;
+.folder-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.45rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--folder-border);
+  border-radius: 0.55rem;
+  background: var(--folder-panel-raised);
+  line-height: 1.45;
+}
+
+.folder-consent input {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
 }
 
 .folder-primary-action {
@@ -223,6 +348,13 @@ body.folder-app {
   line-height: 1.45;
 }
 
+.folder-alert > span,
+.folder-notice > span,
+.folder-planner-truth > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .folder-alert {
   margin: 1.25rem 0;
   border: 1px solid rgb(219 90 97 / 45%);
@@ -230,6 +362,7 @@ body.folder-app {
 }
 
 .folder-notice {
+  min-width: 0;
   width: min(100%, 53rem);
   margin: 0 auto 1rem;
   border: 1px solid rgb(72 175 240 / 40%);
@@ -324,6 +457,18 @@ body.folder-app {
   box-shadow: 0 0 0 0.35rem rgb(72 175 240 / 8%);
 }
 
+.folder-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .folder-verdict {
   display: inline-flex;
   align-items: center;
@@ -380,6 +525,11 @@ body.folder-app {
   font-weight: 700;
 }
 
+.folder-proof-grid code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .folder-proof-grid dd small {
   display: block;
   margin-top: 0.2rem;
@@ -422,7 +572,8 @@ body.folder-app {
 }
 
 .folder-actions details,
-.folder-actions form {
+.folder-actions form,
+.folder-action-card {
   min-width: 0;
   padding: 0.9rem;
   border: 1px solid var(--folder-border);
@@ -439,6 +590,18 @@ body.folder-app {
   display: grid;
   gap: 0.45rem;
   align-content: start;
+}
+
+.folder-action-card {
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.folder-action-card .bp6-button {
+  justify-self: start;
+  margin-top: 0.25rem;
+  text-decoration: none;
 }
 
 .folder-actions form .bp6-input {
@@ -495,8 +658,13 @@ body.folder-app {
   }
 
   .folder-proof-grid,
-  .folder-actions {
+  .folder-actions,
+  .folder-home-choices {
     grid-template-columns: 1fr;
+  }
+
+  .folder-choice {
+    min-height: 9rem;
   }
 
   .folder-result-path {

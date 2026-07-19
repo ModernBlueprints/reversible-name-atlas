@@ -14,6 +14,7 @@ from name_atlas.folder_refactor.contracts import (
     FolderPlanEntry,
 )
 from name_atlas.folder_refactor.planner_contracts import (
+    FolderPlannerProgress,
     FolderPlannerTurnInput,
     PlannerObservableTurn,
     SubmitPlanCall,
@@ -22,7 +23,10 @@ from name_atlas.folder_refactor.planner_contracts import (
 from name_atlas.folder_refactor.planner_evidence import (
     create_initial_evidence_ledger,
 )
-from name_atlas.folder_refactor.receipt_contracts import FolderEvidenceLedger
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderEvidenceLedger,
+    FolderPlannerUsage,
+)
 from name_atlas.folder_refactor.serialization import (
     canonical_json_bytes,
     canonical_sha256,
@@ -144,5 +148,71 @@ def build_deterministic_origin_evidence(
         provider_call_count=0,
         api_used=False,
         external_network_used=False,
+    )
+    return origin, ledger
+
+
+def build_planner_origin_evidence(
+    *,
+    progress: FolderPlannerProgress,
+    accepted_plan: FolderAcceptedPlanV2,
+    usage: tuple[FolderPlannerUsage, ...] = (),
+) -> tuple[GptPlannedExecutionOrigin, FolderEvidenceLedger]:
+    """Project accepted restart state into v2-bound portable origin evidence."""
+
+    if progress.status != "accepted" or progress.accepted_plan is None:
+        raise ValueError(
+            "Connected origin evidence requires accepted planner progress."
+        )
+    if (
+        progress.accepted_plan.source_commitment != accepted_plan.source_commitment
+        or progress.accepted_plan.request_fingerprint
+        != accepted_plan.request_fingerprint
+        or progress.accepted_plan.evidence_fingerprint
+        != accepted_plan.evidence_fingerprint
+    ):
+        raise ValueError("Planner progress and connected accepted plan do not agree.")
+
+    base = FolderEvidenceLedger.from_progress(
+        job_id=progress.job_id,
+        progress=progress,
+        usage=usage,
+        store_false=True if progress.provider_kind == "live" else None,
+    )
+    accepted_plan_fingerprint = canonical_sha256(accepted_plan)
+    values = base.model_dump(mode="python", exclude={"transcript_fingerprint"})
+    values["accepted_plan_fingerprint"] = accepted_plan_fingerprint
+    fingerprint_values = base.model_dump(
+        mode="json",
+        exclude={"transcript_fingerprint"},
+    )
+    fingerprint_values["accepted_plan_fingerprint"] = accepted_plan_fingerprint
+    ledger = FolderEvidenceLedger(
+        **values,
+        transcript_fingerprint=canonical_sha256(fingerprint_values),
+    )
+    planner_kind = {
+        "deterministic": "deterministic_development",
+        "live": "live",
+        "recorded_replay": "recorded_replay",
+    }[progress.provider_kind]
+    live = progress.provider_kind == "live"
+    returned_model_id = (
+        ledger.returned_model_ids[-1] if ledger.returned_model_ids else None
+    )
+    origin = GptPlannedExecutionOrigin(
+        planner_kind=planner_kind,
+        returned_model_id=returned_model_id,
+        observable_transcript=tuple(
+            turn.model_dump(mode="json") for turn in ledger.observable_turns
+        ),
+        clarification_question=ledger.clarification_question,
+        clarification_answer=ledger.clarification_answer,
+        evidence_fingerprint=ledger.evidence_fingerprint,
+        accepted_plan_fingerprint=accepted_plan_fingerprint,
+        provider_call_count=ledger.response_turn_count if live else 0,
+        api_used=live,
+        store_false=True if live else None,
+        external_network_used=live,
     )
     return origin, ledger

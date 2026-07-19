@@ -688,6 +688,54 @@ def test_restart_records_complete_pending_promotion_failure(
     assert blocked.blocker_code == "execution_recovery_promotion_blocked"
 
 
+def test_receiver_result_name_equal_to_source_is_durably_blocked(
+    tmp_path: Path,
+) -> None:
+    fixture, origin, _output, job_path = _receiver_job_inputs(tmp_path)
+    colliding_source = fixture.martin_root.with_name(fixture.result_name)
+    fixture.martin_root.rename(colliding_source)
+    service = ConnectedChangeJobService()
+
+    blocked = service.start_application(
+        change_file_path=origin.change_file_path,
+        source_root=colliding_source,
+        output_parent=colliding_source.parent,
+        job_path=job_path,
+        idempotency_key="receiver-source-result-collision",
+    )
+
+    assert blocked.lifecycle is FolderJobLifecycleV2.BLOCKED
+    assert blocked.blocker_code == "result_path_unavailable"
+    assert service.status(job_path) == blocked
+    assert colliding_source.is_dir()
+    assert not (colliding_source.parent / fixture.result_name / "data").exists()
+
+
+def test_origin_result_name_equal_to_source_is_durably_blocked(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "name-atlas-organized-copy"
+    source.mkdir()
+    (source / "note.txt").write_bytes(b"source remains\n")
+    job_path = tmp_path / "jobs" / "origin-collision.json"
+    service = ConnectedChangeJobService()
+
+    blocked = service.start_deterministic_origin(
+        source_root=source,
+        output_parent=tmp_path,
+        job_path=job_path,
+        request="Prepare this project for handoff.",
+        result_folder_name=source.name,
+        target_by_original_path={"note.txt": "organized/note.txt"},
+        idempotency_key="origin-source-result-collision",
+    )
+
+    assert blocked.lifecycle is FolderJobLifecycleV2.BLOCKED
+    assert blocked.blocker_code == "result_path_unavailable"
+    assert service.status(job_path) == blocked
+    assert (source / "note.txt").read_bytes() == b"source remains\n"
+
+
 def _receiver_job_inputs(
     tmp_path: Path,
 ) -> tuple[ConnectedChangeFixture, ConnectedChangeRunResult, Path, Path]:

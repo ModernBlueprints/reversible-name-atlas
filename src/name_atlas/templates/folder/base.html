@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#101317">
     <title>{% block title %}Reversible Name Atlas{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/vendor/blueprint/blueprint.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/folder.css') }}?v=20260718-a3">
+    <link rel="stylesheet" href="{{ url_for('static', path='/folder.css') }}?v=20260719-c2b">
   </head>
   <body class="bp6-dark folder-app">
     <a class="folder-skip-link" href="#main-content">Skip to main content</a>
@@ -15,10 +15,10 @@
         <span class="folder-mark" aria-hidden="true">NA</span>
         <span>
           <strong>Reversible Name Atlas</strong>
-          <small>Describe the change. Keep supported Markdown links. Prove the result.</small>
+          <small>Describe the change once. Apply it wherever the same project exists.</small>
         </span>
       </a>
-      <span class="folder-mode">{{ planner_label }}</span>
+      {% if planner_label|default("") %}<span class="folder-mode">{{ planner_label }}</span>{% endif %}
     </header>
     <main id="main-content" class="folder-main" tabindex="-1">
       {% if notice %}
@@ -29,5 +29,108 @@
       {% endif %}
       {% block content %}{% endblock %}
     </main>
+    <script>
+      (function () {
+        "use strict";
+
+        function pickerStatus(button) {
+          const container = button.closest(".folder-path-control");
+          return container ? container.querySelector("[data-picker-status]") : null;
+        }
+
+        function deriveParent(selectedPath) {
+          const normalized = selectedPath.replace(/\/+$/, "");
+          const separator = normalized.lastIndexOf("/");
+          return separator > 0 ? normalized.slice(0, separator) : "/";
+        }
+
+        function deriveOutputUnlessOverridden(source) {
+          const outputId = source.dataset.deriveOutputTarget;
+          const output = outputId ? document.getElementById(outputId) : null;
+          if (output && output.dataset.userOverridden !== "true") {
+            output.value = deriveParent(source.value);
+          }
+        }
+
+        document.addEventListener("input", function (event) {
+          const field = event.target;
+          if (!(field instanceof HTMLInputElement)) return;
+          if (field.name === "output_parent") {
+            field.dataset.userOverridden = field.value ? "true" : "false";
+          } else if (field.name === "source_root") {
+            deriveOutputUnlessOverridden(field);
+          }
+        });
+
+        document.addEventListener("change", function (event) {
+          const field = event.target;
+          if (field instanceof HTMLInputElement && field.name === "source_root") {
+            deriveOutputUnlessOverridden(field);
+          }
+        });
+
+        document.addEventListener("click", async function (event) {
+          const picker = event.target.closest("[data-picker-role]");
+          if (picker) {
+            event.preventDefault();
+            const form = picker.closest("form");
+            const token = form ? form.querySelector('input[name="csrf_token"]') : null;
+            const target = document.getElementById(picker.dataset.pickerTarget || "");
+            const status = pickerStatus(picker);
+            if (!token || !target) {
+              if (status) status.textContent = "Native selection is unavailable; enter the path manually.";
+              return;
+            }
+            picker.disabled = true;
+            if (status) status.textContent = "Waiting for the native selection window…";
+            try {
+              const response = await window.fetch("/choose-path", {
+                method: "POST",
+                cache: "no-store",
+                headers: {"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"},
+                body: new URLSearchParams({
+                  role: picker.dataset.pickerRole,
+                  csrf_token: token.value
+                })
+              });
+              const result = await response.json();
+              if (response.ok && result.status === "selected" && result.path) {
+                target.value = result.path;
+                if (target.name === "output_parent") {
+                  target.dataset.userOverridden = "true";
+                }
+                target.dispatchEvent(new Event("change", {bubbles: true}));
+                if (picker.dataset.deriveOutputTarget) {
+                  const output = document.getElementById(picker.dataset.deriveOutputTarget);
+                  if (output && output.dataset.userOverridden !== "true") {
+                    output.value = deriveParent(result.path);
+                  }
+                }
+                if (status) status.textContent = "Selected. You can still edit the path manually.";
+              } else if (status) {
+                status.textContent = result.message || "No path was selected; enter it manually if needed.";
+              }
+            } catch (_) {
+              if (status) status.textContent = "Native selection is unavailable; enter the path manually.";
+            } finally {
+              picker.disabled = false;
+              picker.focus({preventScroll: true});
+            }
+            return;
+          }
+
+          const copier = event.target.closest("[data-copy-target]");
+          if (copier) {
+            const source = document.getElementById(copier.dataset.copyTarget || "");
+            if (source && navigator.clipboard) {
+              await navigator.clipboard.writeText(source.textContent || "");
+              const original = copier.innerHTML;
+              copier.textContent = "Copied";
+              window.setTimeout(function () { copier.innerHTML = original; }, 1200);
+            }
+          }
+        });
+      }());
+    </script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-"""Durable, planner-free v2 authority for Connected Change jobs."""
+"""Durable v2 authority for Connected Change and planner progress."""
 
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ from pydantic import (
 
 from name_atlas.folder_refactor.connected_change.accepted_plan import (
     FolderAcceptedPlanV2,
+    convert_planner_accepted_plan,
     validate_connected_accepted_plan,
 )
 from name_atlas.folder_refactor.connected_change.contracts import (
@@ -59,12 +60,16 @@ from name_atlas.folder_refactor.inventory import (
     LocalFileIdentity,
     scan_folder,
 )
+from name_atlas.folder_refactor.planner_contracts import FolderPlannerProgress
 from name_atlas.folder_refactor.portable_artifacts import (
     FolderPortableArtifactError,
     canonical_portable_json_bytes,
     strict_json_object,
 )
-from name_atlas.folder_refactor.receipt_contracts import FolderEvidenceLedger
+from name_atlas.folder_refactor.receipt_contracts import (
+    FolderEvidenceLedger,
+    FolderPlannerUsage,
+)
 from name_atlas.folder_refactor.serialization import (
     canonical_json_bytes,
     canonical_sha256,
@@ -299,7 +304,7 @@ class ChangeFileInputBindingV2(StrictFrozenJobV2Model):
 
 
 class GptPlannerCheckpointV2(StrictFrozenJobV2Model):
-    """Durable progress without importing planner implementation modules."""
+    """Durable complete planner progress plus its browser-facing projection."""
 
     status: Literal["planning", "awaiting_clarification", "accepted", "blocked"]
     observable_transcript: tuple[JsonValue, ...] = ()
@@ -314,6 +319,8 @@ class GptPlannerCheckpointV2(StrictFrozenJobV2Model):
     accepted_plan_fingerprint: str | None = Field(default=None, pattern=SHA256_PATTERN)
     blocker_code: str | None = Field(default=None, pattern=r"^[a-z0-9_:-]{1,128}$")
     blocker_message: str | None = Field(default=None, min_length=1, max_length=2_000)
+    progress: FolderPlannerProgress | None = None
+    usage: tuple[FolderPlannerUsage, ...] = ()
 
     @model_validator(mode="after")
     def require_status_shape(self) -> Self:
@@ -339,7 +346,72 @@ class GptPlannerCheckpointV2(StrictFrozenJobV2Model):
                 raise ValueError("Blocked planning requires a code and message.")
         elif blocker:
             raise ValueError("Only blocked planning can retain blocker fields.")
+        if self.progress is not None:
+            progress = self.progress
+            transcript = tuple(turn.model_dump(mode="json") for turn in progress.turns)
+            if (
+                self.status != progress.status
+                or self.observable_transcript != transcript
+                or self.response_turn_count != progress.response_turns
+                or self.evidence_call_count != progress.evidence_calls
+                or self.clarification_question != progress.clarification_question
+                or self.clarification_answer != progress.clarification_answer
+                or self.blocker_code != progress.blocker_code
+            ):
+                raise ValueError(
+                    "Planner checkpoint projection differs from full progress."
+                )
+            if progress.status == "accepted":
+                if progress.accepted_plan is None:
+                    raise ValueError("Accepted progress lacks its planner plan.")
+            elif self.accepted_plan_fingerprint is not None:
+                raise ValueError(
+                    "Nonaccepted progress cannot project an accepted plan."
+                )
+            usage_turns = tuple(item.response_turn for item in self.usage)
+            if usage_turns != tuple(sorted(set(usage_turns))):
+                raise ValueError("Planner usage must use unique ascending turns.")
+            if any(turn > len(progress.turns) for turn in usage_turns):
+                raise ValueError("Planner usage names an unobserved response turn.")
+            if progress.provider_kind != "live" and self.usage:
+                raise ValueError("Only live planning may retain provider usage.")
+        elif self.usage:
+            raise ValueError("Planner usage requires complete planner progress.")
         return self
+
+    @classmethod
+    def from_progress(
+        cls,
+        progress: FolderPlannerProgress,
+        *,
+        accepted_plan_fingerprint: str | None = None,
+        usage: tuple[FolderPlannerUsage, ...] = (),
+    ) -> Self:
+        """Build one exact projection without reconstructing planner state."""
+
+        if (progress.status == "accepted") != (accepted_plan_fingerprint is not None):
+            raise ValueError(
+                "Accepted planner progress and v2 plan fingerprint must coincide."
+            )
+        return cls(
+            status=progress.status,
+            observable_transcript=tuple(
+                turn.model_dump(mode="json") for turn in progress.turns
+            ),
+            response_turn_count=progress.response_turns,
+            evidence_call_count=progress.evidence_calls,
+            clarification_question=progress.clarification_question,
+            clarification_answer=progress.clarification_answer,
+            accepted_plan_fingerprint=accepted_plan_fingerprint,
+            blocker_code=progress.blocker_code,
+            blocker_message=(
+                f"Planner blocked: {progress.blocker_code}."
+                if progress.status == "blocked"
+                else None
+            ),
+            progress=progress,
+            usage=usage,
+        )
 
 
 class GptPlannedJobAuthorityV2(StrictFrozenJobV2Model):
@@ -378,6 +450,8 @@ class GptPlannedJobAuthorityV2(StrictFrozenJobV2Model):
                 raise ValueError(
                     "GPT checkpoint differs from its exact final evidence ledger."
                 )
+            if self.evidence_ledger.usage != self.planner_checkpoint.usage:
+                raise ValueError("GPT checkpoint usage differs from its evidence.")
         if self.execution_origin is not None:
             if self.planner_checkpoint.status != "accepted":
                 raise ValueError("A GPT execution origin requires accepted planning.")
@@ -629,6 +703,7 @@ def build_new_gpt_job_v2(
     scan: FolderScan | None = None,
     job_id: str | None = None,
     clock: Callable[[], datetime] | None = None,
+    planner_progress: FolderPlannerProgress | None = None,
 ) -> FolderRefactorJobV2:
     """Construct an unsaved GPT-planned job without importing planner code."""
 
@@ -638,6 +713,21 @@ def build_new_gpt_job_v2(
         job_path=job_path,
         scan=scan,
     )
+    if planner_progress is not None:
+        if job_id is None or planner_progress.job_id != job_id:
+            raise FolderJobV2WriteError(
+                "Complete planner progress requires the exact explicit job ID."
+            )
+        if (
+            planner_progress.status != "planning"
+            or planner_progress.evidence_ledger.source_commitment
+            != source_scan.inventory.source_commitment
+            or planner_progress.evidence_ledger.request_fingerprint
+            != request_fingerprint(user_request)
+        ):
+            raise FolderJobV2WriteError(
+                "Initial planner progress targets another source, request, or state."
+            )
     mutation = FolderMutationRequestV2(
         operation="gpt_planned",
         source_root=source_scan.source_root,
@@ -651,7 +741,11 @@ def build_new_gpt_job_v2(
         user_request=user_request,
         idempotency=build_idempotency_binding(idempotency_key, mutation),
         authority=GptPlannedJobAuthorityV2(
-            planner_checkpoint=GptPlannerCheckpointV2(status="planning")
+            planner_checkpoint=(
+                GptPlannerCheckpointV2.from_progress(planner_progress)
+                if planner_progress is not None
+                else GptPlannerCheckpointV2(status="planning")
+            )
         ),
         display_name=display_name,
         job_id=job_id,
@@ -678,13 +772,13 @@ def parse_job_v2_bytes(data: bytes, *, expected_path: Path) -> FolderRefactorJob
     """Strictly parse one canonical v2 record and validate its local pointer."""
 
     try:
-        strict_json_object(data)
+        raw = strict_json_object(data)
         job = FolderRefactorJobV2.model_validate_json(data, strict=True)
     except (FolderPortableArtifactError, ValidationError) as exc:
         raise FolderJobV2LoadError(
             "FolderRefactorJobV2 is corrupt or unsupported."
         ) from exc
-    if canonical_job_v2_bytes(job) != data:
+    if canonical_json_bytes(raw) + b"\n" != data:
         raise FolderJobV2LoadError("FolderRefactorJobV2 is not canonical JSON.")
     if job.job_path != expected_path.resolve(strict=False):
         raise FolderJobV2LoadError(
@@ -1333,8 +1427,20 @@ def _require_plan_and_origin_bindings(job: FolderRefactorJobV2) -> None:
         )
     if isinstance(job.authority, GptPlannedJobAuthorityV2):
         checkpoint = job.authority.planner_checkpoint
+        progress = checkpoint.progress
         ledger = job.authority.evidence_ledger
         origin: FolderExecutionOrigin | None = job.authority.execution_origin
+        if progress is not None:
+            if (
+                progress.job_id != job.job_id
+                or progress.evidence_ledger.source_commitment
+                != job.source_inventory.source_commitment
+                or progress.evidence_ledger.request_fingerprint
+                != request_fingerprint(job.user_request)
+            ):
+                raise ValueError("Planner progress is bound to another durable job.")
+            if ledger is not None and progress.provider_kind != ledger.provider_kind:
+                raise ValueError("Planner progress and evidence provider differ.")
         if ledger is not None and (
             ledger.job_id != job.job_id
             or ledger.source_commitment != job.source_inventory.source_commitment
@@ -1351,6 +1457,20 @@ def _require_plan_and_origin_bindings(job: FolderRefactorJobV2) -> None:
                 or ledger.evidence_fingerprint != plan.evidence_fingerprint
             ):
                 raise ValueError("GPT evidence ledger differs from the accepted plan.")
+            if progress is not None and (
+                progress.accepted_plan is None
+                or (
+                    convert_planner_accepted_plan(
+                        inventory=job.source_inventory,
+                        request=job.user_request,
+                        plan=progress.accepted_plan,
+                    )
+                    != plan
+                )
+            ):
+                raise ValueError(
+                    "Full planner progress differs from the connected plan."
+                )
         elif checkpoint.accepted_plan_fingerprint is not None:
             raise ValueError("Planner checkpoint retains an absent accepted plan.")
         if origin is not None and (
@@ -1401,6 +1521,12 @@ def _require_plan_and_origin_bindings(job: FolderRefactorJobV2) -> None:
 def _require_exact_result_pointers(job: FolderRefactorJobV2) -> None:
     pending = job.pending_result_path
     final = job.final_result_path
+    if job.accepted_plan is not None:
+        _require_disjoint_result_authority(
+            job,
+            pending=expected_pending_result_path_v2(job),
+            final=expected_final_result_path_v2(job),
+        )
     if pending is not None and pending != expected_pending_result_path_v2(job):
         raise ValueError("Pending result pointer is not exactly owned by this job.")
     if final is not None and final != expected_final_result_path_v2(job):
@@ -1410,13 +1536,8 @@ def _require_exact_result_pointers(job: FolderRefactorJobV2) -> None:
     ) and job.lifecycle is not FolderJobLifecycleV2.VERIFIED:
         raise ValueError("Nonterminal execution pointers must appear together.")
     for path in (pending, final):
-        if path is not None:
-            if path.parent != job.output_parent:
-                raise ValueError("Result pointer must be an immediate output child.")
-            if _paths_overlap(path, job.source_root) or _paths_overlap(
-                path, job.job_path.parent
-            ):
-                raise ValueError("Result pointer overlaps source or mutable job state.")
+        if path is not None and path.parent != job.output_parent:
+            raise ValueError("Result pointer must be an immediate output child.")
 
 
 def _require_lifecycle_shape(job: FolderRefactorJobV2) -> None:
@@ -1426,6 +1547,13 @@ def _require_lifecycle_shape(job: FolderRefactorJobV2) -> None:
             raise ValueError("Blocked job requires a code and message.")
     elif blocker_material:
         raise ValueError("Only a blocked job may retain blocker fields.")
+    if isinstance(job.authority, GptPlannedJobAuthorityV2):
+        checkpoint = job.authority.planner_checkpoint
+        if checkpoint.status == "blocked" and (
+            job.blocker_code != checkpoint.blocker_code
+            or job.blocker_message != checkpoint.blocker_message
+        ):
+            raise ValueError("Blocked job differs from its planner blocker.")
     if job.lifecycle is FolderJobLifecycleV2.STALE:
         if job.staleness is None:
             raise ValueError("Stale job requires exact input evidence.")
@@ -1513,6 +1641,175 @@ def _require_immutable_job_identity(
         )
     ):
         raise FolderJobV2RevisionError("Imported Change File authority changed.")
+    if isinstance(current.authority, GptPlannedJobAuthorityV2):
+        if not isinstance(candidate.authority, GptPlannedJobAuthorityV2):
+            raise FolderJobV2RevisionError("GPT planning authority changed.")
+        _require_gpt_planner_successor(
+            current.authority.planner_checkpoint,
+            candidate.authority.planner_checkpoint,
+        )
+
+
+def _require_gpt_planner_successor(
+    current: GptPlannerCheckpointV2,
+    candidate: GptPlannerCheckpointV2,
+) -> None:
+    """Reject any rewrite or rewind of observable durable planner history."""
+
+    if current == candidate:
+        return
+    before = current.progress
+    after = candidate.progress
+    if before is None:
+        pristine = GptPlannerCheckpointV2(status="planning")
+        if current != pristine:
+            raise FolderJobV2RevisionError(
+                "Compatibility planner authority cannot be rewritten."
+            )
+        if after is None and (
+            candidate.status != "accepted"
+            or candidate.response_turn_count == 0
+            or not candidate.observable_transcript
+            or candidate.accepted_plan_fingerprint is None
+        ):
+            raise FolderJobV2RevisionError(
+                "Compatibility planning may only persist one accepted result."
+            )
+        return
+    if after is None:
+        raise FolderJobV2RevisionError("Planner progress history cannot be removed.")
+
+    immutable_fields = ("schema_version", "job_id", "provider_kind", "model_alias")
+    if any(
+        getattr(before, field) != getattr(after, field) for field in immutable_fields
+    ):
+        raise FolderJobV2RevisionError("Planner progress identity changed.")
+    before_evidence = before.evidence_ledger
+    after_evidence = after.evidence_ledger
+    immutable_evidence_fields = (
+        "schema_version",
+        "source_commitment",
+        "request_fingerprint",
+        "initial_evidence",
+        "initial_evidence_bytes",
+    )
+    if any(
+        getattr(before_evidence, field) != getattr(after_evidence, field)
+        for field in immutable_evidence_fields
+    ):
+        raise FolderJobV2RevisionError("Planner evidence identity changed.")
+
+    _require_history_prefix(before.turns, after.turns, label="response turns")
+    _require_history_prefix(
+        before_evidence.records,
+        after_evidence.records,
+        label="evidence records",
+    )
+    _require_history_prefix(
+        before.compiler_failures,
+        after.compiler_failures,
+        label="compiler failures",
+    )
+    _require_history_prefix(current.usage, candidate.usage, label="provider usage")
+
+    monotonic_fields = (
+        "response_turns",
+        "evidence_calls",
+        "evidence_calls_observed",
+        "outbound_evidence_bytes",
+        "plan_submissions",
+    )
+    if any(
+        getattr(after, field) < getattr(before, field) for field in monotonic_fields
+    ):
+        raise FolderJobV2RevisionError("Planner counters cannot decrease.")
+    evidence_monotonic_fields = (
+        "aggregate_result_bytes",
+        "total_outbound_evidence_bytes",
+    )
+    if any(
+        getattr(after_evidence, field) < getattr(before_evidence, field)
+        for field in evidence_monotonic_fields
+    ):
+        raise FolderJobV2RevisionError("Planner evidence counters cannot decrease.")
+
+    if before.pending_response_turn is not None:
+        if after.pending_response_turn == before.pending_response_turn:
+            pending_fields = (
+                "pending_response_input_bytes",
+                "pending_response_input_fingerprint",
+                "pending_response_input_payload",
+            )
+            if any(
+                getattr(before, field) != getattr(after, field)
+                for field in pending_fields
+            ):
+                raise FolderJobV2RevisionError(
+                    "A reserved provider turn cannot change its committed input."
+                )
+        else:
+            completed_index = before.pending_response_turn - 1
+            if len(after.turns) <= completed_index:
+                raise FolderJobV2RevisionError(
+                    "A reserved provider turn cannot be discarded."
+                )
+            completed = after.turns[completed_index]
+            if (
+                completed.input_bytes != before.pending_response_input_bytes
+                or completed.input_fingerprint
+                != before.pending_response_input_fingerprint
+                or completed.input_payload != before.pending_response_input_payload
+            ):
+                raise FolderJobV2RevisionError(
+                    "A completed provider turn differs from its reservation."
+                )
+
+    if before.clarification_question is not None:
+        if after.clarification_question != before.clarification_question:
+            raise FolderJobV2RevisionError(
+                "The durable clarification question cannot change or disappear."
+            )
+        if before.clarification_answer is not None:
+            if after.clarification_answer != before.clarification_answer:
+                raise FolderJobV2RevisionError(
+                    "The durable clarification answer cannot change or disappear."
+                )
+        elif before.status == "awaiting_clarification":
+            if after.status == "planning":
+                if after.clarification_answer is None:
+                    raise FolderJobV2RevisionError(
+                        "Clarification continuation must persist exactly one answer."
+                    )
+            elif after.status == "awaiting_clarification":
+                raise FolderJobV2RevisionError(
+                    "An awaiting clarification checkpoint cannot be rewritten."
+                )
+            else:
+                raise FolderJobV2RevisionError(
+                    "Clarification must persist its answer before planner continuation."
+                )
+    elif after.clarification_question is not None and (
+        after.status != "awaiting_clarification"
+        or after.clarification_answer is not None
+    ):
+        raise FolderJobV2RevisionError(
+            "A new clarification must first persist one unanswered question."
+        )
+
+    if before.accepted_plan is not None and after.accepted_plan != before.accepted_plan:
+        raise FolderJobV2RevisionError("An accepted planner plan cannot change.")
+    if before.status == "accepted":
+        raise FolderJobV2RevisionError("Accepted planner authority is immutable.")
+
+
+def _require_history_prefix(
+    current: tuple[Any, ...],
+    candidate: tuple[Any, ...],
+    *,
+    label: str,
+) -> None:
+    if len(candidate) < len(current) or candidate[: len(current)] != current:
+        raise FolderJobV2RevisionError(f"Planner {label} are not append-only.")
 
 
 def _require_lifecycle_transition(
@@ -1574,12 +1871,34 @@ def _require_separate_paths(
     output_parent: Path,
     job_path: Path,
 ) -> None:
-    if _paths_overlap(source_root, output_parent):
-        raise ValueError("Source and output-parent trees cannot overlap.")
-    if _paths_overlap(source_root, job_path.parent):
-        raise ValueError("Local job state cannot be inside the source tree.")
-    if _paths_overlap(output_parent, job_path.parent):
-        raise ValueError("Local job state cannot be inside the output tree.")
+    if _path_is_within(output_parent, source_root):
+        raise ValueError("Output parent cannot equal or be inside the source tree.")
+    if _paths_overlap(job_path.parent, source_root):
+        raise ValueError("Local job state and source tree cannot overlap.")
+
+
+def _require_disjoint_result_authority(
+    job: FolderRefactorJobV2,
+    *,
+    pending: Path,
+    final: Path,
+) -> None:
+    if pending.parent != job.output_parent or final.parent != job.output_parent:
+        raise ValueError("Result paths must be immediate output-parent children.")
+    if _paths_overlap(pending, final):
+        raise ValueError("Pending and final result trees overlap.")
+    for result_path in (pending, final):
+        if _paths_overlap(result_path, job.source_root) or _paths_overlap(
+            result_path,
+            job.job_path.parent,
+        ):
+            raise ValueError("Exact result tree overlaps source or mutable job state.")
+
+
+def _path_is_within(path: Path, root: Path) -> bool:
+    resolved_path = path.resolve(strict=False)
+    resolved_root = root.resolve(strict=False)
+    return resolved_path == resolved_root or resolved_root in resolved_path.parents
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:

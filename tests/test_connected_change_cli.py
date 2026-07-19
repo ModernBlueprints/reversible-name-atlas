@@ -13,6 +13,10 @@ import pytest
 from connected_change_fixtures import make_connected_change_fixture
 
 from name_atlas.connected_cli import run_apply_change
+from name_atlas.folder_refactor.connected_change.job_service import (
+    ConnectedChangeJobService,
+    ConnectedChangeJobServiceError,
+)
 from name_atlas.folder_refactor.connected_change.service import (
     create_connected_change_origin,
 )
@@ -300,6 +304,53 @@ def test_default_paths_do_not_create_state_inside_selected_source(
     assert exit_code == 1
     assert not (fixture.martin_root / ".name-atlas").exists()
     assert "APPLY BLOCKED" in capsys.readouterr().err
+
+
+def test_apply_change_reports_post_execution_integrity_failure_without_traceback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    origin_output = tmp_path / "origin-output"
+    receiver_output = tmp_path / "receiver-output"
+    origin_output.mkdir()
+    receiver_output.mkdir()
+    origin = create_connected_change_origin(
+        source_root=fixture.sofia_root,
+        output_parent=origin_output,
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+    )
+
+    def reject_bound_read(
+        _self: ConnectedChangeJobService,
+        _job_path: Path,
+    ) -> tuple[Path, str, str]:
+        raise ConnectedChangeJobServiceError(
+            "result_changed_during_read",
+            "The verified result changed at the final CLI boundary.",
+        )
+
+    monkeypatch.setattr(ConnectedChangeJobService, "get_change_file", reject_bound_read)
+    exit_code = run_apply_change(
+        [
+            str(origin.change_file_path),
+            "--source",
+            str(fixture.martin_root),
+            "--output",
+            str(receiver_output),
+            "--job",
+            str(tmp_path / "jobs" / "receiver.json"),
+        ]
+    )
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert captured.out == ""
+    assert "APPLY BLOCKED result_changed_during_read" in captured.err
+    assert "Traceback" not in captured.err
 
 
 def _sha256(path: Path) -> str:

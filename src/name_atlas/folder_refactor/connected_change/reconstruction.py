@@ -53,6 +53,7 @@ class _ArtifactCommitment(Protocol):
 
 
 class _ReceiptCore(Protocol):
+    execution_role: str
     source_commitment: str
     artifact_commitments: tuple[_ArtifactCommitment, ...]
 
@@ -87,7 +88,7 @@ def restore_connected_result(
     *,
     source_root: Path | None = None,
 ) -> FolderRestoreReport:
-    """Verify a v2 result and recreate that receiver's own original layout."""
+    """Verify a v2 result and recreate that result's own original layout."""
 
     verification = _verify_connected_result(result_root)
     verification_fingerprint = _require_verified(verification)
@@ -106,7 +107,7 @@ def restore_connected_result(
         require_result_sibling=False,
     )
     authorities = _load_receiver_authorities(root)
-    _validate_receiver_authorities(
+    execution_role = _validate_receiver_authorities(
         authorities,
         verification_fingerprint=verification_fingerprint,
     )
@@ -167,6 +168,7 @@ def restore_connected_result(
                 "replacement.",
             ) from exc
         promoted = True
+        role_label = "origin" if execution_role == "origin" else "receiver"
         return FolderRestoreReport(
             receipt_fingerprint=verification_fingerprint,
             source_commitment=authorities.inventory.source_commitment,
@@ -184,23 +186,23 @@ def restore_connected_result(
                     ),
                 ),
                 FolderRestoreCheck(
-                    check_id="receiver_original_paths_recreated",
+                    check_id=f"{role_label}_original_paths_recreated",
                     detail=(
-                        "Every receiver-local source path was recreated exactly "
-                        "once from the receiver receipt."
+                        f"Every {role_label}-local source path was recreated "
+                        f"exactly once from the {role_label} receipt."
                     ),
                 ),
                 FolderRestoreCheck(
-                    check_id="receiver_original_bytes_recreated",
+                    check_id=f"{role_label}_original_bytes_recreated",
                     detail=(
-                        "Every reconstructed file matches the receiver snapshot's "
-                        "exact size and SHA-256."
+                        f"Every reconstructed file matches the {role_label} "
+                        "snapshot's exact size and SHA-256."
                     ),
                 ),
                 FolderRestoreCheck(
-                    check_id="receiver_empty_directories_recreated",
+                    check_id=f"{role_label}_empty_directories_recreated",
                     detail=(
-                        "Every explicit empty directory in the receiver snapshot "
+                        f"Every explicit empty directory in the {role_label} snapshot "
                         "was recreated."
                     ),
                 ),
@@ -302,19 +304,24 @@ def _validate_receiver_authorities(
     authorities: _LoadedReceiverAuthorities,
     *,
     verification_fingerprint: str,
-) -> None:
+) -> str:
     envelope = cast(_ReceiptEnvelope, authorities.envelope)
     inventory = authorities.inventory
     plan = authorities.accepted_plan
+    expected_authority = {
+        "origin": "gpt_plan",
+        "receiver": "change_file",
+    }.get(envelope.receipt.execution_role)
     if (
-        envelope.receipt_fingerprint != verification_fingerprint
+        expected_authority is None
+        or envelope.receipt_fingerprint != verification_fingerprint
         or envelope.receipt.source_commitment != inventory.source_commitment
         or plan.source_commitment != inventory.source_commitment
-        or plan.execution_authority != "change_file"
+        or plan.execution_authority != expected_authority
     ):
         raise FolderReconstructionError(
             "receipt_reparse_failed",
-            "Receiver receipt, snapshot, plan, and verification are not bound.",
+            "Result receipt, snapshot, plan authority, and verification are not bound.",
         )
     if not _authorities_match_receipt(envelope, authorities):
         raise FolderReconstructionError(
@@ -350,6 +357,7 @@ def _validate_receiver_authorities(
                 "Receiver-local map differs from its own source snapshot or plan: "
                 f"{source_file.relative_path}.",
             )
+    return envelope.receipt.execution_role
 
 
 def _authorities_match_receipt(

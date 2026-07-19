@@ -1212,4 +1212,4 @@ async def test_browser_restart_rehydrates_question_without_duplicate_turn(
     assert "Which presentation is approved for delivery?" in question.text
     assert answered.status_code == 303
     assert len(calls) == 2
-    assert "Your separate result is ready" in done.text
+    assert "Your new folder is ready" in done.text

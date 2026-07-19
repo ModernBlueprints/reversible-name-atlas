@@ -765,3 +765,16 @@ overrides those artifacts.
 - Rationale: The existential cross-layout premise is proven end to end before
   the C0 deadline. The final independent re-audit found no remaining material
   C0 defect; C1 now owns the separately classified engine-hardening work.
+
+## D-080 — Exact sibling-result and native-picker browser authority
+
+- Date: 19 July 2026
+- Decision: Permit a selected output parent that is a strict source ancestor
+  while requiring the exact pending and final result trees to remain disjoint
+  from the source and each other, and include bounded native-picker invocation
+  in the existing minimal-JavaScript authority.
+- Rationale: The required default result next to the source necessarily uses the
+  source's parent, and the required native selection route necessarily needs a
+  small browser invocation. The previous literal wording contradicted those two
+  required behaviors even though the exact result trees, native scripts, and
+  server-side validators remain bounded.

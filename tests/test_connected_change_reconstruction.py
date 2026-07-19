@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from connected_change_fixtures import portable_tree, tree_state
+from connected_change_fixtures import (
+    make_connected_change_fixture,
+    portable_tree,
+    tree_state,
+)
 
 from name_atlas.folder_refactor.connected_change.accepted_plan import (
     build_connected_accepted_plan,
@@ -15,6 +19,9 @@ from name_atlas.folder_refactor.connected_change.accepted_plan import (
 from name_atlas.folder_refactor.connected_change.reconstruction import (
     _LoadedReceiverAuthorities,
     restore_connected_result,
+)
+from name_atlas.folder_refactor.connected_change.service import (
+    create_connected_change_origin,
 )
 from name_atlas.folder_refactor.inventory import scan_folder
 from name_atlas.folder_refactor.portable_artifacts import (
@@ -34,6 +41,7 @@ from name_atlas.folder_refactor.reconstruction import FolderReconstructionError
 
 @dataclass(frozen=True, slots=True)
 class _ReceiptCore:
+    execution_role: str
     source_commitment: str
     artifact_commitments: tuple[FolderArtifactCommitment, ...]
 
@@ -137,6 +145,7 @@ def _receiver_authorities(tmp_path: Path) -> tuple[Path, _LoadedReceiverAuthorit
     fingerprint = "b" * 64
     envelope = _ReceiptEnvelope(
         receipt=_ReceiptCore(
+            execution_role="receiver",
             source_commitment=inventory.source_commitment,
             artifact_commitments=commitments,
         ),
@@ -198,6 +207,39 @@ def test_recreates_receivers_own_paths_bytes_and_empty_directories(
     ).read_bytes()
     assert tree_state(source) == source_before
     assert tree_state(result) == result_before
+
+
+def test_recreates_origin_paths_bytes_and_empty_directories(tmp_path: Path) -> None:
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    output_parent = tmp_path / "origin-results"
+    output_parent.mkdir()
+    source_before = tree_state(fixture.sofia_root)
+    source_commitment = scan_folder(fixture.sofia_root).inventory.source_commitment
+    origin = create_connected_change_origin(
+        source_root=fixture.sofia_root,
+        output_parent=output_parent,
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+    )
+    result_before = tree_state(origin.folder_run.result_root)
+    destination = tmp_path / "recreated-sofia-original"
+
+    report = restore_connected_result(
+        origin.folder_run.result_root,
+        destination,
+        source_root=fixture.sofia_root,
+    )
+
+    assert report.source_commitment == source_commitment
+    assert {check.check_id for check in report.checks} >= {
+        "origin_original_paths_recreated",
+        "origin_original_bytes_recreated",
+        "origin_empty_directories_recreated",
+    }
+    assert portable_tree(destination) == portable_tree(fixture.sofia_root)
+    assert tree_state(fixture.sofia_root) == source_before
+    assert tree_state(origin.folder_run.result_root) == result_before
 
 
 def test_known_receiver_source_overlap_is_refused_before_copy(

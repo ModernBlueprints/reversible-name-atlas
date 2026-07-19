@@ -14,6 +14,10 @@ def run(argv: Sequence[str] | None = None) -> int:
         from name_atlas.connected_cli import run_apply_change
 
         return run_apply_change(arguments[1:])
+    if arguments and arguments[0] == "run":
+        from name_atlas.connected_browser_cli import run_connected_browser
+
+        return run_connected_browser(arguments[1:])
 
     from name_atlas.cli import run as run_legacy_cli
 

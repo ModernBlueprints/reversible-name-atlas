@@ -221,6 +221,91 @@ def test_revision_and_process_lock_fail_closed(tmp_path: Path) -> None:
         writer.save(blocked_candidate, expected_current=job)
 
 
+@pytest.mark.parametrize("layout", ("inside", "equal"))
+def test_v2_job_blocks_output_parent_equal_to_or_inside_source(
+    tmp_path: Path,
+    layout: str,
+) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "note.txt").write_text("unchanged\n", encoding="utf-8")
+    output = source / "results" if layout == "inside" else source
+    if layout == "inside":
+        output.mkdir()
+
+    with pytest.raises(ValueError, match="cannot equal or be inside"):
+        build_new_gpt_job_v2(
+            source_root=source,
+            output_parent=output,
+            job_path=tmp_path / "state" / "job.json",
+            user_request="Organize this project.",
+            idempotency_key=f"blocked-{layout}",
+        )
+
+
+def test_v2_job_state_may_be_a_sibling_under_broad_output_parent(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    source = workspace / "source"
+    source.mkdir(parents=True)
+    (source / "note.txt").write_text("unchanged\n", encoding="utf-8")
+    job_path = workspace / ".name-atlas" / "jobs" / "job.json"
+
+    job = build_new_gpt_job_v2(
+        source_root=source,
+        output_parent=workspace,
+        job_path=job_path,
+        user_request="Organize this project.",
+        idempotency_key="sibling-output",
+    )
+    store = _save_new(job)
+
+    assert job.output_parent == workspace.resolve()
+    assert job.job_path == job_path.resolve()
+    assert store.load() == job
+
+
+@pytest.mark.parametrize("overlap", ("pending", "final"))
+def test_exact_result_tree_cannot_contain_mutable_job_state(
+    capsule_job_fixture: _CapsuleJobFixture,
+    overlap: str,
+) -> None:
+    prepared = prepare_connected_change_application(
+        change_file_path=capsule_job_fixture.change_file_path,
+        source_root=capsule_job_fixture.fixture.martin_root,
+    )
+    job_id = "123e4567e89b42d3a456426614174000"
+    owned_root_name = (
+        f".name-atlas-{job_id}.pending"
+        if overlap == "pending"
+        else prepared.accepted_plan.result_folder_name
+    )
+    job = build_new_capsule_job_v2(
+        source_root=capsule_job_fixture.fixture.martin_root,
+        output_parent=capsule_job_fixture.output_parent,
+        job_path=(
+            capsule_job_fixture.output_parent / owned_root_name / "state" / "job.json"
+        ),
+        change_file_path=capsule_job_fixture.change_file_path,
+        idempotency_key=f"overlap-{overlap}",
+        job_id=job_id,
+    )
+    authority = CapsuleAppliedJobAuthorityV2(
+        change_file_binding=job.authority.change_file_binding,
+        match_report=prepared.match_report,
+        execution_origin=prepared.execution_origin,
+    )
+
+    with pytest.raises(ValueError, match="overlaps source or mutable job state"):
+        evolve_job_v2(
+            job,
+            authority=authority,
+            accepted_plan=prepared.accepted_plan,
+            lifecycle=FolderJobLifecycleV2.EXECUTING,
+        )
+
+
 def test_accepted_gpt_authority_requires_exact_evidence_ledger() -> None:
     with pytest.raises(ValueError, match="exact evidence ledger"):
         GptPlannedJobAuthorityV2(

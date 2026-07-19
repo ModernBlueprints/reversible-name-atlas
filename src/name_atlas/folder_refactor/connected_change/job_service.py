@@ -63,6 +63,8 @@ from name_atlas.folder_refactor.connected_change.verification import (
     ConnectedReceiptVerificationStatus,
     verify_connected_result,
 )
+from name_atlas.folder_refactor.inventory import FolderScan
+from name_atlas.folder_refactor.planner_contracts import FolderPlannerProgress
 from name_atlas.folder_refactor.portable_artifacts import (
     CHANGE_RECEIPT_PATH,
     canonical_portable_json_bytes,
@@ -77,6 +79,7 @@ from name_atlas.folder_refactor.serialization import (
 from name_atlas.folder_refactor.transaction import (
     FolderTransactionError,
     FolderTransactionPaths,
+    FolderTransactionProgress,
 )
 from name_atlas.verification.promotion import promote_directory_no_replace
 
@@ -115,6 +118,31 @@ class ConnectedChangeJobService:
         )
         return self._save_or_reuse(candidate)
 
+    def create_planned_origin_job(
+        self,
+        *,
+        source_root: Path,
+        output_parent: Path,
+        job_path: Path,
+        request: str,
+        idempotency_key: str,
+        scan: FolderScan,
+        planner_progress: FolderPlannerProgress,
+    ) -> FolderRefactorJobV2:
+        """Persist one full-progress origin job before any provider turn."""
+
+        candidate = build_new_gpt_job_v2(
+            source_root=source_root,
+            output_parent=output_parent,
+            job_path=job_path,
+            user_request=request,
+            idempotency_key=idempotency_key,
+            scan=scan,
+            job_id=planner_progress.job_id,
+            planner_progress=planner_progress,
+        )
+        return self._save_or_reuse(candidate)
+
     def start_application(
         self,
         *,
@@ -123,6 +151,7 @@ class ConnectedChangeJobService:
         output_parent: Path,
         job_path: Path,
         idempotency_key: str,
+        progress_callback: FolderTransactionProgress | None = None,
     ) -> FolderRefactorJobV2:
         """Create or resume one provider-free receiver transaction."""
 
@@ -133,7 +162,10 @@ class ConnectedChangeJobService:
             job_path=job_path,
             idempotency_key=idempotency_key,
         )
-        return self.run_or_resume(job.job_path)
+        return self.run_or_resume(
+            job.job_path,
+            progress_callback=progress_callback,
+        )
 
     def start_deterministic_origin(
         self,
@@ -145,6 +177,7 @@ class ConnectedChangeJobService:
         result_folder_name: str,
         target_by_original_path: Mapping[str, str],
         idempotency_key: str,
+        progress_callback: FolderTransactionProgress | None = None,
     ) -> FolderRefactorJobV2:
         """Persist and execute one truthful development origin transaction."""
 
@@ -165,9 +198,17 @@ class ConnectedChangeJobService:
                 target_by_original_path=target_by_original_path,
             )
             self._persist_origin_preparation(job.job_path, prepared)
-        return self.run_or_resume(job.job_path)
+        return self.run_or_resume(
+            job.job_path,
+            progress_callback=progress_callback,
+        )
 
-    def run_or_resume(self, job_path: Path) -> FolderRefactorJobV2:
+    def run_or_resume(
+        self,
+        job_path: Path,
+        *,
+        progress_callback: FolderTransactionProgress | None = None,
+    ) -> FolderRefactorJobV2:
         """Continue one exact durable job without duplicate work."""
 
         store = FolderRefactorJobV2Store(job_path)
@@ -230,6 +271,7 @@ class ConnectedChangeJobService:
                         pending_root=expected_pending_result_path_v2(job),
                         final_root=expected_final_result_path_v2(job),
                     ),
+                    progress_callback=progress_callback,
                 )
                 return self._finalize_verified(
                     writer,
@@ -269,6 +311,17 @@ class ConnectedChangeJobService:
         """Read one durable job without provider, budget, copy, or mutation."""
 
         record = FolderRefactorJobV2Store(job_path).inspect()
+        if not isinstance(record, FolderRefactorJobV2):
+            raise ConnectedChangeJobServiceError(
+                "legacy_job_read_only",
+                "The selected v1 job is historical read-only evidence.",
+            )
+        return record
+
+    def rehydrate(self, job_path: Path) -> FolderRefactorJobV2:
+        """Revalidate one job's local inputs without provider or execution work."""
+
+        record = FolderRefactorJobV2Store(job_path).load()
         if not isinstance(record, FolderRefactorJobV2):
             raise ConnectedChangeJobServiceError(
                 "legacy_job_read_only",
@@ -381,12 +434,20 @@ class ConnectedChangeJobService:
                 evidence_ledger=ledger,
                 execution_origin=prepared.execution_origin,
             )
-            candidate = evolve_job_v2(
-                job,
-                authority=authority,
-                accepted_plan=prepared.accepted_plan,
-                lifecycle=FolderJobLifecycleV2.EXECUTING,
-            )
+            try:
+                candidate = evolve_job_v2(
+                    job,
+                    authority=authority,
+                    accepted_plan=prepared.accepted_plan,
+                    lifecycle=FolderJobLifecycleV2.EXECUTING,
+                )
+            except ValueError as exc:
+                return self._mark_blocked_or_return_terminal(
+                    writer,
+                    job,
+                    code="result_path_unavailable",
+                    message=str(exc),
+                )
             return writer.save(candidate, expected_current=job)
 
     def _persist_application_preparation(
@@ -405,12 +466,20 @@ class ConnectedChangeJobService:
             match_report=prepared.match_report,
             execution_origin=prepared.execution_origin,
         )
-        candidate = evolve_job_v2(
-            job,
-            authority=authority,
-            accepted_plan=prepared.accepted_plan,
-            lifecycle=FolderJobLifecycleV2.EXECUTING,
-        )
+        try:
+            candidate = evolve_job_v2(
+                job,
+                authority=authority,
+                accepted_plan=prepared.accepted_plan,
+                lifecycle=FolderJobLifecycleV2.EXECUTING,
+            )
+        except ValueError as exc:
+            return self._mark_blocked_or_return_terminal(
+                writer,
+                job,
+                code="result_path_unavailable",
+                message=str(exc),
+            )
         return writer.save(candidate, expected_current=job)
 
     def _rehydrate_prepared(

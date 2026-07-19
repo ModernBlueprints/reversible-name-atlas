@@ -1,6 +1,8 @@
 {% extends "folder/base.html" %}
 {% block title %}Working · Reversible Name Atlas{% endblock %}
 {% block content %}
+  {% set current_journey = journey|default("organize", true) %}
+  {% set current_planner_note = planner_note|default("", true) %}
   <section class="folder-panel folder-panel--working" aria-labelledby="working-title">
     {% if state.lifecycle.value == "blocked" %}
       <div class="folder-kicker folder-kicker--blocked">Transaction blocked</div>
@@ -11,15 +13,17 @@
       </div>
       <p class="folder-lede">The original folder remains unchanged. Start a fresh job after correcting the exact blocker.</p>
       <p>Start a fresh job after correcting the blocker. No partial result is accepted.</p>
-    {% elif state.lifecycle.value == "awaiting_clarification" %}
+    {% elif state.lifecycle.value == "awaiting_clarification" and current_journey == "organize" %}
       <div class="folder-kicker">One detail needed</div>
       <h1 id="working-title">Name Atlas needs one answer</h1>
       <p class="folder-lede">The same job will continue automatically. Your original folder remains untouched.</p>
 
-      <div class="folder-planner-truth" role="status">
-        <img src="{{ url_for('static', path='/vendor/blueprint/icons/help.svg') }}" alt="" aria-hidden="true">
-        <span><strong>{{ planner_label }}</strong><small>The deterministic A3 provider makes no API call.</small></span>
-      </div>
+      {% if planner_label|default("") %}
+        <div class="folder-planner-truth" role="status">
+          <img src="{{ url_for('static', path='/vendor/blueprint/icons/help.svg') }}" alt="" aria-hidden="true">
+          <span><strong>{{ planner_label }}</strong>{% if current_planner_note %}<small>{{ current_planner_note }}</small>{% endif %}</span>
+        </div>
+      {% endif %}
 
       {% if state.clarification_error %}
         <div class="folder-alert" role="alert">
@@ -36,33 +40,77 @@
       </form>
       <p>No file-by-file review is required.</p>
     {% else %}
-      <div class="folder-kicker">Creating a separate result</div>
-      <h1 id="working-title">Name Atlas is checking the whole plan</h1>
-      <p class="folder-lede">You can leave this page open. The server owns the transaction and the original folder remains untouched.</p>
+      <div class="folder-kicker">{% if current_journey == "apply" %}Applying a shared change{% else %}Organizing a folder{% endif %}</div>
+      <h1 id="working-title">{% if current_journey == "apply" %}Name Atlas is matching the project{% else %}Name Atlas is planning the change{% endif %}</h1>
+      <p class="folder-lede">You can leave this page open. The persisted job owns the transaction and your selected project folder remains untouched.</p>
 
-      <div class="folder-planner-truth" role="status">
-        <img src="{{ url_for('static', path='/vendor/blueprint/icons/history.svg') }}" alt="" aria-hidden="true">
-        <span><strong>{{ planner_label }}</strong><small>GPT-5.6 is not called in this A3 development transaction.</small></span>
-      </div>
+      {% if planner_label|default("") %}
+        <div class="folder-planner-truth" role="status">
+          <img src="{{ url_for('static', path='/vendor/blueprint/icons/history.svg') }}" alt="" aria-hidden="true">
+          <span><strong>{{ planner_label }}</strong>{% if current_planner_note %}<small>{{ current_planner_note }}</small>{% endif %}</span>
+        </div>
+      {% endif %}
 
-      <ol class="folder-stages" aria-label="Folder transaction progress">
+      <ol class="folder-stages" aria-label="Folder transaction progress" data-progress-list>
         {% for stage in stages %}
           {% set stage_index = loop.index0 %}
-          <li class="{% if stage_index < state.completed_stage_count %}is-complete{% elif stage_index == state.current_stage %}is-active{% else %}is-pending{% endif %}">
-            <span class="folder-stage-marker" aria-hidden="true">{% if stage_index < state.completed_stage_count %}✓{% else %}{{ loop.index }}{% endif %}</span>
+          {% set stage_complete = stage_index < state.completed_stage_count %}
+          {% set stage_active = not stage_complete and stage_index == state.current_stage %}
+          <li class="{% if stage_complete %}is-complete{% elif stage_active %}is-active{% else %}is-pending{% endif %}" data-stage-index="{{ stage_index }}"{% if stage_active %} aria-current="step"{% endif %}>
+            <span class="folder-stage-marker" data-stage-marker data-stage-number="{{ loop.index }}" aria-hidden="true">{% if stage_complete %}✓{% else %}{{ loop.index }}{% endif %}</span>
             <span>
-              <strong>{{ stage }}</strong>
-              {% if stage == "Name Atlas is planning" %}<small>Deterministic provider active; no API call.</small>{% endif %}
+              <strong data-stage-label>{{ stage }}</strong>
+              <span class="folder-sr-only" data-stage-status>{% if stage_complete %}Completed{% elif stage_active %}Current step{% else %}Pending{% endif %}</span>
             </span>
           </li>
         {% endfor %}
       </ol>
+      <p class="folder-sr-only" id="folder-progress-status" aria-live="polite" aria-atomic="true">Current step: {{ stages[state.current_stage] }}</p>
 
       <script>
+        const nameAtlasProgressItems = Array.from(document.querySelectorAll("[data-stage-index]"));
+        const nameAtlasProgressStatus = document.getElementById("folder-progress-status");
+        let nameAtlasProgressAnnouncement = nameAtlasProgressStatus ? nameAtlasProgressStatus.textContent : "";
+
+        function updateNameAtlasProgress(status) {
+          const currentStage = Number(status.current_stage);
+          const completedStageCount = Number(status.completed_stage_count);
+          if (!Number.isInteger(currentStage) || !Number.isInteger(completedStageCount)) return;
+          if (currentStage < 0 || currentStage >= nameAtlasProgressItems.length) return;
+          if (completedStageCount < 0 || completedStageCount > nameAtlasProgressItems.length) return;
+
+          nameAtlasProgressItems.forEach(function updateStage(item, index) {
+            const complete = index < completedStageCount;
+            const active = !complete && index === currentStage;
+            item.classList.toggle("is-complete", complete);
+            item.classList.toggle("is-active", active);
+            item.classList.toggle("is-pending", !complete && !active);
+            if (active) item.setAttribute("aria-current", "step");
+            else item.removeAttribute("aria-current");
+
+            const marker = item.querySelector("[data-stage-marker]");
+            if (marker) marker.textContent = complete ? "✓" : marker.dataset.stageNumber;
+            const stageStatus = item.querySelector("[data-stage-status]");
+            if (stageStatus) stageStatus.textContent = complete ? "Completed" : (active ? "Current step" : "Pending");
+          });
+
+          if (!nameAtlasProgressStatus) return;
+          let announcement = "All steps completed.";
+          if (completedStageCount < nameAtlasProgressItems.length) {
+            const label = nameAtlasProgressItems[currentStage].querySelector("[data-stage-label]");
+            announcement = `Current step: ${label ? label.textContent : currentStage + 1}`;
+          }
+          if (announcement !== nameAtlasProgressAnnouncement) {
+            nameAtlasProgressAnnouncement = announcement;
+            nameAtlasProgressStatus.textContent = announcement;
+          }
+        }
+
         window.setTimeout(async function pollNameAtlas() {
           try {
             const response = await window.fetch("/status", {cache: "no-store"});
             const status = await response.json();
+            updateNameAtlasProgress(status);
             if (status.lifecycle === "verified") {
               window.location.assign("/done");
               return;

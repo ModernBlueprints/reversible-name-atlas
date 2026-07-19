@@ -110,9 +110,10 @@ async def test_start_is_plain_exact_and_truthful(tmp_path: Path) -> None:
     assert "Plan and create copy" in response.text
     assert "Your original folder will not be changed." in response.text
     assert "It does not send every file's bytes." in response.text
-    assert "Standard OpenAI API data-retention policies may still apply." in (
-        response.text
-    )
+    assert (
+        "OpenAI's standard abuse-monitoring and prompt-caching retention may still "
+        "apply."
+    ) in response.text
     assert "Deterministic A3 planner — no API call" in response.text
     assert str(tmp_path / "preselected-source") in response.text
     assert str(tmp_path / "preselected-results") in response.text
@@ -164,12 +165,14 @@ async def test_server_owned_start_working_done_transaction(tmp_path: Path) -> No
         "Reading folder",
         "Name Atlas is planning",
         "Checking every file and destination",
-        "Creating a separate result",
+        "Creating the new folder",
         "Updating supported links",
-        "Verifying result",
+        "Verifying the result",
     ):
         assert stage in working.text
-    assert "GPT-5.6 is not called in this A3 development transaction." in working.text
+    assert "This deterministic development transaction makes no API call." in (
+        working.text
+    )
     assert status.json()["lifecycle"] == "planning"
     assert duplicate.status_code == 303
     assert duplicate.headers["location"] == "/working"
@@ -177,7 +180,7 @@ async def test_server_owned_start_working_done_transaction(tmp_path: Path) -> No
     assert completed.json()["lifecycle"] == "verified"
     assert done_root.headers["location"] == "/done"
     assert done.status_code == 200
-    assert "Your separate result is ready" in done.text
+    assert "Your new folder is ready" in done.text
     assert "4 of 4, exactly once" in done.text
     assert "Paths changed" in done.text and ">3<" in done.text
     assert "Original folder" in done.text and "Unchanged" in done.text

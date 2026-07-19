@@ -191,13 +191,16 @@ Before planning and execution, calculate source bytes and require:
 
 `required_free = source_bytes + rewritten_markdown_original_bytes + max(256 MiB, ceil(source_bytes × 0.10))`
 
-No separate total-byte cap applies, but capacity must pass. The resolved source
-and output-parent/result trees may not contain one another. Pending and final
-results may be children of the selected output parent, but the job file and all
-mutable local-state directories must be outside the source, pending result,
-final result, and portable handoff. No mutable product state may become an
-in-scope source member. Resolve every absent path through its nearest existing
-ancestor. The output parent must be writable and the final result absent.
+No separate total-byte cap applies, but capacity must pass. The selected output
+parent may be disjoint from the source or a strict ancestor of it; the default
+result-next-to-source layout uses the source's parent. The output parent may not
+equal the source or be inside it. The exact pending and final result trees must
+be immediate children of the selected output parent, remain mutually disjoint,
+and neither contain nor be contained by the source. The job file and all mutable
+local-state directories must be outside the source, pending result, final
+result, and portable handoff. No mutable product state may become an in-scope
+source member. Resolve every absent path through its nearest existing ancestor.
+The output parent must be writable and the final result absent.
 
 The default `.name-atlas/jobs/` directory is ignored local state. It is usable
 only when its resolved location satisfies the separation rule above; otherwise
@@ -1271,7 +1274,8 @@ path.
 ### UX-016 — Responsive and truthful release experience
 
 FastAPI/Jinja/locally packaged Blueprint remains server-authoritative. Minimal
-JavaScript is limited to polling, disclosure, clipboard, and local filtering.
+JavaScript is limited to polling, disclosure, native-picker invocation,
+clipboard, and local filtering.
 Acceptance includes 1280×720 and 390×844, semantic/keyboard/focus/contrast
 review, and truthful origin-specific progress. Responsive layout is not a
 mobile app, remote phone access, or native-file-access claim.

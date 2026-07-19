@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C2 IN PROGRESS**
+Status: **EXECUTION ACTIVE; C2 COMPLETE; C3 NEXT**
 
-Phase: **C2_COMPLETE_BROWSER_AND_NATIVE_EXPERIENCE**
+Phase: **C3_FINAL_GPT_EVIDENCE_AND_FIXTURES**
 
 Submission hold: **ACTIVE**
 
@@ -68,8 +68,10 @@ The former A4, plugin gate, and A5–A7 are:
 Before C+0, Connected Change, native-picker expansion, shared MCP, plugin
 packaging, budget migration, new provider calls, promotion, video, and
 submission had not begun. C0 subsequently selected `CONNECTED_CHANGE_GO`; C1
-completed the full engine and durable-service boundary. C2 now owns the browser
-and bounded native experience while C3 and later surfaces remain deferred.
+completed the full engine and durable-service boundary, and C2 completed the
+browser and bounded native experience. C3 now owns the final fixture, budget,
+live GPT-5.6, and recorded-replay evidence while C4 and later surfaces remain
+deferred.
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -563,12 +565,40 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator; bounded visual/accessibility reviewer permitted.
 - **Allowed cut:** decorative motion, native completion notification,
   nonessential metrics, advanced filters, and expanded evidence presentation.
-- **Actual status:** `IN PROGRESS` from Sunday 19 July 2026 at 02:18:19 CEST.
-- **Actual verification:** C1 established the shared durable service and
-  responsive portable proof consumed by this milestone. Browser routes, native
-  picker behavior, truthful Organize/Apply progress, final Done actions, and the
-  complete C2 viewport/accessibility acceptance remain to be implemented and
-  verified.
+- **Actual status:** `COMPLETE` on Sunday 19 July 2026 at 04:42:42 CEST.
+- **Actual verification:** the one FastAPI/Jinja release surface now implements
+  Home, Organize, Apply, Working, one clarification, Done, Change File download,
+  source-free verification, Finder reveal, and receiver-local reconstruction.
+  Organize uses the persistent bounded planner authority; Apply dispatches
+  before planner, provider, credential, and budget initialization and truthfully
+  reports zero GPT/API use. The fixed-role macOS picker uses exact
+  `/usr/bin/osascript` without a shell, has cancellation/unavailable/timeout/
+  failure handling and process reaping, preserves manual path entry, and restores
+  keyboard focus; Finder opens only a verified job-owned result through exact
+  `/usr/bin/open`. Planner history is append-only across v2 revisions,
+  clarification survives restart, source mutation during provider exchange
+  returns durable staleness, and startup rehydrates nonterminal jobs without a
+  provider call. Product-native evidence at
+  `.name-atlas/c2-checkpoint-20260719T034628+0200` proves distinct origin and
+  receiver source commitments, identical organized-tree commitment
+  `d89bc2cc97c144ef69b2fecde53cbf97b94d2524de66b786ede4e12f109f0d3f`,
+  receiver `capsule_applied` provenance with provider/API/external-network use
+  `0/FALSE/FALSE`, verified receipts
+  `5ae90382bf9acdd79c6cb04faa575b8ae11d89fe1f01e8d80decd658494d7eda`
+  and `fa148a3ec4f3bdc2463c8a6564a393d2726d6b182dcca640c2d4b72555fb194d`,
+  exact origin/receiver reconstruction, source immutability, and restart without
+  duplicate output. Browser evidence at
+  `.name-atlas/c2-visual-final-20260719T0425` contains genuine, distinct
+  Organize and Apply Working views plus Home, forms, and Done at 1280×720 and
+  390×844; measured narrow scroll width is 390 pixels. Polled stages update
+  visible and assistive state, long technical text wraps, inactive input
+  boundaries measure 3.146:1 against the raised panel, and the independent
+  visual/accessibility re-audit returned aggregate `GO`. The final root run
+  passed **34 focused browser/native tests and 759 full-suite tests**;
+  `uv lock --check` resolved 32 packages, Ruff lint passed, Ruff format passed
+  over 136 files, and `git diff --check` passed. No budget migration, provider
+  call, MCP, plugin, promotion, public-release, video, or submission operation
+  occurred.
 
 ### C3 — Final GPT-5.6 evidence and fixtures
 

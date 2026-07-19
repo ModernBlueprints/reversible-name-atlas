@@ -9,6 +9,7 @@ from pydantic import Field, model_validator
 
 from name_atlas.folder_refactor.contracts import (
     SHA256_PATTERN,
+    FolderAcceptedPlan,
     FolderInventory,
     StrictFrozenModel,
 )
@@ -144,6 +145,57 @@ def build_connected_accepted_plan(
     )
     validate_connected_accepted_plan(inventory=inventory, request=request, plan=plan)
     return plan
+
+
+def convert_planner_accepted_plan(
+    *,
+    inventory: FolderInventory,
+    request: str,
+    plan: FolderAcceptedPlan,
+) -> FolderAcceptedPlanV2:
+    """Convert one mechanically accepted v1 planner map into v2 authority."""
+
+    if (
+        plan.source_commitment != inventory.source_commitment
+        or plan.request_fingerprint != request_fingerprint(request)
+    ):
+        raise ValueError(
+            "planner_accepted_plan_binding_mismatch: plan targets another job"
+        )
+    target_by_file_id = {
+        mapping.file_id: mapping.target_path
+        for mapping in plan.file_mappings
+        if not mapping.protected
+    }
+    converted = build_connected_accepted_plan(
+        inventory=inventory,
+        request=request,
+        evidence_fingerprint=plan.evidence_fingerprint,
+        result_folder_name=plan.result_folder_name,
+        target_by_file_id=target_by_file_id,
+        execution_authority="gpt_plan",
+    )
+    before = {
+        mapping.file_id: (
+            mapping.original_path,
+            mapping.target_path,
+            mapping.protected,
+        )
+        for mapping in plan.file_mappings
+    }
+    after = {
+        mapping.file_id: (
+            mapping.original_path,
+            mapping.target_path,
+            mapping.protected,
+        )
+        for mapping in converted.file_mappings
+    }
+    if before != after or plan.empty_directories != converted.empty_directories:
+        raise ValueError(
+            "planner_accepted_plan_conversion_mismatch: v2 map changed planner output"
+        )
+    return converted
 
 
 def validate_connected_accepted_plan(

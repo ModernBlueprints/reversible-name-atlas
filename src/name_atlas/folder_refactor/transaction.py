@@ -414,12 +414,9 @@ def _preflight_output_parent(
         raise FolderTransactionError(
             f"Result location cannot be resolved: {output_parent}"
         ) from exc
-    if _contains(source_root, resolved_output) or _contains(
-        resolved_output,
-        source_root,
-    ):
+    if _contains(source_root, resolved_output):
         raise FolderTransactionError(
-            "Source folder and result location cannot contain one another."
+            "Result location cannot be the source folder or be inside it."
         )
     if not os.access(resolved_output, os.W_OK | os.X_OK):
         raise FolderTransactionError(
@@ -553,6 +550,11 @@ def execute_accepted_folder_plan(
             raise FolderTransactionError(
                 "Persisted pending result is not the exact job-owned output child."
             )
+    _require_separate_result_trees(
+        source_root=initial_scan.source_root,
+        pending_root=pending_root,
+        final_root=final_root,
+    )
     if os.path.lexists(final_root):
         raise FolderTransactionError(f"Final result already exists: {final_root}")
     if os.path.lexists(pending_root):
@@ -1702,3 +1704,26 @@ def _contains(parent: Path, child: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _require_separate_result_trees(
+    *,
+    source_root: Path,
+    pending_root: Path,
+    final_root: Path,
+) -> None:
+    if _trees_overlap(pending_root, final_root):
+        raise FolderTransactionError(
+            "Pending and final result trees must remain separate."
+        )
+    if _trees_overlap(source_root, pending_root) or _trees_overlap(
+        source_root,
+        final_root,
+    ):
+        raise FolderTransactionError(
+            "Exact pending and final result trees must remain outside the source."
+        )
+
+
+def _trees_overlap(left: Path, right: Path) -> bool:
+    return _contains(left, right) or _contains(right, left)

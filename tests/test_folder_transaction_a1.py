@@ -262,7 +262,7 @@ async def test_capacity_formula_and_insufficient_space_block_before_planning(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("layout", ["output_inside_source", "source_inside_output"])
+@pytest.mark.parametrize("layout", ["output_inside_source", "output_equals_source"])
 async def test_source_and_output_overlap_block_before_planning(
     tmp_path: Path,
     layout: str,
@@ -272,14 +272,14 @@ async def test_source_and_output_overlap_block_before_planning(
         output_parent = source / "results"
         output_parent.mkdir()
     else:
-        output_parent = tmp_path / "workspace"
-        source = _make_source(output_parent / "source")
+        source = _make_source(tmp_path / "source")
+        output_parent = source
     source_before = _source_state(source)
     planner = _planner()
 
     with pytest.raises(
         FolderTransactionError,
-        match="cannot contain one another",
+        match="cannot be the source folder or be inside it",
     ):
         await run_folder_refactor(
             source_root=source,
@@ -289,6 +289,48 @@ async def test_source_and_output_overlap_block_before_planning(
         )
 
     assert planner.invocation_count == 0
+    assert _source_state(source) == source_before
+
+
+@pytest.mark.anyio
+async def test_source_parent_is_valid_sibling_result_location(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    source = _make_source(workspace / "source")
+    source_before = _source_state(source)
+
+    result = await run_folder_refactor(
+        source_root=source,
+        output_parent=workspace,
+        request=REQUEST,
+        planner=_planner(),
+    )
+
+    assert result.result_root == workspace / RESULT_NAME
+    assert result.result_root.parent == source.parent
+    assert _source_state(source) == source_before
+
+
+@pytest.mark.anyio
+async def test_result_name_colliding_with_source_blocks_before_write(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    source = _make_source(workspace / RESULT_NAME)
+    source_before = _source_state(source)
+    planner = _planner()
+
+    with pytest.raises(
+        FolderTransactionError,
+        match="Exact pending and final result trees must remain outside the source",
+    ):
+        await run_folder_refactor(
+            source_root=source,
+            output_parent=workspace,
+            request=REQUEST,
+            planner=planner,
+        )
+
+    assert planner.invocation_count == 1
     assert _source_state(source) == source_before
 
 

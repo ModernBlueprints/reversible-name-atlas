@@ -99,9 +99,19 @@ def run_apply_change(argv: Sequence[str] | None = None) -> int:
         print("APPLY BLOCKED verified_job_incomplete", file=sys.stderr)
         return 1
 
-    change_path, change_fingerprint, originating_receipt = (
-        ConnectedChangeJobService().get_change_file(job.job_path)
-    )
+    try:
+        change_path, change_fingerprint, originating_receipt = (
+            ConnectedChangeJobService().get_change_file(job.job_path)
+        )
+    except (
+        FolderJobV2Error,
+        ConnectedChangeJobServiceError,
+        OSError,
+        ValueError,
+    ) as exc:
+        code = getattr(exc, "code", exc.__class__.__name__)
+        print(f"APPLY BLOCKED {code}: {exc}", file=sys.stderr)
+        return 1
     print(f"VERIFIED {job.verified_artifacts.receipt_fingerprint}")
     print(f"JOB {job.job_path}")
     print(f"RESULT {job.final_result_path}")

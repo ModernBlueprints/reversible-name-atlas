@@ -79,6 +79,7 @@ from name_atlas.folder_refactor.transaction import (
     FolderRunResult,
     FolderTransactionError,
     FolderTransactionPaths,
+    FolderTransactionProgress,
     _write_portable_bytes,
     execute_accepted_folder_plan,
     scan_folder_with_references,
@@ -593,6 +594,7 @@ def execute_prepared_connected_change(
     transaction_paths: FolderTransactionPaths | None = None,
     bag_writer: FolderBagWriter | None = None,
     package_validator: PackageValidator | None = None,
+    progress_callback: FolderTransactionProgress | None = None,
 ) -> ConnectedChangeRunResult:
     """Execute one persisted preparation through the shared copy transaction."""
 
@@ -626,6 +628,7 @@ def execute_prepared_connected_change(
             ),
             proof_finalizer=finalizer,
             transaction_paths=transaction_paths,
+            progress_callback=progress_callback,
         )
     except FolderTransactionError as exc:
         connected_error = _project_connected_transaction_error(exc)
