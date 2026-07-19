@@ -23,7 +23,9 @@ release, and submission confirmation remain pending.
 Rechecked Sunday 19 July 2026 against the
 [Official Rules](https://openai.devpost.com/rules),
 [FAQ](https://openai.devpost.com/details/faqs), and
-[dates page](https://openai.devpost.com/details/dates):
+[dates page](https://openai.devpost.com/details/dates), plus the authenticated
+Devpost registration, submission-form, key-date, and host-announcement
+readbacks:
 
 - the submission period closes **Wednesday 22 July 2026 at 02:00 CEST**;
 - the entry must be a working project built with Codex and GPT-5.6 and select
@@ -35,6 +37,12 @@ Rechecked Sunday 19 July 2026 against the
 - the README must provide setup, sample/testing guidance, specific Codex
   contributions, key decisions, and the role of GPT-5.6;
 - the primary Codex task's `/feedback` Session ID is required;
+- the authenticated account is already registered for OpenAI Build Week and
+  submissions are open;
+- the separate historical `Preflight` submission draft does not prevent this
+  entry: the official rules permit more than one substantially different
+  submission, while Reversible Name Atlas remains a distinct unsubmitted
+  project;
 - the public YouTube demonstration must include a clear working demo with
   audio, explain what was built and how Codex and GPT-5.6 were used, and remain
   under three minutes;
@@ -44,6 +52,11 @@ Rechecked Sunday 19 July 2026 against the
 - pre-existing and third-party work must be disclosed accurately; and
 - the equally weighted judging criteria are Technological Implementation,
   Design, Potential Impact, and Quality of the Idea.
+
+The live submission form requires submitter type, country of residence, one
+category, the repository URL, and the primary-task `/feedback` Session ID. Its
+plugin/developer-tool testing field is also applicable to this release. Project
+`1344382` is not yet associated with the hackathon and has not been submitted.
 
 The official sources remain controlling. The user must personally confirm
 eligibility, entrant type, country, ownership, representative authority when
@@ -72,7 +85,7 @@ applicable, and every other personal or legal attestation.
 | Accepted C6 Change File fingerprint | `2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0` |
 | Accepted C6 organized-tree commitment | `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e` |
 | Final screenshot and thumbnail hashes | **RECORDED BELOW — independent media audit GO** |
-| Devpost software page | <https://devpost.com/software/reversible-name-atlas> — existing public copy is stale and must be replaced before submission |
+| Devpost software page | <https://devpost.com/software/reversible-name-atlas> — final Connected Change copy, technologies, repository link, and audited thumbnail synchronized Sunday 19 July 2026 at 11:58:12 CEST; project `1344382`, version `3`; video URL still absent and no hackathon submission performed |
 | Public YouTube URL | `[PENDING FINAL CAPTURE AND PUBLIC UPLOAD; USER ACTION ONLY IF LOGIN/MFA/CAPTCHA IS REQUIRED]` |
 | `/feedback` Session ID | `[USER ACTION REQUIRED: run /feedback in the primary Codex build task]` |
 | Entrant type and country | `[USER ACTION REQUIRED: confirm; do not infer]` |
@@ -532,6 +545,58 @@ A macOS `say` proxy at 130 words per minute ran for 155.120454 seconds
 (2:35.120). The user's actual voice, final exported duration, and public
 playback remain required; the proxy is not substituted for them.
 
+## Live Devpost draft synchronization
+
+On Sunday 19 July 2026, the authenticated Devpost project connector read public
+project `1344382` (`reversible-name-atlas`), replaced the superseded archive
+description with the final 4,568-character Connected Change description, set
+the final tagline, replaced the technology list, and replaced the project links
+with the public repository. Devpost returned project version `3`.
+
+The independently audited 1500×1000 release thumbnail was streamed directly
+from `docs/submission-thumbnail.png` through Devpost's file-upload path. The
+processed public PNG returned HTTP 200 with content type `image/png` and 51,109
+bytes. A fresh public-page fetch displayed the final tagline, Connected Change
+description, repository link, technology list, and new thumbnail in its Open
+Graph and page content. The project remains in public `published` state with
+`video_url: null` and no hackathon association or submission. This draft
+synchronization did not release the submission hold and did not perform final
+submission.
+
+## Live Build Week registration and submission-form snapshot
+
+At Sunday 19 July 2026 at 12:05:52 CEST, authenticated Devpost readbacks
+confirmed:
+
+- OpenAI Build Week is in `submissions_open` state;
+- the account is already registered;
+- the account's existing `Preflight` project is a separate Build Week
+  `submission_draft`;
+- Reversible Name Atlas project `1344382` remains public but has no hackathon
+  association;
+- multiple substantially different submissions are permitted by the official
+  rules;
+- the deadline remains Wednesday 22 July 2026 at 02:00 CEST; and
+- the final video is required, must be publicly viewable on YouTube, must be
+  under three minutes, and must include audio covering the product, Codex, and
+  GPT-5.6.
+
+The exact current custom-field contract is:
+
+| Field ID | Field | Required | Frozen value or authority |
+|---:|---|---|---|
+| `27945` | Submitter Type | Yes | User confirms `Individual`, `Team of Individuals`, or `Organization` |
+| `27946` | Country of Residence | Yes | User confirms; never inferred |
+| `27947` | Category | Yes | `Work & Productivity` |
+| `27948` | Repository URL | Yes | `https://github.com/ModernBlueprints/reversible-name-atlas` |
+| `27949` | Judge link/testing instructions | No | Use the keyless replay and README judge path below |
+| `27950` | `/feedback` Session ID | Yes | User runs `/feedback` in this primary task |
+| `27951` | Plugin/developer-tool installation and testing | Applicable | Use the tested macOS, MCP, and Codex-plugin instructions below |
+
+No answer was invented and no submission mutation occurred during this
+readback. The final description remains a draft for the user's own review and
+approval before submission.
+
 ## Devpost description draft
 
 ### Inspiration
@@ -636,15 +701,16 @@ hardening are not part of this release.
 |---|---|
 | Project name | `Reversible Name Atlas` |
 | Tagline | `Describe the change once. Apply it wherever the same project exists.` |
-| Category | `Work & Productivity` |
-| Repository | `https://github.com/ModernBlueprints/reversible-name-atlas` — selected product is on public `main` |
+| Category (`27947`) | `Work & Productivity` |
+| Repository (`27948`) | `https://github.com/ModernBlueprints/reversible-name-atlas` — selected product is on public `main` |
 | Technologies | `Codex, GPT-5.6, OpenAI Responses API, Python 3.11, FastAPI, Jinja2, Pydantic v2, MCP Python SDK, Codex Plugin, Blueprint, BagIt, uv, pytest, Ruff, CSS, GitHub` |
-| Testing instructions | `On macOS with Python 3.11 and uv: run uv sync --frozen, then uv run name-atlas demo --mode replay and open http://127.0.0.1:8000. The bundled Sofia/Martin transaction and recorded GPT-5.6 planning run require no API key. The README also documents direct Change File, verifier, reconstruction, MCP, and Codex-plugin paths.` |
+| Judge link/testing instructions (`27949`) | `On macOS with Python 3.11 and uv: run uv sync --frozen, then uv run name-atlas demo --mode replay and open http://127.0.0.1:8000. The bundled Sofia/Martin transaction and recorded GPT-5.6 planning run require no API key. The README also documents direct Change File, verifier, reconstruction, MCP, and Codex-plugin paths.` |
+| Plugin/developer-tool instructions (`27951`) | `The README and plugins/name-atlas/README.md provide clean-clone installation, tested macOS support, keyless replay, the seven-tool MCP path, Codex plugin installation, verification, reconstruction, and uninstall instructions. Judges do not need to rebuild product logic or supply an API key for the replay.` |
 | Supported platform | `Local browser/CLI/MCP on tested macOS; manual path fields support judge automation. No native Windows test claim.` |
 | Public YouTube URL | `[PENDING FINAL CAPTURE AND PUBLIC UPLOAD; USER ACTION ONLY IF LOGIN/MFA/CAPTCHA IS REQUIRED]` |
-| `/feedback` Session ID | `[USER ACTION REQUIRED]` |
-| Submitter type | `[USER CONFIRM: Individual / Team of Individuals / Organization]` |
-| Country | `[USER CONFIRM; DO NOT INFER]` |
+| `/feedback` Session ID (`27950`) | `[USER ACTION REQUIRED]` |
+| Submitter type (`27945`) | `[USER CONFIRM: Individual / Team of Individuals / Organization]` |
+| Country (`27946`) | `[USER CONFIRM; DO NOT INFER]` |
 | Selected product SHA | `e10b09a941567d3394c71dbb5dbc3a25c74f1a82` |
 | Submission hold | `ACTIVE — FINAL SUBMIT PROHIBITED UNTIL EXPLICIT USER RELEASE` |
 
@@ -941,10 +1007,15 @@ Important supported-scope boundaries:
 
 ### Devpost and user-owned actions
 
-- [ ] Stale public Devpost copy and thumbnail replaced with final material
+- [x] Stale public Devpost copy and thumbnail replaced with final material
+- [x] Authenticated account registration and open submission period verified
+- [x] Existing Preflight draft confirmed separate; official multiple-submission
+      rule verified
 - [ ] Work & Productivity selected
-- [ ] Repository URL, technology list, supported platform, and testing
-      instructions verified
+- [x] Repository URL and technology list verified on the public project
+- [x] Supported-platform and judge/plugin testing instructions frozen for
+      submission fields `27949` and `27951`
+- [ ] User reads and approves the final project description in their own voice
 - [ ] Public YouTube URL added
 - [ ] User runs `/feedback` in the primary Codex build task and supplies the
       exact Session ID

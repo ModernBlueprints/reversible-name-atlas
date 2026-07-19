@@ -1105,3 +1105,16 @@ actionable product, video, due-diligence, and draft requirement is complete but
 the hold remains active, set `STATE.md` to
 `WAITING_FOR_SUBMISSION_HOLD_RELEASE`, request only the release, and preserve
 the accepted release unchanged.
+
+Observed protected-reserve progress on Sunday 19 July 2026 at 12:05:52 CEST:
+the authenticated Devpost connector replaced the stale public project copy,
+technology list, repository link, and thumbnail with the final Connected Change
+materials. Project `1344382` is public at version `3`, but has no video URL, no
+hackathon association, and no submission. A subsequent read-only form audit
+confirmed that the account is registered, submissions are open, the separate
+Preflight draft does not bar another substantially different entry, and the
+exact category/repository/testing field drafts are frozen. The user-owned voice,
+final capture and public playback, `/feedback`, entrant type, country, personal
+attestations, and explicit hold release remain pending; the phase therefore
+remains `RECORDING_READY` rather than
+`WAITING_FOR_SUBMISSION_HOLD_RELEASE`.

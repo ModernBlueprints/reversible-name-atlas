@@ -1,6 +1,6 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Sunday 19 July 2026 at 11:32:05 CEST**
+Checkpoint: **Sunday 19 July 2026 at 12:05:52 CEST**
 
 Phase: **RECORDING_READY**
 
@@ -14,14 +14,14 @@ Submission hold: **ACTIVE**
 - Connected Change C+0: **Saturday 18 July 2026 at 23:31:39 CEST**.
 - Selected profile: **CONNECTED_CHANGE_GO**.
 - Feature freeze: **ACTIVE; entered early Sunday 19 July 2026 at 08:36:26
-  CEST**. The absolute Monday 20 July 2026 at 14:00 CEST boundary was 26 hours,
-  27 minutes, 55 seconds away at this checkpoint.
-- Release-candidate boundary: **Monday 20 July 2026 at 20:00 CEST**; 32 hours,
-  27 minutes, 55 seconds remained.
+  CEST**. The absolute Monday 20 July 2026 at 14:00 CEST boundary was 25 hours,
+  54 minutes, 8 seconds away at this checkpoint.
+- Release-candidate boundary: **Monday 20 July 2026 at 20:00 CEST**; 31 hours,
+  54 minutes, 8 seconds remained.
 - Recording-ready boundary: **Tuesday 21 July 2026 at 02:00 CEST**; C7 was
-  accepted 38 hours, 27 minutes, 55 seconds before it.
-- Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; 62 hours,
-  27 minutes, 55 seconds remained.
+  accepted before it; 37 hours, 54 minutes, 8 seconds remained at this checkpoint.
+- Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; 61 hours,
+  54 minutes, 8 seconds remained.
 - Submission hold: **ACTIVE**.
 
 ## Repository and milestone checkpoint
@@ -43,12 +43,16 @@ Submission hold: **ACTIVE**
   `fix: preserve exact explicit job paths`.
 - Recording-ready documentation-checkpoint locator: subject
   `docs: record recording-ready public release` on parent `e10b09a`; use fresh
-  Git and the handoff for the exact SHA after this state is committed.
-- Local `main` and `origin/main`: **FAST-FORWARDED TO SELECTED PRODUCT
-  `e10b09a`**.
-- Local and remote revision branch: **CONTAINS SELECTED PRODUCT `e10b09a` AND
-  ADVANCES TO THE RECORDING-READY DOCUMENTATION CHECKPOINT IDENTIFIED ABOVE**;
-  fresh Git and the handoff control its exact post-commit SHA.
+  Git and the handoff for exact SHA
+  `56cfa8730816e350fd5c4cb70cd4fdf15f7b6b31`.
+- Live-draft documentation-checkpoint locator: subject
+  `docs: synchronize live Devpost release draft` on parent `56cfa87`; use fresh
+  Git and the handoff for its exact SHA after this state is committed.
+- Before this file's commit, local `main`, `origin/main`, and the local/remote
+  revision branch all pointed to recording-ready documentation checkpoint
+  `56cfa87`, which contains selected product `e10b09a`. The live-draft
+  checkpoint is identified above by subject and parent; fresh Git and the
+  handoff control every ref's exact post-commit tip.
 - Local/remote `revision/portable-change-receipt`:
   **PRESERVED AT `4baec1e`**.
 - New implementation branch/worktree, rebase, reset, and force-push:
@@ -73,6 +77,12 @@ post-commit cleanliness. Fresh Git controls current repository facts.
 - C6 release candidate: **COMPLETE AND VERIFIED**.
 - C7 recording readiness: **COMPLETE AND VERIFIED**.
 - Release materials: **REGENERATED, REHEARSED, AND C7-ALIGNED**.
+- Public Devpost project draft: **FINAL CONNECTED CHANGE COPY, TECHNOLOGIES,
+  REPOSITORY LINK, AND THUMBNAIL SYNCHRONIZED; VIDEO URL ABSENT; NO HACKATHON
+  SUBMISSION**.
+- Build Week account/form: **REGISTERED; SUBMISSIONS OPEN; EXACT REQUIRED FIELD
+  IDS VERIFIED; SEPARATE PREFLIGHT DRAFT DOES NOT BAR A SUBSTANTIALLY DIFFERENT
+  NAME ATLAS SUBMISSION**.
 - Current blocker: **NONE**.
 
 ## Accepted C7 recording-ready evidence
@@ -165,6 +175,11 @@ post-commit cleanliness. Fresh Git controls current repository facts.
 - Further provider calls: **NOT REQUIRED OR PLANNED**.
 - Browser and MCP qualification processes: **STOPPED**.
 - Public product promotion: **PERFORMED BY ORDINARY FAST-FORWARD**.
+- Public Devpost project `1344382`: **VERSION 3; FINAL COPY AND THUMBNAIL LIVE;
+  `video_url: null`; NO HACKATHON ASSOCIATION; NOT SUBMITTED**.
+- Current required submission fields: **WORK & PRODUCTIVITY AND PUBLIC REPO
+  FROZEN; JUDGE/PLUGIN INSTRUCTIONS FROZEN; `/feedback`, SUBMITTER TYPE, AND
+  COUNTRY REMAIN USER-OWNED**.
 - Final capture, voice recording, YouTube upload, `/feedback`, hold release, and
   Devpost submission: **NOT PERFORMED**.
 
@@ -177,7 +192,9 @@ post-commit cleanliness. Fresh Git controls current repository facts.
 - Current milestone: `C7 COMPLETE; RECORDING_READY`.
 - Latest checks: `822 full; 249 release matrix; clean HTTPS clone; audited
   wheel; installed replay/verify/restore; explicit-job correction; full
-  Sofia/Martin browser rehearsal; plugin evidence; visual/media/claims audit`.
+  Sofia/Martin browser rehearsal; plugin evidence; visual/media/claims audit;
+  final live Devpost copy and thumbnail synchronized; registration, deadline,
+  multiple-submission rule, and exact form fields rechecked`.
 - Change File/matcher/job/provenance: `COMPLETE AND VERIFIED`.
 - Receipt/verifier/reconstruction: `COMPLETE AND VERIFIED`.
 - Browser/native picker: `COMPLETE AND VERIFIED`.

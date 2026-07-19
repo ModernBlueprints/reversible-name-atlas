@@ -542,3 +542,50 @@ The accepted product commit was fast-forwarded without rebase or force-push to
 both public `main` and the revision branch. The repository materials now
 describe the selected product. No final video has been published, `/feedback`
 and the user's voice remain user-owned, and the submission hold is active.
+
+## Live Devpost draft synchronization — 19 July 2026
+
+After the recording-ready checkpoint, the authenticated Devpost connector read
+public project `1344382` and confirmed that it still contained the superseded
+archive-oriented release story. The connector replaced only the mutable project
+copy required for the selected release: final product name and tagline, the
+4,568-character Connected Change description, final technology list, and the
+public GitHub repository link. Devpost returned project version `3`.
+
+The audited `docs/submission-thumbnail.png` was then streamed through Devpost's
+direct file-upload path. The processed public thumbnail returned HTTP 200 as a
+51,109-byte PNG. A first non-mutating upload command retained the connector's
+literal `<FILE_PATH>` placeholder and exited 26 before reading or uploading any
+file; the corrected command used the fixed audited local path and succeeded
+once. No duplicate project or thumbnail mutation was created.
+
+A fresh project read confirmed the final tagline, a 4,568-character
+description, public state `published`, `video_url: null`, and no hackathon
+association. A separate public-page fetch confirmed the final tagline, core
+Connected Change copy, repository link, technology list, and new Open Graph
+thumbnail were actually rendered downstream. No submission, registration,
+personal attestation, `/feedback`, hold release, or video mutation occurred.
+
+## Live Build Week form and deadline readback — 19 July 2026
+
+At Sunday 19 July 2026 at 12:05:52 CEST, read-only authenticated Devpost calls
+confirmed that OpenAI Build Week remains open for submissions and the account
+is already registered. The separate historical `Preflight` project remains a
+Build Week `submission_draft`; Reversible Name Atlas project `1344382` remains
+unassociated and unsubmitted. The official rules explicitly permit multiple
+substantially different submissions, so the historical draft does not block the
+Name Atlas entry.
+
+The complete current submission-form readback requires submitter type (`27945`),
+country (`27946`), category (`27947`), repository (`27948`), and primary-task
+`/feedback` Session ID (`27950`), with optional judge instructions (`27949`)
+and the applicable plugin/developer-tool instructions (`27951`). The frozen
+draft maps the product to `Work & Productivity`, the public repository, the
+keyless judge path, and the tested plugin instructions. Submitter type, country,
+personal attestations, and `/feedback` remain user-owned.
+
+The key-date readback and latest host announcement both confirm the deadline as
+Wednesday 22 July 2026 at 02:00 CEST. The required YouTube demonstration remains
+absent and must be publicly viewable, under three minutes, and include audio
+covering the product, Codex, and GPT-5.6. These calls made no project,
+registration, video, hackathon-association, submission, or hold mutation.
