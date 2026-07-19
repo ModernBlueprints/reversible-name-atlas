@@ -811,3 +811,14 @@ overrides those artifacts.
   invocation passes; no required defect remains; more than twelve hours remain
   before recording readiness; and the plugin reuses the same server with a
   conservative implementation estimate below four hours.
+
+## D-084 — Accept the clean-clone plugin and enter feature freeze
+
+- Date: 19 July 2026
+- Decision: Accept the thin Codex plugin after public clean-clone installation,
+  isolated-cache equality, new-task tool invocation, keyless replay,
+  verification, reconstruction, missing-key behavior, and uninstall all pass;
+  enter selected-profile feature freeze immediately.
+- Rationale: The optional plugin now satisfies its complete installed-copy gate.
+  Freezing early protects the remaining release, documentation, visual,
+  rehearsal, and packaging interval from new feature scope.

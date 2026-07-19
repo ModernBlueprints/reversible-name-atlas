@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C4 COMPLETE; PLUGIN GO; C5 NEXT**
+Status: **EXECUTION ACTIVE; C5 COMPLETE; FEATURE FROZEN; C6 NEXT**
 
-Phase: **C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE**
+Phase: **C6_RELEASE_CANDIDATE**
 
 Submission hold: **ACTIVE**
 
@@ -72,9 +72,10 @@ completed the full engine and durable-service boundary, and C2 completed the
 browser and bounded native experience. C3 completed the final fixtures, sole
 budget-ledger migration, real GPT-5.6 evidence, exact replays, final receiver
 transaction, and release-bound refusal matrix. C4 completed the required shared
-MCP surface and returned the one-time plugin decision `GO`. C5 now owns only
-the thin installed Codex plugin and the absolute feature-freeze transition;
-later release surfaces remain deferred.
+MCP surface and returned the one-time plugin decision `GO`. C5 completed the
+thin installed Codex plugin from a public clean clone and entered feature freeze
+early. C6 now owns defects, proof integrity, clean-release acceptance, and
+regeneration of the stale release materials; no new feature work remains.
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -773,7 +774,8 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator. Plugin creation can be delegated only after GO;
   final integration remains primary.
 - **Allowed cut:** plugin packaging and every earlier optional presentation item.
-- **Actual status:** `IN PROGRESS — PLUGIN GATE GO`.
+- **Actual status:** `COMPLETE — PLUGIN ACCEPTED; FEATURE FREEZE ENTERED` on
+  Sunday 19 July 2026 at 08:36:26 CEST.
 - **Actual verification:** the official plugin-creator workflow generated one
   thin `name-atlas` plugin, relative `.mcp.json`, and repository marketplace;
   its official validator passes. Local marketplace installation created cache
@@ -796,8 +798,38 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
   the Codex host before reaching Name Atlas and created no job or budget change.
   These are preserved test-attempt facts, not product defects. **16 focused
   plugin/MCP tests and 811 full-suite tests pass**; lock, Ruff lint, Ruff format
-  over 153 files, and diff checks pass. Clean-public-clone marketplace install,
-  cache-copy invocation, and final feature-freeze proof remain pending.
+  over 153 files, and diff checks pass. Candidate commit
+  `7314c589b7985689ba9311130ea4d2353fb721e9` was pushed and cloned into the
+  unrelated clean path `/tmp/name-atlas-c5-clean.CkJBwd`. `uv sync --frozen`,
+  the official plugin validator, and all 16 plugin/MCP tests passed there. Its
+  marketplace was installed into isolated Codex home
+  `/tmp/name-atlas-c5-codex-home.dMFj0n`; installed manifest and MCP-config
+  digests exactly matched the clean clone at
+  `8c8ce078f42f496bc58164ee542b416392a3b1330e893dbc55fcdac7e9c8449b`
+  and
+  `f681577e00871014227589ccb98aba78e46728207409d8ebd2257ece9d3be154`.
+  Installed-copy acceptance produced Change File fingerprint
+  `446fa4b6ab2298d39c696e8dd6997174f050f73d25a794ddbbd96fa7fc2a4eb5`,
+  verified receipt
+  `63682fd78c1c3d55576fc4121f1f51c97d7695e3e61487d275611c3751f2f951`,
+  organized-tree commitment
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`,
+  and exact 24-file/one-empty-directory/17,443-byte reconstruction. Source and
+  Change File digests were unchanged, live mode returned exact
+  `live_credential_missing`, and no key was present. New Codex task
+  `019f7916-02e0-7910-a5a6-f190cd21ec21` discovered the isolated installed
+  plugin and invoked `verify_result` successfully with no failed check IDs; its
+  event stream SHA-256 is
+  `c6addf4212c41830875e6a0d7a60a9bf0781668eba5552a226018c9a387c8a28`.
+  The preceding task attempt supplied the wrong outer tool shape and failed
+  strict schema validation without reaching the verifier; it is preserved as
+  host-invocation evidence, not a product defect. The documented uninstall and
+  marketplace-removal commands passed in the isolated home. Preserved local
+  evidence is `.name-atlas/c5-clean-clone-20260719T083626+0200`; its main
+  acceptance JSON SHA-256 is
+  `9de855152aed2eecc34777ff153650404646cc249d468dfd8229e326f663131f`.
+  Feature freeze entered at the checkpoint; all subsequent work is limited to
+  the release-safe categories in `REL-015`.
 
 ### C6 — Release candidate
 

@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Sunday 19 July 2026 at 08:20:23 CEST**
+Checkpoint: **Sunday 19 July 2026 at 08:36:26 CEST**
 
-Phase: **C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE**
+Phase: **C6_RELEASE_CANDIDATE**
 
 Submission hold: **ACTIVE**
 
@@ -16,14 +16,15 @@ Submission hold: **ACTIVE**
   EXECUTION**.
 - Amended Connected Change goal: **ACTIVE**.
 - Selected profile: **CONNECTED_CHANGE_GO**.
-- Feature freeze: **Monday 20 July 2026 at 14:00 CEST**; **1 day, 5 hours,
-  39 minutes, 37 seconds remaining at checkpoint**.
+- Feature freeze: **ENTERED EARLY Sunday 19 July 2026 at 08:36:26 CEST**;
+  absolute latest boundary Monday 20 July 2026 at 14:00 CEST was **1 day,
+  5 hours, 23 minutes, 33 seconds away at checkpoint**.
 - Release candidate: **Monday 20 July 2026 at 20:00 CEST**; **1 day, 11 hours,
-  39 minutes, 37 seconds remaining at checkpoint**.
+  23 minutes, 33 seconds remaining at checkpoint**.
 - Recording ready: **Tuesday 21 July 2026 at 02:00 CEST**; **1 day, 17 hours,
-  39 minutes, 37 seconds remaining at checkpoint**.
+  23 minutes, 33 seconds remaining at checkpoint**.
 - Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; **2 days,
-  17 hours, 39 minutes, 37 seconds remaining at checkpoint**.
+  17 hours, 23 minutes, 33 seconds remaining at checkpoint**.
 - Submission hold: **ACTIVE**.
 
 ## Repository checkpoint
@@ -39,9 +40,11 @@ Submission hold: **ACTIVE**
 - C2 checkpoint: `852fc55b6e3f8291e011d9102b0e132ea851a3d1`.
 - C3 checkpoint:
   `9e8d3db36e787fe041f2a18c04b2f7e8245c64d4`.
-- C4 checkpoint locator: subject `feat: add shared Name Atlas MCP server` on
-  parent `9e8d3db`; use fresh Git for the exact SHA after this state is
-  committed.
+- C4 checkpoint: `bc1898e369ee83a39e64bc261d553f62d4423fa5`.
+- C5 plugin candidate: `7314c589b7985689ba9311130ea4d2353fb721e9`.
+- C5 completion checkpoint locator: subject
+  `docs: complete C5 and enter feature freeze` on parent `7314c58`; use fresh
+  Git for the exact SHA after this state is committed.
 - Local `main`, `origin/main`, and local/remote
   `revision/portable-change-receipt`: **PRESERVED AT `4baec1e`**.
 - New branch/worktree, promotion, merge, rebase, force-push: **NOT PERFORMED**.
@@ -61,9 +64,10 @@ cleanliness. Fresh Git controls current repository facts.
 - Sole budget migration: **COMPLETE; HISTORY PRESERVED**.
 - Required shared MCP: **COMPLETE AND VERIFIED**.
 - Codex plugin gate: **GO**.
-- Codex plugin implementation: **IN PROGRESS; LOCAL INSTALLATION PASSED; CLEAN
-  PUBLIC-CLONE ACCEPTANCE PENDING**.
-- Feature freeze: **PENDING; ABSOLUTE BOUNDARY ACTIVE**.
+- Codex plugin implementation: **COMPLETE AND VERIFIED FROM CLEAN PUBLIC
+  CLONE**.
+- Feature freeze: **ENTERED EARLY AT 08:36:26 CEST; ACTIVE**.
+- C6 release candidate: **NEXT; NOT YET ACCEPTED**.
 - Release materials: **STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE
   REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE**.
 - Current blocker: **NONE**.
@@ -163,7 +167,7 @@ cleanliness. Fresh Git controls current repository facts.
   before feature freeze; the thin package is estimated below four hours and
   reuses the same MCP server.
 
-## C5 plugin evidence in progress
+## C5 plugin evidence and feature freeze
 
 - Official plugin-creator scaffold and validator: **PASSED**.
 - Repository surfaces: `.agents/plugins/marketplace.json` and
@@ -199,10 +203,36 @@ cleanliness. Fresh Git controls current repository facts.
 - Focused plugin/MCP suite: **16 passed**.
 - Complete regression: **811 passed in 63.67 seconds**.
 - Lock, Ruff lint, Ruff format over 153 files, and diff checks: **PASSED**.
-- Remaining C5 gate: commit/push the candidate, clone that public revision into
-  an unrelated clean path, run frozen installation, install from that clone's
-  repository marketplace, prove a fresh task and installed-cache invocation,
-  then record feature freeze.
+- Public candidate commit:
+  `7314c589b7985689ba9311130ea4d2353fb721e9`; pushed and fetched into clean
+  clone `/tmp/name-atlas-c5-clean.CkJBwd` at the exact SHA.
+- Clean-clone `uv sync --frozen`, official plugin validation, and all 16
+  plugin/MCP tests: **PASSED**.
+- Isolated installation home:
+  `/tmp/name-atlas-c5-codex-home.dMFj0n`; installed manifest/MCP hashes match
+  the clean clone exactly at
+  `8c8ce078f42f496bc58164ee542b416392a3b1330e893dbc55fcdac7e9c8449b`
+  and
+  `f681577e00871014227589ccb98aba78e46728207409d8ebd2257ece9d3be154`.
+- Installed-copy keyless replay: **VERIFIED**; Change File
+  `446fa4b6ab2298d39c696e8dd6997174f050f73d25a794ddbbd96fa7fc2a4eb5`,
+  receipt `63682fd78c1c3d55576fc4121f1f51c97d7695e3e61487d275611c3751f2f951`,
+  organized tree
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`,
+  and exact 24-file/one-empty-directory/17,443-byte reconstruction.
+- Source and Change File: **UNCHANGED**. Missing-key live behavior:
+  `live_credential_missing`. API key: **ABSENT**.
+- Fresh clean-clone Codex task:
+  `019f7916-02e0-7910-a5a6-f190cd21ec21`; installed
+  `name-atlas.verify_result` returned `verified`, the receipt/tree above, and
+  no failed check IDs. Event SHA-256:
+  `c6addf4212c41830875e6a0d7a60a9bf0781668eba5552a226018c9a387c8a28`.
+- Preserved local evidence:
+  `.name-atlas/c5-clean-clone-20260719T083626+0200`; acceptance JSON SHA-256
+  `9de855152aed2eecc34777ff153650404646cc249d468dfd8229e326f663131f`.
+- Documented plugin uninstall and marketplace removal in the isolated home:
+  **PASSED**.
+- C5 verdict: **COMPLETE**. Feature freeze: **ACTIVE**.
 
 ## Credentials, budget, and inactive later surfaces
 
@@ -216,15 +246,15 @@ cleanliness. Fresh Git controls current repository facts.
 - Further live GPT calls: **NOT REQUIRED OR PLANNED**.
 - Browser/native QA servers: **STOPPED**.
 - Shared MCP implementation and direct/Codex qualification: **COMPLETE**.
-- Plugin packaging/local installation: **IN PROGRESS; LOCAL ACCEPTANCE PASSED**.
+- Plugin packaging/clean-clone installation: **COMPLETE AND VERIFIED**.
 - Promotion, public-release, video, and submission operations: **NOT STARTED**.
 
 ## Compact recovery capsule
 
-- Phase: `C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE`.
+- Phase: `C6_RELEASE_CANDIDATE`.
 - Branch/A3/C0: `revision/ai-first-folder-refactor` / `e3803d2` / `a5ea342`.
-- Active profile/current milestone: `CONNECTED_CHANGE_GO / C4 COMPLETE; PLUGIN
-  GO; C5 IN PROGRESS`.
+- Active profile/current milestone: `CONNECTED_CHANGE_GO / C5 COMPLETE;
+  FEATURE FREEZE ACTIVE; C6 NEXT`.
 - Latest checks: `16 focused plugin/MCP; 811 full; official plugin validator;
   local install; fresh Codex verify; installed-cache keyless replay, verify,
   reconstruction, and missing-key blocker; lock; Ruff lint; Ruff format; diff`.
@@ -232,16 +262,15 @@ cleanliness. Fresh Git controls current repository facts.
 - Receipt/verifier/reconstruction: `C1/C3 COMPLETE AND VERIFIED`.
 - Browser/native picker: `C2/C3 COMPLETE AND VERIFIED`.
 - GPT live/replay: `TWO NEW LIVE TRANSACTIONS AND TWO EXACT REPLAYS COMPLETE`.
-- MCP/plugin: `COMPLETE AND VERIFIED / GATE GO; LOCAL ACCEPTANCE PASSED; CLEAN
-  PUBLIC-CLONE ACCEPTANCE PENDING`.
-- Feature freeze/release materials: `ABSOLUTE BOUNDARY ACTIVE / STALE`.
+- MCP/plugin: `COMPLETE AND VERIFIED / INSTALLED CLEAN-CLONE ACCEPTANCE PASSED`.
+- Feature freeze/release materials: `ACTIVE / STALE; C6 MUST REGENERATE`.
 - Submission hold: `ACTIVE`.
 - Blockers: `NONE`.
-- Next operation: commit and push the validated thin plugin candidate, clone the
-  public revision into an unrelated clean path, install its marketplace/plugin
-  in an isolated Codex home, and prove refreshed new-task discovery plus
-  installed-cache keyless invocation before feature freeze.
+- Next operation: create the C5 completion checkpoint, then begin C6 by auditing
+  every stale release surface against the frozen selected product before
+  regenerating judge instructions, claims, provenance, screenshots, narration,
+  and submission materials.
 
 ## Exact next operation
 
-`Commit and push the validated C5 plugin candidate, then perform frozen install, marketplace/plugin installation, new-task discovery, and installed-cache invocation from an unrelated clean public clone before recording feature freeze.`
+`Commit and push the C5 completion checkpoint, then begin C6 release hardening and regenerate every stale release material from the feature-frozen CONNECTED_CHANGE_GO product.`
