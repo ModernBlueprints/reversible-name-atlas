@@ -6,6 +6,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 from name_atlas.folder_refactor.connected_change.accepted_plan import (
     convert_planner_accepted_plan,
@@ -20,11 +21,13 @@ from name_atlas.folder_refactor.connected_change.job_service import (
 from name_atlas.folder_refactor.connected_change.job_v2 import (
     FolderJobLifecycleV2,
     FolderJobV2FinalizedError,
+    FolderOperationIdempotencyBindingV2,
     FolderRefactorJobV2,
     FolderRefactorJobV2Store,
     FolderRefactorJobV2Writer,
     GptPlannedJobAuthorityV2,
     GptPlannerCheckpointV2,
+    bind_operation_idempotency,
     evolve_job_v2,
 )
 from name_atlas.folder_refactor.inventory import FolderScan
@@ -50,6 +53,7 @@ class ConnectedPlannerCheckpointWriter:
     writer: FolderRefactorJobV2Writer
     usage: tuple[FolderPlannerUsage, ...] = ()
     usage_source: Callable[[], tuple[FolderPlannerUsage, ...]] | None = None
+    operation_idempotency: tuple[FolderOperationIdempotencyBindingV2, ...] | None = None
     latest_job: FolderRefactorJobV2 | None = field(default=None, init=False)
 
     def current_usage(self) -> tuple[FolderPlannerUsage, ...]:
@@ -123,6 +127,11 @@ class ConnectedPlannerCheckpointWriter:
         candidate = evolve_job_v2(
             current,
             authority=authority,
+            operation_idempotency=(
+                current.operation_idempotency
+                if self.operation_idempotency is None
+                else self.operation_idempotency
+            ),
             accepted_plan=accepted_plan,
             lifecycle=lifecycle,
             blocker_code=checkpoint.blocker_code,
@@ -141,6 +150,36 @@ class ConnectedOriginPlanningService:
     ) -> None:
         self._jobs = job_service or ConnectedChangeJobService()
 
+    def create(
+        self,
+        *,
+        source_root: Path,
+        output_parent: Path,
+        job_path: Path,
+        request: str,
+        idempotency_key: str,
+        provider_kind: Literal["deterministic", "live", "recorded_replay"],
+    ) -> FolderRefactorJobV2:
+        """Persist one resumable planner job without consuming a provider turn."""
+
+        scan, _reference_graph = scan_folder_with_references(source_root)
+        job_id = uuid.uuid4().hex
+        initial_progress = create_planner_progress(
+            scan.inventory,
+            request,
+            job_id=job_id,
+            provider_kind=provider_kind,
+        )
+        return self._jobs.create_planned_origin_job(
+            source_root=scan.source_root,
+            output_parent=output_parent,
+            job_path=job_path,
+            request=request,
+            idempotency_key=idempotency_key,
+            scan=scan,
+            planner_progress=initial_progress,
+        )
+
     async def start(
         self,
         *,
@@ -155,22 +194,13 @@ class ConnectedOriginPlanningService:
     ) -> FolderRefactorJobV2:
         """Create or reuse one job, then continue its exact planner state."""
 
-        scan, _reference_graph = scan_folder_with_references(source_root)
-        job_id = uuid.uuid4().hex
-        initial_progress = create_planner_progress(
-            scan.inventory,
-            request,
-            job_id=job_id,
-            provider_kind=provider.provider_kind,
-        )
-        job = self._jobs.create_planned_origin_job(
-            source_root=scan.source_root,
+        job = self.create(
+            source_root=source_root,
             output_parent=output_parent,
             job_path=job_path,
             request=request,
             idempotency_key=idempotency_key,
-            scan=scan,
-            planner_progress=initial_progress,
+            provider_kind=provider.provider_kind,
         )
         return await self.resume(
             job.job_path,
@@ -204,6 +234,8 @@ class ConnectedOriginPlanningService:
             provider=provider,
             answer=None,
             expected_job_id=None,
+            expected_revision=None,
+            expected_question_fingerprint=None,
             usage=usage,
         )
         if job.lifecycle is FolderJobLifecycleV2.EXECUTING:
@@ -220,6 +252,8 @@ class ConnectedOriginPlanningService:
         continuation_token: str,
         answer: str,
         provider: PlannerProvider,
+        expected_revision: int | None = None,
+        expected_question_fingerprint: str | None = None,
         progress_callback: FolderTransactionProgress | None = None,
         usage: tuple[FolderPlannerUsage, ...] = (),
     ) -> FolderRefactorJobV2:
@@ -230,6 +264,8 @@ class ConnectedOriginPlanningService:
             provider=provider,
             answer=answer,
             expected_job_id=continuation_token,
+            expected_revision=expected_revision,
+            expected_question_fingerprint=expected_question_fingerprint,
             usage=usage,
         )
         if job.lifecycle is FolderJobLifecycleV2.EXECUTING:
@@ -239,6 +275,94 @@ class ConnectedOriginPlanningService:
             )
         return job
 
+    def persist_clarification_answer(
+        self,
+        job_path: Path,
+        *,
+        answer: str,
+        idempotency_key: str,
+        expected_revision: int,
+        expected_question_fingerprint: str,
+    ) -> FolderRefactorJobV2:
+        """Persist one exactly bound answer without constructing a provider."""
+
+        normalized = answer.strip()
+        if not normalized or len(answer) > 4_000 or "\x00" in answer:
+            raise ConnectedChangeJobServiceError(
+                "clarification_answer_invalid",
+                "Clarification answer must be nonblank bounded plain text.",
+            )
+        store = FolderRefactorJobV2Store(job_path)
+        with store.writer() as writer:
+            job = writer.rehydrate()
+            if not isinstance(job.authority, GptPlannedJobAuthorityV2):
+                raise ConnectedChangeJobServiceError(
+                    "planner_authority_mismatch",
+                    "Clarification requires GPT-planned job authority.",
+                )
+            progress = job.authority.planner_checkpoint.progress
+            if progress is None or progress.clarification_question is None:
+                raise ConnectedChangeJobServiceError(
+                    "clarification_not_active",
+                    "The durable job has no persisted clarification question.",
+                )
+            observed_question_fingerprint = clarification_question_fingerprint(
+                job_id=job.job_id,
+                question=progress.clarification_question,
+            )
+            if observed_question_fingerprint != expected_question_fingerprint:
+                raise ConnectedChangeJobServiceError(
+                    "clarification_question_mismatch",
+                    "The clarification answer targets another exact question.",
+                )
+            operation_idempotency = bind_operation_idempotency(
+                job,
+                operation="answer_clarification",
+                idempotency_key=idempotency_key,
+                request={
+                    "job_handle": job.job_id,
+                    "expected_revision": expected_revision,
+                    "question_fingerprint": expected_question_fingerprint,
+                    "answer": answer,
+                },
+            )
+            if progress.clarification_answer is not None:
+                if progress.clarification_answer == answer:
+                    return job
+                raise ConnectedChangeJobServiceError(
+                    "clarification_answer_conflict",
+                    "A different clarification answer is already durable.",
+                )
+            if job.revision != expected_revision:
+                raise ConnectedChangeJobServiceError(
+                    "clarification_revision_mismatch",
+                    "The clarification answer targets another durable revision.",
+                )
+            if job.lifecycle is not FolderJobLifecycleV2.AWAITING_CLARIFICATION:
+                raise ConnectedChangeJobServiceError(
+                    "clarification_not_active",
+                    "The durable job is not waiting for a clarification answer.",
+                )
+            answered_progress = FolderPlannerProgress.model_validate(
+                {
+                    **progress.model_dump(mode="python"),
+                    "status": "planning",
+                    "clarification_answer": answer,
+                }
+            )
+            checkpoint = ConnectedPlannerCheckpointWriter(
+                writer,
+                usage=job.authority.planner_checkpoint.usage,
+                operation_idempotency=operation_idempotency,
+            )
+            checkpoint(answered_progress)
+            if checkpoint.latest_job is None:
+                raise ConnectedChangeJobServiceError(
+                    "planner_checkpoint_missing",
+                    "Clarification answer produced no durable checkpoint.",
+                )
+            return checkpoint.latest_job
+
     async def _continue_planner(
         self,
         job_path: Path,
@@ -246,6 +370,8 @@ class ConnectedOriginPlanningService:
         provider: PlannerProvider,
         answer: str | None,
         expected_job_id: str | None,
+        expected_revision: int | None,
+        expected_question_fingerprint: str | None,
         usage: tuple[FolderPlannerUsage, ...],
     ) -> FolderRefactorJobV2:
         store = FolderRefactorJobV2Store(job_path)
@@ -255,6 +381,11 @@ class ConnectedOriginPlanningService:
                 raise ConnectedChangeJobServiceError(
                     "clarification_token_mismatch",
                     "The clarification answer targets another durable job.",
+                )
+            if expected_revision is not None and job.revision != expected_revision:
+                raise ConnectedChangeJobServiceError(
+                    "clarification_revision_mismatch",
+                    "The clarification answer targets another durable revision.",
                 )
             if job.lifecycle.terminal:
                 if job.lifecycle is FolderJobLifecycleV2.STALE:
@@ -275,6 +406,20 @@ class ConnectedOriginPlanningService:
                     "planner_progress_missing",
                     "This compatibility job has no resumable planner progress.",
                 )
+            if expected_question_fingerprint is not None:
+                question = progress.clarification_question
+                if (
+                    question is None
+                    or clarification_question_fingerprint(
+                        job_id=job.job_id,
+                        question=question,
+                    )
+                    != expected_question_fingerprint
+                ):
+                    raise ConnectedChangeJobServiceError(
+                        "clarification_question_mismatch",
+                        "The clarification answer targets another exact question.",
+                    )
             if progress.provider_kind != provider.provider_kind:
                 raise ConnectedChangeJobServiceError(
                     "planner_provider_origin_mismatch",
@@ -369,3 +514,15 @@ def _require_same_job_source(job: FolderRefactorJobV2, scan: FolderScan) -> None
             "planner_source_changed",
             "The source changed while Markdown context was read.",
         )
+
+
+def clarification_question_fingerprint(*, job_id: str, question: str) -> str:
+    """Bind one exact user-visible question to its durable planner job."""
+
+    return canonical_sha256(
+        {
+            "domain": "name-atlas:clarification-question:v1",
+            "job_id": job_id,
+            "question": question,
+        }
+    )

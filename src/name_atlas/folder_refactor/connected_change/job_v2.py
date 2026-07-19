@@ -94,6 +94,10 @@ class FolderJobV2WriteError(FolderJobV2Error):
     """A durable v2 job could not be safely persisted."""
 
 
+class FolderJobV2LockError(FolderJobV2WriteError):
+    """Another process currently owns this durable v2 job's writer lock."""
+
+
 class FolderJobV2RevisionError(FolderJobV2WriteError):
     """The expected durable revision or checkpoint does not match."""
 
@@ -173,6 +177,14 @@ class FolderMutationRequestV2(StrictFrozenJobV2Model):
 class FolderIdempotencyBindingV2(StrictFrozenJobV2Model):
     """Persist only a bounded key hash and its exact request binding."""
 
+    key_sha256: str = Field(pattern=SHA256_PATTERN)
+    request_fingerprint: str = Field(pattern=SHA256_PATTERN)
+
+
+class FolderOperationIdempotencyBindingV2(StrictFrozenJobV2Model):
+    """One append-only tool mutation binding inside the existing job authority."""
+
+    operation: Literal["answer_clarification", "recreate_original"]
     key_sha256: str = Field(pattern=SHA256_PATTERN)
     request_fingerprint: str = Field(pattern=SHA256_PATTERN)
 
@@ -541,6 +553,10 @@ class FolderRefactorJobV2(StrictFrozenJobV2Model):
     local_directory_identities: tuple[JobLocalDirectoryIdentityV2, ...]
     user_request: str = Field(min_length=1, max_length=20_000)
     idempotency: FolderIdempotencyBindingV2
+    operation_idempotency: tuple[FolderOperationIdempotencyBindingV2, ...] = Field(
+        default=(),
+        max_length=2,
+    )
     authority: FolderJobAuthorityV2
     accepted_plan: FolderAcceptedPlanV2 | None = None
     pending_result_path: Path | None = None
@@ -579,6 +595,9 @@ class FolderRefactorJobV2(StrictFrozenJobV2Model):
     def require_complete_authority(self) -> Self:
         if self.updated_at < self.created_at:
             raise ValueError("updated_at cannot precede created_at.")
+        operations = tuple(item.operation for item in self.operation_idempotency)
+        if len(set(operations)) != len(operations):
+            raise ValueError("Tool mutation idempotency operations must be unique.")
         _require_separate_paths(
             source_root=self.source_root,
             output_parent=self.output_parent,
@@ -612,6 +631,99 @@ def build_idempotency_binding(
 ) -> FolderIdempotencyBindingV2:
     """Validate one caller key and bind it without persisting the plaintext key."""
 
+    key_sha256 = _idempotency_key_sha256(idempotency_key)
+    return FolderIdempotencyBindingV2(
+        key_sha256=key_sha256,
+        request_fingerprint=request.fingerprint,
+    )
+
+
+def build_operation_idempotency_binding(
+    *,
+    operation: Literal["answer_clarification", "recreate_original"],
+    idempotency_key: str,
+    request: JsonValue,
+) -> FolderOperationIdempotencyBindingV2:
+    """Bind one tool mutation without creating another ledger or authority."""
+
+    return FolderOperationIdempotencyBindingV2(
+        operation=operation,
+        key_sha256=_idempotency_key_sha256(idempotency_key),
+        request_fingerprint=operation_request_fingerprint(
+            operation=operation,
+            request=request,
+        ),
+    )
+
+
+def bind_operation_idempotency(
+    job: FolderRefactorJobV2,
+    *,
+    operation: Literal["answer_clarification", "recreate_original"],
+    idempotency_key: str,
+    request: JsonValue,
+) -> tuple[FolderOperationIdempotencyBindingV2, ...]:
+    """Return an exact retry or one append-only operation binding."""
+
+    candidate = build_operation_idempotency_binding(
+        operation=operation,
+        idempotency_key=idempotency_key,
+        request=request,
+    )
+    existing = tuple(
+        item for item in job.operation_idempotency if item.operation == operation
+    )
+    if existing:
+        if existing != (candidate,):
+            raise FolderJobV2IdempotencyConflict(
+                f"{operation} idempotency key is bound to another exact request."
+            )
+        return job.operation_idempotency
+    return job.operation_idempotency + (candidate,)
+
+
+def require_operation_idempotency(
+    job: FolderRefactorJobV2,
+    *,
+    operation: Literal["answer_clarification", "recreate_original"],
+    idempotency_key: str,
+    request: JsonValue,
+) -> None:
+    """Require one prebound exact operation without mutating a terminal job."""
+
+    candidate = build_operation_idempotency_binding(
+        operation=operation,
+        idempotency_key=idempotency_key,
+        request=request,
+    )
+    matching = tuple(
+        item for item in job.operation_idempotency if item.operation == operation
+    )
+    if matching != (candidate,):
+        raise FolderJobV2IdempotencyConflict(
+            f"{operation} idempotency key is not bound to this exact request."
+        )
+
+
+def operation_request_fingerprint(
+    *,
+    operation: Literal["answer_clarification", "recreate_original"],
+    request: JsonValue,
+) -> str:
+    """Return one domain-separated canonical tool-mutation fingerprint."""
+
+    return canonical_sha256(
+        {
+            "domain": "name-atlas:folder-operation-request:v2",
+            "operation": operation,
+            "request": request,
+        }
+    )
+
+
+def _idempotency_key_sha256(idempotency_key: str) -> str:
+    """Validate and hash one caller key without persisting its plaintext."""
+
     if not isinstance(idempotency_key, str):
         raise FolderJobV2WriteError("Idempotency key must be text.")
     if (
@@ -627,14 +739,11 @@ def build_idempotency_binding(
             "Idempotency key must be nonempty, trimmed, control-free UTF-8 "
             "up to 256 bytes."
         )
-    return FolderIdempotencyBindingV2(
-        key_sha256=canonical_sha256(
-            {
-                "domain": "name-atlas:folder-idempotency-key:v2",
-                "key": idempotency_key,
-            }
-        ),
-        request_fingerprint=request.fingerprint,
+    return canonical_sha256(
+        {
+            "domain": "name-atlas:folder-idempotency-key:v2",
+            "key": idempotency_key,
+        }
     )
 
 
@@ -897,7 +1006,7 @@ class FolderRefactorJobV2Writer:
         try:
             self._lock.__enter__()
         except DurableJobLockError as exc:
-            raise FolderJobV2WriteError(str(exc)) from exc
+            raise FolderJobV2LockError(str(exc)) from exc
         return self
 
     def __exit__(
@@ -1107,6 +1216,14 @@ def _build_new_job_v2(
     identifier = job_id or uuid.uuid4().hex
     _require_uuid4_hex(identifier)
     now = _require_oslo_timestamp((clock or (lambda: datetime.now(tz=oslo_tz)))())
+    reconstruction_binding = FolderOperationIdempotencyBindingV2(
+        operation="recreate_original",
+        key_sha256=idempotency.key_sha256,
+        request_fingerprint=operation_request_fingerprint(
+            operation="recreate_original",
+            request={"job_handle": identifier},
+        ),
+    )
     return FolderRefactorJobV2(
         revision=0,
         job_id=identifier,
@@ -1127,6 +1244,7 @@ def _build_new_job_v2(
         ),
         user_request=user_request,
         idempotency=idempotency,
+        operation_idempotency=(reconstruction_binding,),
         authority=authority,
     )
 
@@ -1647,6 +1765,14 @@ def _require_immutable_job_identity(
         _require_gpt_planner_successor(
             current.authority.planner_checkpoint,
             candidate.authority.planner_checkpoint,
+        )
+    if (
+        len(candidate.operation_idempotency) < len(current.operation_idempotency)
+        or candidate.operation_idempotency[: len(current.operation_idempotency)]
+        != current.operation_idempotency
+    ):
+        raise FolderJobV2RevisionError(
+            "Tool mutation idempotency bindings are not append-only."
         )
 
 

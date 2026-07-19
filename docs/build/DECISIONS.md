@@ -778,3 +778,36 @@ overrides those artifacts.
   small browser invocation. The previous literal wording contradicted those two
   required behaviors even though the exact result trees, native scripts, and
   server-side validators remain bounded.
+
+## D-081 — Mandatory MCP inventory preflight before the durable handle
+
+- Date: 19 July 2026
+- Decision: Complete the bounded local path and inventory preflight before
+  persisting and returning an MCP job handle, then run provider planning,
+  matching, copying, and result creation behind that durable handle.
+- Rationale: The strict v2 job identity requires the complete committed source
+  inventory. A provisional handle or sidecar would be undurable or create a
+  second workflow authority. The hero returns after preflight in 0.033628
+  seconds, while the product now explicitly makes no fixed-latency claim for
+  arbitrarily large admitted payloads.
+
+## D-082 — Shared MCP restart and idempotency authority
+
+- Date: 19 July 2026
+- Decision: Keep scheduling process-local but recover every unfinished durable
+  job at MCP server startup, retry overlapping writer ownership, preserve
+  read-only status polling, and store all mutation-key bindings inside the sole
+  v2 job.
+- Rationale: A client can survive STDIO process replacement without creating a
+  second job, ledger, provider call, or result, while lock contention remains a
+  coordination event rather than a false product blocker.
+
+## D-083 — Optional Codex plugin gate returns `GO`
+
+- Date: 19 July 2026
+- Decision: Admit one thin Codex plugin around the verified shared MCP server.
+- Rationale: C1–C4 browser, CLI, live/replay, Change File, receipt, verifier,
+  reconstruction, refusal, and shared-MCP surfaces pass; the actual Codex tool
+  invocation passes; no required defect remains; more than twelve hours remain
+  before recording readiness; and the plugin reuses the same server with a
+  conservative implementation estimate below four hours.

@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C3 COMPLETE; C4 NEXT**
+Status: **EXECUTION ACTIVE; C4 COMPLETE; PLUGIN GO; C5 NEXT**
 
-Phase: **C4_REQUIRED_SHARED_MCP**
+Phase: **C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE**
 
 Submission hold: **ACTIVE**
 
@@ -71,8 +71,10 @@ submission had not begun. C0 subsequently selected `CONNECTED_CHANGE_GO`; C1
 completed the full engine and durable-service boundary, and C2 completed the
 browser and bounded native experience. C3 completed the final fixtures, sole
 budget-ledger migration, real GPT-5.6 evidence, exact replays, final receiver
-transaction, and release-bound refusal matrix. C4 now owns the required shared
-MCP surface and the one-time plugin decision; later surfaces remain deferred.
+transaction, and release-bound refusal matrix. C4 completed the required shared
+MCP surface and returned the one-time plugin decision `GO`. C5 now owns only
+the thin installed Codex plugin and the absolute feature-freeze transition;
+later release surfaces remain deferred.
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -696,10 +698,51 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator; bounded MCP protocol/security reviewer permitted.
 - **Allowed cut:** Claude smoke test and untested-client examples only; the
   shared MCP cannot be cut under `CONNECTED_CHANGE_GO`.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
-- **Plugin decision:** after all predicates pass, record exactly `GO` or
-  `CUT_BY_PREAUTHORIZED_GATE`. No plugin work starts before `GO`.
+- **Actual status:** `COMPLETE` on Sunday 19 July 2026 at 07:54:49 CEST.
+- **Actual verification:** official Python MCP SDK `1.28.1` is locked under
+  `mcp>=1.27,<2`; `uv run name-atlas mcp` exposes exactly the seven frozen
+  high-level tools with strict nested contracts, consent before origin
+  inventory or mutation, local-environment credentials only, protocol-only
+  STDOUT, and concise origin-truthful status. All mutation keys bind to the
+  exact canonical operation in `FolderRefactorJob.v2`; identical start, apply,
+  answer, and reconstruction retries return the same durable authority, while
+  conflicting reuse blocks. Startup rehydrates unfinished replay/origin/
+  receiver jobs, leaves clarification waiting, defers a live job without a
+  local key without changing job or budget state, and retries overlapping
+  writer ownership instead of creating a false terminal blocker. Status polling
+  is byte-preserving and cannot start provider, budget, copy, answer, or result
+  work. Product-native direct evidence at
+  `.name-atlas/c4-mcp-direct-20260719T073833+0200/transcript.json` has SHA-256
+  `0bb87409dc02376b984c122746c6d2e067b8d2a1629833787fd014a284408fa3`.
+  Its origin receipt is
+  `5a58f7a97d6ba3d4051dbca81b1f3326d2391d1dec2dbd86865124081965eafd`,
+  Change File fingerprint is
+  `dda994a70da9541bdd1a48a27286e7290fe440cf77bc6272edf20b219afef952`,
+  receiver receipt is
+  `7776d996a851ff6109aa12a6f7a8268369974fc3bf4977446f2950b43e99b2f8`,
+  and both results converge to
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+  Martin's 24-file, one-empty-directory, 17,144-byte reconstruction passed and
+  the one-question transaction verified. Sources and budget bytes remained
+  unchanged; receiver apply, verify, and reconstruct used no key/provider/
+  budget/network authority. The demonstrated 24-file origin returned its
+  durable handle after required inventory preflight in 0.033628 seconds; the
+  product makes no fixed-latency claim for arbitrary admitted payloads. Actual
+  Codex task `019f78e6-06d3-72f0-9258-be362118ea2f` discovered server
+  `name_atlas`, invoked `verify_result`, and received the verified receiver
+  receipt and organized-tree commitment above; the event record SHA-256 is
+  `585f6146cf910e599b88ec0b37ed3de75c5bb0ed13aed2814e613fb8a2afa6fe`.
+  **12 focused MCP tests and 807 full-suite tests passed**; `uv lock --check`
+  resolved 48 packages, Ruff lint passed, Ruff format passed over 152 files,
+  and `git diff --check` passed. Two final independent audits found no material
+  MCP defect after corrections.
+- **Plugin decision:** `GO` on Sunday 19 July 2026 at 07:54:49 CEST. Every
+  C1–C4 browser, CLI, live/replay, Change File, receipt, verifier,
+  reconstruction, refusal, MCP, and actual-Codex predicate passes; no required
+  defect remains; 42 hours, 5 minutes, 11 seconds remained before recording
+  readiness; 30 hours, 5 minutes, 11 seconds remained before feature freeze;
+  the thin package is conservatively estimated below four hours and duplicates
+  no core service.
 
 ### C5 — Optional plugin or core hardening; feature freeze
 
@@ -730,8 +773,9 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator. Plugin creation can be delegated only after GO;
   final integration remains primary.
 - **Allowed cut:** plugin packaging and every earlier optional presentation item.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `NOT STARTED — PLUGIN GATE GO`.
+- **Actual verification:** `NOT RUN`; the official plugin-creator workflow is
+  the next operation. No plugin file exists at this checkpoint.
 
 ### C6 — Release candidate
 

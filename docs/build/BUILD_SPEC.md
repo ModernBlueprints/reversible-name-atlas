@@ -1,6 +1,7 @@
 # Reversible Name Atlas — Connected Change Build Specification
 
-Status: **CONNECTED CHANGE PRODUCT CONTRACT FROZEN; AMENDED GOAL INACTIVE**
+Status: **CONNECTED CHANGE PRODUCT CONTRACT FROZEN; GOAL ACTIVE;
+CONNECTED_CHANGE_GO SELECTED**
 
 This document is the sole authority for what the Connected Change revision of
 Reversible Name Atlas is, what it supports, what it proves, which completed
@@ -10,9 +11,10 @@ profile decision, `GOAL.md` controls execution authority, `STATE.md` records
 observed current state, and `DECISIONS.md` records rationale only.
 
 The preceding AI-first goal is complete only through verified A3 and is
-superseded for future execution. No Connected Change implementation is active
-merely because this specification exists or is committed. Only the user's later
-explicit activation of the complete amended `docs/build/GOAL.md` creates C+0.
+superseded for future execution. This specification's existence or commitment
+did not activate Connected Change; the user explicitly activated the complete
+amended `docs/build/GOAL.md` at C+0, Saturday 18 July 2026 at 23:31:39 CEST.
+C0 subsequently selected `CONNECTED_CHANGE_GO`.
 
 ## 1. Controlling sources and fixed boundaries
 
@@ -1379,13 +1381,21 @@ job/result for an identical retry, and blocks conflicting reuse. Clarification
 answers bind expected revision and question fingerprint. Reconstruction stays
 no-replace. No second idempotency store exists.
 
-Long operations return a durable job handle promptly and use `job_status`.
-Process restart rehydrates the job. Status polling is read-only. Logs use
-STDERR; STDOUT is MCP protocol only. Credentials come only from local
-environment. Tool schemas reuse browser/CLI validation. The server
-`instructions` first 512 characters self-contain start → status → optional
-answer → status and fixed limits. An actual Codex invocation against this shared
-server is required before the plugin decision.
+Origin and receiver start tools first complete the required local inventory
+preflight: validate paths and input shape, read the Change File where applicable,
+and stream/hash the complete selected source. They then persist and return the
+durable job handle before provider planning, matching, copying, or result
+creation finishes; subsequent long work uses `job_status`. This preflight is
+fast for the demonstrated 24-file hero but is not constant-time or promised to
+return within a fixed interval for arbitrarily large admitted payloads. A
+provisional undurable handle or second intake authority is prohibited.
+
+Process restart rehydrates and schedules unfinished durable work. Status polling
+itself is read-only. Logs use STDERR; STDOUT is MCP protocol only. Credentials
+come only from local environment. Tool schemas reuse browser/CLI validation.
+The server `instructions` first 512 characters self-contain start → status →
+optional answer → status and fixed limits. An actual Codex invocation against
+this shared server is required before the plugin decision.
 
 ### REL-014 — Optional Codex plugin gate
 

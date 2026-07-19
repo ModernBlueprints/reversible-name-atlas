@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Sunday 19 July 2026 at 06:24:53 CEST**
+Checkpoint: **Sunday 19 July 2026 at 07:54:49 CEST**
 
-Phase: **C4_REQUIRED_SHARED_MCP**
+Phase: **C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE**
 
 Submission hold: **ACTIVE**
 
@@ -16,14 +16,14 @@ Submission hold: **ACTIVE**
   EXECUTION**.
 - Amended Connected Change goal: **ACTIVE**.
 - Selected profile: **CONNECTED_CHANGE_GO**.
-- Feature freeze: **Monday 20 July 2026 at 14:00 CEST**; **1 day, 7 hours,
-  35 minutes, 7 seconds remaining at checkpoint**.
-- Release candidate: **Monday 20 July 2026 at 20:00 CEST**; **1 day, 13 hours,
-  35 minutes, 7 seconds remaining at checkpoint**.
-- Recording ready: **Tuesday 21 July 2026 at 02:00 CEST**; **1 day, 19 hours,
-  35 minutes, 7 seconds remaining at checkpoint**.
+- Feature freeze: **Monday 20 July 2026 at 14:00 CEST**; **1 day, 6 hours,
+  5 minutes, 11 seconds remaining at checkpoint**.
+- Release candidate: **Monday 20 July 2026 at 20:00 CEST**; **1 day, 12 hours,
+  5 minutes, 11 seconds remaining at checkpoint**.
+- Recording ready: **Tuesday 21 July 2026 at 02:00 CEST**; **1 day, 18 hours,
+  5 minutes, 11 seconds remaining at checkpoint**.
 - Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; **2 days,
-  19 hours, 35 minutes, 7 seconds remaining at checkpoint**.
+  18 hours, 5 minutes, 11 seconds remaining at checkpoint**.
 - Submission hold: **ACTIVE**.
 
 ## Repository checkpoint
@@ -37,8 +37,10 @@ Submission hold: **ACTIVE**
 - C0 checkpoint: `a5ea34216962946f8abfc5db0ec6b5f1f0f07fb8`.
 - C1 checkpoint: `c94c26bc66936be0bb87bf51e5381acfb2b4d300`.
 - C2 checkpoint: `852fc55b6e3f8291e011d9102b0e132ea851a3d1`.
-- C3 checkpoint locator: subject `feat: complete connected-change C3 evidence`
-  on parent `852fc55b`; use fresh Git for the exact SHA after this state is
+- C3 checkpoint:
+  `9e8d3db36e787fe041f2a18c04b2f7e8245c64d4`.
+- C4 checkpoint locator: subject `feat: add shared Name Atlas MCP server` on
+  parent `9e8d3db`; use fresh Git for the exact SHA after this state is
   committed.
 - Local `main`, `origin/main`, and local/remote
   `revision/portable-change-receipt`: **PRESERVED AT `4baec1e`**.
@@ -57,8 +59,9 @@ cleanliness. Fresh Git controls current repository facts.
 - C3 final GPT-5.6 evidence, exact replays, fixtures, receiver convergence,
   release refusal matrix, and browser replay: **COMPLETE AND VERIFIED**.
 - Sole budget migration: **COMPLETE; HISTORY PRESERVED**.
-- Required shared MCP: **NOT STARTED**.
-- Codex plugin gate: **NOT REACHED**.
+- Required shared MCP: **COMPLETE AND VERIFIED**.
+- Codex plugin gate: **GO**.
+- Codex plugin implementation: **NOT STARTED**.
 - Feature freeze: **PENDING; ABSOLUTE BOUNDARY ACTIVE**.
 - Release materials: **STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE
   REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE**.
@@ -112,6 +115,53 @@ cleanliness. Fresh Git controls current repository facts.
 - Independent C3 replay/privacy audit: **GO**.
 - Independent C3 end-to-end/downstream audit: **GO**.
 
+## C4 evidence and verification
+
+- Official MCP dependency: `mcp 1.28.1` under the locked range
+  `mcp>=1.27,<2`; the complete lock resolves **48 packages**.
+- Required server: `uv run name-atlas mcp`; exact seven tools, strict nested
+  inputs/outputs, literal planning consent, protocol-only STDOUT, STDERR
+  diagnostics, local-environment credentials, and no raw filesystem, shell,
+  compiler-bypass, receipt-construction, or proof-override authority.
+- Durable service behavior: start/apply/answer/reconstruct idempotency binds in
+  `FolderRefactorJob.v2`; identical retry returns the same authority;
+  conflicting reuse blocks; status is byte-preserving; startup rehydrates
+  unfinished work; clarification waits; missing-key live work defers without
+  mutating the job or budget; overlapping writer ownership retries rather than
+  becoming a product blocker.
+- Product-native MCP root:
+  `.name-atlas/c4-mcp-direct-20260719T073833+0200`; transcript SHA-256
+  `0bb87409dc02376b984c122746c6d2e067b8d2a1629833787fd014a284408fa3`.
+- Origin receipt:
+  `5a58f7a97d6ba3d4051dbca81b1f3326d2391d1dec2dbd86865124081965eafd`;
+  Change File:
+  `dda994a70da9541bdd1a48a27286e7290fe440cf77bc6272edf20b219afef952`;
+  receiver receipt:
+  `7776d996a851ff6109aa12a6f7a8268369974fc3bf4977446f2950b43e99b2f8`;
+  common organized tree:
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+- The direct transaction proves zero-question origin, one-question origin,
+  keyless differently arranged receiver application, source-free verification,
+  exact receiver-local reconstruction and retry, unchanged sources, and an
+  unchanged budget digest. Hero inventory preflight returned its durable handle
+  in 0.033628 seconds; no fixed-latency claim applies to arbitrary payloads.
+- Actual Codex MCP task: `019f78e6-06d3-72f0-9258-be362118ea2f`; it discovered
+  `name_atlas`, invoked `verify_result`, and received the verified receiver
+  receipt/tree above. Event-record SHA-256:
+  `585f6146cf910e599b88ec0b37ed3de75c5bb0ed13aed2814e613fb8a2afa6fe`.
+- Focused MCP suite: **12 passed**.
+- Complete regression: **807 passed in 62.97 seconds**.
+- `uv lock --check`: **PASSED; 48 packages resolved**.
+- Ruff lint: **PASSED**.
+- Ruff format: **PASSED; 152 files already formatted**.
+- `git diff --check`: **PASSED**.
+- Final independent semantic and protocol audits: **GO; no material MCP defect
+  remains**.
+- One-time optional Codex plugin gate: **GO**; 42 hours, 5 minutes, 11 seconds
+  remained before recording readiness and 30 hours, 5 minutes, 11 seconds
+  before feature freeze; the thin package is estimated below four hours and
+  reuses the same MCP server.
+
 ## Credentials, budget, and inactive later surfaces
 
 - Process `OPENAI_API_KEY`: **ABSENT; NO VALUE READ**.
@@ -123,29 +173,32 @@ cleanliness. Fresh Git controls current repository facts.
   cumulative cap; no second ledger**.
 - Further live GPT calls: **NOT REQUIRED OR PLANNED**.
 - Browser/native QA servers: **STOPPED**.
-- MCP, plugin, promotion, public-release, video, and submission operations:
+- Shared MCP implementation and direct/Codex qualification: **COMPLETE**.
+- Plugin packaging, promotion, public-release, video, and submission operations:
   **NOT STARTED**.
 
 ## Compact recovery capsule
 
-- Phase: `C4_REQUIRED_SHARED_MCP`.
+- Phase: `C5_OPTIONAL_CODEX_PLUGIN_AND_FEATURE_FREEZE`.
 - Branch/A3/C0: `revision/ai-first-folder-refactor` / `e3803d2` / `a5ea342`.
-- Active profile/current milestone: `CONNECTED_CHANGE_GO / C3 COMPLETE; C4 NEXT`.
-- Latest checks: `13 focused; 795 full; lock; Ruff lint; Ruff format; diff;
-  five source-free verifications; exact receiver reconstruction; browser and
-  responsive proof; two independent audits GO`.
+- Active profile/current milestone: `CONNECTED_CHANGE_GO / C4 COMPLETE; PLUGIN
+  GO; C5 NEXT`.
+- Latest checks: `12 focused MCP; 807 full; lock; Ruff lint; Ruff format; diff;
+  direct seven-tool transaction; actual Codex invocation; two final audits GO`.
 - Change File/matcher/job/provenance: `C1 COMPLETE AND VERIFIED`.
 - Receipt/verifier/reconstruction: `C1/C3 COMPLETE AND VERIFIED`.
 - Browser/native picker: `C2/C3 COMPLETE AND VERIFIED`.
 - GPT live/replay: `TWO NEW LIVE TRANSACTIONS AND TWO EXACT REPLAYS COMPLETE`.
-- MCP/plugin: `NOT STARTED / GATE NOT REACHED`.
+- MCP/plugin: `COMPLETE AND VERIFIED / GATE GO; IMPLEMENTATION NOT STARTED`.
 - Feature freeze/release materials: `ABSOLUTE BOUNDARY ACTIVE / STALE`.
 - Submission hold: `ACTIVE`.
 - Blockers: `NONE`.
-- Next operation: add the stable official MCP v1 dependency and implement one
-  shared STDIO server with exactly the seven frozen high-level tools, durable
-  idempotent job handles, consent, protocol-only STDOUT, and actual Codex proof.
+- Next operation: use the official plugin-creator workflow to add one thin
+  repository marketplace/plugin wrapper around the existing MCP server, then
+  prove clean-clone installation, refreshed new-task discovery, installed-cache
+  invocation, keyless replay, and missing-key live behavior before feature
+  freeze.
 
 ## Exact next operation
 
-`Begin C4 by adding mcp>=1.27,<2 through the normal lock workflow, then implement and verify the required shared seven-tool STDIO server before making the one-time plugin decision.`
+`Begin C5 with the official plugin-creator workflow, implement only the thin admitted Codex plugin around the verified shared MCP server, prove installed-copy execution from a clean clone, and then enter feature freeze.`

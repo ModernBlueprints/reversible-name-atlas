@@ -10,6 +10,10 @@ def run(argv: Sequence[str] | None = None) -> int:
     """Dispatch commands before importing unrelated runtime authorities."""
 
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "mcp":
+        from name_atlas.mcp_server import run_mcp_server
+
+        return run_mcp_server(arguments[1:])
     if arguments and arguments[0] == "apply-change":
         from name_atlas.connected_cli import run_apply_change
 

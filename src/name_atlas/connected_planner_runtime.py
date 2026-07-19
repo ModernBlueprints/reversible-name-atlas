@@ -25,6 +25,7 @@ HERO_REPLAY_PATH = PACKAGE_ROOT / "recordings" / "folder_hero_zero_question.json
 AMBIGUITY_REPLAY_PATH = (
     PACKAGE_ROOT / "recordings" / "folder_ambiguity_one_question.json"
 )
+REPLAY_PATHS = (HERO_REPLAY_PATH, AMBIGUITY_REPLAY_PATH)
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +103,65 @@ def _recorded_provider(replay_path: Path) -> object:
             "The recorded GPT-5.6 planning run is missing or unreadable."
         ) from exc
     return RecordedPlannerProvider(payload)
+
+
+def provider_for_persisted_job(job_path: Path) -> object:
+    """Construct only the provider origin already bound to one durable job."""
+
+    from name_atlas.folder_refactor.connected_change.job_v2 import (
+        FolderRefactorJobV2,
+        FolderRefactorJobV2Store,
+        GptPlannedJobAuthorityV2,
+    )
+
+    record = FolderRefactorJobV2Store(job_path).inspect()
+    if not isinstance(record, FolderRefactorJobV2) or not isinstance(
+        record.authority,
+        GptPlannedJobAuthorityV2,
+    ):
+        raise RuntimeError("The durable job does not have GPT planning authority.")
+    progress = record.authority.planner_checkpoint.progress
+    provider_kind = (
+        progress.provider_kind
+        if progress is not None
+        else (
+            record.authority.evidence_ledger.provider_kind
+            if record.authority.evidence_ledger is not None
+            else None
+        )
+    )
+    if provider_kind == "live":
+        return _live_provider(record.job_path)
+    if provider_kind != "recorded_replay":
+        raise RuntimeError(
+            "The durable job is not bound to a supported MCP planner origin."
+        )
+
+    from name_atlas.folder_refactor.planner_recording import (
+        RecordedPlannerProvider,
+        load_folder_planner_replay,
+    )
+    from name_atlas.folder_refactor.serialization import request_fingerprint
+
+    expected_request = request_fingerprint(record.user_request)
+    matches = []
+    for replay_path in REPLAY_PATHS:
+        try:
+            replay = load_folder_planner_replay(replay_path.read_bytes())
+        except (OSError, ValueError) as exc:
+            raise RuntimeError(
+                "A bundled GPT-5.6 planning recording is unavailable or invalid."
+            ) from exc
+        if (
+            replay.source_commitment == record.source_inventory.source_commitment
+            and replay.request_fingerprint == expected_request
+        ):
+            matches.append(replay)
+    if len(matches) != 1:
+        raise RuntimeError(
+            "The durable job does not match exactly one bundled GPT-5.6 recording."
+        )
+    return RecordedPlannerProvider(matches[0])
 
 
 def _live_provider(job_path: Path) -> object:
