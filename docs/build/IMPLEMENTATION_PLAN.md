@@ -1,14 +1,17 @@
-# Reversible Name Atlas — Sole Connected Change Implementation Plan
+# Foldweave — Sole Native-Review Implementation Plan
 
-Status: **EXECUTION ACTIVE; C7 COMPLETE; RECORDING READY; SUBMISSION HOLD ACTIVE**
+Status: **FOLDWEAVE EXECUTION INACTIVE; CONNECTED-CHANGE C0–C7 BASELINE
+COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **RECORDING_READY**
+Phase: **WAITING_FOR_FOLDWEAVE_GOAL_ACTIVATION**
 
 Submission hold: **ACTIVE**
 
-This is the only implementation plan. `BUILD_SPEC.md` defines product truth;
-this file controls dependency order, targets, evidence, scope cuts, status, and
-the next vertical outcome. It does not authorize execution.
+This remains the only implementation plan. `BUILD_SPEC.md` defines product
+truth; this file controls dependency order, targets, evidence, scope cuts,
+status, and the next vertical outcome. It does not authorize execution.
+Sections 1–9 preserve completed predecessor evidence. Section 10 controls the
+future Foldweave cycle after explicit F+0 activation.
 
 ## 1. Completed foundation and supersession
 
@@ -81,6 +84,20 @@ thin installed Codex plugin from a public clean clone and entered feature freeze
 early. C6 completed defects, proof integrity, clean-release acceptance, and
 regeneration of the stale release materials. C7 selected and published the
 recording-ready product; no new feature or product-design work remains.
+
+For the new cycle, that complete body of evidence is labelled:
+
+`COMPLETED CONNECTED-CHANGE C0–C7 RELEASE BASELINE — VERIFIED IMPLEMENTATION, NOT PROOF OF FOLDWEAVE NATIVE REVIEW, DUAL LIVE TRANSPORTS, OR DERIVATIVE REVISION`
+
+The preceding Connected Change goal and its protected-reserve continuation are:
+
+`SUPERSEDED FOR FUTURE EXECUTION BY THE USER-AUTHORIZED FOLDWEAVE NATIVE-REVIEW CYCLE`
+
+The existing README, limitations, provenance, build log, screenshots,
+narration, Devpost copy, submission package, thumbnail, and hero artifacts are
+now:
+
+`STALE FOR THE FOLDWEAVE RELEASE — PRESERVED VERIFIED NAME ATLAS PREDECESSOR MATERIAL; MUST BE REGENERATED AFTER FOLDWEAVE FEATURE FREEZE`
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -313,7 +330,8 @@ installation, or release hardening.
   requests. The deterministic A2 provider is bound to one exact disclosed
   development request, so arbitrary unrecorded language cannot create a result;
   general live-language classification remains a future qualification
-  requirement in C3 or, after an exact C0 fallback decision, F1. The initial
+  requirement in C3 or, after an exact C0 fallback decision, historical A3F1.
+  The initial
   `FolderRefactorJob` survives planning, clarification, execution, restart,
   cancellation, and completed-result recovery without duplicate provider calls
   or output. Browser work runs off the event loop with one mutation authority and
@@ -994,13 +1012,13 @@ If any predicate fails, record `CUT_BY_PREAUTHORIZED_GATE`. Omit plugin code,
 docs, screenshots, install claims, and Devpost claims. The required shared MCP
 remains part of `CONNECTED_CHANGE_GO`.
 
-## 8. Exact A3 fallback sequence
+## 8. Historical A3 fallback sequence — never selected and now superseded
 
-If C0 records `A3_RELEASE_FALLBACK`, every Connected Change, Apply, cross-layout,
-native-picker expansion, shared MCP, plugin, convergence, and Change File claim
-is cut. Continue only through these rows.
+This conditional sequence was preserved in the preceding cycle but was never
+selected because C0 returned `CONNECTED_CHANGE_GO`. It has no future execution
+authority and is retained only as historical governance evidence.
 
-### F1 — Complete paused A4 evidence and three-state product
+### Historical A3F1 — Complete paused A4 evidence and three-state product
 
 - **Requirements:** existing `AI-011`–`AI-012`, `UX-009`–`UX-012`,
   `REL-009`, `CLAIM-004`–`CLAIM-005`; no Connected Change IDs.
@@ -1016,37 +1034,38 @@ is cut. Continue only through these rows.
 - **Visual checks:** final three-state desktop/narrow product.
 - **Exact completion evidence:** two provider records/replays, final hero and
   ambiguity results, browser QA, full suites, coherent commit.
-- **Downstream consumer:** F2.
+- **Downstream consumer:** historical A3F2 only.
 - **Owner:** primary integrator.
 - **Allowed cut:** presentation extras only.
-- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual status:** `HISTORICAL CONDITIONAL — NOT SELECTED; SUPERSEDED`.
 - **Actual verification:** `NOT RUN`.
 
-### F2 — Fallback feature freeze and hardening
+### Historical A3F2 — Fallback feature freeze and hardening
 
 - **Requirements:** all required A3-derived release requirements.
-- **Dependencies:** verified F1.
+- **Dependencies:** historical A3F1, had the fallback been selected.
 - **Calculated target:** no later than Monday 20 July 2026 at 14:00 CEST.
 - **User-visible integrated outcome:** honest AI-first A3 product is feature
   frozen and hardened.
 - **Implementation responsibilities:** defects, accessibility, portability,
   evidence clarity, release consistency, and removal of every Connected
   surface/claim.
-- **Automated checks:** complete A3 plus F1 regressions, lock/lint/format/diff,
+- **Automated checks:** complete A3 plus historical A3F1 regressions,
+  lock/lint/format/diff,
   keyless replay/verify/reconstruct, no Connected route/CLI/MCP/plugin artifact.
 - **Visual checks:** final fallback browser at desktop and narrow widths.
 - **Exact completion evidence:** browser QA, full commands, exact cut/claim scan,
   freeze timestamp, state update, coherent commit.
-- **Downstream consumer:** F3.
+- **Downstream consumer:** historical A3F3 only.
 - **Owner:** primary integrator.
 - **Allowed cut:** optional presentation only.
-- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual status:** `HISTORICAL CONDITIONAL — NOT SELECTED; SUPERSEDED`.
 - **Actual verification:** `NOT RUN`.
 
-### F3 — Fallback release candidate
+### Historical A3F3 — Fallback release candidate
 
 - **Requirements:** A3-derived clean release and claim boundaries.
-- **Dependencies:** F2.
+- **Dependencies:** historical A3F2, had the fallback been selected.
 - **Calculated target:** Monday 20 July 2026 at 20:00 CEST.
 - **User-visible integrated outcome:** clean clone, replay/live, proof, verifier,
   and reconstruction work with no Connected Change/MCP/plugin/native-picker
@@ -1061,16 +1080,16 @@ is cut. Continue only through these rows.
   Connected language.
 - **Exact completion evidence:** clean-clone log, final fallback artifacts,
   screenshots, refreshed materials, release-candidate commit and public state.
-- **Downstream consumer:** F4.
+- **Downstream consumer:** historical A3F4 only.
 - **Owner:** primary integrator.
 - **Allowed cut:** nonessential docs only.
-- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual status:** `HISTORICAL CONDITIONAL — NOT SELECTED; SUPERSEDED`.
 - **Actual verification:** `NOT RUN`.
 
-### F4 — Fallback recording readiness
+### Historical A3F4 — Fallback recording readiness
 
 - **Requirements:** complete honest A3 AI-first release.
-- **Dependencies:** accepted F3.
+- **Dependencies:** historical A3F3, had the fallback been selected.
 - **Calculated target:** Tuesday 21 July 2026 at 02:00 CEST.
 - **User-visible integrated outcome:** only final video, voice, `/feedback`, due
   diligence, hold release, and submission remain.
@@ -1088,12 +1107,13 @@ is cut. Continue only through these rows.
 - **Downstream consumer:** protected final reserve.
 - **Owner:** primary integrator.
 - **Allowed cut:** none from fallback required scope.
-- **Actual status:** `CONDITIONAL — NOT ACTIVE`.
+- **Actual status:** `HISTORICAL CONDITIONAL — NOT SELECTED; SUPERSEDED`.
 - **Actual verification:** `NOT RUN`.
 
 ## 9. Protected final reserve and hold
 
-After C7 or F4, only the user's voice-over, final capture/edit/audio cleanup,
+After historical C7 (the A3 fallback branch was never selected), only the
+user's voice-over, final capture/edit/audio cleanup,
 public YouTube upload/playback verification, `/feedback`, final rules/claims/
 clean-run audit, Devpost completion, explicit submission-hold release, final
 submission, and receipt confirmation remain.
@@ -1118,3 +1138,586 @@ final capture and public playback, `/feedback`, entrant type, country, personal
 attestations, and explicit hold release remain pending; the phase therefore
 remains `RECORDING_READY` rather than
 `WAITING_FOR_SUBMISSION_HOLD_RELEASE`.
+
+## 10. F+0 activation, fixed clock, ownership, and scope
+
+This section and Sections 11–19 are the sole future execution sequence. The
+preceding Connected Change goal completed C0–C7 and is:
+
+`SUPERSEDED FOR FUTURE EXECUTION BY THE USER-AUTHORIZED FOLDWEAVE NATIVE-REVIEW CYCLE`
+
+The release material produced by C6–C7 is:
+
+`STALE FOR THE FOLDWEAVE RELEASE — PRESERVED VERIFIED NAME ATLAS PREDECESSOR MATERIAL; MUST BE REGENERATED AFTER FOLDWEAVE FEATURE FREEZE`
+
+The complete amended `GOAL.md` remains inactive until the user explicitly
+activates it in the current primary Codex task. The resulting Europe/Oslo
+timestamp is F+0. Meta-plan approval, branch creation, scaffold implementation,
+commit, push, handoff, reproduction, or a readiness verdict does not create
+F+0. The 44-hour envelope began with the user's decision and is not reset or
+extended by delayed activation.
+
+At F+0 calculate, using `oslo_tz = ZoneInfo("Europe/Oslo")`:
+
+- `available_to_recording = max(0, Tuesday 21 July 2026 10:00 CEST - F+0)`;
+- `planned_foldweave_hours = min(44, available_to_recording in hours)`;
+- `scale = planned_foldweave_hours / 44`;
+- each relative target as `F+0 + standard_anchor * scale`; and
+- each effective target as the earlier of the scaled target and any applicable
+  absolute boundary.
+
+| Milestone | Standard anchor |
+|---|---:|
+| F0a review authority | 5/44 |
+| F0b native transaction | 6/44 |
+| F0c ChatGPT developer transaction | 7/44 |
+| F0d consumer gateway transaction | 8/44 |
+| F1 complete review/revision engine | 12/44 |
+| F2 serial collaboration proof | 19/44 |
+| F3 complete product experience | 26/44 |
+| F4 MCP, Codex, and live qualification | 31/44 |
+| F5 feature freeze | 35/44, capped at Tuesday 21 July 2026 01:00 CEST |
+| F6 release candidate | 40/44, capped at Tuesday 21 July 2026 06:00 CEST |
+| F7 recording readiness | 44/44, capped at Tuesday 21 July 2026 10:00 CEST |
+
+Targets force early integration, simplification, and optional cuts. They are
+not completion evidence and do not terminate unfinished required work.
+
+Before any F0b reservation or live direct provider call, the primary integrator
+must: inspect and verify the sole ledger; freeze the review, derivative, replay,
+prompt, strict-tool, evidence-envelope, fixture, and exact F0b qualification
+fingerprints; atomically raise only the monetary ceiling from USD 10 to USD 40;
+preserve every historical ledger field and the existing cumulative call cap 13;
+and verify the migrated bytes and fields. No reservation or provider call is
+legal until all three surfaces—contract freeze, atomic migration, and
+post-migration verification—have observed passing evidence. F4 alone may set a
+new final cumulative call cap after the complete call graph is known.
+
+This current task is the sole primary integrator. It owns shared contracts,
+architecture, repository state, integration, evidence, and completion
+decisions. Bounded subagents may inspect, implement non-overlapping work, or
+audit, but their completion messages are not evidence and all material output
+must be independently integrated and verified here. Keep one implementation
+branch, one deterministic engine, one planner architecture, one durable job and
+idempotency authority, one budget ledger, one receipt builder, one verifier,
+one reconstruction engine, one implementation plan, one goal, and one state
+authority.
+
+Every meaningful implementation interval must end with a runnable vertical
+product, focused checks, relevant regression checks, visual or packaged-runtime
+inspection where applicable, observed plan/state updates, and one coherent
+ordinary commit. A missed target triggers root-cause diagnosis, the simplest
+route to the same required outcome, the next authorized optional cut, and
+restoration of an integrated runnable product. After two serious failed
+corrections of a non-F0 defect, simplify or replace the abstraction rather than
+apply a third symptom patch.
+
+Mandatory scope is every Foldweave requirement in `BUILD_SPEC.md`, including
+the native app, direct Responses API, ChatGPT-hosted planning, Codex/MCP,
+replay, unchanged Change File application, review-before-execution, both
+revision journeys, exact acceptance, proof, reconstruction, compatibility, and
+clean release. Optional work is cut only in this order:
+
+1. decorative animation;
+2. supplementary metrics;
+3. graph interactions beyond the required tree and link inspector;
+4. additional themes;
+5. secondary MCP-client examples;
+6. nonessential native notifications;
+7. expanded technical-evidence presentation;
+8. compatibility conveniences not required to preserve real historical
+   artifacts.
+
+Do not add Electron, Tauri, SwiftUI, a second backend, a full React rewrite,
+Windows/Linux packaging, accounts, cloud project synchronization, live
+collaboration, automatic merge, general semantic reconciliation, another
+authority or proof engine, product discovery, market research, a tournament,
+benchmark platform, or custom validation bureaucracy.
+
+## 11. F0 — Four opening existential gates
+
+F0 begins immediately after F+0. Broad polish, release-material renewal, and
+discretionary features are prohibited until all four gates have returned
+verified positive evidence. Each gate permits the initial implementation and
+at most two material corrections of the same premise. Preserve
+`1023999f2acc7b806775b407dc01a15af3447e90` and all failure evidence. ChatGPT
+must never be silently cut or replaced by a hidden direct API call.
+
+Persistent failure has exactly these outcomes:
+
+| Gate | Required disposition |
+|---|---|
+| F0a | Record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_REVIEW_AUTHORITY_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0b | After the bounded packaging policy is exhausted, record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_NATIVE_APPLICATION_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0c | If user-owned Platform/workspace access alone remains, enter `WAITING_FOR_CHATGPT_DEVELOPER_ACCESS`; otherwise record `FOLDWEAVE_PROFILE_NO_GO` and enter `WAITING_FOR_CHATGPT_DEVELOPER_INTEGRATION_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0d | Record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_GATEWAY_PROVISIONING_OR_USER_SCOPE_DECISION`. |
+
+No later F milestone may pass while any gate lacks verified positive evidence.
+Continue only genuinely independent work until the named access change or user
+decision is the global impasse; never label a wait or predecessor release as
+completed Foldweave.
+
+### F0a — Review authority gate
+
+- **Requirements:** PRD-015, IO-019, TX-019–TX-020, CASE-013–CASE-015,
+  UX-018–UX-020, VER-019.
+- **Dependencies:** F+0, fresh repository and deadline verification, job-v3 and
+  preview walking skeleton.
+- **Calculated target:** standard anchor 5/44 under Section 10.
+- **User-visible outcome:** one origin job and one receiver job stop in
+  `reviewing`, show their exact current and proposed trees, create no output
+  before acceptance, reject stale and duplicate acceptance, then create and
+  verify a separate result from the exact accepted preview.
+- **Implementation responsibilities:** preview DTO, review lifecycle, immutable
+  candidate, exact authorization transaction, source/Change File stability,
+  idempotency, and the smallest renderer necessary to inspect both trees.
+- **Automated checks:** origin and receiver lifecycle integration; output
+  absence during review; stale revision/fingerprint/destination rejection;
+  duplicate retry; source/result immutability; independent verification.
+- **Visual checks:** current/proposed toggle, exact counts, changed members,
+  protected/link indicators, acceptance and revision controls at 1280 x 720.
+- **Packaged/runtime checks:** browser fallback walking transaction; durable
+  restart into the same preview.
+- **Exact completion evidence:** persisted job and preview fingerprints,
+  before-acceptance no-output assertion, accepted-authorization record, result
+  receipt, verifier success, source rescan equality, and observed UI capture.
+- **Downstream consumer:** F0b, F0c, F0d, F1, and every execution surface.
+- **Owner:** primary integrator; bounded independent lifecycle reviewer.
+- **Allowed cut:** visual decoration only; no review, preview, or authority cut.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+### F0b — Native application gate
+
+- **Requirements:** PRD-017, IO-016, CASE-016, AI-014–AI-015, UX-017,
+  UX-021, REL-017–REL-018.
+- **Dependencies:** F0a; frozen narrow bridge and packaging profile; frozen
+  review, derivative, replay, prompt, strict-tool, evidence-envelope, fixture,
+  and exact F0b qualification fingerprints; verified atomic monetary migration
+  to USD 40 with the cumulative call cap still 13.
+- **Calculated target:** standard anchor 6/44.
+- **User-visible outcome:** a packaged `Foldweave.app` launches, chooses a
+  folder, configures a Keychain-backed direct credential, plans with exact
+  `gpt-5.6`, shows and revises the preview, accepts it exactly, verifies the
+  separate result, removes the key, and shuts down without an orphan process.
+- **Implementation responsibilities:** one FastAPI control plane, focused React
+  review island, pywebview main-thread lifecycle, health-gated ephemeral
+  loopback server, narrow picker/Keychain/Finder bridge, secure endpoint profile,
+  production Vite assets, PyInstaller `onedir --windowed` specification, and the
+  pre-call contract-freeze/ledger-migration protocol in Section 10.
+- **Automated checks:** bridge schema, renderer credential isolation, endpoint
+  validation, health/start/stop, direct-plan/revision/accept integration, key
+  removal, source immutability, port conflict, second launch, process cleanup,
+  pre-migration call refusal, preserved call cap 13, and post-migration USD 40
+  enforcement.
+- **Visual checks:** title/menu/settings, secure key entry, picker, review tree,
+  revision, Done, focus/contrast at 1280 x 720 and approximately 1440 x 900.
+- **Packaged/runtime checks:** clean app build; launch from an unrelated
+  directory; real picker; Keychain configure/read-state/remove; one exact live
+  transaction; restart recovery; no runtime Node; no orphan Uvicorn.
+- **Exact completion evidence:** built app identity, launch log with redaction,
+  process-before/after proof, job/preview/authorization/result/receipt/verifier
+  chain, Keychain-state assertions without a secret, frozen contract
+  fingerprints, before/after ledger fields and hash, and direct ledger record.
+- **Downstream consumer:** F3 and final native release.
+- **Owner:** primary integrator; bounded packaging and visual reviewers.
+- **Allowed cut:** decoration and notification only; py2app is the authorized
+  packaging fallback after two serious PyInstaller corrections.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+### F0c — ChatGPT developer-mode gate
+
+- **Requirements:** PRD-016–PRD-017, IO-017–IO-018, AI-016–AI-018,
+  UX-022, REL-019–REL-022, VER-022.
+- **Dependencies:** F0a; official Secure MCP Tunnel access and configuration;
+  local companion and public HTTP MCP walking paths.
+- **Calculated target:** standard anchor 7/44.
+- **User-visible outcome:** a fresh task in the actual macOS ChatGPT app
+  discovers Foldweave, the host model uses bounded evidence tools, the widget
+  shows the immutable preview, **Send changes** returns to the host model loop,
+  the revised preview compiles, and exact acceptance produces a verified local
+  result through the companion.
+- **Implementation responsibilities:** developer qualification through the
+  official Secure MCP Tunnel, host tools, shared widget, opaque handles,
+  companion routing, host provenance, and exact no-direct-API enforcement. A
+  substitute route requires a current user instruction or documented official-
+  rule change that explicitly amends the frozen specification.
+- **Automated checks:** tool schemas; evidence quotas; opaque-handle scope;
+  revision/accept fingerprints; no direct ledger mutation; no secret/path
+  leakage; idempotent retry; local verification.
+- **Visual checks:** widget preview and toggle, revision handoff through
+  `ui/message`, deterministic `tools/call` actions, error/reconnect states.
+- **Packaged/runtime checks:** actual ChatGPT desktop fresh task, discovery,
+  real tool traffic, companion reachability, host revision, acceptance, and
+  verified local output.
+- **Exact completion evidence:** sanitized observable MCP/widget transcript,
+  host metadata actually supplied, unchanged direct ledger, local job chain,
+  result receipt/verifier, and `DEVELOPER_MODE_VERIFIED` state.
+- **Downstream consumer:** F0d, F3, F4, and the ChatGPT release story.
+- **Owner:** primary integrator; independent transport/provenance reviewer.
+- **Allowed cut:** no ChatGPT capability cut; developer tunnel is qualification,
+  not the consumer topology.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+### F0d — Consumer gateway gate
+
+- **Requirements:** IO-017–IO-018, CASE-015–CASE-016, AI-016–AI-018,
+  UX-022, VER-022–VER-023, REL-019–REL-020.
+- **Dependencies:** F0a and F0c; Cloudflare account access; frozen pairing and
+  companion contracts.
+- **Calculated target:** standard anchor 8/44.
+- **User-visible outcome:** ChatGPT connects through a stable `workers.dev`
+  gateway, authorizes and pairs to the local app, selects only opaque local
+  handles, survives disconnect/reconnect, and completes one origin and one
+  receiver derivative transaction without a hidden Responses API call.
+- **Implementation responsibilities:** checked-in Workers TypeScript;
+  `@cloudflare/workers-oauth-provider`; `OAUTH_KV`; SQLite Durable Object relay;
+  OAuth 2.1 authorization code with PKCE S256, CIMD and DCR fallback; one-time
+  device-key pairing; outbound signed WSS companion; replay/rate/expiry/revoke
+  controls; local-job authority and retry binding.
+- **Automated checks:** metadata and OAuth conformance; wrong/expired/replayed/
+  over-limit pairing refusal; code atomic consumption; grant/token expiry and
+  revocation; signature, nonce, sequence, digest, and retry rejection; gateway
+  redaction and persistence audit; reconnect without duplicate work.
+- **Visual checks:** authorization, device-name/code confirmation, pairing
+  status, reconnect, revocation, and actionable failure surfaces.
+- **Packaged/runtime checks:** live stable HTTPS deployment; real ChatGPT OAuth;
+  paired outbound WSS; local selection; origin and receiver derivative; network
+  interruption/reconnect; unchanged direct ledger.
+- **Exact completion evidence:** deployed URL and commit, metadata responses,
+  sanitized OAuth/pairing traces, negative-test results, Durable Object/KV
+  inventory proving bounded fields, local durable jobs, verified results, and
+  `CONSUMER_PAIRING_VERIFIED` state.
+- **Downstream consumer:** F3, F4, F6, F7.
+- **Owner:** primary integrator; independent OAuth/transport and persistence
+  reviewers.
+- **Allowed cut:** custom domain and public directory approval; no gateway,
+  pairing, companion, or ChatGPT-hosted-product cut.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 12. F1 — Complete review and revision engine
+
+- **Requirements:** IO-019–IO-021, TX-019–TX-023, CASE-013–CASE-017,
+  AI-014–AI-019, UX-018–UX-020, VER-019, REL-016.
+- **Dependencies:** verified F0a and frozen v3/v2/v1 contracts.
+- **Calculated target:** standard anchor 12/44.
+- **User-visible outcome:** every new origin and receiver transaction reaches a
+  durable complete review, supports the allowed clarification and two sparse
+  revisions, preserves the prior proposal on failure, accepts only the exact
+  visible preview, and resumes correctly across browser, native, CLI, and MCP.
+- **Implementation responsibilities:** job v3 state machine; preview DTO;
+  complete candidate compiler; sparse delta application; immutable parent/child
+  jobs; revision-failure recovery; keep-proposal transition; exact authorization;
+  concurrency, staleness, idempotency, restart, and strict legacy dispatch;
+  reviewed CLI and browser routes.
+- **Automated checks:** full state-transition matrix; bounds/counter retention;
+  invalid/unknown/duplicate member deltas; protected and accounting failures;
+  accept-versus-revise races; stale tabs; changed source/Change File/output;
+  double click and MCP retry; simultaneous parent/child same-output reservation;
+  crash/restart; cross-surface rehydration; finalized legacy reads and
+  nonterminal legacy refusal.
+- **Visual checks:** origin and receiver trees, revision delta, exact errors,
+  **Try another change**, **Keep previous proposal**, and acceptance recovery.
+- **Packaged/runtime checks:** one origin and one receiver job created in one
+  surface and resumed in another; browser fallback and CLI reviewed workflow.
+- **Exact completion evidence:** complete automated matrix, persisted state and
+  revision records, preview/candidate fingerprints, race/restart transcripts,
+  no-output-before-acceptance assertions, and verified results after acceptance.
+- **Downstream consumer:** F2 serial proof and every complete user surface.
+- **Owner:** primary integrator; bounded state-machine and race reviewers.
+- **Allowed cut:** no engine behavior; only nonessential presentation metrics.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 13. F2 — Proof-carrying serial collaboration
+
+- **Requirements:** PRD-018, IO-020–IO-021, TX-022–TX-025,
+  CASE-017, AI-018–AI-019, UX-019, VER-020–VER-024, REL-016.
+- **Dependencies:** F1; stable Change File v2, receipt v3, provenance, lineage,
+  and organized-tree contracts.
+- **Calculated target:** standard anchor 19/44.
+- **User-visible outcome:** Sofia creates and accepts T1; Martin reviews T1
+  against his different local structure, may apply it unchanged without a
+  model or create and accept T2 through either live transport; Sofia then
+  applies self-contained CF2 to her unchanged equivalent source and to a
+  verified prior T1 result. Every accepted T2 converges, and each transaction
+  reconstructs its own selected source.
+- **Implementation responsibilities:** Change File v2 and legacy dispatch;
+  receipt/verifier v3; immediate-parent lineage; immutable parent and derivative
+  child jobs; self-contained child envelope; acyclic fingerprint DAG; raw and
+  verified-result-root application; receiver-local reverse maps; convergence;
+  strict provenance and complete refusal matrix.
+- **Automated checks:** differing Sofia/Martin source commitments; complete
+  bijective matching; unchanged keyless application; direct and ChatGPT
+  derivative paths; CF2 without CF1; CF2 to raw and prior T1 data; identical
+  organized-tree commitments; source/result/Change File immutability; per-round
+  reconstruction; valid v1 Change File unchanged application; immutable v1
+  parent to complete v2 child revision; v2 child application without the v1
+  file; incompatible historical-version refusal; lineage generation 32 pass/33
+  block; lineage metadata 1,048,576-byte pass/1,048,577-byte block; all payload,
+  Markdown, relationship, suffix, protected, empty-directory, symmetry,
+  fingerprint, target, overlap, mutation, collision, convergence, lineage, and
+  compatibility failures.
+- **Visual checks:** Martin's **Your current folder** versus **Shared proposal**;
+  unchanged acceptance; derivative choice; T2 preview and delta; lineage and
+  reconstruction disclosures.
+- **Packaged/runtime checks:** complete Sofia → Martin → Sofia transaction in
+  native, browser, and the selected live transports where required; verifier
+  and reconstruction from clean product entry points.
+- **Exact completion evidence:** CF1 and CF2 fingerprints; parent/core/receipt/
+  envelope DAG; distinct receipts; match reports; source and organized-tree
+  commitments; verifier reports; reconstructions; negative blocker IDs; and
+  proof that CF2 is complete without CF1.
+- **Downstream consumer:** F3 experience, F4 qualification, F6 release proof,
+  and the three-minute story.
+- **Owner:** primary integrator; bounded matcher, proof-DAG, and reconstruction
+  reviewers.
+- **Allowed cut:** supplementary lineage visualization only; no lineage,
+  compatibility, convergence, or reconstruction cut.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 14. F3 — Complete native, browser, and ChatGPT experience
+
+- **Requirements:** PRD-014–PRD-017, IO-016–IO-019, UX-017–UX-023,
+  REL-017–REL-020, REL-023, CLAIM-008–CLAIM-010.
+- **Dependencies:** F0b–F0d, F1, and F2; shared preview and widget contracts.
+- **Calculated target:** standard anchor 26/44.
+- **User-visible outcome:** a coherent Foldweave application across native,
+  browser fallback, ChatGPT, and paired companion: Home/Create/Apply, secure
+  settings, current/proposed review, revision, exact acceptance, truthful
+  Working, Done, Change File download, Finder reveal, verification,
+  reconstruction, pairing, rehydration, and revocation.
+- **Implementation responsibilities:** complete active branding and icon;
+  one shared focused React tree/widget component with thin native/browser/
+  ChatGPT adapters; native shell/bridge; existing Jinja/Blueprint surfaces;
+  purpose-built tree, search, changed-only and filters; member/link details;
+  revision delta and failure recovery; shared DTO; pairing/revocation UX;
+  browser fallback; accessibility and responsive states.
+- **Automated checks:** React component behavior; TypeScript contracts; DTO
+  parity; route/CSRF/idempotency controls; Keychain and bridge bounds; widget
+  tool/message flows; pairing states; UI-state rehydration; no secret or
+  absolute-path exposure; and the exact 500-file/1,000-directory maximum-shape
+  fixture across toggle, changed-only, search/filter, stable state, keyboard,
+  screen-reader identity, and overflow behavior.
+- **Visual checks:** one navy/cyan/violet/amber/green/gray system; 1280 x 720,
+  approximately 1440 x 900, and 390 x 844; stable selection/expansion/scroll;
+  changed branches; search/filters; keyboard, focus, screen-reader names,
+  contrast, non-color signals, trust strip, errors, and empty/loading states.
+- **Packaged/runtime checks:** clean packaged launch; picker, settings, Finder,
+  restart, unrelated working directory; browser fallback; actual ChatGPT widget
+  and companion reconnect; no runtime Node and no orphan process.
+- **Exact completion evidence:** visual capture set, accessibility checklist,
+  shared-source component inventory, maximum-shape measurement, component/
+  integration results, packaged-runtime logs, rehydrated jobs, no-secret/path
+  scans, and complete observed origin/receiver journeys.
+- **Downstream consumer:** F4 live qualification and F6 release candidate.
+- **Owner:** primary integrator; bounded native, widget, accessibility, and
+  visual reviewers.
+- **Allowed cut:** Sections 10 items 1–7 only; never the required tree,
+  revision, native, ChatGPT, or accessibility semantics.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 15. F4 — MCP, Codex, direct/live/replay qualification
+
+- **Requirements:** PRD-016–PRD-017, IO-016–IO-018, AI-014–AI-020,
+  VER-022–VER-024, REL-019–REL-022.
+- **Dependencies:** F1–F3; final schemas, prompt, fixtures, call graph, replay
+  fingerprint, gateway, companion, and shared domain service.
+- **Calculated target:** standard anchor 31/44.
+- **User-visible outcome:** direct GPT, ChatGPT-hosted, Codex, recorded replay,
+  and unchanged model-free application all perform their truthful reviewed
+  workflows through the same engine; the installed Foldweave Codex plugin works
+  from a clean clone and a fresh task.
+- **Implementation responsibilities:** verify the earlier monetary migration
+  and preserved historical ledger, freeze the direct prompt and strict tools,
+  calculate and atomically set the final cumulative call cap from the complete
+  qualification graph, execute real direct origin and derivative transactions;
+  execute real ChatGPT origin
+  and derivative transactions; produce sanitized replay; implement local STDIO
+  and authenticated Streamable HTTP MCP transports; expose bounded host-planning
+  and high-level tools; update/install the Foldweave Codex plugin; implement
+  durable polling, retry, consent, rehydration, and provenance labels.
+- **Automated checks:** tool input/output schemas; quotas and evidence bounds;
+  idempotency/canonical binding; missing-key isolation; direct-ledger and
+  ChatGPT-ledger separation; STDOUT/STDERR protocol isolation; HTTP auth;
+  opaque-handle scoping; retry and restart; replay byte/fingerprint equality;
+  secret, response-ID, absolute-path, hidden-reasoning, and personal-data scans.
+- **Visual checks:** truthful mode and transport labels, clarification, review,
+  revision, polling, missing-key, reconnect, and terminal states in native,
+  ChatGPT, and Codex.
+- **Packaged/runtime checks:** exact live direct origin and derivative; actual
+  ChatGPT origin and derivative; keyless replay; keyless unchanged apply;
+  clean-clone plugin installation; refresh/restart; fresh Codex task; installed-
+  cache discovery and real origin, review, revision, acceptance, receiver,
+  derivative, unchanged apply, verification, reconstruction, and duplicate retry.
+- **Exact completion evidence:** ledger migration and records; model/transport/
+  usage/cost evidence; sanitized transcripts/replays; direct and ChatGPT job/
+  receipt/verifier chains; MCP protocol logs; clean-clone and installed-copy
+  identity; retry/rehydration proof; no-secret/path scan results.
+- **Downstream consumer:** F5 freeze and F6 clean release.
+- **Owner:** primary integrator; independent budget/provenance, MCP, ChatGPT,
+  and installed-plugin reviewers.
+- **Allowed cut:** secondary clients and examples only; no required transport,
+  tool layer, Codex transaction, replay, or unchanged-apply cut.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+ChatGPT distribution states are recorded independently and never inferred:
+
+- `DEVELOPER_MODE_VERIFIED`;
+- `CONSUMER_PAIRING_VERIFIED`;
+- `PUBLICATION_READY`;
+- `SUBMITTED_FOR_REVIEW`;
+- `APPROVED`;
+- `PUBLISHED`.
+
+F4 requires the first three. Attempt `SUBMITTED_FOR_REVIEW` only when the
+current official process permits it. Approval and publication require direct
+external evidence, and only `PUBLISHED` supports a public-listing claim.
+
+## 16. F5 — Hardening and feature freeze
+
+- **Requirements:** all active Foldweave requirements, especially VER-019–
+  VER-024, REL-018–REL-023, and CLAIM-008–CLAIM-010.
+- **Dependencies:** F0–F4 complete with every mandatory path continuously
+  runnable.
+- **Calculated target:** standard anchor 35/44, never later than Tuesday
+  21 July 2026 at 01:00 CEST.
+- **User-visible outcome:** every mandatory journey is reliable, accessible,
+  truthfully labelled, and visually coherent; no required defect remains and no
+  new capability is planned.
+- **Implementation responsibilities:** resolve required defects; finish all
+  negative/race/compatibility matrices; gateway redaction, rate-limit, replay,
+  revocation, expiry, and reconnect hardening; native packaging fallback if
+  triggered; historical-artifact dispatch; accessibility, portability, and
+  proof clarity; apply optional cuts in the fixed order.
+- **Automated checks:** relevant full Python/frontend/gateway suites; race and
+  controlled-failure matrices; package/build checks; schema/fingerprint
+  compatibility; credential/path/metadata scans; dependency locks.
+- **Visual checks:** complete native/browser/ChatGPT/Codex journey review at all
+  target viewports, keyboard-only and screen-reader-oriented inspection, errors
+  and recovery, no stale Name Atlas active branding.
+- **Packaged/runtime checks:** repeated app launch/restart/shutdown, browser
+  fallback, live direct and ChatGPT, Codex, replay, unchanged apply, derivative,
+  reconnect, verification, and reconstruction.
+- **Exact completion evidence:** zero required open defects; full check outputs;
+  final compatibility/refusal results; visual/accessibility record; packaging
+  decision; selected cuts; feature-freeze timestamp and commit.
+- **Downstream consumer:** F6 release candidate.
+- **Owner:** primary integrator; independent adversarial reviewers by surface.
+- **Allowed cut:** only the ordered optional list in Section 10.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+At the absolute freeze boundary, stop feature development. Thereafter only
+defect correction, proof-integrity correction, accessibility, visual QA, clean
+installation, packaging, documentation, screenshots, claims, rehearsal, and
+release work are permitted.
+
+## 17. F6 — Release candidate
+
+- **Requirements:** all release and claim requirements, REL-016–REL-023,
+  VER-024, CLAIM-008–CLAIM-010.
+- **Dependencies:** F5 freeze; selected release contracts and fixtures.
+- **Calculated target:** standard anchor 40/44, never later than Tuesday
+  21 July 2026 at 06:00 CEST.
+- **User-visible outcome:** a judge can obtain the clean public project, launch
+  `Foldweave.app` on Apple Silicon or use the documented browser fallback, and
+  run the truthful direct, ChatGPT, Codex, replay, unchanged-apply, derivative,
+  proof, and reconstruction stories using renewed Foldweave documentation.
+- **Implementation responsibilities:** full regression and build acceptance;
+  clean source install/clone; native package; gateway/widget assets; clean
+  transactions; installed Codex plugin; regenerate README, limitations,
+  provenance, pre-existing-work disclosure, build log, screenshots, submission
+  package, narration draft, Devpost copy, package/license metadata, GitHub
+  description, and release assets; ordinary branch push.
+- **Automated checks:** Python regression; frontend components; TypeScript type
+  check; Vite production build; lock, Ruff lint/format, and diff; clean install
+  and clone; secret/response-ID/path/historical-brand scans; wheel/app/gateway/
+  widget asset inventory; license/package validation.
+- **Visual checks:** final native, browser, ChatGPT widget, proof, and screenshot
+  review at recording resolution; branding, claims, focus, contrast, errors,
+  settings, and launch instructions.
+- **Packaged/runtime checks:** clean native build/launch from unrelated path;
+  browser fallback; exact live direct and ChatGPT transactions; replay;
+  unchanged receiver apply; serial derivative proof; verifier/reconstruction;
+  gateway pairing/reconnect; fresh installed-copy Codex transaction.
+- **Exact completion evidence:** command outputs, clean-clone commit, native app
+  artifact/hash and launch proof, final jobs/Change Files/receipts/verifiers/
+  reconstructions, gateway and distribution states, plugin installed-copy proof,
+  regenerated-material inventory, scan results, and public branch SHA.
+- **Downstream consumer:** F7 rehearsal and the protected final reserve.
+- **Owner:** primary integrator; independent clean-clone, claims, release, and
+  judge-path reviewers.
+- **Allowed cut:** no release-critical cut; public approval may remain accurately
+  pending, but developer and consumer pairing plus publication readiness must
+  pass.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+After complete release acceptance, fast-forward `main` to the selected
+Foldweave release commit and push without force. Safely update repository
+metadata. If the GitHub slug is changed, verify the new origin and the old
+redirect. Never rebase or rewrite history. Final Devpost submission remains
+held.
+
+## 18. F7 — Recording readiness
+
+- **Requirements:** REL-023 and the complete Foldweave recording-readiness
+  Definition of Done in `BUILD_SPEC.md`.
+- **Dependencies:** accepted F6 release candidate and public repository.
+- **Calculated target:** standard anchor 44/44, never later than Tuesday
+  21 July 2026 at 10:00 CEST.
+- **User-visible outcome:** the complete selected Foldweave release is stable
+  and the exact under-three-minute Sofia/Martin narrative can be captured
+  without any product or design change.
+- **Implementation responsibilities:** select release commit; final clean-clone
+  proof; stabilize app and all modes; freeze final Change Files, receipts,
+  verifier/reconstruction outputs, gateway endpoint and truthful publication
+  state; rehearse the exact story; time narration; finish shot list,
+  screenshots, Devpost fields, contributions, provenance, and `/feedback` path.
+- **Automated checks:** final release commands and clean-state verification;
+  exact artifact/hash inventory; final no-secret/path/claim scans.
+- **Visual checks:** full recording sequence at capture resolution; no overlays,
+  secrets, stale branding, broken states, or unreadable content; narration timing
+  strictly below three minutes.
+- **Packaged/runtime checks:** stable native direct, ChatGPT, Codex, replay,
+  unchanged apply, derivative, verifier, reconstruction, gateway, clean clone,
+  and restart paths.
+- **Exact completion evidence:** selected public commit; clean-clone report;
+  final artifact fingerprints; gateway/distribution evidence; timed narration;
+  shot list; screenshots; complete draft submission fields; no planned product
+  or design change; active submission hold.
+- **Downstream consumer:** final 16-hour video, due-diligence, and submission
+  reserve.
+- **Owner:** primary integrator; user owns voice recording and the final gates.
+- **Allowed cut:** none from the recording-ready definition.
+- **Actual status:** `NOT STARTED`.
+- **Actual verification:** `NOT RUN`.
+
+## 19. Protected final 16-hour reserve and submission hold
+
+After F7, the reserved work is the user's voice recording, final screen capture,
+editing and audio cleanup, public upload and playback verification, `/feedback`,
+eligibility and ownership attestations, final rules/claims audit, final clean
+run, Devpost completion, explicit submission-hold release, submission, and
+receipt confirmation.
+
+The submission hold remains binding:
+
+> Final Devpost submission is prohibited until the selected Foldweave product,
+> renewed release materials, final public video, `/feedback`, due diligence, and
+> submission package are complete and the user explicitly releases the
+> submission hold.
+
+When all independently actionable product, video-preparation, due-diligence,
+and Devpost-draft requirements are complete but the hold remains active, set
+`STATE.md` to `WAITING_FOR_SUBMISSION_HOLD_RELEASE`, request only the release,
+and preserve the accepted release unchanged. Only after explicit release may
+the final submission occur. Continue until the submission confirmation or
+receipt is verified.

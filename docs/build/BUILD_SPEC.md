@@ -1,20 +1,27 @@
-# Reversible Name Atlas — Connected Change Build Specification
+# Foldweave — Native Review and Dual-Live-Planning Build Specification
 
-Status: **CONNECTED CHANGE PRODUCT CONTRACT FROZEN; GOAL ACTIVE;
-CONNECTED_CHANGE_GO SELECTED**
+Status: **FOLDWEAVE PRODUCT CONTRACT FROZEN; AMENDED GOAL INACTIVE;
+WAITING_FOR_FOLDWEAVE_GOAL_ACTIVATION**
 
-This document is the sole authority for what the Connected Change revision of
-Reversible Name Atlas is, what it supports, what it proves, which completed
-A1–A3 behavior remains foundational, and what must exist at recording
-readiness. `IMPLEMENTATION_PLAN.md` controls sequence and the mutually exclusive
-profile decision, `GOAL.md` controls execution authority, `STATE.md` records
-observed current state, and `DECISIONS.md` records rationale only.
+This is the sole authority for what Foldweave is, what the next release must
+support, what it may claim, which completed predecessor behavior remains
+foundational, and what must be true at recording readiness.
+`IMPLEMENTATION_PLAN.md` controls dependency order, targets, evidence, and cuts;
+`GOAL.md` controls execution authority only after explicit activation;
+`STATE.md` records observed state; and `DECISIONS.md` records rationale only.
 
-The preceding AI-first goal is complete only through verified A3 and is
-superseded for future execution. This specification's existence or commitment
-did not activate Connected Change; the user explicitly activated the complete
-amended `docs/build/GOAL.md` at C+0, Saturday 18 July 2026 at 23:31:39 CEST.
-C0 subsequently selected `CONNECTED_CHANGE_GO`.
+Sections 1–14 preserve the completed Reversible Name Atlas/Name Atlas A1–A3 and
+C0–C7 contracts and evidence. They are historical implemented foundation, not
+proof of Foldweave native review, derivative revision, or dual live planning.
+Section 15 is the controlling Foldweave extension and narrowly supersedes the
+listed predecessor clauses. Historical names, schema identifiers, artifact
+paths, fingerprints, and completed evidence are not globally renamed.
+
+The preceding Connected Change goal completed C0–C7 and is superseded only for
+future execution. This specification, its commit, its push, its reproduction,
+or an activation-readiness verdict does not activate the amended goal. Only the
+user's later explicit activation of the complete `docs/build/GOAL.md` in the
+current primary Codex task creates F+0.
 
 ## 1. Controlling sources and fixed boundaries
 
@@ -1497,3 +1504,1002 @@ materials and claims match actual behavior; the optional plugin is either fully
 accepted or exactly cut; no planned product or design work remains; and final
 submission is still held for the user's voice, `/feedback`, due diligence, and
 explicit release.
+
+## 15. Foldweave native-review extension and narrow supersessions
+
+### Controlling sources, boundaries, and inherited status
+
+The complete Foldweave contract was refrozen from these attachments, each read
+through EOF before this governance revision:
+
+| Authority | Path | Logical lines | Newlines | Bytes | SHA-256 | EOF |
+|---|---|---:|---:|---:|---|---|
+| Detailed product, review, lineage, native-app, proof, and acceptance contract | `/Users/nikolai/.codex/attachments/fe25f08d-09df-477d-b5dc-899d6b1da370/pasted-text.txt` | 1,725 | 1,724 | 65,947 | `015d9ea56b6bcaac9d0eb6d7c6324a803d5a23429fcd652e9ad83474daf1289e` | Complete; no final newline; final byte `*` |
+| Single-control governance and 44-hour operating model | `/Users/nikolai/.codex/attachments/d6568a9c-464c-46ff-a6e9-25c40f217126/pasted-text.txt` | 996 | 995 | 35,564 | `178f131a0423854c3a9a827bad0d66ba3e0ca590df9580689472eabad67459d0` | Complete; no final newline; final byte `.` |
+| Foldweave, four modes, mandatory ChatGPT, gateway/companion, USD 40, and activation refinements | `/Users/nikolai/.codex/attachments/911f299e-7804-4ea5-aafe-67fb2eff1e0e/pasted-text.txt` | 1,453 | 1,452 | 55,479 | `78c94970191e9023e320abdf53ab017f7a4416e9db4d61ab59406193be1865ec` | Complete; no final newline; final byte `.` |
+
+Authority order is current user instruction; the third attachment for Foldweave
+identity, mandatory dual live planning, billing separation, gateway/companion,
+USD 40, branch, and F+0; the first attachment for review, lineage, native app,
+proof, acceptance, and claims; the second attachment for governance, timing,
+sequencing, audit, feature freeze, and the submission hold; inherited
+governance where it does not conflict; fresh evidence for facts; then verified
+older context.
+
+The following current official boundaries control this cycle:
+
+- feature freeze: **Tuesday 21 July 2026 at 01:00 CEST**;
+- release candidate: **Tuesday 21 July 2026 at 06:00 CEST**;
+- recording ready: **Tuesday 21 July 2026 at 10:00 CEST**;
+- submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**.
+
+The 44-hour envelope began with the user's decision and is not reset by delayed
+F+0 activation. Earlier dates in Sections 1–14 are predecessor-cycle evidence,
+not future Foldweave authority. Final submission remains prohibited until the
+completed Foldweave release, renewed materials, final public video,
+`/feedback`, due diligence, and submission package are complete and the user
+explicitly releases the hold.
+
+The official-source baseline for this extension is the current Build Week
+rules/FAQ/dates; GPT-5.6 Sol, function-calling, and Your Data documentation;
+Apps SDK MCP server, ChatGPT UI, authentication, connection, MCP Apps
+compatibility, Secure MCP Tunnel, and submission documentation; current Codex
+MCP and plugin documentation; official pywebview, PyInstaller, Apple Keychain,
+Cloudflare OAuth-provider, Workers KV, Durable Objects, and WebSocket
+Hibernation documentation. The current Codex MCP URL redirects to
+`https://learn.chatgpt.com/docs/extend/mcp?surface=cli`; the current plugin guide
+is `https://learn.chatgpt.com/docs/build-plugins`; the current pywebview API is
+`https://pywebview.flowrl.com/api/`; and Apps are currently submitted and
+published as plugins. Those redirects and terminology do not change the
+product contract.
+
+The inherited implementation is labelled:
+
+`COMPLETED CONNECTED-CHANGE C0–C7 RELEASE BASELINE — VERIFIED IMPLEMENTATION, NOT PROOF OF FOLDWEAVE NATIVE REVIEW, DUAL LIVE TRANSPORTS, OR DERIVATIVE REVISION`
+
+These narrow supersessions control future work:
+
+| Existing authority | Foldweave authority |
+|---|---|
+| Reversible Name Atlas/Name Atlas active identity | `PRD-014` makes Foldweave the active identity. |
+| Automatic execution immediately after mechanical acceptance | `TX-019`–`TX-020` require review and exact human authorization first. |
+| `folder-refactor-job.v2` for new jobs | `CASE-013` makes `folder-refactor-job.v3` authoritative for new review-era jobs. |
+| `connected-change-file.v1` for new output | `IO-020` and `TX-024` require v2 Foldweave output and preserve strict legacy import. |
+| receipt v2 for new output | `VER-020` requires receipt/verifier v3 for new output. |
+| optional ChatGPT visualization | `PRD-016`, `AI-016`, and `UX-022` require real ChatGPT-hosted planning and widget review. |
+| Secure MCP Tunnel as a possible general route | `REL-020` limits it to developer qualification. |
+| cumulative USD 10 / call-cap 13 authority | `AI-020` raises only the sole direct-API monetary ceiling to USD 40 after F+0. |
+| browser-only primary product | `PRD-017` and `REL-018` require a packaged macOS app with browser fallback. |
+| native wrapper, React, Vite, pywebview exclusions | `UX-017`, `UX-021`, and `REL-017` admit only a narrow pywebview shell and focused React review/widget island. |
+| automatic high-level MCP execution | `REL-021` requires reviewed host-planning and exact-acceptance layers. |
+| Name Atlas CLI and Change File branding | `REL-016` and `IO-020` make Foldweave primary while preserving strict compatibility. |
+
+### PRD-014 — Foldweave identity, audience, and promise
+
+- Product name: **Foldweave**; exact casing is `Foldweave`, never `FoldWeave`.
+- Tagline: **Change the structure. Keep the connections.**
+- Track: **Work & Productivity**.
+- Category: **AI refactoring for connected project folders**.
+- User-facing artifact: **Foldweave Change File**.
+- Primary CLI: `foldweave`.
+- Native application: `Foldweave.app`.
+- Do not perform a brand, domain, trademark, or product-name conflict search in
+  this cycle.
+
+Definition:
+
+> Foldweave is a packaged local-first macOS application that lets a user or a ChatGPT/Codex host propose a complete reorganization of a connected project folder, renders the current and proposed structures before execution, supports bounded iterative revision, and creates a separate verified result only after the user accepts the exact proposal. Foldweave preserves every supported file, rewrites supported Markdown links deterministically, produces a payload-free transferable Foldweave Change File, independently verifies the result, and can recreate the selected source layout and bytes for that transaction.
+
+Primary differentiator:
+
+> Change the structure of a connected project once, review it before execution, and apply or refine that verified structure wherever an equivalent copy exists.
+
+“Connections” means only the supported relative Markdown links inside the
+selected folder. It never implies arbitrary code, database, Office, PDF,
+embedded, application, or cloud references.
+
+### PRD-015 — Audience, origin review, and receiver review
+
+The audience remains people preparing complicated connected project folders for
+handoff or reuse. Journey A creates a new Foldweave: select source, describe the
+change, select direct API or ChatGPT-hosted planning, acknowledge disclosure,
+plan and compile, stop at review, compare original/proposed, revise or accept,
+then create and verify a separate copy and Change File.
+
+Journey B imports a verified Change File and a differently arranged but strictly
+equivalent local source, deterministically matches every member, stops at review,
+and renders **Your current folder** versus **Shared proposal** without GPT.
+The receiver may accept unchanged with no model/API/budget/external model
+request, or create an immutable derivative child through either live planning
+transport and review that complete child proposal before acceptance.
+
+### PRD-016 — Four mandatory execution modes and Codex surface
+
+Exactly four model-provenance modes are required:
+
+| Mode | Model inference | Foldweave credential | Direct ledger | Required outcome |
+|---|---|---|---|---|
+| Native direct API | exact `gpt-5.6` through Responses API | user-supplied OpenAI API key | yes | complete planning and revision in `Foldweave.app` |
+| ChatGPT-hosted | model supplied by the user's ChatGPT session | no Foldweave Responses API key | no | complete planning and revision in macOS ChatGPT through the paired companion |
+| Recorded replay | none | none | no | exact labelled keyless replay of committed planning evidence |
+| Unchanged Change File application | none | none | no | deterministic receiver review and exact unchanged application |
+
+Codex is an additional required access surface over the same MCP and domain
+services; it is not a fifth model-provenance category or a second engine. Both
+live transports are mandatory. OAuth authenticates and authorizes Foldweave
+access; it does not convert a ChatGPT subscription into Responses API credit.
+ChatGPT and API Platform billing remain separate.
+
+### PRD-017 — Required surfaces and single authority
+
+The required release surfaces are packaged macOS Apple Silicon application,
+browser fallback, CLI, local STDIO MCP/Codex, authenticated public HTTP
+MCP/ChatGPT widget and companion, recorded replay, Change File application,
+proof, verifier, and reconstruction. One Python deterministic engine and one
+durable job authority serve all surfaces. Python owns business and persistence
+state; React, Jinja, widgets, pywebview, ChatGPT, and Codex are presentation or
+transport clients only.
+
+### PRD-018 — Serial collaboration and deliberate limits
+
+Support explicit serial forks, not live collaboration or merge:
+
+`Sofia original → CF1/T1 → Martin current review → unchanged T1 or revised T2 → CF2 → Sofia applies T2`
+
+One derivative child has one immutable immediate parent. No automatic merge,
+accounts, cloud project database, live shared state, recursive ancestor-envelope
+embedding, or runtime dependency on older Change Files is permitted. A child
+Change File is complete and self-contained. Each transaction reconstructs the
+source selected when that transaction began, not the first ancestor of the
+collaboration chain.
+
+### IO-016 — Native credentials and direct endpoint
+
+Define a `CredentialStore` Protocol with a Keychain implementation for the
+packaged app and environment/session implementation for development and
+automation. A small Cocoa/PyObjC `NSSecureTextField` sheet supplies secure native
+entry because pywebview's public dialog API does not define a password field.
+The key is readable only by trusted Python and never enters React, the DOM,
+localStorage, Zustand, browser storage, logs, screenshots, jobs, receipts,
+replays, MCP, ChatGPT, or Change Files. Expose only configured/not-configured
+state and a visible **Remove key** action.
+
+There are two non-interchangeable credential roles. The runtime product key is
+supplied, controlled, and removable by the product user and is used only for
+that user's native direct-API transactions. A development-qualification key is
+a separate narrowly restricted project credential used only for bounded build
+qualification. It is never bundled, distributed, copied into the product-user
+Keychain item, persisted as a user key, or used as evidence that consumer
+credential entry works. Neither role can be used to infer the presence of the
+other.
+
+Default endpoint is `https://api.openai.com/v1`. Require HTTPS; reject userinfo,
+fragments, unexpected query parameters, and cross-origin redirects; display the
+actual destination before save; and preserve exact `gpt-5.6` only for the
+official endpoint. A compatible custom endpoint is a separate advanced profile
+and inherits no OpenAI model, pricing, `store=false`, or retention claim without
+evidence.
+
+### IO-017 — Opaque handles and evidence boundaries
+
+Absolute local paths never cross the public gateway. Folder and Change File
+selection happens in the companion and returns opaque, device-bound, expiring
+handles. Host evidence tools expose only the same bounded eligible inventory,
+selected excerpts, and supported-link facts authorized by the job. Source text
+is untrusted data and cannot expand tool authority. Protected content,
+credentials, arbitrary payloads, absolute paths, and unrelated files remain
+ineligible.
+
+### IO-018 — Gateway and companion transport inputs
+
+Every public request binds OAuth grant, paired device, scope, per-job
+capability, request ID, issue/expiry time, canonical body digest, replay nonce or
+monotonic sequence, and Ed25519 device signature. The companion opens the
+outbound authenticated WSS connection; the Durable Object accepts it as the
+server through the Hibernation API. Reject expired, replayed, revoked,
+cross-device, cross-job, malformed, or scope-incompatible input. Reconnects bind
+the same canonical request and cannot duplicate a provider call, job, answer,
+result, or reconstruction.
+
+### IO-019 — App and cross-surface state
+
+Durable state is `FolderRefactorJobV3`, never localStorage, Zustand, widget
+state, Cloudflare, or browser memory. Every surface rehydrates the same job by
+opaque local authority and exact revision/fingerprints. Frontends may persist
+window geometry and ephemeral presentation preferences only. Missing, corrupt,
+unsupported, stale, or unauthorized state fails closed rather than being
+reconstructed from UI memory.
+
+New production v3 application state has one default root:
+
+`~/Library/Application Support/Foldweave/`
+
+Its `jobs/`, preferences, bounded diagnostics, and temporary application-owned
+state are owned by the local Python control plane. The production native app,
+paired companion, and its browser view use that same root. Development and
+automation may inject one alternate `FOLDWEAVE_STATE_ROOT`; CLI `--job` may
+select one exact job file. Once a transaction is created, its selected job file
+is its sole authority and must never be mirrored into a second store.
+
+Existing `~/Library/Application Support/Reversible Name Atlas/` state and
+project-local `.name-atlas/jobs/` remain legacy stores. Finalized v1/v2 jobs
+are read strictly under their historical schemas for verification,
+reconstruction, and supported application. Nonterminal legacy jobs fail with
+fresh-v3-job guidance. There is no automatic or in-place migration. Any future
+explicit migration must create a new v3 transaction while leaving the legacy
+record byte-for-byte unchanged.
+
+### IO-020 — Foldweave Change File v2 and legacy dispatch
+
+New artifacts use `connected-change-core.v2`,
+`connected-change-file.v2`, suffix `*.foldweave-change.json`, hero
+`northstar.foldweave-change.json`, and user-facing name **Foldweave Change
+File**. Preserve the 16 MiB strict UTF-8 JSON boundary, duplicate-key/non-finite/
+unknown-field/version/fingerprint checks, canonical JSON rules, payload-free
+content, metadata disclosure, and deterministic matcher from v1.
+
+Legacy `*.nameatlas-change.json`, v1/v2 jobs and receipts, schema IDs,
+fingerprint domains, and `name-atlas/` artifact paths remain under strict
+version dispatch. Finalized legacy jobs/artifacts remain readable, verifiable,
+and reconstructable; nonterminal legacy jobs fail with fresh-job guidance and
+are never silently rewritten.
+
+Every valid, application-capable `connected-change-file.v1` /
+`*.nameatlas-change.json` remains applicable unchanged under its exact
+historical matching and execution semantics. Foldweave prepares a new v3
+receiver review around that immutable v1 parent, preserves the imported bytes
+on unchanged acceptance, and may create a derivative only as a complete,
+self-contained v2 child. The v2 child references the immediate v1 parent by its
+actual historical fingerprints, never mutates or embeds the parent, and must
+apply without possession of the v1 file. An old artifact whose version never
+supported application is refused rather than upgraded by inference.
+
+### IO-021 — Complete deterministic receiver representation
+
+Martin's current tree is derived from his complete scanned inventory, explicit
+empty directories, protected members, and supported-link graph. The shared
+proposal is derived from the verified Change File, deterministic match report,
+and receiver-local complete candidate. Every local member is represented once.
+No GPT call is required or permitted merely to prepare or render the current/
+shared comparison. Match failures remain terminal blockers and never trigger
+semantic guessing, lexical path selection, arbitrary iteration order, or GPT
+fallback.
+
+### TX-019 — Review barrier
+
+Every new origin or receiver job must stop in `reviewing` with one immutable
+complete candidate and preview. While reviewing, no result, receipt,
+verification output, reconstruction authority, or new Change File exists.
+Planning-provider reservations legitimately used to create or revise a proposal
+may exist, but no copy transaction has started. `POST /start`, `POST /apply`,
+CLI `run`, and CLI `apply-change` prepare review jobs and never execute
+implicitly.
+
+### TX-020 — Exact fingerprint-bound authorization
+
+The action is **Accept this structure and create copy**. Authorization binds job
+ID, expected job revision, proposal revision, source commitment, imported
+Change File fingerprint, match-report fingerprint, exact candidate fingerprint,
+exact preview fingerprint, output parent, result-folder name, caller
+idempotency key, channel (`native_app`, `browser`, `chatgpt_hosted`,
+`codex_mcp`, `local_mcp`, or `cli`), authorization timestamp, and schema
+version. Persist authorization transactionally before execution.
+
+Reject stale-tab acceptance, revise/accept races, double clicks, duplicate MCP
+work, destination/source/Change File/job/candidate/preview changes, wrong
+channel/capability, and restart ambiguity. Identical retries return the same
+job/result; conflicting reuse blocks.
+
+### TX-021 — Bounded sparse revision
+
+Allow at most two user-requested revisions and one model-originated
+clarification per planning job. Counters never reset. Direct mode preserves the
+existing response/evidence/byte/repair/no-retry limits. ChatGPT-hosted mode uses
+the same evidence/byte limits, one clarification, two user revisions, and at
+most an initial submission plus two mechanically corrected submissions.
+
+A sparse revision contains only the exact base-candidate fingerprint, optional
+result-root replacement, affected file IDs, replacement target paths, concise
+rationale, and cited evidence IDs. Deterministic code verifies the base,
+rejects missing/unknown/duplicate IDs, changes only listed mappings, preserves
+all unlisted mappings, rejects protected or forbidden empty-directory changes,
+and rejects deletion, omission, merge, duplication, or invention. It rebuilds
+the complete candidate, rederives every supported-link rewrite, and reruns all
+file-accounting, naming, suffix, tree, collision, source, Change File, output,
+and link checks before creating one complete replacement preview.
+
+### TX-022 — Revision failure and parent preservation
+
+A failed revision leaves the prior valid preview intact, records the exact
+failure, creates no result or Change File, and cannot be accepted as successful.
+Offer **Try another change** and **Keep previous proposal**; keeping the prior
+proposal is a durable state transition. A receiver derivative creates an
+immutable child job and never mutates or destroys the parent's deterministic
+unchanged-acceptance route.
+
+The parent and all derivative children share one destination-reservation
+domain. Exact output parent and result-folder name are transactionally reserved
+before execution. Simultaneous parent/child or sibling acceptance for the same
+destination must produce one deterministic reservation winner and fail every
+other contender closed before any copy, or fail all contenders without a
+partial result. No job may silently overwrite, reuse, or race a related job's
+pending or final destination.
+
+### TX-023 — Receiver parent and derivative child
+
+Unchanged receiver acceptance makes no GPT/direct-API/budget/external-model
+request, executes as `capsule_applied`, and preserves the exact imported Change
+File bytes. A requested next proposal creates a child bound to the parent
+candidate and preview, uses direct API or ChatGPT-hosted planning, compiles a
+complete T2 proposal, stops for review, and executes only after exact
+acceptance as `gpt_revised_from_change_file`. The exported child is a complete,
+self-contained v2 Change File, never a sparse transferable patch, and cannot be
+exported before verified execution.
+
+### TX-024 — Change File v2 lineage and acyclic proof graph
+
+The self-contained child commits one immediate parent: parent Change File and
+Core fingerprints, parent originating-receipt fingerprint, parent organized-
+tree commitment, parent candidate fingerprint, generation, revision-instruction
+fingerprint, and parent-to-child member bindings. It never recursively embeds
+ancestor envelopes.
+
+A root Change File has lineage generation `0`; a child is exactly its parent's
+generation plus one. Generation `32` is the inclusive maximum, so creation of a
+generation-33 child blocks before receipt or artifact construction. Canonical
+UTF-8 bytes for the complete immediate-parent lineage object, including member
+bindings, are limited to 1,048,576 bytes inclusive; 1,048,577 bytes blocks.
+Both limits are verified before execution authorization can yield an exportable
+child and are covered at the boundary and one beyond it. The complete Change
+File still remains within the inherited 16 MiB raw-file limit.
+
+The fixed graph is:
+
+`immutable parent Change File → child ConnectedChangeCoreV2 → ReceiptCoreV3 → finalized receipt envelope → child Change File envelope → final BagIt tag manifest`
+
+The receipt commits the child Core fingerprint, never future envelope bytes.
+The file proves internal consistency and identity, not sender identity,
+authorship, institutional authorization, signature validity, or historical
+authenticity.
+
+### TX-025 — Convergence and round-specific reconstruction
+
+Descendants may apply to a raw strictly equivalent source or a verified prior
+Foldweave/Name Atlas result's `data/` directory. If a result root is selected,
+verify it first and locate `data/` deterministically. Preserve every inherited
+matching blocker and path-sensitive organized-tree commitment, including empty
+directories. Every accepted T2 endpoint converges to the same organized-tree
+commitment. Reconstruction first verifies the selected result and recreates
+the exact paths and bytes of the source selected when that transaction began.
+
+### CASE-013 — Review-era job v3 lifecycle
+
+All new work uses strict `folder-refactor-job.v3`. Its allowed transitions are:
+
+| From | Allowed next state | Condition |
+|---|---|---|
+| created origin/derivative job | `planning` | A live or replay planner is required. |
+| created receiver-parent job | `matching` | An imported Change File is being verified and rebound. |
+| `matching` | `reviewing` | Deterministic matching and compilation produce one complete valid receiver preview. |
+| `planning` | `awaiting_clarification` | The sole permitted model clarification is required. |
+| `planning` | `reviewing` | A complete submission compiles and passes every mechanical check. |
+| `awaiting_clarification` | `planning` | The exact bound answer is accepted once. |
+| `reviewing` | `revising` | One permitted user revision is durably bound to the visible preview. |
+| `reviewing` | `executing` | Exact authorization for that preview is persisted. |
+| `revising` | `reviewing` | The sparse revision recompiles to one complete valid replacement preview. |
+| `revising` | `revision_failed` | Provider or deterministic replacement construction fails while the prior preview remains intact. |
+| `revision_failed` | `revising` | The user selects **Try another change** within remaining limits. |
+| `revision_failed` | `reviewing` | The user durably selects **Keep previous proposal**. |
+| `executing` | `verified` | Separate result, receipt, independent verification, applicable Change File, and reconstruction authority are complete. |
+
+Any nonterminal operational state may transition to `stale` when a committed
+source or imported Change File changes, or to `blocked` on a terminal
+job-specific failure. `stale`, `blocked`, and `verified` are terminal. An
+unchanged receiver-parent transaction never enters `planning`,
+`awaiting_clarification`, or `revising`; it follows
+`matching → reviewing → executing → verified`.
+
+### CASE-014 — Immutable preview DTO
+
+Add `folder-plan-preview.v1` containing job ID, expected job revision, proposal
+revision, basis (`fresh_gpt_plan`, `imported_change_file`, or
+`gpt_derivative`), local source commitment, optional imported Change File and
+match-report fingerprints, optional immediate-parent candidate fingerprint,
+all current/proposed members, stable local member IDs, current/proposed paths
+and directory prefixes, explicit empty directories, protection, change class,
+supported-link effects, collision/blocker findings, exact counts, compiled-
+candidate fingerprint, and preview fingerprint.
+
+This is the only renderer- and authorization-facing DTO for native React,
+browser fallback, ChatGPT widget, Codex, local STDIO MCP, and public HTTP MCP.
+No renderer may infer or merge a proposal from multiple responses.
+
+### CASE-015 — Idempotency, concurrency, and staleness
+
+All modifying requests bind the canonical request fingerprint, caller
+idempotency key, job ID, expected revision, relevant question/candidate/preview
+fingerprints, source commitment, Change File commitment, and channel/capability
+inside the sole job. Accept-versus-revise races serialize. Double clicks and
+retries cannot create duplicate provider calls, answers, results, receipts, or
+destinations. Source or imported-file changes invalidate review. Process locks,
+expected revisions, atomic writes, no-replace promotion, and terminal
+immutability remain mandatory.
+
+Destination reservation participates in the same transaction authority and is
+shared by an imported parent and every derivative child or sibling. A
+simultaneous same-output acceptance has exactly one recorded winner or no
+winner; every loser receives a stable fail-closed collision and no partial
+pending tree.
+
+### CASE-016 — Restart and cross-surface rehydration
+
+Restart must recover `matching`, `planning`, `awaiting_clarification`,
+`reviewing`, `revising`, `revision_failed`, `executing`, and `verified` from the
+job without reconstructing authority from a renderer or duplicating work. A job
+created in ChatGPT is inspectable in native Foldweave after pairing; a
+compatible native job is inspectable through ChatGPT. Status polling remains
+read-only.
+
+### CASE-017 — Strict historical behavior
+
+Finalized v1/v2 jobs remain historical evidence under their exact schemas.
+Nonterminal legacy jobs fail with fresh-job guidance. No global rename,
+in-place schema migration, or reinterpretation may change their provenance,
+fingerprints, paths, receipts, or reconstruction meaning.
+
+### AI-014 — Direct GPT-5.6 planning
+
+Native direct mode remains exact `gpt-5.6` through the Responses API with strict
+tools and schemas, `store=false`, no Chat Completions fallback, no model
+substitution, no provider retry, bounded observable evidence, and no hidden-
+reasoning claim. Strict schemas validate argument shape but never replace
+deterministic source-stability, fingerprint, idempotency, authorization, or
+mutation checks. Record actual returned model identity, usage, cost, and direct
+transport provenance. `store=false` disables retained response retrieval but is
+not zero-retention or zero-logging proof.
+
+### AI-015 — Direct revisions and evidence limits
+
+The direct provider can create a root proposal or complete derivative proposal
+and can return only the strict initial or sparse-revision contracts. Preserve
+the existing eight-turn maximum, 24 evidence calls, 16 KiB per result, 128 KiB
+aggregate tool bytes, 512 KiB total outbound evidence, 32,768 output-token cap,
+one clarification, initial submission plus at most two mechanical corrections,
+and no hidden provider retry. User revisions are separately limited to two and
+share rather than reset the job counters.
+
+### AI-016 — ChatGPT-hosted planning
+
+ChatGPT-hosted planning is real only when the model supplied by the user's
+ChatGPT session calls Foldweave's bounded host-planning tools and submits a
+complete proposal or sparse revision. Foldweave makes no hidden Responses API
+call, reads no API key, and reserves or mutates no direct budget. The remote
+widget uses the standard MCP Apps bridge first: `ui/message` for **Send
+changes** so the instruction re-enters the host-model loop, and `tools/call`
+for deterministic refresh, exact acceptance, verification, Change File
+retrieval, and reconstruction. `window.openai.sendFollowUpMessage` and
+`window.openai.callTool` are compatibility extensions, not the sole interface.
+
+ChatGPT may inspect only bounded job-scoped inventory pages, eligible excerpts,
+and supported-link facts. It cannot access the filesystem, paths, credentials,
+compiler bypasses, proof overrides, or mutation authority. The direct evidence,
+clarification, user-revision, and mechanical-correction ceilings apply.
+
+### AI-017 — Host-planning tool authority
+
+The shared host-planning layer exposes only:
+
+- `create_or_resume_planning_job`;
+- `list_inventory_page`;
+- `read_text_excerpt`;
+- `inspect_markdown_links`;
+- `submit_plan`;
+- `submit_plan_revision`;
+- `request_clarification`;
+- `get_plan_preview`; and
+- `get_compiler_failures`.
+
+Each call binds the job, device/channel capability, expected revision, bounded
+evidence authority, and idempotency where mutating. The model never executes,
+approves, writes, renames, deletes, shells, builds a receipt, or marks a result
+verified.
+
+### AI-018 — Orthogonal provenance
+
+New strict provenance records these orthogonal dimensions:
+
+- planning basis: `fresh`, `derivative`, `replay`, or `none`;
+- model transport: `responses_api`, `chatgpt_hosted`, `codex_hosted`,
+  `recorded_replay`, or `none`;
+- execution origin: `gpt_planned`, `gpt_revised_from_change_file`, or
+  `capsule_applied`.
+
+`chatgpt_hosted` records only observable Foldweave tool traffic and
+authoritative host metadata. It cannot fabricate a Responses API ID, direct
+usage/cost, `store=false`, direct alias, provider attempt, budget reservation,
+or hidden reasoning. Once a derivative invokes any model it can never claim
+`capsule_applied`.
+
+### AI-019 — Recorded replay and model-free application
+
+Recorded replay is exact, sanitized, labelled, keyless, provider-free, and
+fingerprint-bound. Unchanged Change File preparation, review, application,
+verification, and reconstruction remain model-free. Historical planner records
+prove only their original release and cannot be relabelled as proof of review or
+derivative workflows.
+
+The exact Foldweave user-facing replay label is **Recorded GPT planning run**.
+It must never be labelled live. This narrowly supersedes the historical
+**Recorded GPT-5.6 planning run** wording for active Foldweave surfaces; exact
+provider alias and observed model identity remain available only in technical
+provenance where supported by evidence.
+
+### AI-020 — Sole USD 40 direct-API budget authority
+
+After F+0, inspect the sole ledger and freeze the review, derivative, replay,
+prompt, strict-tool, evidence-envelope, fixture, and exact F0b qualification
+fingerprints. Only after those contracts have verified stable identities and
+before any F0b reservation or provider call, atomically migrate
+`.name-atlas/api_budget.json` in place. Preserve every historical request,
+reservation, attempt, committed exposure, reported cost, timestamp, schema,
+model record, and the existing cumulative call cap `13`; change only the
+monetary ceiling from USD 10 to the hard cumulative USD 40. No second ledger or
+reset is permitted. The monetary cap dominates the call cap.
+
+F0b is prohibited until the contract-freeze evidence, atomic migration, and
+post-migration byte/field verification have all passed. Set the final cumulative
+call cap only in F4, after the complete qualification call graph stabilizes:
+
+`historical provider attempts + required remaining calls and turns + two contingency attempts`
+
+ChatGPT-hosted work never reads, reserves, or mutates the direct ledger. No new
+direct call occurs before the required contract freeze and monetary migration.
+
+### UX-017 — Packaged native shell and secure settings
+
+Use pywebview stable 6.x as a narrow macOS shell over the one existing FastAPI
+loopback control plane. The app starts Uvicorn on a safely selected ephemeral
+loopback port, waits for health, starts Cocoa/WebKit on the main thread, and
+shuts down without an orphan server. The narrow bridge exposes only fixed-role
+open file/folder panels, Keychain-mediated secure settings, Finder reveal,
+window lifecycle, and optional bounded notifications—never arbitrary
+filesystem access or shell execution.
+
+The secure settings surface shows only configured state, actual direct endpoint,
+save/remove actions, and validation failures. Manual path entry remains for
+automation and browser fallback. Durable jobs survive app restart. The app must
+launch after being copied to an unrelated directory.
+
+### UX-018 — Origin review
+
+Journey A stops at `/review`. Show **Original structure** and **Proposed
+structure**, one canonical trust strip, exact file/change/link/protected counts,
+selected-member details, concise rationale, authority source, supported-link
+effects, and prior/current delta after revision. Primary controls are **Accept
+this structure and create copy**, a revision text area, and **Send changes**.
+No output exists before exact acceptance.
+
+### UX-019 — Receiver review and derivative choice
+
+Journey B first renders **Your current folder** and **Shared proposal** from the
+deterministic receiver preview. It must account for every local file, empty
+directory, protected member, and supported link. Martin may accept the exact
+shared proposal unchanged or request a new proposal through either live
+transport. The unchanged route remains available on the immutable parent if a
+child revision fails.
+
+The receiver trust strip derives exclusively from deterministic job and matcher
+state and displays: imported Change File verification status and fingerprint;
+receiver source commitment; match-report commitment; complete-accounting state;
+blocker, collision, and unresolved-ambiguity counts; source-unchanged state;
+the explicit fact that no result exists while reviewing; and **0 GPT calls so
+far** until a derivative child actually invokes a model. The release-facing
+proposal label is exactly **Shared proposal**. Sofia and Martin are demo
+personas, not authenticated identities; any sender or participant name carried
+as metadata is visibly unverified and never treated as authorship.
+
+### UX-020 — Review and revision states
+
+Expose truthful `matching`, `planning`, clarification, `reviewing`, `revising`,
+`revision_failed`, `executing`, verified, stale, and blocked states. A failed
+revision states the exact issue and offers **Try another change** and **Keep
+previous proposal**. Apply never shows a fake GPT stage. Done remains led by
+**Your new folder is ready** and exposes Finder, Change File download, changes,
+proof, verify again, and recreate-original actions.
+
+### UX-021 — Purpose-built accessible visual tree
+
+Do not use Mermaid, beautiful-mermaid, ASCII trees, or static images as the
+operational renderer. Use one purpose-built React 18 + TypeScript + BlueprintJS
+v6 folder-tree component, driven only by `folder-plan-preview.v1`, with a dark
+navy/cyan/violet/amber/green/gray palette and no color-only meaning.
+
+Required behavior: origin and receiver toggles; stable selection, expansion,
+and scroll across toggles; changed branches initially expanded; changed-only
+default for large trees; search; moved/renamed/link-updated/protected/
+unchanged/empty-directory filters; explicit icons; details, rationale,
+authority, link effects, revision delta, exact counts, and trust strip. Support
+keyboard-only navigation, visible focus, meaningful screen-reader names,
+correct toggle state, sufficient contrast, and no horizontal failure at
+1280×720, approximately 1440×900, and 390×844. Rendering can never mutate or
+override the candidate.
+
+Acceptance includes one generated maximum-shape fixture with exactly 500 files
+and 1,000 explicit directories. It must prove bounded initial render,
+Original/Proposed and current/shared toggles, changed-only mode, search and every
+filter, stable selection/expansion/scroll, keyboard operation, meaningful
+screen-reader identity, and no horizontal overflow at all required viewports.
+Use virtualization only if measured behavior on that fixture demonstrates it
+is needed; its introduction cannot change deterministic order or accessibility.
+
+### UX-022 — Shared ChatGPT widget and pairing UX
+
+The native/browser review island and ChatGPT widget must compile from the same
+purpose-built React review/tree component source and consume the same preview
+DTO, deterministic ordering, state semantics, revision/acceptance bindings, and
+MCP domain tools. No second renderer or independent tree interpretation is
+permitted. Only the thin host adapter, Apps bridge, CSP/resource registration,
+and pywebview-specific shell integration differ. The widget contains no
+pywebview behavior or local path. Follow the interactive, decoupled Apps SDK
+pattern: data/model tools return structured results; one render tool attaches
+the widget; the standard MCP Apps bridge is primary. The widget handles missing
+initial tool input while approval is pending, renders only structured content,
+and never receives a secret through tool output, `structuredContent`, `_meta`,
+widget state, or props.
+
+Pairing surfaces show device name, ten-character Crockford Base32 one-time code,
+expiry, local approval, failure/revocation state, and no local path. Native
+Foldweave exposes paired-device status and revocation. Gateway loss is a
+transport state, not proof that a durable local job failed.
+
+### UX-023 — Native/browser routes and accessibility
+
+Preserve existing routes and add `GET /review`,
+`GET /api/jobs/{job_id}/preview`, `GET /api/jobs/{job_id}/status`,
+`POST /api/jobs/{job_id}/revision`,
+`POST /api/jobs/{job_id}/keep-proposal`, and
+`POST /api/jobs/{job_id}/accept`. Every modifying request requires same-origin/
+CSRF controls, expected revision, exact fingerprints, and idempotency key.
+Native, browser, and widget review must pass the same semantics, viewport, and
+accessibility acceptance.
+
+### VER-019 — Preview and authorization proof
+
+Tests and product-native evidence prove that the rendered preview DTO, compiled
+candidate, job revision, source/Change File commitments, and acceptance record
+agree. A stale browser tab/widget, changed destination, concurrent revision,
+double click, duplicate retry, or restart ambiguity cannot execute a different
+or unseen candidate. Artifact existence, screenshots, or unit tests alone do
+not qualify this boundary.
+
+### VER-020 — New schema and proof family
+
+New work uses:
+
+- `folder-plan-preview.v1`;
+- `folder-refactor-job.v3`;
+- `connected-change-core.v2`;
+- `connected-change-file.v2`;
+- `folder-evidence-ledger.v2`;
+- `folder-execution-origin.v2`;
+- `folder-change-receipt.v3`; and
+- `folder-receipt-verification.v3`.
+
+Preserve strict historical dispatch and fingerprint domains. The v3 verifier
+recomputes preview authorization, execution origin, immediate-parent lineage,
+complete member accounting, maps, supported-link rewrites, organized-tree
+commitment, receipt/core/envelope DAG, BagIt, and report agreement without
+trusting a job or UI.
+
+### VER-021 — Serial collaboration convergence
+
+The mandatory Sofia/Martin/Sofia proof establishes distinct source commitments,
+strict supported equivalence, Martin's own current tree, model-free unchanged
+CF1 acceptance, direct and ChatGPT-hosted derivative options, self-contained
+CF2, application of CF2 without CF1, application of CF2 to Sofia's unchanged
+source and to a verified T1 `data/` directory, identical T2 organized-tree
+commitments, unchanged sources/artifacts, and participant-specific
+reconstruction.
+
+### VER-022 — Transport and ledger truth
+
+Instrument and prove that ChatGPT-hosted root and derivative transactions do not
+read `OPENAI_API_KEY`, initialize the direct provider, reserve budget, mutate
+ledger bytes, or fabricate direct usage/model/store metadata. Direct mode proves
+the opposite truthful provenance under the USD 40 ledger. Replay and unchanged
+apply prove model-free operation. Gateway and widget output/log/state scans must
+contain no credential or absolute path.
+
+### VER-023 — Negative, race, and transport matrix
+
+Require stale and duplicate acceptance; revise/accept races; failed revision
+prior-preview preservation; restart in every nonterminal state; source and
+Change File staleness; every existing matcher/receipt refusal; tampered lineage;
+recursive-envelope rejection; wrong/expired/reused/revoked/cross-device/
+cross-job OAuth or capabilities; pairing local-denial, expiry, attempt limit,
+rate limit, and replay; companion disconnect/reconnect; duplicate gateway retry;
+prompt-injection inability to expand tools; Keychain add/read/update/remove and
+missing-key cases; safe endpoint/redirect behavior; picker cancellation and
+invalid role; copied-app launch; shutdown/no-orphan; and strict legacy
+verification/reconstruction.
+
+Also require lineage generation `32` acceptance and `33` refusal; canonical
+lineage metadata at 1,048,576 bytes acceptance and 1,048,577 refusal; valid v1
+Change File unchanged application; immutable v1 parent to self-contained v2
+child revision; v2 child application without the v1 file; incompatible legacy
+version refusal; and simultaneous parent/child same-output acceptance proving
+one deterministic reservation winner or a fail-closed no-winner result with no
+partial output. Native checks include port conflict and second-launch behavior.
+
+### VER-024 — Clean release and reconstruction matrix
+
+Release proof combines focused and full Python tests, frontend component tests,
+TypeScript typecheck, Vite build, lock/Ruff/diff checks, clean source install,
+clean clone, copied `.app`, browser fallback, direct and hosted live
+transactions, replay, unchanged apply, derivative collaboration, verifier,
+reconstruction, gateway pairing/reconnect, installed-copy Codex invocation,
+secret/response-ID/path/brand scans, wheel/app/gateway/widget asset inspection,
+license/attribution, visual/accessibility review, and regenerated release
+materials. Reconstruction always recreates the transaction's selected source.
+
+### REL-016 — Foldweave CLI and compatibility
+
+Required primary commands are:
+
+- `uv run foldweave app [--browser]`;
+- `uv run foldweave demo --mode replay`;
+- `uv run foldweave run --mode live|replay --source SOURCE_ROOT [--output OUTPUT_PARENT] [--job JOB_FILE]`;
+- `uv run foldweave apply-change CHANGE_FILE --source SOURCE_ROOT [--output OUTPUT_PARENT] [--job JOB_FILE]`;
+- `uv run foldweave preview JOB_FILE [--json]`;
+- `uv run foldweave revise JOB_FILE --instruction TEXT --idempotency-key KEY`;
+- `uv run foldweave accept JOB_FILE --preview-fingerprint SHA256 --idempotency-key KEY`;
+- `uv run foldweave verify-receipt RESULT_BAG [--source SOURCE_ROOT]`;
+- `uv run foldweave restore-receipt RESULT_BAG RESTORE_DESTINATION`;
+- `uv run foldweave mcp`;
+- `uv run pytest`;
+- `uv run ruff check .`; and
+- `uv run ruff format --check .`.
+
+`run` and `apply-change` only prepare review. Preserve `name-atlas` as a
+documented legacy alias for this release; the internal `name_atlas` package may
+remain. Do not rename immutable schemas, domains, paths, jobs, receipts, or Git
+history.
+
+### REL-017 — Focused frontend build
+
+Use React 18, TypeScript, BlueprintJS v6 CSS-variable architecture, and Vite
+only for the review island and shared widget components. Serve production
+assets from the same loopback FastAPI origin. React performs no OpenAI or
+gateway fetch and owns no durable product state. Node is a build-time
+dependency only; packaged runtime has no Node requirement. Jinja/Blueprint
+continues to own Home, forms, Working, Done, proof, verification, and
+reconstruction outside the review island.
+
+### REL-018 — Native packaging
+
+Use Python 3.11, stable pywebview 6.x, and stable PyInstaller 6.x with a
+checked-in macOS `onedir --windowed` spec and Apple Silicon target. Explicitly
+collect/test the PyObjC Cocoa, Quartz, WebKit, and Security frameworks needed by
+pywebview, secure input, and Keychain. After two serious PyInstaller
+corrections, py2app is the preauthorized fallback. Do not add Electron, Tauri,
+SwiftUI, a full React rewrite, or a second backend.
+
+Test and claim only macOS Apple Silicon. With no Developer ID identity, require
+a working ad-hoc/unsigned judge build and truthful launch instructions; do not
+claim notarization, signed distribution, or frictionless public installation.
+
+### REL-019 — Public gateway and paired companion
+
+Use one checked-in TypeScript Cloudflare Workers Free gateway on its stable
+`workers.dev` HTTPS hostname. Use `@cloudflare/workers-oauth-provider`, OAuth
+2.1 authorization code with PKCE S256, CIMD enabled with DCR fallback, a
+mandatory Workers KV binding named `OAUTH_KV`, SQLite-backed Durable Objects,
+and Durable Object WebSocket Hibernation.
+
+Configure `allowPlainPKCE: false`,
+`clientIdMetadataDocumentEnabled: true`, and Cloudflare's
+`global_fetch_strictly_public` compatibility flag for CIMD fetch protection.
+OAuth token exchange is disabled in the selected profile.
+Workers KV stores only OAuth clients, grants, and refresh/access-token records
+or hashes required by the provider. One SQLite Durable Object per paired
+device/session stores only public device identity, public key, scopes,
+revocation/expiry, connection status, and bounded request correlation. The
+local v3 job remains the sole product/idempotency authority. Apply the no-
+payload, no-path, no-protected-content, no-planning-excerpt, no-credential, and
+no-product-job-state boundary to both Cloudflare stores.
+
+The gateway exposes `/mcp`, protected-resource and authorization-server
+metadata, authorization/token/client-registration endpoints, widget resources,
+pairing/revocation endpoints, companion WSS, and health/readiness. No custom
+domain, paid plan, billing change, or alternate provider is required or
+authorized.
+
+### REL-020 — OAuth pairing, companion, and distribution states
+
+The companion creates an Ed25519 device key pair, keeps the private key in
+Keychain, registers only public key and opaque device ID, requests a ten-
+character Crockford Base32 one-time code, and requires user confirmation plus
+local approval. Code lifetime is ten minutes; maximum five failed attempts per
+code; rate limit twenty attempts per source IP per fifteen minutes; successful
+authorization binds the exact device key and atomically consumes the code.
+Access tokens last one hour, rotating refresh grants thirty days, dynamic-client
+metadata ninety days, and per-job capabilities thirty minutes. Revocation is
+available in native Foldweave and the authorization surface.
+
+The companion opens one outbound authenticated WSS connection and never a
+public inbound listener. Require TLS, challenge-response device proof, request
+ID, issue/expiry time, nonce/sequence, canonical body digest, Ed25519 signature,
+replay rejection, bounded-jitter reconnect, and durable local recovery. The DO
+accepts the companion socket through Hibernation; a DO-initiated outgoing
+socket is prohibited. WebSocket attachment data stays within the platform's
+16,384-byte limit; larger bounded correlation belongs in SQLite.
+
+Track `DEVELOPER_MODE_VERIFIED`, `CONSUMER_PAIRING_VERIFIED`,
+`PUBLICATION_READY`, `SUBMITTED_FOR_REVIEW`, `APPROVED`, and `PUBLISHED`
+separately. Secure MCP Tunnel is required for early developer qualification but
+requires separate Platform tunnel credentials/permissions and is not the
+consumer topology. Developer mode may require workspace-admin approval.
+Approval does not publish automatically; only observed `PUBLISHED` permits a
+public-listing claim.
+
+Secure MCP Tunnel is the mandatory F0c qualification transport. It may be
+replaced only by a current user instruction or a documented official-rule
+change that explicitly amends this frozen contract; implementation preference
+alone cannot substitute another route.
+
+If the complete gateway/companion transaction still fails after the initial
+implementation and two material corrections, record `FOLDWEAVE_PROFILE_NO_GO`
+and transition to `WAITING_FOR_GATEWAY_PROVISIONING_OR_USER_SCOPE_DECISION`.
+Do not cut ChatGPT, hide a direct API call, relabel a tunnel as consumer access,
+switch providers reactively, incur paid hosting, or relabel the predecessor as
+completed Foldweave. Continue independent work until a genuine global impasse.
+
+Every opening gate has an exact persistent-failure disposition after its
+initial implementation and two material corrections:
+
+| Gate | Recorded outcome and phase |
+|---|---|
+| F0a review authority | Record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_REVIEW_AUTHORITY_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0b native application | After the bounded PyInstaller/py2app policy is exhausted, record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_NATIVE_APPLICATION_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0c ChatGPT developer qualification | If the remaining cause is user-owned Platform/workspace access, enter `WAITING_FOR_CHATGPT_DEVELOPER_ACCESS`; otherwise record `FOLDWEAVE_PROFILE_NO_GO` and enter `WAITING_FOR_CHATGPT_DEVELOPER_INTEGRATION_CORRECTION_OR_USER_SCOPE_DECISION`. |
+| F0d consumer gateway | Record `FOLDWEAVE_PROFILE_NO_GO`; enter `WAITING_FOR_GATEWAY_PROVISIONING_OR_USER_SCOPE_DECISION`. |
+
+No later F milestone or release-readiness claim may pass while any mandatory
+gate lacks verified positive evidence. Independent work with no dependency on
+the failed premise may continue until the named user decision/access change is
+the genuine global impasse; waiting is never relabelled as completion.
+
+### REL-021 — Shared MCP and Codex
+
+Use one domain implementation with local STDIO MCP for Codex and authenticated
+Streamable HTTP MCP through the public gateway for ChatGPT. In addition to the
+host-planning tools in `AI-017`, expose high-level workflow tools:
+
+- `plan_change`;
+- `prepare_change_application`;
+- `job_status`;
+- `answer_clarification`;
+- `revise_plan`;
+- `accept_plan_and_create_copy`;
+- `get_change_file`;
+- `verify_result`;
+- `recreate_original`; and
+- companion-only `choose_local_item`.
+
+The two layers may use distinct server namespaces but dispatch to the same
+engine/job. Every MCP tool has accurate required read/write/open-world/
+destructive annotations, strict schemas, bounded output, and exact mutation
+bindings. Never expose arbitrary file read/write/move/rename/delete, shell,
+public raw paths, arbitrary companion RPC, receipt construction, compiler
+bypass, verification override, or credentials.
+
+Codex acceptance requires an updated Foldweave plugin with required
+`.codex-plugin/plugin.json`, relative `.mcp.json`, clean-clone install,
+cache/version proof, refresh/restart, fresh task, tool discovery, and real
+installed-copy transactions covering origin planning, review, revision,
+acceptance, polling, receiver preparation, derivative revision, keyless
+unchanged apply, verification, reconstruction, and duplicate retry. A direct
+Python call is not acceptance.
+
+### REL-022 — Required live/replay qualification
+
+After contracts stabilize, require one real direct root plan/review/revision/
+accept transaction, one real direct imported-Change-File derivative, zero-
+question and one-clarification coverage, one real ChatGPT-hosted root
+review/revision/accept transaction, and one real ChatGPT-hosted receiver
+derivative. Create exact sanitized replay records where required and one keyless
+replay path. Commit no secret, response ID, absolute path, hidden reasoning, or
+personal data. Labels must truthfully distinguish transport, returned model,
+usage, cost, replay, and model-free execution.
+
+### REL-023 — Branding, timing, and recording readiness
+
+After F+0, active release-facing identity must be Foldweave across app bundle,
+1024-pixel abstract folded-path/weave icon and iconset, title/menu/About/
+settings/notifications, native/browser/review/widget UI, MCP and Codex plugin,
+CLI, Change File, proof, reconstruction, README, limitations, provenance,
+pre-existing-work disclosure, build log, installation guide, screenshots,
+narration, submission package, Devpost, package metadata, GitHub description,
+and release assets. Historical artifacts and compatibility labels keep their
+names; the checkout directory may remain unchanged.
+
+F+0 records activation but cannot reset the 44-hour envelope. The sole plan
+scales relative F targets to actual time available and preserves the absolute
+feature-freeze, release-candidate, recording-ready, and submission boundaries.
+Recording readiness requires the completed mandatory profile, clean public
+release/clone, stable `.app`, direct/ChatGPT/Codex/replay/unchanged/derivative
+flows, final artifacts/proof/reconstruction, required gateway states, final
+screenshots, under-three-minute rehearsed story, timed narration and shot list,
+complete Devpost drafts/provenance, known `/feedback` path, no planned product
+or design change, and active submission hold.
+
+### CLAIM-008 — Permitted Foldweave claims
+
+Only when demonstrated, Foldweave may say it shows current and proposed
+structures before changing anything; allows bounded revision before exact
+acceptance; represents each in-scope file once; keeps protected members fixed;
+updates and verifies supported Markdown links; leaves sources unchanged;
+creates separate results; transfers no project payload bytes in a Change File;
+deterministically matches and reviews an equivalent copy; accepts unchanged
+without GPT or derives a new proposal; converges accepted equivalent sources to
+one organized tree; reconstructs the selected source per transaction; uses
+exact `gpt-5.6` in native direct mode; uses ChatGPT-supplied inference without a
+hidden Foldweave API call in hosted mode; and uses the same local engine from
+the tested macOS, ChatGPT, and Codex surfaces.
+
+### CLAIM-009 — Required qualifications
+
+A Change File contains no payload bytes but discloses names, structure, sizes,
+hashes, supported-link relationships, instructions, targets, lineage, and proof
+identifiers. Live planning sends bounded selected evidence after disclosure.
+`store=false` is not zero-retention proof. ChatGPT access and API billing are
+separate. ChatGPT model identity is not claimed unless authoritative host
+metadata supplies it. “Local-first” does not mean every mode is networkless:
+browser uses loopback HTTP and ChatGPT uses gateway networking. Only supported
+relative Markdown connections are preserved. Only macOS Apple Silicon is
+tested natively. Public directory availability is claimed only when observed.
+
+### CLAIM-010 — Prohibited claims and scope expansion
+
+Prohibit universal safety or semantic correctness; universal format/code/
+reference understanding; general graph isomorphism; independently edited-copy
+or extra/missing-file reconciliation; sender authentication, authorship,
+signatures, institutional authorization, historical authenticity,
+tamper-proofing, compliance, production readiness, full privacy, zero
+retention, no metadata disclosure, universal portability/reversibility,
+Windows/Linux native support, mobile/remote-phone access, real-time
+collaboration, public listing before publication, universal zero-question
+behavior, unmeasured savings, adoption, uniqueness, or winning probability.
+
+Do not add Electron, Tauri, SwiftUI, another backend, full React rewrite,
+Windows/Linux packaging, accounts, permissions, cloud project sync, automatic
+merge, semantic reconciliation, general graph isomorphism, sender
+authentication, draft Change Files, another planner/engine/job/ledger/receipt/
+verifier/reconstruction authority, market research, tournament, benchmark, or
+custom validation bureaucracy.
+
+Mandatory capabilities cannot be cut: Foldweave identity; packaged macOS app;
+direct Responses API; ChatGPT-hosted mode; Codex/MCP; native selection; review
+before execution; purpose-built visualization; origin and receiver revision;
+exact acceptance; source immutability and file accounting; protected/link
+behavior; separate results; persistent jobs; Change File v2; receipt/verifier
+v3; immediate-parent lineage; Sofia/Martin/Sofia proof; reconstruction; replay;
+legacy compatibility; truthful claims; and clean release. Optional cuts, in
+order, are decorative animation, supplementary metrics, graph interactions
+beyond the required tree/link inspector, extra themes, extra MCP-client
+examples, nonessential notifications, expanded technical presentation, then
+compatibility conveniences not needed for real historical artifacts.
+
+## 16. Foldweave recording-readiness Definition of Done
+
+Foldweave is recording-ready only when all four opening existential gates and
+every non-cut requirement in Section 15 pass through complete integrated user
+transactions; the serial derivative proof, native package, direct and
+ChatGPT-hosted live modes, replay, unchanged apply, shared MCP/Codex, receipt,
+verifier, reconstruction, negative/compatibility matrices, clean build/clone,
+visual/accessibility checks, public gateway state, regenerated materials,
+under-three-minute rehearsal, and truthful claims agree. External directory
+approval is never inferred. Code volume, elapsed time, an agent message, a
+static screenshot, artifact existence, or unit tests alone cannot satisfy this
+definition. Final Devpost submission remains held for the user's voice,
+`/feedback`, personal attestations, due diligence, and explicit hold release.

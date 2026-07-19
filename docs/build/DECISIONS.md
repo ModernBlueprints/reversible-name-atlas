@@ -822,3 +822,288 @@ overrides those artifacts.
 - Rationale: The optional plugin now satisfies its complete installed-copy gate.
   Freezing early protects the remaining release, documentation, visual,
   rehearsal, and packaging interval from new feature scope.
+
+## D-085 — User-authorized Foldweave native-review cycle
+
+- Date: 19 July 2026
+- Decision: Begin no new product work until the user explicitly activates the
+  refrozen Foldweave goal after this bounded governance revision.
+- Rationale: Review-before-execution, native packaging, dual live planning, and
+  derivative collaboration materially change the release contract and require
+  one coherent new execution epoch.
+
+## D-086 — Preserve `1023999` and use one new branch
+
+- Date: 19 July 2026
+- Decision: Preserve commit `1023999` and all predecessor refs, and perform the
+  future cycle only on `revision/foldweave-native-review`.
+- Rationale: One child branch protects the verified release without fragmenting
+  architecture, history, or implementation authority.
+
+## D-087 — Foldweave name, casing, tagline, and no conflict search
+
+- Date: 19 July 2026
+- Decision: Use **Foldweave**, exact casing, with **Change the structure. Keep
+  the connections.**, and perform no brand-conflict search in this cycle.
+- Rationale: The user selected the identity and expressly excluded further name
+  investigation from the time-bounded implementation scope.
+
+## D-088 — One deterministic engine and four mandatory execution modes
+
+- Date: 19 July 2026
+- Decision: Retain one deterministic engine while requiring native direct API,
+  ChatGPT-hosted, recorded replay, and unchanged Change File application modes.
+- Rationale: The modes differ in model transport, not in execution, proof, or
+  job authority; sharing the engine prevents divergent safety semantics.
+
+## D-089 — Review before execution and one immutable preview DTO
+
+- Date: 19 July 2026
+- Decision: Make a complete `folder-plan-preview.v1` the only renderer- and
+  authorization-facing representation, use the explicit branching v3 lifecycle,
+  and prohibit output before review.
+- Rationale: Every surface must show and authorize the same mechanically valid
+  proposal rather than reconstructing a plan from partial responses.
+
+## D-090 — Job v3 and exact fingerprint-bound acceptance
+
+- Date: 19 July 2026
+- Decision: Use `folder-refactor-job.v3` for new jobs and bind acceptance to the
+  exact job revision, source, imported file, candidate, preview, destination,
+  channel, and idempotency key.
+- Rationale: Transactional binding prevents stale tabs, changed inputs, races,
+  duplicate retries, and restart ambiguity from executing an unseen proposal.
+
+## D-091 — Bounded sparse revisions preserve the prior valid preview
+
+- Date: 19 July 2026
+- Decision: Permit at most two user revisions, apply only strict sparse deltas,
+  rebuild and recheck the complete candidate, and retain the prior valid preview
+  after failure.
+- Rationale: This gives useful iteration without allowing partial plans,
+  unchecked model authority, counter resets, or destructive failure recovery.
+
+## D-092 — Immutable receiver parent and derivative child jobs
+
+- Date: 19 July 2026
+- Decision: Keep the model-free imported proposal in an immutable parent review
+  job and create a separate child when the receiver asks a model to revise it.
+- Rationale: The unchanged acceptance route and its provenance must survive a
+  derivative attempt, while any model use must be truthfully attributable.
+
+## D-093 — Change File v2, receipt v3, and strict historical compatibility
+
+- Date: 19 July 2026
+- Decision: Use the new v2/v3 schema family for Foldweave output and strict
+  schema dispatch for historical jobs, receipts, Change Files, and fingerprints;
+  keep application-capable v1 files applicable unchanged and derive only
+  complete self-contained v2 children from v1 parents.
+- Rationale: New review and lineage semantics require versioned contracts;
+  global renaming would corrupt immutable predecessor evidence.
+
+## D-094 — Immediate-parent lineage, explicit forks, and no merge
+
+- Date: 19 July 2026
+- Decision: Record one immediate parent per derivative, permit explicit forks,
+  embed no recursive ancestor envelopes, implement no automatic merge, cap
+  generation at 32 inclusive, and cap canonical lineage metadata at 1,048,576
+  bytes inclusive.
+- Rationale: Bounded lineage supports serial collaboration without introducing
+  live collaborative state, unbounded metadata, or ambiguous merge authority.
+
+## D-095 — Sofia/Martin/Sofia serial collaboration proof
+
+- Date: 19 July 2026
+- Decision: Require the complete T1/CF1 to Martin T2/CF2 and back-to-Sofia
+  transaction, including unchanged application, both live revision transports,
+  convergence, and participant-specific reconstruction.
+- Rationale: This single proof demonstrates the product's core portable and
+  iterative value across differently arranged equivalent sources.
+
+## D-096 — Purpose-built accessible tree and focused React review island
+
+- Date: 19 July 2026
+- Decision: Use a shared React/TypeScript/Blueprint folder-tree component for
+  native, browser, and ChatGPT review rather than Mermaid or static diagrams;
+  require its exact 500-file/1,000-directory acceptance fixture.
+- Rationale: Operational review needs scalable navigation, filtering, stable
+  state, exact member detail, shared DTO semantics, and accessibility.
+
+## D-097 — pywebview shell with one FastAPI control plane
+
+- Date: 19 July 2026
+- Decision: Package a narrow pywebview 6.x shell around the existing FastAPI
+  engine and keep durable product state server-owned.
+- Rationale: A small native shell supplies macOS integration without creating a
+  second backend, duplicating the app, or undertaking a full frontend rewrite.
+
+## D-098 — PyInstaller onedir profile and bounded py2app fallback
+
+- Date: 19 July 2026
+- Decision: Use a checked-in PyInstaller 6.x `onedir --windowed` specification;
+  switch to py2app only after two serious PyInstaller corrections fail.
+- Rationale: The primary profile is inspectable and time-bounded while the
+  preauthorized fallback prevents indefinite packaging repair.
+
+## D-099 — Keychain credential store and strict endpoint policy
+
+- Date: 19 July 2026
+- Decision: Keep API credentials in macOS Keychain behind a Python protocol,
+  expose only configured state to renderers, and validate direct endpoints and
+  redirects fail-closed; keep user runtime and development-qualification keys
+  as distinct roles; store new production v3 state under
+  `~/Library/Application Support/Foldweave/` with explicit alternate-root
+  injection and read-only legacy stores.
+- Rationale: Model credentials must remain outside React, browser persistence,
+  jobs, MCP, artifacts, and logs while still supporting local direct mode.
+
+## D-100 — Exact direct Responses API mode remains mandatory
+
+- Date: 19 July 2026
+- Decision: Preserve exact `gpt-5.6`, Responses API, strict tools,
+  `store=false`, no model fallback, and no provider retry for direct planning.
+- Rationale: Direct API operation is an explicit product requirement and its
+  evidence and cost authority must remain bounded and reproducible.
+
+## D-101 — ChatGPT-hosted mode is mandatory and billing-separate
+
+- Date: 19 July 2026
+- Decision: Require actual ChatGPT-supplied model inference with no hidden
+  Foldweave Responses API request or direct-ledger mutation.
+- Rationale: ChatGPT subscriptions and API billing are separate; only a genuine
+  host-model workflow provides the required subscription-backed experience.
+
+## D-102 — Public Cloudflare MCP gateway and outbound companion
+
+- Date: 19 July 2026
+- Decision: Use Cloudflare Workers Free on `workers.dev` with
+  `@cloudflare/workers-oauth-provider`, its required `OAUTH_KV` binding, a
+  SQLite Durable Object relay, and a paired outbound local companion.
+- Rationale: ChatGPT needs a stable public authenticated MCP endpoint while the
+  local-first engine must remain behind an outbound-only connection.
+
+## D-103 — OAuth/PKCE/CIMD pairing with local-device identity
+
+- Date: 19 July 2026
+- Decision: Use authorization code OAuth 2.1 with PKCE S256, CIMD and DCR
+  fallback, a Keychain-held Ed25519 device key, and bounded one-time-code
+  pairing, expiry, rate limits, rotation, and revocation.
+- Rationale: Foldweave has no account system; the verified local installation is
+  the narrow identity root while the library owns standards-sensitive OAuth.
+
+## D-104 — Durable Object relay, replay defense, and local job authority
+
+- Date: 19 July 2026
+- Decision: Let the Durable Object accept the companion's outbound WSS with
+  hibernation and bounded correlation state, but keep every product operation
+  and idempotency record in the local v3 job.
+- Rationale: Signed requests, nonces, sequences, digests, expiry, and reconnect
+  can protect transport without turning Cloudflare into a second engine or job
+  database; large correlation state must not rely on the 16,384-byte WebSocket
+  attachment limit.
+
+## D-105 — Secure MCP Tunnel is developer qualification only
+
+- Date: 19 July 2026
+- Decision: Require the official tunnel for F0c developer-mode proof but never
+  use it as the consumer distribution architecture or proof of consumer no-key
+  access; substitution requires a user instruction or official-rule change.
+- Rationale: Tunnel setup depends on separate Platform configuration and does
+  not replace the selected paired public gateway.
+
+## D-106 — Two-layer shared MCP and reviewed Codex workflow
+
+- Date: 19 July 2026
+- Decision: Expose bounded host-planning and high-level reviewed-workflow tools
+  through local STDIO and authenticated HTTP transports over one domain service.
+- Rationale: Host models need evidence and submission tools, while callers need
+  durable workflows; neither layer may bypass review or gain arbitrary file or
+  shell authority.
+
+## D-107 — Orthogonal planning, transport, and execution provenance
+
+- Date: 19 July 2026
+- Decision: Record planning basis, model transport, and execution origin as
+  separate strict fields.
+- Rationale: Fresh versus derivative planning, API versus host transport, and
+  planned versus capsule execution answer different truth claims and must not
+  be collapsed.
+
+## D-108 — Replay and unchanged application remain model-free
+
+- Date: 19 July 2026
+- Decision: Keep recorded replay and exact unchanged Change File application
+  free of model calls, credentials, external model requests, and budget use.
+- Rationale: These modes are essential keyless evidence and deterministic
+  portability paths, not degraded live planning.
+
+## D-109 — Sole budget ledger migrates monotonically to USD 40
+
+- Date: 19 July 2026
+- Decision: After F+0 and the required contract freeze, but before any F0b live
+  call, preserve `.name-atlas/api_budget.json` and all history, raise only its
+  monetary ceiling to USD 40, retain call cap 13, and finalize the call cap in
+  F4 after the complete call graph is frozen.
+- Rationale: One cumulative ledger prevents reset or double authority while the
+  larger ceiling permits the required real direct qualification transactions.
+
+## D-110 — Foldweave branding with strict legacy dispatch
+
+- Date: 19 July 2026
+- Decision: Rename every active release-facing surface to Foldweave while
+  preserving historical schema identifiers, artifact paths, receipts, jobs,
+  Git history, and a documented `name-atlas` CLI alias.
+- Rationale: The new product needs one coherent identity without falsifying or
+  breaking verified predecessor artifacts.
+
+## D-111 — Separate ChatGPT distribution states
+
+- Date: 19 July 2026
+- Decision: Track developer verification, consumer pairing, publication
+  readiness, review submission, approval, and publication independently.
+- Rationale: Implementation and developer connection do not prove directory
+  approval or public listing, which require external observed evidence.
+
+## D-112 — Four opening existential gates
+
+- Date: 19 July 2026
+- Decision: Prove review authority, packaged native operation, actual ChatGPT
+  developer mode, and the consumer gateway before broad polish or release work;
+  give each persistent failure an exact no-go or external-wait state and prevent
+  later milestones from passing while a mandatory gate is unverified.
+- Rationale: The highest-risk integrations must fail or pass while there is
+  still time to correct architecture rather than after surface polish.
+
+## D-113 — Fixed 44-hour scaling and absolute boundaries
+
+- Date: 19 July 2026
+- Decision: Scale F0–F7 from the actual remaining portion of the fixed envelope,
+  with feature freeze at 01:00, release candidate at 06:00, and recording
+  readiness at 10:00 CEST on 21 July 2026.
+- Rationale: F+0 records activation but cannot manufacture time or move the
+  user's protected video and submission reserve.
+
+## D-114 — Fixed scope cuts and prohibited expansion
+
+- Date: 19 July 2026
+- Decision: Apply only the ordered optional cuts and prohibit new platforms,
+  backends, collaboration systems, discovery, and validation machinery.
+- Rationale: Predetermined cuts preserve required product value and prevent
+  reactive architecture expansion under deadline pressure.
+
+## D-115 — Explicit F+0 activation boundary
+
+- Date: 19 July 2026
+- Decision: Create F+0 only when the user explicitly activates the complete
+  amended goal in the current primary task.
+- Rationale: Governance preparation and remote preservation must not
+  accidentally authorize product, credential, API, or external-service work.
+
+## D-116 — Continuing final-submission hold
+
+- Date: 19 July 2026
+- Decision: Prohibit final Devpost submission until all product, release, video,
+  `/feedback`, due-diligence, and package requirements pass and the user
+  explicitly releases the hold.
+- Rationale: Submission includes user-owned voice, attestations, and final
+  authority that implementation progress cannot replace.

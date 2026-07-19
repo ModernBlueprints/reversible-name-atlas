@@ -1,213 +1,132 @@
-# Reversible Name Atlas — Current Build State
+# Foldweave build state
 
-Checkpoint: **Sunday 19 July 2026 at 12:05:52 CEST**
+Observed: **Sunday 19 July 2026 at 16:53:02 CEST** using
+`oslo_tz = ZoneInfo("Europe/Oslo")`.
 
-Phase: **RECORDING_READY**
+Phase: **WAITING_FOR_FOLDWEAVE_GOAL_ACTIVATION**
 
 Submission hold: **ACTIVE**
 
-## Activation and fixed boundaries
+Blocker: **NONE**
 
-- Historical H+0: **Friday 17 July 2026 at 17:16:25 CEST — PRESERVED**.
-- Historical R+0: **Saturday 18 July 2026 at 00:51:51 CEST — PRESERVED**.
-- Historical A+0: **Saturday 18 July 2026 at 15:37:55 CEST — PRESERVED**.
-- Connected Change C+0: **Saturday 18 July 2026 at 23:31:39 CEST**.
-- Selected profile: **CONNECTED_CHANGE_GO**.
-- Feature freeze: **ACTIVE; entered early Sunday 19 July 2026 at 08:36:26
-  CEST**. The absolute Monday 20 July 2026 at 14:00 CEST boundary was 25 hours,
-  54 minutes, 8 seconds away at this checkpoint.
-- Release-candidate boundary: **Monday 20 July 2026 at 20:00 CEST**; 31 hours,
-  54 minutes, 8 seconds remained.
-- Recording-ready boundary: **Tuesday 21 July 2026 at 02:00 CEST**; C7 was
-  accepted before it; 37 hours, 54 minutes, 8 seconds remained at this checkpoint.
-- Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; 61 hours,
-  54 minutes, 8 seconds remained.
-- Submission hold: **ACTIVE**.
+## Activation and repository
 
-## Repository and milestone checkpoint
+| Field | Observed state |
+|---|---|
+| Historical H+0 | Friday 17 July 2026 at 17:16:25 CEST — `PRESERVED` |
+| Historical R+0 | Saturday 18 July 2026 at 00:51:51 CEST — `PRESERVED` |
+| Historical A+0 | Saturday 18 July 2026 at 15:37:55 CEST — `PRESERVED` |
+| Historical C+0 | Saturday 18 July 2026 at 23:31:39 CEST — `PRESERVED` |
+| Preceding Connected Change goal | `COMPLETED THROUGH C7; SUPERSEDED FOR FUTURE EXECUTION` |
+| Amended Foldweave goal | `INACTIVE` |
+| Foldweave F+0 | `NOT_STARTED` |
+| Current branch | `revision/foldweave-native-review` |
+| Exact predecessor | `1023999f2acc7b806775b407dc01a15af3447e90` |
+| Governance commit locator | Parent `1023999f2acc7b806775b407dc01a15af3447e90`; subject `docs: establish Foldweave native-review scaffold`; exact SHA belongs in the handoff |
+| `main` | `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
+| `origin/main` | `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
+| Previous local revision | `revision/ai-first-folder-refactor` at `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
+| Previous remote revision | `origin/revision/ai-first-folder-refactor` at `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
+| Historical portable branch | local and remote `revision/portable-change-receipt` at `4baec1ed7b8553775527e3be506edab584b2b8b3` — unchanged |
 
-- Repository: `/Users/nikolai/Desktop/Repos/reversible-name-atlas`.
-- Branch: `revision/ai-first-folder-refactor`.
-- Immutable A3 fallback: `e3803d26d342f5c128f4e9876a7b7e35c35bde3c`.
-- Governance baseline: `4d4f07814a24ed2e28b015cecb1655e5c414632c`.
-- C0/C1/C2/C3/C4 checkpoints: `a5ea342` / `c94c26b` / `852fc55` /
-  `9e8d3db` / `bc1898e`.
-- C5 feature-freeze checkpoint: `0dc4776495cd708278d835c8394dcd9529be981e`.
-- Accepted public C6 product candidate:
-  `20d56278d08128de410778b9c5a8f558ce677e29`, subject
-  `release: prepare connected-change candidate`.
-- C6 completion checkpoint:
-  `0ffa6cd3394e4dc93afc28f45d9b70337cbd59bd`.
-- Selected recording-ready product:
-  `e10b09a941567d3394c71dbb5dbc3a25c74f1a82`, subject
-  `fix: preserve exact explicit job paths`.
-- Recording-ready documentation-checkpoint locator: subject
-  `docs: record recording-ready public release` on parent `e10b09a`; use fresh
-  Git and the handoff for exact SHA
-  `56cfa8730816e350fd5c4cb70cd4fdf15f7b6b31`.
-- Live-draft documentation-checkpoint locator: subject
-  `docs: synchronize live Devpost release draft` on parent `56cfa87`; use fresh
-  Git and the handoff for its exact SHA after this state is committed.
-- Before this file's commit, local `main`, `origin/main`, and the local/remote
-  revision branch all pointed to recording-ready documentation checkpoint
-  `56cfa87`, which contains selected product `e10b09a`. The live-draft
-  checkpoint is identified above by subject and parent; fresh Git and the
-  handoff control every ref's exact post-commit tip.
-- Local/remote `revision/portable-change-receipt`:
-  **PRESERVED AT `4baec1e`**.
-- New implementation branch/worktree, rebase, reset, and force-push:
-  **NOT PERFORMED**.
-- Public fast-forward promotion to `main`: **COMPLETE FOR SELECTED PRODUCT
-  `e10b09a`; NO REBASE OR FORCE-PUSH**.
+The exact governance commit SHA, clean post-commit state, and remote Foldweave
+branch SHA cannot be asserted by the file contained in that commit. They must be
+reported from fresh post-commit evidence in the scaffold handoff.
 
-This file does not contain its own future commit SHA or claim its own
-post-commit cleanliness. Fresh Git controls current repository facts.
+## Remaining fixed windows at the observed time
 
-## Product and release status
+| Boundary | Absolute Oslo time | Remaining |
+|---|---|---:|
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | 1 day, 8 hours, 6 minutes, 58 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | 1 day, 13 hours, 6 minutes, 58 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | 1 day, 17 hours, 6 minutes, 58 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 2 days, 9 hours, 6 minutes, 58 seconds |
 
-- A1–A3 foundation: **COMPLETE AND VERIFIED**.
-- C0 cross-layout gate: **COMPLETE — CONNECTED_CHANGE_GO**.
-- C1 engine: **COMPLETE AND VERIFIED**.
-- C2 Home/Organize/Apply browser and macOS bridge: **COMPLETE AND VERIFIED**.
-- C3 new live GPT-5.6 transactions, exact replays, fixtures, convergence, and
-  refusal matrix: **COMPLETE AND VERIFIED**.
-- C4 required shared MCP: **COMPLETE AND VERIFIED**.
-- Codex plugin gate: **GO**.
-- C5 installed plugin and feature freeze: **COMPLETE AND VERIFIED**.
-- C6 release candidate: **COMPLETE AND VERIFIED**.
-- C7 recording readiness: **COMPLETE AND VERIFIED**.
-- Release materials: **REGENERATED, REHEARSED, AND C7-ALIGNED**.
-- Public Devpost project draft: **FINAL CONNECTED CHANGE COPY, TECHNOLOGIES,
-  REPOSITORY LINK, AND THUMBNAIL SYNCHRONIZED; VIDEO URL ABSENT; NO HACKATHON
-  SUBMISSION**.
-- Build Week account/form: **REGISTERED; SUBMISSIONS OPEN; EXACT REQUIRED FIELD
-  IDS VERIFIED; SEPARATE PREFLIGHT DRAFT DOES NOT BAR A SUBSTANTIALLY DIFFERENT
-  NAME ATLAS SUBMISSION**.
-- Current blocker: **NONE**.
+These windows continue to elapse. F+0 will record activation and calculate
+scaled targets; it will not reset the 44-hour envelope.
 
-## Accepted C7 recording-ready evidence
+## Observed implementation status
 
-- Exact public HTTPS clone:
-  `/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` at
-  `e10b09a941567d3394c71dbb5dbc3a25c74f1a82`, clean and remote-aligned.
-- Frozen install: **PASSED with Python 3.11.9**.
-- Complete regression: **822 passed in 69.58 seconds**.
-- Selected-profile release matrix: **249 passed in 50.24 seconds**.
-- Independent fix audit and permanent focused matrix: **GO; 55 passed**.
-- `uv lock --check`: **PASSED; 48 packages resolved**.
-- Ruff lint: **PASSED**.
-- Ruff format: **PASSED; 154 files already formatted**.
-- Git diff and whitespace checks: **PASSED**.
-- Wheel:
-  `reversible_name_atlas-0.1.0-py3-none-any.whl`, 563,894 bytes, 205 members,
-  SHA-256
-  `ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`.
-- Wheel inspection: **GO** for console metadata, all required browser assets,
-  both exact recordings, 53 fixture files, notices/licenses, ZIP integrity,
-  cache exclusion, developer-path exclusion, and secret-pattern exclusion.
-- Isolated installed-wheel keyless replay: **GO**; Home/Organize/Working/Done,
-  exact `northstar.nameatlas-change.json` download, no legacy routes, no API
-  key, no provider call.
-- Installed-wheel receipt:
-  `0cd23b418541b7acad90a271ddaa9b9f2d603ac9f6f53c0b5825a438e652a598`;
-  source-free/source-aware verification and exact 24-file/one-empty-directory
-  reconstruction: **GO**.
-- Final neutral Sofia source commitment:
-  `8afa2f86d2ed2fe5a5b7b935d107351887685310e8c225f3a7d161c20691df69`.
-- Final neutral Martin source commitment:
-  `a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`.
-- Recording-rehearsal origin receipt:
-  `8747992945a9ab6fad5d0dfe67158af2ed4fe78f31b023fd00627198faa3b460`.
-- Recording-rehearsal receiver receipt:
-  `59fd68c71a006d0ab53b07ff05ec85553cf08beeb2e1cc341bea9498345e8fc4`.
-- Installed-wheel Change File fingerprint:
-  `709702535c56e78611e1681302838d5b3e51853a5f533ee9fc90b0d4481e31a6`;
-  raw SHA-256
-  `f1b71509a8b8082748dd01d766e68169d39bc789e586535251373e7bc54a7604`.
-- Common organized-tree commitment:
-  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
-- Both source-aware verifiers: **VERIFIED**. Both source-versus-reconstruction
-  trees: **BYTE-EXACT**. Both sources and the Change File: **UNCHANGED**.
-- Receiver provenance: `capsule_applied`, provider calls `0`, API use `false`,
-  external-network use `false`.
-- Final release-refusal matrix: **PASSED**, including payload, Markdown prose,
-  relationship, protected member, symmetric duplicate, Change File fingerprint,
-  and BagIt-valid receipt inconsistency blockers.
-- Explicit named-job correction: unrelated valid/malformed siblings preserved;
-  exact retry byte-identical; exact corrupt/conflicting jobs block unchanged;
-  managed MCP job directories remain strict.
-- Full browser rehearsal: **1280×720 PASS**. Narrow Done view:
-  **390×844 PASS WITH NO HORIZONTAL OVERFLOW**.
-- Final narration: **344 lexical words / 341 whitespace tokens**; macOS `say`
-  timing proxy at 130 words/minute: **155.120454 seconds (2:35.120)**. User
-  recording and exported-video timing remain pending.
-- Final seven screenshots and PNG/SVG thumbnail: **MEDIA, METADATA, PATH,
-  SECRET, AND CLAIM AUDIT GO**; exact hashes are in
-  `docs/SUBMISSION_PACKAGE.md`.
-- Release-copy and C7 evidence audit: **GO after all material findings were
-  corrected**.
+| Surface | Status |
+|---|---|
+| A1–A3 and C0–C7 inherited foundation | `VERIFIED COMPLETE` |
+| Foldweave branding | `NOT STARTED` |
+| Job v3 and immutable preview | `NOT STARTED` |
+| Review, exact acceptance, and bounded revision | `NOT STARTED` |
+| Change File v2 and receipt/verifier v3 | `NOT STARTED` |
+| Serial derivative collaboration | `NOT STARTED` |
+| Native Foldweave app | `NOT STARTED` |
+| Keychain settings | `NOT STARTED` |
+| New direct GPT planner evidence | `NOT STARTED` |
+| ChatGPT developer integration | `NOT STARTED` |
+| Consumer gateway and companion | `NOT STARTED` |
+| ChatGPT distribution states | `NOT STARTED` |
+| Reviewed MCP and Codex update | `NOT STARTED` |
+| Budget migration | `NOT STARTED` |
+| Feature freeze | `PENDING AFTER F+0` |
+| Foldweave release materials | `STALE FOR THE FOLDWEAVE RELEASE — PRESERVED VERIFIED NAME ATLAS PREDECESSOR MATERIAL; MUST BE REGENERATED AFTER FOLDWEAVE FEATURE FREEZE` |
+| Devpost submission | `NOT PERFORMED` |
 
-## Final installed-plugin requalification
+## Current environment and budget facts
 
-- Public-clone evidence root:
-  `/tmp/name-atlas-plugin-requal-20260719-101120/evidence`.
-- Frozen install and 16 focused plugin/MCP tests: **PASSED**.
-- Official plugin validator: **PASSED**.
-- Installed manifest, `.mcp.json`, and README: **BYTE-IDENTICAL TO CLONE**.
-- Shared server: **EXACTLY SEVEN TOOLS DISCOVERED**.
-- Installed-copy replay/Change File/verification/reconstruction: **VERIFIED**;
-  receipt `e7e82e9626bfb35c6273cd55bcb87e5f70d1922ef37427076990071ffa79dbd0`,
-  organized tree
-  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
-- Missing live key: exact `live_credential_missing`; no job/provider call.
-- Fresh Codex task `019f7976-0b6d-7461-ad63-c3519052b06b` discovered the
-  installed `name-atlas` server and invoked `verify_result` successfully.
-- Isolated plugin and marketplace uninstall: **PASSED**; no MCP process remains.
-
-## Credentials, budget, and held surfaces
-
-- Process `OPENAI_API_KEY`: **ABSENT; NO VALUE READ**.
-- Ignored owner-only `.env.local`: **PRESENT; VALUE NOT READ OR LOADED**.
-- Sole ledger: `.name-atlas/api_budget.json`, SHA-256
+- The process environment contains no `OPENAI_API_KEY`; no value was read or
+  exposed.
+- Ignored `.env.local` exists with owner-only mode `0600`; its contents were not
+  read.
+- The sole ledger remains `.name-atlas/api_budget.json`, schema
+  `gpt-budget.v1`, model `gpt-5.6`, SHA-256
   `c76f578db7d571b8297b9ba48467b8680e5759979370a81c978b0d72d31edecb`.
-- Ledger authority: **9/13 requests and attempts; USD 9.736060 conservative
-  committed exposure; USD 0.605515 reported estimated cost; USD 10 cap**.
-- Further provider calls: **NOT REQUIRED OR PLANNED**.
-- Browser and MCP qualification processes: **STOPPED**.
-- Public product promotion: **PERFORMED BY ORDINARY FAST-FORWARD**.
-- Public Devpost project `1344382`: **VERSION 3; FINAL COPY AND THUMBNAIL LIVE;
-  `video_url: null`; NO HACKATHON ASSOCIATION; NOT SUBMITTED**.
-- Current required submission fields: **WORK & PRODUCTIVITY AND PUBLIC REPO
-  FROZEN; JUDGE/PLUGIN INSTRUCTIONS FROZEN; `/feedback`, SUBMITTER TYPE, AND
-  COUNTRY REMAIN USER-OWNED**.
-- Final capture, voice recording, YouTube upload, `/feedback`, hold release, and
-  Devpost submission: **NOT PERFORMED**.
+- The ledger remains unchanged at USD 10 monetary authority, call cap 13, 9
+  requests reserved, 9 provider attempts reserved, USD 9.736060 conservative
+  committed exposure, and USD 0.605515 reported estimated cost.
+- Cloudflare CLI, verified account credentials, deployment, gateway URL, and
+  pairing evidence are absent.
+- No Apple Developer ID code-signing identity is installed.
+- The macOS ChatGPT application and the current Codex desktop environment are
+  present. A standalone `/Applications/Codex.app` is absent, and the discovered
+  legacy `codex` shell executable fails to start; this is an implementation-time
+  Codex installation/qualification risk, not a scaffold blocker.
+- The installed personal plugin is still branded Name Atlas.
+- There is no observed active Name Atlas/Foldweave server process.
 
-## Compact recovery capsule
+## Latest verified commands
 
-- Phase: `RECORDING_READY`.
-- Branch/A3/selected product: `revision/ai-first-folder-refactor` / `e3803d2` /
-  `e10b09a`.
-- Active profile: `CONNECTED_CHANGE_GO`.
-- Current milestone: `C7 COMPLETE; RECORDING_READY`.
-- Latest checks: `822 full; 249 release matrix; clean HTTPS clone; audited
-  wheel; installed replay/verify/restore; explicit-job correction; full
-  Sofia/Martin browser rehearsal; plugin evidence; visual/media/claims audit;
-  final live Devpost copy and thumbnail synchronized; registration, deadline,
-  multiple-submission rule, and exact form fields rechecked`.
-- Change File/matcher/job/provenance: `COMPLETE AND VERIFIED`.
-- Receipt/verifier/reconstruction: `COMPLETE AND VERIFIED`.
-- Browser/native picker: `COMPLETE AND VERIFIED`.
-- GPT live/replay: `TWO NEW LIVE TRANSACTIONS AND TWO EXACT REPLAYS COMPLETE`.
-- MCP/plugin: `COMPLETE AND VERIFIED`.
-- Feature freeze/release materials: `ACTIVE / REGENERATED AND C7-ALIGNED`.
-- Submission hold: `ACTIVE`.
-- Blockers: `NONE`.
-- Next operation: user records the frozen English narration and final under-
-  three-minute capture, then Codex verifies the exported/public video, updates
-  the Devpost draft, and waits for `/feedback`, personal attestations, and
-  explicit submission-hold release before final submission.
+- `uv lock --check` — passed; 48 packages resolved.
+- `PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider` —
+  passed; 822 tests in 56.64 seconds.
+- `uv run --no-sync ruff check .` — passed.
+- `uv run --no-sync ruff format --check .` — passed; 154 files already
+  formatted.
+- `git diff --check` — passed before editing.
+- `git diff --cached --check` — passed before editing.
 
 ## Exact next operation
 
-`Record the user's frozen narration and final under-three-minute demonstration; then verify public playback, complete /feedback and user attestations, and keep final Devpost submission held until the user explicitly releases it.`
+`User explicitly activates the complete amended docs/build/GOAL.md in this primary Codex task at the governance commit reported in the scaffold handoff.`
+
+## Compact recovery capsule
+
+- **Phase:** `WAITING_FOR_FOLDWEAVE_GOAL_ACTIVATION`
+- **Branch / predecessor:** `revision/foldweave-native-review` /
+  `1023999f2acc7b806775b407dc01a15af3447e90`
+- **Current F milestone:** none; F+0 is `NOT_STARTED`
+- **Latest verified commands:** lock passed; 822 tests passed; Ruff lint and
+  format passed; pre-edit diff checks passed
+- **Job / preview:** `NOT STARTED`
+- **Change File / receipt / verifier / reconstruction:** predecessor evidence
+  complete; Foldweave v2/v3 work `NOT STARTED`
+- **Native / browser:** predecessor browser complete; Foldweave native work
+  `NOT STARTED`
+- **Direct / live / replay:** predecessor direct/replay evidence complete; new
+  Foldweave qualification `NOT STARTED`
+- **ChatGPT / gateway / companion:** `NOT STARTED`
+- **MCP / Codex:** predecessor installed plugin complete; Foldweave update
+  `NOT STARTED`
+- **Budget:** unchanged sole USD 10 ledger; USD 40 migration `NOT STARTED`
+- **Feature freeze:** pending; absolute boundary Tuesday 21 July 2026 at 01:00
+  CEST
+- **Release materials:** stale for Foldweave; predecessor materials preserved
+- **Submission hold:** `ACTIVE`
+- **Blockers:** none
+- **Next operation:** explicit user activation of the complete amended goal at
+  the handoff-reported governance commit
