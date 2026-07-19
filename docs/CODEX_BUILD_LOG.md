@@ -381,6 +381,7 @@ instruction, targets, and proof identifiers.
 | `bc1898e` | Completed C4 shared seven-tool STDIO MCP server with consent, durable idempotency, restart recovery, and actual Codex invocation. | 12 focused and 807 full tests; Codex task `019f78e6-06d3-72f0-9258-be362118ea2f` invoked `verify_result`. |
 | `7314c58` | Added the thin Codex plugin and repository marketplace around the same MCP server. | Clean-clone install, isolated cache equality, fresh-task discovery/invocation, keyless replay, verification, reconstruction, missing-key behavior, and uninstall passed. |
 | `0dc4776` | Closed C5 and entered feature freeze early. | 16 focused and 811 full tests; installed-plugin task `019f7916-02e0-7910-a5a6-f190cd21ec21`; release materials marked for regeneration. |
+| `20d5627` | Prepared and accepted the Connected Change release candidate. | Exact public HTTPS clone; 818 full and 245 release-matrix tests; wheel, isolated replay, source-free verification, exact reconstruction, final media, claims, and installed-plugin requalification all passed. |
 
 ### Current real GPT-5.6 planner evidence
 
@@ -438,10 +439,47 @@ itself still uses loopback HTTP.
 ## C6 release status — 19 July 2026
 
 Selected profile `CONNECTED_CHANGE_GO` entered feature freeze on Sunday 19 July
-2026 at 08:36:26 CEST. C6 is regenerating the stale README, limitations,
-provenance, build log, screenshots, thumbnail, narration, Devpost copy, and
-submission package, and will requalify the actual wheel and exact public clean
-clone before selecting a release candidate.
+2026 at 08:36:26 CEST. C6 accepted exact public candidate
+`20d56278d08128de410778b9c5a8f558ce677e29` on Sunday 19 July 2026 at
+10:24:03 CEST after regenerating the README, limitations, provenance, build
+log, screenshots, thumbnail, narration, Devpost copy, and submission package.
+
+An independent HTTPS clone at `/tmp/name-atlas-c6-audit.6Oy7Ak/repo` passed
+frozen Python 3.11 installation, **818 complete tests**, the separate **245-test
+release matrix**, lock, Ruff lint, Ruff format over 154 files, and Git diff
+checks. Its 563,515-byte wheel contains 205 members and exactly 53 Connected
+Change fixture files; SHA-256 is
+`6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b`.
+ZIP integrity, console metadata, browser assets, both exact recordings,
+notices, licenses, cache exclusion, developer-path exclusion, and secret-pattern
+scans passed. From an unrelated working directory, the isolated installed wheel
+ran the keyless Home → Organize → Working → Done replay, downloaded
+`northstar.nameatlas-change.json`, verified source-free with receipt
+`d8419f9baca079d491a4253f6d0738b1def9d8670ab42ba5826714aa7cee1674`,
+and reconstructed all 24 files plus one empty directory exactly.
+
+The neutral final Sofia/Martin transaction used separate source commitments
+`8afa2f86d2ed2fe5a5b7b935d107351887685310e8c225f3a7d161c20691df69`
+and `a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`.
+It produced origin receipt
+`6b57e3fb62bed7b22b11912fa01e0b363e9e3e8472e57604f45abda5bb4f9ec1`,
+receiver receipt
+`15c010e97faf2fa1693abacdddffae86a8374d9bc6184b3a50e2c75a87ee288f`,
+Change File fingerprint
+`2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0`,
+and shared organized-tree commitment
+`a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+Both source-aware verifiers and exact reconstructions passed. Martin remained
+`capsule_applied` with zero provider calls, false API use, false external-
+network use, and a byte-identical project budget ledger.
+
+The same candidate plugin was installed from another public clone, matched its
+source manifest/config/README byte-for-byte, discovered exactly seven tools,
+and passed keyless replay, verification, reconstruction, missing-key behavior,
+and uninstall. Fresh Codex task `019f7976-0b6d-7461-ad63-c3519052b06b`
+invoked installed `verify_result` successfully. The final seven screenshots,
+PNG/SVG thumbnail, and 346-word narration draft passed independent media,
+metadata, path, secret, and claim review.
 
 The release-media replacement removed seven superseded second-cycle PNGs from
 the current gallery because they showed the archive workflow rather than the
@@ -454,8 +492,7 @@ release replaces them with the visually audited seven-frame Connected Change
 gallery and Sofia→Change File→Martin thumbnail recorded in the submission
 package.
 
-The historical Devpost text and gallery identity described above are stale and
-must be replaced before submission. Public `main` remains the preserved
-second-cycle fallback until the Connected Change release passes its final
-fast-forward acceptance. No final video has been published, `/feedback` remains
-user-owned, and the submission hold is active.
+The current repository materials now describe the selected product. Public
+`main` remains the preserved second-cycle fallback until C7 selects and
+fast-forwards the final accepted release. No final video has been published,
+`/feedback` remains user-owned, and the submission hold is active.

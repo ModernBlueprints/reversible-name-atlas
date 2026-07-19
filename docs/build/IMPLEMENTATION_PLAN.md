@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C5 COMPLETE; FEATURE FROZEN; C6 NEXT**
+Status: **EXECUTION ACTIVE; C6 COMPLETE; FEATURE FROZEN; C7 NEXT**
 
-Phase: **C6_RELEASE_CANDIDATE**
+Phase: **C7_RECORDING_READINESS**
 
 Submission hold: **ACTIVE**
 
@@ -37,10 +37,14 @@ First-cycle M0–M8 and second-cycle R1–R7 are complete historical evidence an
 longer active milestones. The former second-cycle recording-ready state is
 superseded for future work.
 
-All current README, limitations, provenance, build log, screenshots, narration,
-Devpost copy, submission package, thumbnail, and hero artifacts are:
+At C+0, the inherited README, limitations, provenance, build log, screenshots,
+narration, Devpost copy, submission package, thumbnail, and hero artifacts were:
 
 `STALE — PRESERVED SECOND-CYCLE RELEASE MATERIAL; MUST BE REGENERATED AFTER THE SELECTED PRODUCT PROFILE REACHES FEATURE FREEZE`
+
+C6 regenerated and independently audited every listed release surface for
+`CONNECTED_CHANGE_GO`; the historical stale label remains here as baseline
+disposition rather than current status.
 
 Final submission remains prohibited while the submission hold is active.
 
@@ -861,8 +865,51 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
   reviewers permitted.
 - **Allowed cut:** no new feature; only documentation not required for judges,
   provenance, license, or submission.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `COMPLETE` on Sunday 19 July 2026 at 10:24:03 CEST.
+- **Actual verification:** public candidate
+  `20d56278d08128de410778b9c5a8f558ce677e29` was pushed and independently
+  cloned over HTTPS into `/tmp/name-atlas-c6-audit.6Oy7Ak/repo` with clean
+  upstream state. Frozen Python 3.11 installation passed; the complete suite
+  passed **818/818 in 71.19 seconds** and the separate selected-profile release
+  matrix passed **245/245 in 53.52 seconds**. Lock resolved 48 packages; Ruff
+  lint, Ruff format over 154 files, and both Git diff checks passed. The wheel
+  is 563,515 bytes with SHA-256
+  `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b`;
+  all 205 members, 53 Connected Change fixture files, console metadata,
+  templates, recordings, notices, and licenses passed inspection, with no
+  cache, developer path, or secret-like token. An isolated installation from
+  that wheel ran the keyless Home → Organize → Working → Done replay,
+  downloaded exact `northstar.nameatlas-change.json`, returned receipt
+  `d8419f9baca079d491a4253f6d0738b1def9d8670ab42ba5826714aa7cee1674`,
+  verified source-free, and reconstructed all 24 files plus one empty directory
+  byte-for-byte. The final neutral-path Sofia/Martin transaction produced
+  distinct source commitments
+  `8afa2f86d2ed2fe5a5b7b935d107351887685310e8c225f3a7d161c20691df69`
+  and
+  `a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`,
+  origin receipt
+  `6b57e3fb62bed7b22b11912fa01e0b363e9e3e8472e57604f45abda5bb4f9ec1`,
+  receiver receipt
+  `15c010e97faf2fa1693abacdddffae86a8374d9bc6184b3a50e2c75a87ee288f`,
+  Change File fingerprint
+  `2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0`,
+  and common organized-tree commitment
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+  Both source-aware verifiers and exact source-versus-reconstruction directory
+  comparisons passed; receiver provenance remained `capsule_applied` with
+  `0/FALSE/FALSE` provider/API/external-network use; the sole budget SHA-256
+  remained
+  `c76f578db7d571b8297b9ba48467b8680e5759979370a81c978b0d72d31edecb`.
+  The exact candidate plugin was independently installed from a public clone;
+  its cached manifest/config/README matched source, all seven tools were
+  discovered, fresh Codex task `019f7976-0b6d-7461-ad63-c3519052b06b`
+  invoked `verify_result`, installed-copy replay/verification/reconstruction
+  passed, missing live credentials failed closed, and isolated uninstall passed.
+  Seven final screenshots and the PNG/SVG thumbnail passed visual, metadata,
+  path, secret, and claim audit. The regenerated README, limitations,
+  provenance, build log, sample guide, plugin guide, narration, Devpost draft,
+  and submission package received independent release-copy review. No provider
+  call, public promotion, video upload, hold release, or submission occurred.
 
 ### C7 — Recording readiness
 

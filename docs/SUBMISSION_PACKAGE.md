@@ -1,22 +1,22 @@
 # Reversible Name Atlas — Build Week submission package
 
-Status: **C6 DRAFT — FEATURE-FROZEN `CONNECTED_CHANGE_GO`; RELEASE MATERIALS
-ARE BEING REGENERATED; NOT RECORDING-READY; NOT SUBMITTED**
+Status: **C6 RELEASE CANDIDATE ACCEPTED — FEATURE-FROZEN
+`CONNECTED_CHANGE_GO`; C7 RECORDING READINESS IN PROGRESS; NOT SUBMITTED**
 
 Submission hold: **ACTIVE — FINAL DEVPOST SUBMISSION IS PROHIBITED UNTIL THE
 USER EXPLICITLY RELEASES THE HOLD**
 
-This is the working C6 package for the final judge path, Devpost draft, media
-plan, claim audit, and due-diligence pass. It is not product authority and does
-not prove release acceptance. Product truth remains in
+This package records the accepted C6 judge path, Devpost draft, media plan,
+claim audit, and due-diligence evidence. It is not product authority. Product
+truth remains in
 [`build/BUILD_SPEC.md`](build/BUILD_SPEC.md); execution evidence and status
 remain in [`build/IMPLEMENTATION_PLAN.md`](build/IMPLEMENTATION_PLAN.md) and
 [`build/STATE.md`](build/STATE.md).
 
-No release SHA, wheel digest, screenshot digest, final receipt identity, public
-video URL, or final test count may be added here until it has been reproduced
-from the accepted C6/C7 checkpoint. The C5 evidence below is explicitly a
-feature-freeze baseline, not a release-candidate claim.
+The C6 candidate SHA, wheel digest, media digests, receipt identities, and test
+counts below were independently reproduced from an exact public HTTPS clone.
+The C7 selected release SHA, final public video URL, `/feedback` ID, personal
+attestations, hold release, and submission confirmation remain pending.
 
 ## Official requirement snapshot
 
@@ -51,7 +51,7 @@ applicable, and every other personal or legal attestation.
 
 ## Submission identity and pending fields
 
-| Field | C6 draft value or status |
+| Field | Accepted C6 value or remaining status |
 |---|---|
 | Project | **Reversible Name Atlas** |
 | Primary tagline | **Describe the change once. Apply it wherever the same project exists.** |
@@ -59,16 +59,17 @@ applicable, and every other personal or legal attestation.
 | Track | **Work & Productivity** |
 | Category | **AI refactoring for connected project folders** |
 | One-line summary | GPT-5.6 plans a connected-folder reorganization once; Name Atlas can then apply and verify the same change on a differently arranged equivalent copy without another GPT call or transfer of project payload bytes. |
-| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — final public release SHA pending C6/C7 acceptance |
+| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — public revision branch verified at the exact C6 candidate; final `main` promotion remains C7 work |
 | License | MIT; third-party notices and packaged licenses must pass final clean-clone inspection |
 | Selected product profile | `CONNECTED_CHANGE_GO` |
 | C5 feature-freeze checkpoint | `0dc4776495cd708278d835c8394dcd9529be981e` — baseline evidence only |
-| C6 release-candidate SHA | `[PENDING C6 ACCEPTANCE]` |
+| C6 release-candidate SHA | `20d56278d08128de410778b9c5a8f558ce677e29` |
+| C6 wheel | 563,515 bytes; SHA-256 `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b` |
 | C7 recording-ready SHA | `[PENDING C7 ACCEPTANCE]` |
-| Final origin receipt | `[PENDING FINAL C6/C7 TRANSACTION]` |
-| Final receiver receipt | `[PENDING FINAL C6/C7 TRANSACTION]` |
-| Final Change File fingerprint | `[PENDING FINAL C6/C7 TRANSACTION]` |
-| Final organized-tree commitment | `[PENDING FINAL C6/C7 TRANSACTION]` |
+| Accepted C6 origin receipt | `6b57e3fb62bed7b22b11912fa01e0b363e9e3e8472e57604f45abda5bb4f9ec1` |
+| Accepted C6 receiver receipt | `15c010e97faf2fa1693abacdddffae86a8374d9bc6184b3a50e2c75a87ee288f` |
+| Accepted C6 Change File fingerprint | `2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0` |
+| Accepted C6 organized-tree commitment | `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e` |
 | Final screenshot and thumbnail hashes | **RECORDED BELOW — independent media audit GO** |
 | Devpost software page | <https://devpost.com/software/reversible-name-atlas> — existing public copy is stale and must be replaced before submission |
 | Public YouTube URL | `[PENDING FINAL CAPTURE AND PUBLIC UPLOAD; USER ACTION ONLY IF LOGIN/MFA/CAPTCHA IS REQUIRED]` |
@@ -468,9 +469,8 @@ product direction.
 
 ## Current C5 evidence — baseline only
 
-The following evidence was complete at feature freeze. It must be rerun or
-consumed by the final C6 clean-clone acceptance before any release-candidate
-claim:
+The following evidence was reproduced and accepted from exact public candidate
+`20d56278d08128de410778b9c5a8f558ce677e29` during C6:
 
 - selected profile: `CONNECTED_CHANGE_GO`;
 - 24-file zero-question origin transaction and one-question ambiguity
@@ -489,15 +489,19 @@ claim:
 - keyless installed-plugin replay, verification, Change File retrieval, and
   reconstruction;
 - missing-live-key behavior `live_credential_missing` without budget change;
-- **16 focused plugin/MCP tests**;
-- **811 complete regression tests**;
+- **245 selected-profile release-matrix tests**;
+- **818 complete regression tests**;
 - `uv lock --check` with 48 packages;
-- Ruff lint, Ruff format over 153 files, and `git diff --check` passed; and
-- C5 feature-freeze checkpoint
-  `0dc4776495cd708278d835c8394dcd9529be981e`.
+- Ruff lint, Ruff format over 154 files, and `git diff --check` passed;
+- isolated installed-wheel replay, source-free verification, and exact
+  reconstruction passed;
+- fresh public-clone plugin installation, actual Codex invocation, missing-key
+  failure, and isolated uninstall passed; and
+- wheel SHA-256 is
+  `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b`.
 
-These numbers and fingerprints are C5 checkpoint evidence. The final public
-copy must use only freshly accepted C6/C7 results.
+These numbers and fingerprints are accepted C6 evidence. C7 must bind the final
+public release commit and rehearsal without changing the feature-frozen product.
 
 ## Devpost description draft
 
@@ -694,7 +698,8 @@ acceptance evidence.
 - Final narrator/voice recording: `[USER ACTION REQUIRED]`
 - Final recorded duration: `[PENDING; EXPORTED VIDEO MUST BE UNDER 3:00]`
 - Audio intelligibility: `[PENDING]`
-- Every spoken claim checked against the selected release: `[PENDING]`
+- Every drafted spoken claim checked against the selected release:
+  `[C6 CLAIM AUDIT PASSED; FINAL RECORDED DELIVERY PENDING]`
 - User approval of final audio: `[PENDING]`
 
 ## Capture shot list
@@ -826,22 +831,22 @@ Important supported-scope boundaries:
 
 ## Claim-to-evidence audit
 
-| Public claim | Required evidence | C6 draft status |
+| Public claim | Required evidence | C6 accepted status |
 |---|---|---|
-| GPT-5.6 plans the origin change | New real zero-question transcript, exact alias/returned model, observable tools, accepted plan, replay binding | `C5 VERIFIED; FINAL C6 REPLAY/RUN PENDING` |
-| One essential clarification works | Real one-question transcript, one answer, accepted plan, replay, no second question | `C5 VERIFIED; FINAL C6 REPLAY PENDING` |
-| Every in-scope file is present once | Inventory/accepted-plan/result bijection and source equality | `C5 VERIFIED; FINAL C6 TRANSACTION PENDING` |
-| Supported links survive | Exact-span proof, same logical target IDs, final staged bytes | `C5 VERIFIED FOR 23 HERO LINKS; FINAL C6 PROOF PENDING` |
-| Change File transfers no project payload bytes | Strict schema/content audit and raw file inspection | `C5 VERIFIED; FINAL C6 ARTIFACT AUDIT PENDING` |
-| Receiver uses no GPT/API/budget/external network | `capsule_applied` provenance, zero counts, unchanged budget, dependency isolation | `C5 VERIFIED; FINAL C6 RECEIVER RUN PENDING` |
-| Differently arranged copies converge | Different source commitments and identical organized-tree commitment | `C5 VERIFIED; FINAL C6 SOFIA/MARTIN RUN PENDING` |
-| Changed or ambiguous copies block | Complete payload/Markdown/relationship/protected/duplicate/fingerprint refusal matrix | `C5 VERIFIED; FINAL C6 MATRIX PENDING` |
-| Result verifies without source or key | Unrelated-location source-free verifier, no writes, exact receipt | `C5 VERIFIED; FINAL C6 RESULT PENDING` |
-| Each receiver recreates its own original | Verify-first no-replace reconstruction and exact receiver snapshot equality | `C5 VERIFIED; FINAL C6 RECONSTRUCTION PENDING` |
-| Shared MCP is the same product engine | Seven-tool direct run, consent/idempotency, durable polling, no duplicated core | `C4/C5 VERIFIED; FINAL CLEAN-CLONE CHECK PENDING` |
-| Codex plugin is installed and usable | Public clean clone, install, refresh/new task, discovery, installed-copy invocation, uninstall | `C5 VERIFIED; FINAL C6 CLEAN-CLONE CHECK PENDING` |
-| Complete regression passes | Fresh final suite, lock, lint, format, build, wheel, paths/secrets, Git | `C5 BASELINE 811; FINAL C6 COUNT PENDING` |
-| Public release is judge-ready | Selected SHA, public alignment, clean HTTPS clone, exact commands and media | `PENDING C6/C7` |
+| GPT-5.6 plans the origin change | New real zero-question transcript, exact alias/returned model, observable tools, accepted plan, replay binding | `C6 VERIFIED; LIVE RECORD AND EXACT KEYLESS REPLAY PASS` |
+| One essential clarification works | Real one-question transcript, one answer, accepted plan, replay, no second question | `C6 VERIFIED; EXACT ONE-QUESTION REPLAY PASS` |
+| Every in-scope file is present once | Inventory/accepted-plan/result bijection and source equality | `C6 VERIFIED; 24/24 PLUS ONE EMPTY DIRECTORY` |
+| Supported links survive | Exact-span proof, same logical target IDs, final staged bytes | `C6 VERIFIED FOR 23 HERO LINKS` |
+| Change File transfers no project payload bytes | Strict schema/content audit and raw file inspection | `C6 VERIFIED; METADATA DISCLOSURE RETAINED` |
+| Receiver uses no GPT/API/budget/external network | `capsule_applied` provenance, zero counts, unchanged budget, dependency isolation | `C6 VERIFIED; 0/FALSE/FALSE AND BUDGET BYTE-IDENTICAL` |
+| Differently arranged copies converge | Different source commitments and identical organized-tree commitment | `C6 VERIFIED; COMMON TREE a11ab49b...` |
+| Changed or ambiguous copies block | Complete payload/Markdown/relationship/protected/duplicate/fingerprint refusal matrix | `C6 VERIFIED; RELEASE MATRIX PASS` |
+| Result verifies without source or key | Unrelated-location source-free verifier, no writes, exact receipt | `C6 VERIFIED FROM ISOLATED INSTALLED WHEEL` |
+| Each receiver recreates its own original | Verify-first no-replace reconstruction and exact receiver snapshot equality | `C6 VERIFIED BYTE-FOR-BYTE` |
+| Shared MCP is the same product engine | Seven-tool direct run, consent/idempotency, durable polling, no duplicated core | `C6 VERIFIED FROM PUBLIC CLONE` |
+| Codex plugin is installed and usable | Public clean clone, install, refresh/new task, discovery, installed-copy invocation, uninstall | `C6 VERIFIED; TASK 019f7976-0b6d-7461-ad63-c3519052b06b` |
+| Complete regression passes | Fresh final suite, lock, lint, format, build, wheel, paths/secrets, Git | `C6 VERIFIED; 818 FULL + 245 RELEASE MATRIX` |
+| Public release is judge-ready | Selected SHA, public alignment, clean HTTPS clone, exact commands and media | `C6 CANDIDATE VERIFIED; C7 FINAL MAIN PROMOTION PENDING` |
 | Video and submission are complete | Public playback, `/feedback`, attestations, hold release, Devpost confirmation | `USER ACTIONS AND FINAL CLOSURE PENDING` |
 
 ## Due-diligence checklist
@@ -850,36 +855,36 @@ Important supported-scope boundaries:
 
 - [x] `CONNECTED_CHANGE_GO` selected and feature-frozen
 - [x] C5 shared MCP and admitted plugin acceptance preserved
-- [ ] C6 release-candidate SHA selected
-- [ ] Final branch and public repository alignment verified
-- [ ] Exact public HTTPS clone checked from an unrelated path
-- [ ] `uv sync --frozen` passes in that clone
-- [ ] Final keyless Sofia origin replay passes
-- [ ] Final Martin Change File application passes
-- [ ] Final source-free and source-aware verifier passes
-- [ ] Final receiver-specific reconstruction passes
-- [ ] Complete refusal matrix passes
-- [ ] Shared MCP direct path and actual Codex invocation pass
-- [ ] Plugin clean install, refresh/new task, installed-copy invocation, and
+- [x] C6 release-candidate SHA selected
+- [x] C6 public revision branch alignment verified
+- [x] Exact public HTTPS clone checked from an unrelated path
+- [x] `uv sync --frozen` passes in that clone
+- [x] Final keyless Sofia origin replay passes
+- [x] Final Martin Change File application passes
+- [x] Final source-free and source-aware verifier passes
+- [x] Final receiver-specific reconstruction passes
+- [x] Complete refusal matrix passes
+- [x] Shared MCP direct path and actual Codex invocation pass
+- [x] Plugin clean install, refresh/new task, installed-copy invocation, and
       uninstall pass
-- [ ] Final pytest, Ruff lint, Ruff format, lock, build, wheel, Git, link,
+- [x] Final pytest, Ruff lint, Ruff format, lock, build, wheel, Git, link,
       license, asset, secret, and absolute-path checks pass
-- [ ] README, limitations, provenance, build log, sample guidance, and plugin
+- [x] README, limitations, provenance, build log, sample guidance, and plugin
       instructions match the selected release
 
 ### Claims, privacy, media, and intellectual property
 
-- [ ] Every sentence in the final README, Devpost copy, narration, screenshots,
+- [x] Every sentence in the final README, Devpost copy, narration, screenshots,
       and thumbnail maps to this claim audit or is removed
-- [ ] GPT outbound evidence says selected eligible excerpts may be sent
-- [ ] Change File disclosure says no payload bytes but lists disclosed metadata
-- [ ] `store=false` wording retains the standard-retention caveat
-- [ ] Receiver “no external network” wording is not expanded into an
+- [x] GPT outbound evidence says selected eligible excerpts may be sent
+- [x] Change File disclosure says no payload bytes but lists disclosed metadata
+- [x] `store=false` wording retains the standard-retention caveat
+- [x] Receiver “no external network” wording is not expanded into an
       unqualified browser “no network” claim
 - [x] No personal path, credential, response ID, account identifier,
       notification, or unrelated content appears in committed or public media
-- [ ] Synthetic fixture provenance is current
-- [ ] Blueprint, MCP, BagIt, and all other third-party licensing obligations are
+- [x] Synthetic fixture provenance is current
+- [x] Blueprint, MCP, BagIt, and all other third-party licensing obligations are
       satisfied
 - [ ] No unlicensed music, third-party footage, or unsupported trademark use
 - [x] Seven Connected Change screenshots pass final visual QA and hashes are
