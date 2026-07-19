@@ -382,6 +382,7 @@ instruction, targets, and proof identifiers.
 | `7314c58` | Added the thin Codex plugin and repository marketplace around the same MCP server. | Clean-clone install, isolated cache equality, fresh-task discovery/invocation, keyless replay, verification, reconstruction, missing-key behavior, and uninstall passed. |
 | `0dc4776` | Closed C5 and entered feature freeze early. | 16 focused and 811 full tests; installed-plugin task `019f7916-02e0-7910-a5a6-f190cd21ec21`; release materials marked for regeneration. |
 | `20d5627` | Prepared and accepted the Connected Change release candidate. | Exact public HTTPS clone; 818 full and 245 release-matrix tests; wheel, isolated replay, source-free verification, exact reconstruction, final media, claims, and installed-plugin requalification all passed. |
+| `e10b09a` | Corrected explicit named-job discovery and selected the recording-ready product. | Independent exact-public-clone qualification; 822 full and 249 release-matrix tests; installed-wheel replay, verification, reconstruction, and exact-path success/retry/corruption behavior passed. |
 
 ### Current real GPT-5.6 planner evidence
 
@@ -478,7 +479,7 @@ source manifest/config/README byte-for-byte, discovered exactly seven tools,
 and passed keyless replay, verification, reconstruction, missing-key behavior,
 and uninstall. Fresh Codex task `019f7976-0b6d-7461-ad63-c3519052b06b`
 invoked installed `verify_result` successfully. The final seven screenshots,
-PNG/SVG thumbnail, and 346-word narration draft passed independent media,
+PNG/SVG thumbnail, and then-current 346-word C6 narration draft passed independent media,
 metadata, path, secret, and claim review.
 
 The release-media replacement removed seven superseded second-cycle PNGs from
@@ -492,7 +493,52 @@ release replaces them with the visually audited seven-frame Connected Change
 gallery and Sofia→Change File→Martin thumbnail recorded in the submission
 package.
 
-The current repository materials now describe the selected product. Public
-`main` remains the preserved second-cycle fallback until C7 selects and
-fast-forwards the final accepted release. No final video has been published,
-`/feedback` remains user-owned, and the submission hold is active.
+## C7 recording-readiness status — 19 July 2026
+
+The complete 1280×720 Sofia-to-Martin recording rehearsal passed through Home,
+Organize, recorded GPT-5.6 planning, Done, Change File download, Apply,
+receiver-specific matching, independent verification, and reconstruction. The
+origin receipt was
+`8747992945a9ab6fad5d0dfe67158af2ed4fe78f31b023fd00627198faa3b460`;
+the receiver receipt was
+`59fd68c71a006d0ab53b07ff05ec85553cf08beeb2e1cc341bea9498345e8fc4`;
+both results converged to organized-tree commitment
+`a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+The receiver remained `capsule_applied` with zero provider calls, false API use,
+and false external-network use. The 390×844 Done view had no horizontal
+overflow, and Martin's reconstruction matched all 24 source files plus the
+explicit empty directory.
+
+That rehearsal exposed one release-safe but material usability defect: an
+explicit absent `--job` path inherited directory-wide idempotency discovery and
+could treat unrelated sibling JSON in a general directory as a durable job.
+The transaction failed before result mutation, but it violated the exact named-
+path contract. Commit `e10b09a941567d3394c71dbb5dbc3a25c74f1a82`
+separated `exact_path` discovery for browser/CLI from strict managed
+`jobs_directory` discovery for MCP. Permanent tests now cover unrelated valid
+and malformed siblings, byte-identical retry, corrupt and conflicting exact
+jobs, browser origin/receiver completion, and managed-directory strictness.
+
+The corrected local checkout passed 55 focused tests, 822 complete tests, the
+249-test selected-release matrix, lock validation, Ruff lint, Ruff format over
+154 files, and Git whitespace checks. An independent fresh HTTPS clone of exact
+`e10b09a` at
+`/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` reproduced 822/822
+and 249/249 tests. Its 563,894-byte, 205-member wheel has SHA-256
+`ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`.
+An isolated installation ran the keyless replay, verified source-free and
+source-aware with receipt
+`0cd23b418541b7acad90a271ddaa9b9f2d603ac9f6f53c0b5825a438e652a598`,
+reconstructed exactly, and proved the corrected explicit named-job behavior.
+No qualification process remained; no credential was loaded, and no provider
+call or budget mutation occurred.
+
+The final frozen narration draft contains 344 lexical words (341 whitespace-
+delimited tokens). A macOS `say` timing proxy at 130 words per minute lasted
+155.120454 seconds (2:35.120), leaving 19.880 seconds inside the 2:55 storyboard
+target. That proxy is not the user's final recording or exported video.
+
+The accepted product commit was fast-forwarded without rebase or force-push to
+both public `main` and the revision branch. The repository materials now
+describe the selected product. No final video has been published, `/feedback`
+and the user's voice remain user-owned, and the submission hold is active.

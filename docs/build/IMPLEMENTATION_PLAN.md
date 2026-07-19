@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Sole Connected Change Implementation Plan
 
-Status: **EXECUTION ACTIVE; C6 COMPLETE; FEATURE FROZEN; C7 NEXT**
+Status: **EXECUTION ACTIVE; C7 COMPLETE; RECORDING READY; SUBMISSION HOLD ACTIVE**
 
-Phase: **C7_RECORDING_READINESS**
+Phase: **RECORDING_READY**
 
 Submission hold: **ACTIVE**
 
@@ -78,8 +78,9 @@ budget-ledger migration, real GPT-5.6 evidence, exact replays, final receiver
 transaction, and release-bound refusal matrix. C4 completed the required shared
 MCP surface and returned the one-time plugin decision `GO`. C5 completed the
 thin installed Codex plugin from a public clean clone and entered feature freeze
-early. C6 now owns defects, proof integrity, clean-release acceptance, and
-regeneration of the stale release materials; no new feature work remains.
+early. C6 completed defects, proof integrity, clean-release acceptance, and
+regeneration of the stale release materials. C7 selected and published the
+recording-ready product; no new feature or product-design work remains.
 
 ## 2. C+0 activation, timing, and profile decision
 
@@ -937,8 +938,48 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Owner:** primary integrator; user-owned voice and `/feedback` remain
   outstanding.
 - **Allowed cut:** none from selected required scope.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `COMPLETE — RECORDING_READY` on Sunday 19 July 2026 at
+  11:32:05 CEST. Final capture, the user's voice, `/feedback`, personal
+  attestations, hold release, and submission remain outside C7 product
+  completion.
+- **Actual verification:** the complete 1280×720 Sofia/Martin browser rehearsal
+  passed Home, Organize, recorded GPT-5.6 planning, Done, Change File download,
+  Apply, truthful receiver matching, independent verification, and exact
+  receiver reconstruction. Origin receipt
+  `8747992945a9ab6fad5d0dfe67158af2ed4fe78f31b023fd00627198faa3b460`
+  and receiver receipt
+  `59fd68c71a006d0ab53b07ff05ec85553cf08beeb2e1cc341bea9498345e8fc4`
+  converged to organized-tree commitment
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`;
+  Martin remained `capsule_applied` with `0/FALSE/FALSE` provider/API/external-
+  network use. The 390×844 Done view had no horizontal overflow, both verifiers
+  passed, and Martin's 24 files plus explicit empty directory reconstructed
+  byte-for-byte.
+
+  The full rehearsal exposed an exact named-job defect that failed closed before
+  result mutation but could let unrelated sibling JSON block an explicit absent
+  `--job` path. Commit
+  `e10b09a941567d3394c71dbb5dbc3a25c74f1a82` separated browser/CLI
+  `exact_path` discovery from MCP `jobs_directory` discovery. Independent code
+  audit returned `GO`; 55 focused tests, 822 full tests, and the 249-test
+  selected-release matrix passed locally with lock, Ruff lint, Ruff format over
+  154 files, and diff checks. A fresh exact public HTTPS clone at
+  `/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` independently
+  reproduced 822/822 and 249/249. Its 563,894-byte wheel has 205 members and
+  SHA-256
+  `ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`;
+  isolated installed-wheel replay, source-free/source-aware verification,
+  exact reconstruction, unrelated-sibling named-job success/retry, corrupt-job
+  refusal, package contents, MCP/plugin tests, and process cleanup passed.
+
+  The final narration and 2:55 storyboard are frozen in
+  `docs/SUBMISSION_PACKAGE.md`. The draft contains 344 lexical words (341
+  whitespace-delimited tokens); a macOS `say` proxy at 130 words per minute was
+  155.120454 seconds (2:35.120). This is recording-margin evidence, not the
+  user's final voice or video. The accepted product commit was ordinarily
+  fast-forwarded to public `main` and the public revision branch with no rebase
+  or force-push. No product/design work, provider call, video upload, hold
+  release, or submission remains hidden inside C7.
 
 ## 7. One-time plugin predicates
 

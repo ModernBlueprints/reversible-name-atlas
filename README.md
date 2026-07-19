@@ -435,10 +435,10 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
-## Feature-freeze checkpoint evidence
+## Recording-ready product evidence
 
-At public release-candidate checkpoint
-`20d56278d08128de410778b9c5a8f558ce677e29` on
+At selected product commit
+`e10b09a941567d3394c71dbb5dbc3a25c74f1a82`, published on both `main` and
 `revision/ai-first-folder-refactor`:
 
 - the selected profile is `CONNECTED_CHANGE_GO`;
@@ -459,10 +459,11 @@ At public release-candidate checkpoint
 - the thin plugin passed official validation, clean-clone install, fresh-task
   discovery, real `verify_result` invocation from the installed copy, keyless
   replay, reconstruction, missing-live-key behavior, and uninstall;
-- the final **245-test release matrix** and complete **818-test** regression
+- the final **249-test release matrix** and complete **822-test** regression
   suite passed from a fresh public HTTPS clone; lock, Ruff lint, Ruff format
   over 154 files, Git whitespace checks, an isolated installed-wheel replay,
-  source-free verification, and exact reconstruction also passed; and
+  source-free and source-aware verification, exact reconstruction, and the
+  explicit named-job regression also passed; and
 - the cumulative project ledger remained under its USD 10 authority: 9 of 13
   request attempts, USD 9.736060 conservative committed exposure, and USD
   0.605515 reported estimated cost.

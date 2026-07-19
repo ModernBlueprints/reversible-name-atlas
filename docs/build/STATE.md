@@ -1,8 +1,8 @@
 # Reversible Name Atlas — Current Build State
 
-Checkpoint: **Sunday 19 July 2026 at 10:24:03 CEST**
+Checkpoint: **Sunday 19 July 2026 at 11:32:05 CEST**
 
-Phase: **C7_RECORDING_READINESS**
+Phase: **RECORDING_READY**
 
 Submission hold: **ACTIVE**
 
@@ -14,14 +14,14 @@ Submission hold: **ACTIVE**
 - Connected Change C+0: **Saturday 18 July 2026 at 23:31:39 CEST**.
 - Selected profile: **CONNECTED_CHANGE_GO**.
 - Feature freeze: **ACTIVE; entered early Sunday 19 July 2026 at 08:36:26
-  CEST**. The absolute Monday 20 July 2026 at 14:00 CEST boundary was 27 hours,
-  35 minutes, 57 seconds away at this checkpoint.
-- Release-candidate boundary: **Monday 20 July 2026 at 20:00 CEST**; C6 was
-  accepted 33 hours, 35 minutes, 57 seconds before it.
-- Recording-ready boundary: **Tuesday 21 July 2026 at 02:00 CEST**; 39 hours,
-  35 minutes, 57 seconds remained.
-- Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; 63 hours,
-  35 minutes, 57 seconds remained.
+  CEST**. The absolute Monday 20 July 2026 at 14:00 CEST boundary was 26 hours,
+  27 minutes, 55 seconds away at this checkpoint.
+- Release-candidate boundary: **Monday 20 July 2026 at 20:00 CEST**; 32 hours,
+  27 minutes, 55 seconds remained.
+- Recording-ready boundary: **Tuesday 21 July 2026 at 02:00 CEST**; C7 was
+  accepted 38 hours, 27 minutes, 55 seconds before it.
+- Submission deadline: **Wednesday 22 July 2026 at 02:00 CEST**; 62 hours,
+  27 minutes, 55 seconds remained.
 - Submission hold: **ACTIVE**.
 
 ## Repository and milestone checkpoint
@@ -36,15 +36,25 @@ Submission hold: **ACTIVE**
 - Accepted public C6 product candidate:
   `20d56278d08128de410778b9c5a8f558ce677e29`, subject
   `release: prepare connected-change candidate`.
-- C6 completion-checkpoint locator: subject
-  `docs: accept connected-change release candidate` on parent `20d5627`; use
-  fresh Git for its exact SHA after this state is committed.
-- Local `main`, `origin/main`, and local/remote
-  `revision/portable-change-receipt`: **PRESERVED AT `4baec1e`**.
+- C6 completion checkpoint:
+  `0ffa6cd3394e4dc93afc28f45d9b70337cbd59bd`.
+- Selected recording-ready product:
+  `e10b09a941567d3394c71dbb5dbc3a25c74f1a82`, subject
+  `fix: preserve exact explicit job paths`.
+- Recording-ready documentation-checkpoint locator: subject
+  `docs: record recording-ready public release` on parent `e10b09a`; use fresh
+  Git and the handoff for the exact SHA after this state is committed.
+- Local `main` and `origin/main`: **FAST-FORWARDED TO SELECTED PRODUCT
+  `e10b09a`**.
+- Local and remote revision branch: **CONTAINS SELECTED PRODUCT `e10b09a` AND
+  ADVANCES TO THE RECORDING-READY DOCUMENTATION CHECKPOINT IDENTIFIED ABOVE**;
+  fresh Git and the handoff control its exact post-commit SHA.
+- Local/remote `revision/portable-change-receipt`:
+  **PRESERVED AT `4baec1e`**.
 - New implementation branch/worktree, rebase, reset, and force-push:
   **NOT PERFORMED**.
-- Public fast-forward promotion to `main`: **NOT YET PERFORMED; C7 OWNS FINAL
-  RELEASE SELECTION AND PROMOTION**.
+- Public fast-forward promotion to `main`: **COMPLETE FOR SELECTED PRODUCT
+  `e10b09a`; NO REBASE OR FORCE-PUSH**.
 
 This file does not contain its own future commit SHA or claim its own
 post-commit cleanliness. Fresh Git controls current repository facts.
@@ -61,26 +71,27 @@ post-commit cleanliness. Fresh Git controls current repository facts.
 - Codex plugin gate: **GO**.
 - C5 installed plugin and feature freeze: **COMPLETE AND VERIFIED**.
 - C6 release candidate: **COMPLETE AND VERIFIED**.
-- C7 recording readiness: **NEXT; NOT YET ACCEPTED**.
-- Release materials: **REGENERATED FOR CONNECTED_CHANGE_GO; C6 AUDIT PASSED**.
+- C7 recording readiness: **COMPLETE AND VERIFIED**.
+- Release materials: **REGENERATED, REHEARSED, AND C7-ALIGNED**.
 - Current blocker: **NONE**.
 
-## Accepted C6 evidence
+## Accepted C7 recording-ready evidence
 
 - Exact public HTTPS clone:
-  `/tmp/name-atlas-c6-audit.6Oy7Ak/repo` at
-  `20d56278d08128de410778b9c5a8f558ce677e29`, clean and upstream `+0/-0`.
+  `/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` at
+  `e10b09a941567d3394c71dbb5dbc3a25c74f1a82`, clean and remote-aligned.
 - Frozen install: **PASSED with Python 3.11.9**.
-- Complete regression: **818 passed in 71.19 seconds**.
-- Selected-profile release matrix: **245 passed in 53.52 seconds**.
+- Complete regression: **822 passed in 69.58 seconds**.
+- Selected-profile release matrix: **249 passed in 50.24 seconds**.
+- Independent fix audit and permanent focused matrix: **GO; 55 passed**.
 - `uv lock --check`: **PASSED; 48 packages resolved**.
 - Ruff lint: **PASSED**.
 - Ruff format: **PASSED; 154 files already formatted**.
 - Git diff and whitespace checks: **PASSED**.
 - Wheel:
-  `reversible_name_atlas-0.1.0-py3-none-any.whl`, 563,515 bytes, 205 members,
+  `reversible_name_atlas-0.1.0-py3-none-any.whl`, 563,894 bytes, 205 members,
   SHA-256
-  `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b`.
+  `ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`.
 - Wheel inspection: **GO** for console metadata, all required browser assets,
   both exact recordings, 53 fixture files, notices/licenses, ZIP integrity,
   cache exclusion, developer-path exclusion, and secret-pattern exclusion.
@@ -88,34 +99,43 @@ post-commit cleanliness. Fresh Git controls current repository facts.
   exact `northstar.nameatlas-change.json` download, no legacy routes, no API
   key, no provider call.
 - Installed-wheel receipt:
-  `d8419f9baca079d491a4253f6d0738b1def9d8670ab42ba5826714aa7cee1674`;
-  source-free verification and exact 24-file/one-empty-directory reconstruction:
-  **GO**.
+  `0cd23b418541b7acad90a271ddaa9b9f2d603ac9f6f53c0b5825a438e652a598`;
+  source-free/source-aware verification and exact 24-file/one-empty-directory
+  reconstruction: **GO**.
 - Final neutral Sofia source commitment:
   `8afa2f86d2ed2fe5a5b7b935d107351887685310e8c225f3a7d161c20691df69`.
 - Final neutral Martin source commitment:
   `a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`.
-- Final origin receipt:
-  `6b57e3fb62bed7b22b11912fa01e0b363e9e3e8472e57604f45abda5bb4f9ec1`.
-- Final receiver receipt:
-  `15c010e97faf2fa1693abacdddffae86a8374d9bc6184b3a50e2c75a87ee288f`.
-- Final Change File fingerprint:
-  `2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0`;
+- Recording-rehearsal origin receipt:
+  `8747992945a9ab6fad5d0dfe67158af2ed4fe78f31b023fd00627198faa3b460`.
+- Recording-rehearsal receiver receipt:
+  `59fd68c71a006d0ab53b07ff05ec85553cf08beeb2e1cc341bea9498345e8fc4`.
+- Installed-wheel Change File fingerprint:
+  `709702535c56e78611e1681302838d5b3e51853a5f533ee9fc90b0d4481e31a6`;
   raw SHA-256
-  `f06a73153d1531c71b4cade30c8728cc301fba981c417554d4b2ee099a8250b9`.
+  `f1b71509a8b8082748dd01d766e68169d39bc789e586535251373e7bc54a7604`.
 - Common organized-tree commitment:
   `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
 - Both source-aware verifiers: **VERIFIED**. Both source-versus-reconstruction
   trees: **BYTE-EXACT**. Both sources and the Change File: **UNCHANGED**.
 - Receiver provenance: `capsule_applied`, provider calls `0`, API use `false`,
   external-network use `false`.
-- Final release-refusal matrix: **11/11 focused release tests passed**, including
-  payload, Markdown prose, relationship, protected member, symmetric duplicate,
-  Change File fingerprint, and BagIt-valid receipt inconsistency blockers.
+- Final release-refusal matrix: **PASSED**, including payload, Markdown prose,
+  relationship, protected member, symmetric duplicate, Change File fingerprint,
+  and BagIt-valid receipt inconsistency blockers.
+- Explicit named-job correction: unrelated valid/malformed siblings preserved;
+  exact retry byte-identical; exact corrupt/conflicting jobs block unchanged;
+  managed MCP job directories remain strict.
+- Full browser rehearsal: **1280×720 PASS**. Narrow Done view:
+  **390×844 PASS WITH NO HORIZONTAL OVERFLOW**.
+- Final narration: **344 lexical words / 341 whitespace tokens**; macOS `say`
+  timing proxy at 130 words/minute: **155.120454 seconds (2:35.120)**. User
+  recording and exported-video timing remain pending.
 - Final seven screenshots and PNG/SVG thumbnail: **MEDIA, METADATA, PATH,
   SECRET, AND CLAIM AUDIT GO**; exact hashes are in
   `docs/SUBMISSION_PACKAGE.md`.
-- Release-copy audit: **GO after all material findings were corrected**.
+- Release-copy and C7 evidence audit: **GO after all material findings were
+  corrected**.
 
 ## Final installed-plugin requalification
 
@@ -144,32 +164,33 @@ post-commit cleanliness. Fresh Git controls current repository facts.
   committed exposure; USD 0.605515 reported estimated cost; USD 10 cap**.
 - Further provider calls: **NOT REQUIRED OR PLANNED**.
 - Browser and MCP qualification processes: **STOPPED**.
-- Public promotion, final capture, voice recording, YouTube upload, `/feedback`,
-  hold release, and Devpost submission: **NOT PERFORMED**.
+- Public product promotion: **PERFORMED BY ORDINARY FAST-FORWARD**.
+- Final capture, voice recording, YouTube upload, `/feedback`, hold release, and
+  Devpost submission: **NOT PERFORMED**.
 
 ## Compact recovery capsule
 
-- Phase: `C7_RECORDING_READINESS`.
-- Branch/A3/C6 candidate: `revision/ai-first-folder-refactor` / `e3803d2` /
-  `20d5627`.
+- Phase: `RECORDING_READY`.
+- Branch/A3/selected product: `revision/ai-first-folder-refactor` / `e3803d2` /
+  `e10b09a`.
 - Active profile: `CONNECTED_CHANGE_GO`.
-- Current milestone: `C6 COMPLETE; C7 NEXT`.
-- Latest checks: `818 full; 245 release matrix; 16 plugin/MCP; clean HTTPS
-  clone; wheel; isolated replay/verify/restore; final Sofia/Martin proof;
-  installed-plugin Codex invocation; visual/media/claims audit`.
+- Current milestone: `C7 COMPLETE; RECORDING_READY`.
+- Latest checks: `822 full; 249 release matrix; clean HTTPS clone; audited
+  wheel; installed replay/verify/restore; explicit-job correction; full
+  Sofia/Martin browser rehearsal; plugin evidence; visual/media/claims audit`.
 - Change File/matcher/job/provenance: `COMPLETE AND VERIFIED`.
 - Receipt/verifier/reconstruction: `COMPLETE AND VERIFIED`.
 - Browser/native picker: `COMPLETE AND VERIFIED`.
 - GPT live/replay: `TWO NEW LIVE TRANSACTIONS AND TWO EXACT REPLAYS COMPLETE`.
 - MCP/plugin: `COMPLETE AND VERIFIED`.
-- Feature freeze/release materials: `ACTIVE / REGENERATED AND C6-AUDITED`.
+- Feature freeze/release materials: `ACTIVE / REGENERATED AND C7-ALIGNED`.
 - Submission hold: `ACTIVE`.
 - Blockers: `NONE`.
-- Next operation: commit and push the C6 checkpoint, qualify that exact public
-  commit, perform the full 1280×720 recording rehearsal and final narrow check,
-  select the release commit, fast-forward the accepted release to `main`, and
-  enter `RECORDING_READY` with the hold active.
+- Next operation: user records the frozen English narration and final under-
+  three-minute capture, then Codex verifies the exported/public video, updates
+  the Devpost draft, and waits for `/feedback`, personal attestations, and
+  explicit submission-hold release before final submission.
 
 ## Exact next operation
 
-`Commit and push the C6 checkpoint, then execute the C7 exact-public-commit rehearsal, release selection, and recording-readiness proof without releasing the submission hold.`
+`Record the user's frozen narration and final under-three-minute demonstration; then verify public playback, complete /feedback and user attestations, and keep final Devpost submission held until the user explicitly releases it.`

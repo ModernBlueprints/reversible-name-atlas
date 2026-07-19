@@ -1,22 +1,22 @@
 # Reversible Name Atlas — Build Week submission package
 
-Status: **C6 RELEASE CANDIDATE ACCEPTED — FEATURE-FROZEN
-`CONNECTED_CHANGE_GO`; C7 RECORDING READINESS IN PROGRESS; NOT SUBMITTED**
+Status: **C7 RECORDING READY — FEATURE-FROZEN `CONNECTED_CHANGE_GO`; FINAL
+VIDEO, `/feedback`, USER ATTESTATIONS, HOLD RELEASE, AND SUBMISSION PENDING**
 
 Submission hold: **ACTIVE — FINAL DEVPOST SUBMISSION IS PROHIBITED UNTIL THE
 USER EXPLICITLY RELEASES THE HOLD**
 
-This package records the accepted C6 judge path, Devpost draft, media plan,
+This package records the accepted C7 judge path, Devpost draft, media plan,
 claim audit, and due-diligence evidence. It is not product authority. Product
 truth remains in
 [`build/BUILD_SPEC.md`](build/BUILD_SPEC.md); execution evidence and status
 remain in [`build/IMPLEMENTATION_PLAN.md`](build/IMPLEMENTATION_PLAN.md) and
 [`build/STATE.md`](build/STATE.md).
 
-The C6 candidate SHA, wheel digest, media digests, receipt identities, and test
-counts below were independently reproduced from an exact public HTTPS clone.
-The C7 selected release SHA, final public video URL, `/feedback` ID, personal
-attestations, hold release, and submission confirmation remain pending.
+The selected C7 product SHA, wheel digest, media digests, receipt identities,
+and test counts below were independently reproduced from an exact public HTTPS
+clone. The final public video URL, `/feedback` ID, personal attestations, hold
+release, and submission confirmation remain pending.
 
 ## Official requirement snapshot
 
@@ -51,7 +51,7 @@ applicable, and every other personal or legal attestation.
 
 ## Submission identity and pending fields
 
-| Field | Accepted C6 value or remaining status |
+| Field | Accepted C7 value or remaining status |
 |---|---|
 | Project | **Reversible Name Atlas** |
 | Primary tagline | **Describe the change once. Apply it wherever the same project exists.** |
@@ -59,13 +59,14 @@ applicable, and every other personal or legal attestation.
 | Track | **Work & Productivity** |
 | Category | **AI refactoring for connected project folders** |
 | One-line summary | GPT-5.6 plans a connected-folder reorganization once; Name Atlas can then apply and verify the same change on a differently arranged equivalent copy without another GPT call or transfer of project payload bytes. |
-| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — public revision branch verified at the exact C6 candidate; final `main` promotion remains C7 work |
+| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — selected product fast-forwarded to public `main` and the revision branch |
 | License | MIT; third-party notices and packaged licenses must pass final clean-clone inspection |
 | Selected product profile | `CONNECTED_CHANGE_GO` |
 | C5 feature-freeze checkpoint | `0dc4776495cd708278d835c8394dcd9529be981e` — baseline evidence only |
 | C6 release-candidate SHA | `20d56278d08128de410778b9c5a8f558ce677e29` |
 | C6 wheel | 563,515 bytes; SHA-256 `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b` |
-| C7 recording-ready SHA | `[PENDING C7 ACCEPTANCE]` |
+| C7 recording-ready product SHA | `e10b09a941567d3394c71dbb5dbc3a25c74f1a82` |
+| C7 wheel | 563,894 bytes; SHA-256 `ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7` |
 | Accepted C6 origin receipt | `6b57e3fb62bed7b22b11912fa01e0b363e9e3e8472e57604f45abda5bb4f9ec1` |
 | Accepted C6 receiver receipt | `15c010e97faf2fa1693abacdddffae86a8374d9bc6184b3a50e2c75a87ee288f` |
 | Accepted C6 Change File fingerprint | `2edbbe336a9f665933c3324045c3da2be967aac668e337b0ad23a71ea56f30f0` |
@@ -379,7 +380,7 @@ a bare command is equivalent only when `codex plugin --help` succeeds.
 - `uv run ruff format --check .`
 - `git diff --check`
 
-Final C6 acceptance must run these commands from an unrelated clean clone and
+Final release acceptance must run these commands from an unrelated clean clone and
 must also inspect the built wheel, package assets, secrets, absolute paths,
 browser viewports, Change File transaction, refusal matrix, MCP, and installed
 plugin.
@@ -467,7 +468,7 @@ This is a qualitative, evidence-backed account. It is not a percentage speedup,
 measured productivity claim, or claim that Codex independently chose the
 product direction.
 
-## Current C5 evidence — baseline only
+## Accepted C6 evidence — C7 qualification baseline
 
 The following evidence was reproduced and accepted from exact public candidate
 `20d56278d08128de410778b9c5a8f558ce677e29` during C6:
@@ -500,8 +501,36 @@ The following evidence was reproduced and accepted from exact public candidate
 - wheel SHA-256 is
   `6c976d8e8546d859d8d778c6aa2a9fe65d1c358799128ffc1954433166cbda0b`.
 
-These numbers and fingerprints are accepted C6 evidence. C7 must bind the final
-public release commit and rehearsal without changing the feature-frozen product.
+These numbers and fingerprints remain accepted C6 baseline evidence.
+
+## Accepted C7 recording-readiness evidence
+
+Selected product commit
+`e10b09a941567d3394c71dbb5dbc3a25c74f1a82` is published on public `main`
+and `revision/ai-first-folder-refactor`. A fresh unrelated HTTPS clone at
+`/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` independently
+passed **822 complete tests**, the updated **249-test selected-release matrix**,
+`uv lock --check`, Ruff lint, Ruff format over 154 files, and Git integrity/
+whitespace checks. Its audited 563,894-byte wheel has SHA-256
+`ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`.
+An isolated installed-wheel run completed the keyless recorded journey,
+source-free and source-aware verification, and byte-exact reconstruction with
+receipt `0cd23b418541b7acad90a271ddaa9b9f2d603ac9f6f53c0b5825a438e652a598`.
+
+The final 1280×720 Sofia/Martin rehearsal passed both browser journeys,
+receiver-specific proof, and reconstruction; the 390×844 Done view had no
+horizontal overflow. The rehearsal also exposed and closed one fail-safe exact
+named-job defect. Browser/CLI now inspect only the requested explicit job path,
+while MCP retains strict discovery in its managed job directory. Unrelated valid
+and malformed JSON siblings remain unchanged; identical retry returns the same
+job/result; corrupt and conflicting exact jobs block unchanged. The permanent
+55-test focused matrix, full suite, selected-release matrix, and independent
+installed-wheel exercise all prove the correction.
+
+The 2:55 storyboard, shot list, and 344-lexical-word narration are frozen below.
+A macOS `say` proxy at 130 words per minute ran for 155.120454 seconds
+(2:35.120). The user's actual voice, final exported duration, and public
+playback remain required; the proxy is not substituted for them.
 
 ## Devpost description draft
 
@@ -608,7 +637,7 @@ hardening are not part of this release.
 | Project name | `Reversible Name Atlas` |
 | Tagline | `Describe the change once. Apply it wherever the same project exists.` |
 | Category | `Work & Productivity` |
-| Repository | `https://github.com/ModernBlueprints/reversible-name-atlas` — confirm final public HEAD after C7 |
+| Repository | `https://github.com/ModernBlueprints/reversible-name-atlas` — selected product is on public `main` |
 | Technologies | `Codex, GPT-5.6, OpenAI Responses API, Python 3.11, FastAPI, Jinja2, Pydantic v2, MCP Python SDK, Codex Plugin, Blueprint, BagIt, uv, pytest, Ruff, CSS, GitHub` |
 | Testing instructions | `On macOS with Python 3.11 and uv: run uv sync --frozen, then uv run name-atlas demo --mode replay and open http://127.0.0.1:8000. The bundled Sofia/Martin transaction and recorded GPT-5.6 planning run require no API key. The README also documents direct Change File, verifier, reconstruction, MCP, and Codex-plugin paths.` |
 | Supported platform | `Local browser/CLI/MCP on tested macOS; manual path fields support judge automation. No native Windows test claim.` |
@@ -616,7 +645,7 @@ hardening are not part of this release.
 | `/feedback` Session ID | `[USER ACTION REQUIRED]` |
 | Submitter type | `[USER CONFIRM: Individual / Team of Individuals / Organization]` |
 | Country | `[USER CONFIRM; DO NOT INFER]` |
-| Selected release SHA | `[PENDING C7]` |
+| Selected product SHA | `e10b09a941567d3394c71dbb5dbc3a25c74f1a82` |
 | Submission hold | `ACTIVE — FINAL SUBMIT PROHIBITED UNTIL EXPLICIT USER RELEASE` |
 
 ## Three-minute demonstration storyboard
@@ -634,15 +663,21 @@ meet the limit.
 | 1:10–1:25 | Origin Done: 24 files, 23 links, source unchanged, verification passed | Sofia receives a separate verified result. |
 | 1:25–1:45 | Download `northstar.nameatlas-change.json`; show the plain disclosure | The transferable file contains proof metadata, not project payload bytes. |
 | 1:45–2:05 | Home → **Apply a shared change**; select Change File and Martin's differently arranged folder | Martin applies the same change without GPT, key, or external request. |
-| 2:05–2:22 | Receiver Working → Done; show matching, verification, and equal organized-tree identity | Different starting paths converge without guessing. |
-| 2:22–2:40 | **Verify again**, **Recreate original layout**, then one refusal or proof detail | Proof is independent; Martin can recreate his own original and ambiguity blocks. |
-| 2:40–2:55 | Codex plugin tool result, test/commit overlay, repository end card | Specific Codex, GPT-5.6, MCP, and implementation contribution. |
+| 2:05–2:20 | Receiver Working → Done; show matching, verification, and equal organized-tree identity | Different starting paths converge without guessing. |
+| 2:20–2:32 | **Verify again**, **Recreate original layout**, then one refusal or proof detail | Proof is independent; Martin can recreate his own original and ambiguity blocks. |
+| 2:32–2:55 | Codex plugin tool result, test/commit overlay, repository end card | Specific Codex, GPT-5.6, MCP, and implementation contribution. |
 
 ## Timed plain-English voice-over draft
 
 Target spoken duration: **approximately 2:35–2:50** with natural pauses. The
 actual recording and exported video must be timed; word-count estimates are not
 acceptance evidence.
+
+The frozen draft below contains **344 lexical words** under the punctuation-aware
+release counter (**341 whitespace-delimited tokens**). A macOS `say` timing
+proxy at 130 words per minute produced **155.120454 seconds (2:35.120)**. That is
+recording-margin evidence only; it is not the user's final narration, audio
+approval, or exported video duration.
 
 > A project folder is more than filenames. Notes connect reports, research,
 > meetings, and working files. A teammate may hold the same project under
@@ -685,10 +720,10 @@ acceptance evidence.
 > tree as Sofia's. He can recreate his own original paths and bytes without
 > changing either source or result.
 >
-> Codex with GPT-5.6 was the primary development environment. One main task
-> integrated the planner, matcher, browser, receipts, verifier, reconstruction,
-> MCP server, and installed plugin, turning adversarial findings into tests.
-> GPT-5.6 plans once; deterministic execution and proof travel everywhere.
+> Codex was the primary development environment. One task integrated the
+> planner, matcher, browser, proof, MCP server, and installed plugin, turning
+> review findings into tests. GPT-5.6 plans once; Name Atlas executes and
+> verifies everywhere.
 >
 > Reversible Name Atlas. Describe the change once. Apply it wherever the same
 > project exists.
@@ -699,7 +734,7 @@ acceptance evidence.
 - Final recorded duration: `[PENDING; EXPORTED VIDEO MUST BE UNDER 3:00]`
 - Audio intelligibility: `[PENDING]`
 - Every drafted spoken claim checked against the selected release:
-  `[C6 CLAIM AUDIT PASSED; FINAL RECORDED DELIVERY PENDING]`
+  `[C7 CLAIM AUDIT PASSED; FINAL RECORDED DELIVERY PENDING]`
 - User approval of final audio: `[PENDING]`
 
 ## Capture shot list
@@ -831,22 +866,22 @@ Important supported-scope boundaries:
 
 ## Claim-to-evidence audit
 
-| Public claim | Required evidence | C6 accepted status |
+| Public claim | Required evidence | C7 accepted status |
 |---|---|---|
-| GPT-5.6 plans the origin change | New real zero-question transcript, exact alias/returned model, observable tools, accepted plan, replay binding | `C6 VERIFIED; LIVE RECORD AND EXACT KEYLESS REPLAY PASS` |
-| One essential clarification works | Real one-question transcript, one answer, accepted plan, replay, no second question | `C6 VERIFIED; EXACT ONE-QUESTION REPLAY PASS` |
-| Every in-scope file is present once | Inventory/accepted-plan/result bijection and source equality | `C6 VERIFIED; 24/24 PLUS ONE EMPTY DIRECTORY` |
-| Supported links survive | Exact-span proof, same logical target IDs, final staged bytes | `C6 VERIFIED FOR 23 HERO LINKS` |
-| Change File transfers no project payload bytes | Strict schema/content audit and raw file inspection | `C6 VERIFIED; METADATA DISCLOSURE RETAINED` |
-| Receiver uses no GPT/API/budget/external network | `capsule_applied` provenance, zero counts, unchanged budget, dependency isolation | `C6 VERIFIED; 0/FALSE/FALSE AND BUDGET BYTE-IDENTICAL` |
-| Differently arranged copies converge | Different source commitments and identical organized-tree commitment | `C6 VERIFIED; COMMON TREE a11ab49b...` |
-| Changed or ambiguous copies block | Complete payload/Markdown/relationship/protected/duplicate/fingerprint refusal matrix | `C6 VERIFIED; RELEASE MATRIX PASS` |
-| Result verifies without source or key | Unrelated-location source-free verifier, no writes, exact receipt | `C6 VERIFIED FROM ISOLATED INSTALLED WHEEL` |
-| Each receiver recreates its own original | Verify-first no-replace reconstruction and exact receiver snapshot equality | `C6 VERIFIED BYTE-FOR-BYTE` |
-| Shared MCP is the same product engine | Seven-tool direct run, consent/idempotency, durable polling, no duplicated core | `C6 VERIFIED FROM PUBLIC CLONE` |
-| Codex plugin is installed and usable | Public clean clone, install, refresh/new task, discovery, installed-copy invocation, uninstall | `C6 VERIFIED; TASK 019f7976-0b6d-7461-ad63-c3519052b06b` |
-| Complete regression passes | Fresh final suite, lock, lint, format, build, wheel, paths/secrets, Git | `C6 VERIFIED; 818 FULL + 245 RELEASE MATRIX` |
-| Public release is judge-ready | Selected SHA, public alignment, clean HTTPS clone, exact commands and media | `C6 CANDIDATE VERIFIED; C7 FINAL MAIN PROMOTION PENDING` |
+| GPT-5.6 plans the origin change | New real zero-question transcript, exact alias/returned model, observable tools, accepted plan, replay binding | `C7 VERIFIED; LIVE RECORD AND EXACT KEYLESS REPLAY PASS` |
+| One essential clarification works | Real one-question transcript, one answer, accepted plan, replay, no second question | `C7 VERIFIED; EXACT ONE-QUESTION REPLAY PASS` |
+| Every in-scope file is present once | Inventory/accepted-plan/result bijection and source equality | `C7 VERIFIED; 24/24 PLUS ONE EMPTY DIRECTORY` |
+| Supported links survive | Exact-span proof, same logical target IDs, final staged bytes | `C7 VERIFIED FOR 23 HERO LINKS` |
+| Change File transfers no project payload bytes | Strict schema/content audit and raw file inspection | `C7 VERIFIED; METADATA DISCLOSURE RETAINED` |
+| Receiver uses no GPT/API/budget/external network | `capsule_applied` provenance, zero counts, unchanged budget, dependency isolation | `C7 VERIFIED; 0/FALSE/FALSE AND BUDGET BYTE-IDENTICAL` |
+| Differently arranged copies converge | Different source commitments and identical organized-tree commitment | `C7 VERIFIED; COMMON TREE a11ab49b...` |
+| Changed or ambiguous copies block | Complete payload/Markdown/relationship/protected/duplicate/fingerprint refusal matrix | `C7 VERIFIED; RELEASE MATRIX PASS` |
+| Result verifies without source or key | Unrelated-location source-free verifier, no writes, exact receipt | `C7 VERIFIED FROM ISOLATED INSTALLED WHEEL` |
+| Each receiver recreates its own original | Verify-first no-replace reconstruction and exact receiver snapshot equality | `C7 VERIFIED BYTE-FOR-BYTE` |
+| Shared MCP is the same product engine | Seven-tool direct run, consent/idempotency, durable polling, no duplicated core | `C7 VERIFIED FROM PUBLIC CLONE` |
+| Codex plugin is installed and usable | Public clean clone, install, refresh/new task, discovery, installed-copy invocation, uninstall | `C7 VERIFIED; TASK 019f7976-0b6d-7461-ad63-c3519052b06b` |
+| Complete regression passes | Fresh final suite, lock, lint, format, build, wheel, paths/secrets, Git | `C7 VERIFIED; 822 FULL + 249 RELEASE MATRIX` |
+| Public release is judge-ready | Selected SHA, public alignment, clean HTTPS clone, exact commands and media | `C7 VERIFIED; SELECTED PRODUCT ON PUBLIC MAIN` |
 | Video and submission are complete | Public playback, `/feedback`, attestations, hold release, Devpost confirmation | `USER ACTIONS AND FINAL CLOSURE PENDING` |
 
 ## Due-diligence checklist
@@ -857,6 +892,13 @@ Important supported-scope boundaries:
 - [x] C5 shared MCP and admitted plugin acceptance preserved
 - [x] C6 release-candidate SHA selected
 - [x] C6 public revision branch alignment verified
+- [x] C7 recording-ready product SHA selected and fast-forwarded to public
+      `main`
+- [x] C7 exact public HTTPS clone passed 822 full and 249 selected-release tests
+- [x] C7 explicit named-job defect corrected, independently audited, and
+      exercised through the installed wheel
+- [x] Full 1280×720 Sofia/Martin rehearsal and 390×844 narrow check pass
+- [x] Final 2:55 storyboard, shot list, and narration timing proxy recorded
 - [x] Exact public HTTPS clone checked from an unrelated path
 - [x] `uv sync --frozen` passes in that clone
 - [x] Final keyless Sofia origin replay passes
@@ -920,7 +962,8 @@ Important supported-scope boundaries:
 ## Final stop rule
 
 Creating, editing, committing, pushing, publishing, rehearsing, or uploading
-this C6 draft does not authorize final submission and does not release the hold.
+this release package does not authorize final submission and does not release
+the hold.
 
 If every independently actionable product, release, media, due-diligence,
 `/feedback`, and Devpost-draft requirement is complete while the hold remains
