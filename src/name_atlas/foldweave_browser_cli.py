@@ -14,6 +14,7 @@ import uvicorn
 
 from name_atlas.config import DEFAULT_PORT, LOOPBACK_HOST
 from name_atlas.folder_app import create_folder_app
+from name_atlas.foldweave_job_locator import FoldweaveJobLocator
 from name_atlas.foldweave_paths import (
     foldweave_paths,
     resolve_foldweave_budget_authority,
@@ -81,6 +82,11 @@ def build_foldweave_app_parser() -> argparse.ArgumentParser:
         help="Optional exact durable v3 job JSON file.",
     )
     parser.add_argument(
+        "--job-id",
+        default=None,
+        help="Resume the exact v3 job with this embedded durable ID.",
+    )
+    parser.add_argument(
         "--port",
         type=int,
         default=DEFAULT_PORT,
@@ -99,6 +105,7 @@ def run_foldweave_app(argv: Sequence[str] | None = None) -> int:
         source=args.source,
         output=args.output,
         job=args.job,
+        job_id=args.job_id,
         port=args.port,
     )
 
@@ -110,6 +117,7 @@ def _run_foldweave_browser(
     source: Path | None,
     output: Path | None,
     job: Path | None,
+    job_id: str | None,
     port: int,
     environ: Mapping[str, str] | None = None,
 ) -> int:
@@ -130,7 +138,15 @@ def _run_foldweave_browser(
         return 2
 
     try:
-        job_path = resolve_foldweave_job_path(job, environ=environ)
+        if job is not None and job_id is not None:
+            raise ValueError("Select either --job or --job-id, not both.")
+        job_path = (
+            FoldweaveJobLocator(foldweave_paths(environ=environ).jobs)
+            .resolve(job_id)
+            .path
+            if job_id is not None
+            else resolve_foldweave_job_path(job, environ=environ)
+        )
         initial_source: Path | None = None
         initial_output_parent: Path | None = None
         if not os.path.lexists(job_path):

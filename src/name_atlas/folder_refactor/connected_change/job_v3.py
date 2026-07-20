@@ -76,6 +76,8 @@ FOLDER_REFACTOR_JOB_V3_SCHEMA_VERSION = "folder-refactor-job.v3"
 FOLDER_EXECUTION_AUTHORIZATION_SCHEMA_VERSION = "folder-execution-authorization.v1"
 FOLDER_KEEP_PREVIOUS_ACTION_SCHEMA_VERSION = "folder-keep-previous-action.v1"
 FOLDER_HOST_MUTATION_BINDING_SCHEMA_VERSION = "folder-host-mutation-binding.v1"
+FOLDER_REVISION_MUTATION_BINDING_SCHEMA_VERSION = "folder-revision-mutation-binding.v1"
+FOLDER_DESTINATION_RESERVATION_SCHEMA_VERSION = "folder-destination-reservation.v1"
 DEFAULT_V3_JOB_DIRECTORY = Path(".foldweave/jobs")
 oslo_tz = ZoneInfo("Europe/Oslo")
 
@@ -336,6 +338,112 @@ class FolderHostMutationBindingV1(StrictFrozenModel):
         return self
 
 
+class FolderRevisionMutationBindingV1(StrictFrozenModel):
+    """Append-only terminal outcome for one exact direct revision request."""
+
+    schema_version: Literal["folder-revision-mutation-binding.v1"] = (
+        FOLDER_REVISION_MUTATION_BINDING_SCHEMA_VERSION
+    )
+    job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    base_job_revision: int = Field(ge=0)
+    base_proposal_revision: int = Field(ge=0, le=2)
+    base_candidate_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    base_preview_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    revision_instruction_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    idempotency_key_sha256: str = Field(pattern=SHA256_PATTERN)
+    model_transport: Literal[
+        "responses_api",
+        "recorded_replay",
+        "deterministic_development",
+    ]
+    request_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    terminal_outcome: Literal[
+        "proposal_replaced",
+        "provider_failed",
+        "mechanically_rejected",
+    ]
+    terminal_job_revision: int = Field(ge=1)
+    resulting_proposal_revision: int = Field(ge=0, le=2)
+    binding_fingerprint: str = Field(pattern=SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_exact_fingerprints(self) -> Self:
+        if self.terminal_job_revision != self.base_job_revision + 2:
+            raise ValueError(
+                "Direct revision binding must end two durable transitions "
+                "after its base."
+            )
+        expected_proposal_revision = (
+            self.base_proposal_revision + 1
+            if self.terminal_outcome == "proposal_replaced"
+            else self.base_proposal_revision
+        )
+        if self.resulting_proposal_revision != expected_proposal_revision:
+            raise ValueError(
+                "Direct revision outcome has an invalid proposal revision."
+            )
+        request_payload = {
+            "domain": "foldweave:direct-revision-mutation-request:v1",
+            "job_id": self.job_id,
+            "base_job_revision": self.base_job_revision,
+            "base_proposal_revision": self.base_proposal_revision,
+            "base_candidate_fingerprint": self.base_candidate_fingerprint,
+            "base_preview_fingerprint": self.base_preview_fingerprint,
+            "revision_instruction_fingerprint": (self.revision_instruction_fingerprint),
+            "model_transport": self.model_transport,
+        }
+        if self.request_fingerprint != canonical_sha256(request_payload):
+            raise ValueError("Direct revision request fingerprint is invalid.")
+        expected = canonical_sha256(
+            self.model_dump(mode="json", exclude={"binding_fingerprint"})
+        )
+        if self.binding_fingerprint != expected:
+            raise ValueError("Direct revision mutation binding is invalid.")
+        return self
+
+
+class FolderDestinationReservationV1(StrictFrozenModel):
+    """One canonical result destination won before copy execution begins."""
+
+    schema_version: Literal["folder-destination-reservation.v1"] = (
+        FOLDER_DESTINATION_RESERVATION_SCHEMA_VERSION
+    )
+    job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    authorized_job_revision: int = Field(ge=0)
+    proposal_revision: int = Field(ge=0, le=2)
+    candidate_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    preview_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    output_parent: Path
+    result_folder_name: str = Field(min_length=1, max_length=240)
+    final_result_path: Path
+    reservation_fingerprint: str = Field(pattern=SHA256_PATTERN)
+
+    @field_validator("output_parent", "final_result_path")
+    @classmethod
+    def require_canonical_absolute_path(cls, value: Path) -> Path:
+        if not value.is_absolute() or value.resolve(strict=False) != value:
+            raise ValueError(
+                "Destination reservation paths must be canonical absolute paths."
+            )
+        return value
+
+    @model_validator(mode="after")
+    def require_exact_destination(self) -> Self:
+        if (
+            Path(self.result_folder_name).name != self.result_folder_name
+            or self.result_folder_name in {".", ".."}
+            or self.final_result_path
+            != (self.output_parent / self.result_folder_name).resolve(strict=False)
+        ):
+            raise ValueError("Destination reservation names another result path.")
+        expected = canonical_sha256(
+            self.model_dump(mode="json", exclude={"reservation_fingerprint"})
+        )
+        if self.reservation_fingerprint != expected:
+            raise ValueError("Destination reservation fingerprint is invalid.")
+        return self
+
+
 class FolderJobStalenessV3(StrictFrozenModel):
     """Terminal observed evidence that an execution input changed."""
 
@@ -557,6 +665,10 @@ class FolderRefactorJobV3(StrictFrozenModel):
         default=(),
         max_length=2,
     )
+    revision_mutation_bindings: tuple[FolderRevisionMutationBindingV1, ...] = Field(
+        default=(),
+        max_length=2,
+    )
     immediate_parent_job_id: str | None = Field(
         default=None,
         pattern=r"^[a-f0-9]{32}$",
@@ -566,6 +678,7 @@ class FolderRefactorJobV3(StrictFrozenModel):
         pattern=SHA256_PATTERN,
     )
     execution_authorization: FolderExecutionAuthorizationV1 | None = None
+    destination_reservation: FolderDestinationReservationV1 | None = None
     pending_result_path: Path | None = None
     final_result_path: Path | None = None
     verified_artifacts: FolderJobVerifiedArtifactsV3 | None = None
@@ -851,6 +964,58 @@ class FolderRefactorJobV3(StrictFrozenModel):
             binding.job_id != self.job_id for binding in self.host_mutation_bindings
         ):
             raise ValueError("Hosted mutation binding targets another job.")
+        revision_mutation_keys = tuple(
+            binding.idempotency_key_sha256
+            for binding in self.revision_mutation_bindings
+        )
+        if len(revision_mutation_keys) != len(set(revision_mutation_keys)):
+            raise ValueError("Direct revision mutation keys must be unique.")
+        if self.revision_mutation_bindings and not isinstance(
+            self.authority, GptPlannedJobAuthorityV3
+        ):
+            raise ValueError(
+                "Direct revision bindings require direct planning authority."
+            )
+        if any(
+            binding.job_id != self.job_id for binding in self.revision_mutation_bindings
+        ):
+            raise ValueError("Direct revision mutation binding targets another job.")
+        terminal_revisions = tuple(
+            binding.terminal_job_revision for binding in self.revision_mutation_bindings
+        )
+        if terminal_revisions != tuple(sorted(set(terminal_revisions))):
+            raise ValueError(
+                "Direct revision mutation bindings must be terminal-revision ordered."
+            )
+        if self.destination_reservation is not None:
+            reservation = self.destination_reservation
+            historical_without_authorization = (
+                self.lifecycle
+                in {FolderJobLifecycleV3.STALE, FolderJobLifecycleV3.BLOCKED}
+                and self.execution_authorization is None
+            )
+            if (
+                reservation.job_id != self.job_id
+                or reservation.proposal_revision != self.proposal_revision
+                or self.preview is None
+                or reservation.candidate_fingerprint
+                != self.preview.compiled_candidate_fingerprint
+                or reservation.preview_fingerprint != self.preview.preview_fingerprint
+                or reservation.output_parent != self.output_parent
+                or self.candidate_plan is None
+                or reservation.result_folder_name
+                != self.candidate_plan.result_folder_name
+                or reservation.final_result_path != expected_final_result_path_v3(self)
+                or (
+                    not historical_without_authorization
+                    and (
+                        self.execution_authorization is None
+                        or reservation.authorized_job_revision
+                        != self.execution_authorization.expected_job_revision
+                    )
+                )
+            ):
+                raise ValueError("Destination reservation targets another preview.")
         blocker = self.blocker_code is not None or self.blocker_message is not None
         if self.lifecycle is FolderJobLifecycleV3.BLOCKED:
             if self.blocker_code is None or self.blocker_message is None:
@@ -1263,8 +1428,8 @@ class FolderRefactorJobV3Writer:
             raise FolderJobV3RevisionError("Successor must be the next revision.")
         _require_immutable_identity(current, successor)
         _require_lifecycle_transition(current.lifecycle, successor.lifecycle)
-        _require_append_only_action_history(current, successor)
         _require_transition_payload(current, successor)
+        _require_append_only_action_history(current, successor)
         promoted_execution = (
             current.lifecycle is FolderJobLifecycleV3.EXECUTING
             and current.final_result_path is not None
@@ -1361,6 +1526,107 @@ def build_revision_instruction(
         **payload,
         instruction_fingerprint=canonical_sha256(
             {"domain": "foldweave:revision-instruction:v1", **payload}
+        ),
+    )
+
+
+def build_revision_mutation_binding(
+    *,
+    job: FolderRefactorJobV3,
+    terminal_outcome: Literal[
+        "proposal_replaced",
+        "provider_failed",
+        "mechanically_rejected",
+    ],
+    terminal_job_revision: int,
+    resulting_proposal_revision: int,
+) -> FolderRevisionMutationBindingV1:
+    """Finalize one exact direct revision retry binding append-only."""
+
+    if not isinstance(job.authority, GptPlannedJobAuthorityV3):
+        raise FolderJobV3RevisionError(
+            "Direct revision mutation binding requires direct planning authority."
+        )
+    pending = job.authority.pending_revision_turn
+    instruction = job.revision_instruction
+    ledger = job.authority.evidence_ledger
+    if pending is None or instruction is None or ledger is None:
+        raise FolderJobV3RevisionError(
+            "Direct revision mutation binding lacks its reserved provider turn."
+        )
+    values = {
+        "job_id": job.job_id,
+        "base_job_revision": pending.expected_job_revision,
+        "base_proposal_revision": pending.proposal_revision,
+        "base_candidate_fingerprint": pending.base_candidate_fingerprint,
+        "base_preview_fingerprint": pending.base_preview_fingerprint,
+        "revision_instruction_fingerprint": instruction.instruction_fingerprint,
+        "idempotency_key_sha256": instruction.idempotency_key_sha256,
+        "model_transport": ledger.model_transport,
+        "terminal_outcome": terminal_outcome,
+        "terminal_job_revision": terminal_job_revision,
+        "resulting_proposal_revision": resulting_proposal_revision,
+    }
+    request_payload = {
+        "domain": "foldweave:direct-revision-mutation-request:v1",
+        **{
+            key: values[key]
+            for key in (
+                "job_id",
+                "base_job_revision",
+                "base_proposal_revision",
+                "base_candidate_fingerprint",
+                "base_preview_fingerprint",
+                "revision_instruction_fingerprint",
+                "model_transport",
+            )
+        },
+    }
+    values["request_fingerprint"] = canonical_sha256(request_payload)
+    draft = FolderRevisionMutationBindingV1.model_construct(
+        **values,
+        binding_fingerprint="0" * 64,
+    )
+    return FolderRevisionMutationBindingV1(
+        **values,
+        binding_fingerprint=canonical_sha256(
+            draft.model_dump(mode="json", exclude={"binding_fingerprint"})
+        ),
+    )
+
+
+def build_destination_reservation(
+    *,
+    job: FolderRefactorJobV3,
+) -> FolderDestinationReservationV1:
+    """Bind the exact canonical reviewed destination before any copy begins."""
+
+    if job.preview is None or job.candidate_plan is None:
+        raise FolderJobV3RevisionError(
+            "Destination reservation requires one complete reviewed preview."
+        )
+    output_parent = job.output_parent.resolve(strict=False)
+    final_result_path = (output_parent / job.candidate_plan.result_folder_name).resolve(
+        strict=False
+    )
+    values = {
+        "job_id": job.job_id,
+        "authorized_job_revision": job.revision,
+        "proposal_revision": job.proposal_revision,
+        "candidate_fingerprint": job.preview.compiled_candidate_fingerprint,
+        "preview_fingerprint": job.preview.preview_fingerprint,
+        "output_parent": output_parent,
+        "result_folder_name": job.candidate_plan.result_folder_name,
+        "final_result_path": final_result_path,
+    }
+    draft = FolderDestinationReservationV1.model_construct(
+        **values,
+        reservation_fingerprint="0" * 64,
+    )
+    return FolderDestinationReservationV1(
+        **values,
+        reservation_fingerprint=canonical_sha256(
+            draft.model_dump(mode="json", exclude={"reservation_fingerprint"})
         ),
     )
 
@@ -1816,6 +2082,114 @@ def _require_append_only_action_history(
                 "Hosted mutation binding changed outside its exact transition."
             )
 
+    revision_prefix = successor.revision_mutation_bindings[
+        : len(current.revision_mutation_bindings)
+    ]
+    if revision_prefix != current.revision_mutation_bindings:
+        raise FolderJobV3RevisionError(
+            "Direct revision mutation history is not append-only."
+        )
+    revision_added = len(successor.revision_mutation_bindings) - len(
+        current.revision_mutation_bindings
+    )
+    if revision_added not in {0, 1}:
+        raise FolderJobV3RevisionError(
+            "A transition may append at most one direct revision binding."
+        )
+    if revision_added:
+        binding = successor.revision_mutation_bindings[-1]
+        direct_authority = current.authority
+        if not isinstance(direct_authority, GptPlannedJobAuthorityV3):
+            raise FolderJobV3RevisionError(
+                "Direct revision binding requires direct planning authority."
+            )
+        pending = direct_authority.pending_revision_turn
+        instruction = current.revision_instruction
+        ledger = direct_authority.evidence_ledger
+        if (
+            pending is None
+            or instruction is None
+            or ledger is None
+            or not (
+                binding.job_id == current.job_id
+                and binding.base_job_revision == pending.expected_job_revision
+                and binding.base_proposal_revision == pending.proposal_revision
+                and binding.base_candidate_fingerprint
+                == pending.base_candidate_fingerprint
+                and binding.base_preview_fingerprint == pending.base_preview_fingerprint
+                and binding.revision_instruction_fingerprint
+                == instruction.instruction_fingerprint
+                and binding.idempotency_key_sha256 == instruction.idempotency_key_sha256
+                and binding.model_transport == ledger.model_transport
+            )
+        ):
+            raise FolderJobV3RevisionError(
+                "Direct revision binding targets another reserved provider turn."
+            )
+        if not (
+            current.lifecycle is FolderJobLifecycleV3.REVISING
+            and successor.lifecycle
+            in {
+                FolderJobLifecycleV3.REVIEWING,
+                FolderJobLifecycleV3.REVISION_FAILED,
+            }
+            and binding.terminal_job_revision == successor.revision
+            and binding.resulting_proposal_revision == successor.proposal_revision
+        ):
+            raise FolderJobV3RevisionError(
+                "Direct revision binding changed outside its terminal transition."
+            )
+        expected_outcome = (
+            "proposal_replaced"
+            if successor.lifecycle is FolderJobLifecycleV3.REVIEWING
+            else (
+                "provider_failed"
+                if len(successor.revision_provider_failures)
+                > len(current.revision_provider_failures)
+                else "mechanically_rejected"
+            )
+        )
+        if binding.terminal_outcome != expected_outcome:
+            raise FolderJobV3RevisionError(
+                "Direct revision binding records another terminal outcome."
+            )
+    if (
+        current.lifecycle is FolderJobLifecycleV3.REVISING
+        and successor.lifecycle
+        in {
+            FolderJobLifecycleV3.REVIEWING,
+            FolderJobLifecycleV3.REVISION_FAILED,
+        }
+        and isinstance(current.authority, GptPlannedJobAuthorityV3)
+        and revision_added != 1
+    ):
+        raise FolderJobV3RevisionError(
+            "A direct revision terminal transition requires its retry binding."
+        )
+
+    reservation_changed = (
+        successor.destination_reservation != current.destination_reservation
+    )
+    if reservation_changed and not (
+        current.destination_reservation is None
+        and current.lifecycle is FolderJobLifecycleV3.REVIEWING
+        and successor.lifecycle is FolderJobLifecycleV3.EXECUTING
+        and successor.destination_reservation is not None
+        and successor.destination_reservation.authorized_job_revision
+        == current.revision
+    ):
+        raise FolderJobV3RevisionError(
+            "Destination reservation changed outside exact acceptance."
+        )
+    if (
+        current.lifecycle is FolderJobLifecycleV3.REVIEWING
+        and successor.lifecycle is FolderJobLifecycleV3.EXECUTING
+        and not reservation_changed
+    ):
+        raise FolderJobV3RevisionError(
+            "Execution must persist its destination reservation before copy."
+        )
+
 
 def _require_transition_payload(
     current: FolderRefactorJobV3,
@@ -1833,6 +2207,7 @@ def _require_transition_payload(
         "updated_at",
         "lifecycle",
         "execution_authorization",
+        "destination_reservation",
         "pending_result_path",
         "final_result_path",
     }

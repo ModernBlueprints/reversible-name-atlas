@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import time
 import uuid
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -23,6 +25,10 @@ from name_atlas.folder_refactor.connected_change.descriptors import (
 from name_atlas.folder_refactor.connected_change.evidence import (
     build_planner_origin_evidence,
 )
+from name_atlas.folder_refactor.connected_change.job_io import (
+    DurableJobFileLock,
+    DurableJobLockError,
+)
 from name_atlas.folder_refactor.connected_change.job_v2 import (
     CapsuleAppliedJobAuthorityV2,
     FolderRefactorJobV2,
@@ -32,24 +38,30 @@ from name_atlas.folder_refactor.connected_change.job_v2 import (
     build_new_gpt_job_v2,
 )
 from name_atlas.folder_refactor.connected_change.job_v3 import (
+    FolderDestinationReservationV1,
     FolderJobLifecycleV3,
     FolderJobV3IdempotencyConflict,
+    FolderJobV3LoadError,
     FolderJobV3RevisionError,
     FolderJobVerifiedArtifactsV3,
     FolderRefactorJobV3,
     FolderRefactorJobV3Store,
     FolderRefactorJobV3Writer,
     FolderRevisionFailureV1,
+    FolderRevisionInstructionV1,
     FolderRevisionRejectionRecordV1,
     GptPlannedJobAuthorityV3,
+    build_destination_reservation,
     build_execution_authorization,
     build_keep_previous_action,
     build_revision_instruction,
+    build_revision_mutation_binding,
     build_revision_provider_failure,
     build_revision_rejection_record,
     evolve_job_v3,
     expected_final_result_path_v3,
     expected_pending_result_path_v3,
+    load_folder_job_record_v3,
 )
 from name_atlas.folder_refactor.connected_change.preview import (
     FolderPlanPreviewV1,
@@ -391,6 +403,13 @@ class FoldweaveReviewService:
                 instruction=instruction,
                 idempotency_key=idempotency_key,
             )
+            completed_retry = _completed_revision_retry_or_none(
+                job,
+                expected_revision=expected_revision,
+                instruction=repeated,
+            )
+            if completed_retry is not None:
+                return completed_retry
             if job.revision_instruction is not None and (
                 job.revision_instruction.idempotency_key_sha256
                 == repeated.idempotency_key_sha256
@@ -627,6 +646,12 @@ class FoldweaveReviewService:
             job = writer.rehydrate()
             if job.lifecycle is not FolderJobLifecycleV3.EXECUTING:
                 return job
+            reservation = _require_destination_reservation(job)
+            with _destination_reservation_lock(job.job_path.parent):
+                _require_unique_destination_reservation(
+                    job.job_path,
+                    reservation,
+                )
             return self._execute_locked(
                 writer,
                 job,
@@ -703,6 +728,12 @@ class FoldweaveReviewService:
                     idempotency_key=idempotency_key,
                     channel=channel,
                 )
+                reservation = _require_destination_reservation(job)
+                with _destination_reservation_lock(job.job_path.parent):
+                    _require_unique_destination_reservation(
+                        job.job_path,
+                        reservation,
+                    )
                 executing = job
             else:
                 self._require_exact_review_request(
@@ -715,8 +746,6 @@ class FoldweaveReviewService:
                 )
                 pending = expected_pending_result_path_v3(job)
                 final = expected_final_result_path_v3(job)
-                _require_absent_result_path(pending, label="Pending result")
-                _require_absent_result_path(final, label="Final result")
                 authorization = build_execution_authorization(
                     job=job,
                     expected_job_revision=expected_revision,
@@ -727,17 +756,26 @@ class FoldweaveReviewService:
                     idempotency_key=idempotency_key,
                     channel=channel,
                 )
-                executing = evolve_job_v3(
-                    job,
-                    revision=job.revision + 1,
-                    updated_at=_now(),
-                    lifecycle=FolderJobLifecycleV3.EXECUTING,
-                    execution_authorization=authorization,
-                    pending_result_path=pending,
-                    final_result_path=final,
-                    revision_failure=None,
-                )
-                executing = writer.save(executing, expected_current=job)
+                reservation = build_destination_reservation(job=job)
+                with _destination_reservation_lock(job.job_path.parent):
+                    _require_unique_destination_reservation(
+                        job.job_path,
+                        reservation,
+                    )
+                    _require_absent_result_path(pending, label="Pending result")
+                    _require_absent_result_path(final, label="Final result")
+                    executing = evolve_job_v3(
+                        job,
+                        revision=job.revision + 1,
+                        updated_at=_now(),
+                        lifecycle=FolderJobLifecycleV3.EXECUTING,
+                        execution_authorization=authorization,
+                        destination_reservation=reservation,
+                        pending_result_path=pending,
+                        final_result_path=final,
+                        revision_failure=None,
+                    )
+                    executing = writer.save(executing, expected_current=job)
                 if executing.lifecycle is FolderJobLifecycleV3.STALE:
                     return executing
             return self._execute_locked(
@@ -992,6 +1030,15 @@ class FoldweaveReviewService:
                     *current.revision_provider_failures,
                     provider_failure,
                 ),
+                revision_mutation_bindings=(
+                    *current.revision_mutation_bindings,
+                    build_revision_mutation_binding(
+                        job=current,
+                        terminal_outcome="provider_failed",
+                        terminal_job_revision=current.revision + 1,
+                        resulting_proposal_revision=current.proposal_revision,
+                    ),
+                ),
             )
             return writer.save(successor, expected_current=current)
 
@@ -1068,6 +1115,15 @@ class FoldweaveReviewService:
                         *current.revision_rejections,
                         rejection,
                     ),
+                    revision_mutation_bindings=(
+                        *current.revision_mutation_bindings,
+                        build_revision_mutation_binding(
+                            job=current,
+                            terminal_outcome="mechanically_rejected",
+                            terminal_job_revision=current.revision + 1,
+                            resulting_proposal_revision=current.proposal_revision,
+                        ),
+                    ),
                 )
                 return writer.save(successor, expected_current=current)
             revised_ledger = append_successful_revision_evidence(
@@ -1103,6 +1159,15 @@ class FoldweaveReviewService:
                 candidate_plan=accepted_plan,
                 preview=preview,
                 revision_failure=None,
+                revision_mutation_bindings=(
+                    *current.revision_mutation_bindings,
+                    build_revision_mutation_binding(
+                        job=current,
+                        terminal_outcome="proposal_replaced",
+                        terminal_job_revision=current.revision + 1,
+                        resulting_proposal_revision=next_proposal_revision,
+                    ),
+                ),
             )
             return writer.save(successor, expected_current=current)
 
@@ -1521,6 +1586,40 @@ def _revision_instruction_for_request(
     )
 
 
+def _completed_revision_retry_or_none(
+    job: FolderRefactorJobV3,
+    *,
+    expected_revision: int,
+    instruction: FolderRevisionInstructionV1,
+) -> FolderRefactorJobV3 | None:
+    """Return an exact historical retry without constructing a provider."""
+
+    matching = tuple(
+        binding
+        for binding in job.revision_mutation_bindings
+        if binding.idempotency_key_sha256 == instruction.idempotency_key_sha256
+    )
+    if not matching:
+        return None
+    if len(matching) != 1:
+        raise FolderJobV3IdempotencyConflict(
+            "Duplicate direct revision bindings share one retry key."
+        )
+    binding = matching[0]
+    if not (
+        binding.job_id == job.job_id
+        and binding.base_job_revision == expected_revision
+        and binding.base_candidate_fingerprint == instruction.base_candidate_fingerprint
+        and binding.base_preview_fingerprint == instruction.base_preview_fingerprint
+        and binding.revision_instruction_fingerprint
+        == instruction.instruction_fingerprint
+    ):
+        raise FolderJobV3IdempotencyConflict(
+            "Revision retry key is bound to another exact request."
+        )
+    return job
+
+
 def _require_v3_planning_authority(
     job: FolderRefactorJobV3,
 ) -> GptPlannedJobAuthorityV3:
@@ -1774,6 +1873,86 @@ def _rebuild_preview(
         expected_job_revision=expected_job_revision,
         proposal_revision=job.proposal_revision,
     )
+
+
+def _require_destination_reservation(
+    job: FolderRefactorJobV3,
+) -> FolderDestinationReservationV1:
+    reservation = job.destination_reservation
+    if reservation is None:
+        raise FoldweaveReviewServiceError(
+            "destination_reservation_missing",
+            "Authorized execution lacks its durable destination reservation.",
+        )
+    return reservation
+
+
+@contextmanager
+def _destination_reservation_lock(jobs_directory: Path) -> Iterator[None]:
+    """Serialize cross-job reservation decisions, never product execution."""
+
+    lock_target = (
+        jobs_directory.resolve(strict=False) / ".foldweave-destination-reservations"
+    )
+    deadline = time.monotonic() + 5.0
+    lock: DurableJobFileLock | None = None
+    while lock is None:
+        candidate = DurableJobFileLock(lock_target)
+        try:
+            candidate.__enter__()
+        except DurableJobLockError as exc:
+            if time.monotonic() >= deadline:
+                raise FoldweaveReviewServiceError(
+                    "destination_reservation_busy",
+                    "Destination authority is busy; retry the identical request.",
+                ) from exc
+            time.sleep(0.01)
+        else:
+            lock = candidate
+    try:
+        yield
+    finally:
+        lock.__exit__(None, None, None)
+
+
+def _require_unique_destination_reservation(
+    current_job_path: Path,
+    reservation: FolderDestinationReservationV1,
+) -> None:
+    """Fail closed if another active durable job owns this exact destination."""
+
+    jobs_directory = current_job_path.resolve(strict=False).parent
+    for candidate_path in sorted(
+        jobs_directory.glob("*.json"),
+        key=lambda item: item.name,
+    ):
+        if candidate_path.resolve(strict=False) == current_job_path.resolve(
+            strict=False
+        ):
+            continue
+        try:
+            record = load_folder_job_record_v3(candidate_path)
+        except FolderJobV3LoadError as exc:
+            raise FoldweaveReviewServiceError(
+                "destination_authority_unreadable",
+                "A durable job in the shared state root cannot be validated.",
+            ) from exc
+        if not isinstance(record, FolderRefactorJobV3):
+            continue
+        other = record.destination_reservation
+        if (
+            other is not None
+            and record.lifecycle
+            in {
+                FolderJobLifecycleV3.EXECUTING,
+                FolderJobLifecycleV3.VERIFIED,
+            }
+            and other.final_result_path == reservation.final_result_path
+        ):
+            raise FoldweaveReviewServiceError(
+                "destination_already_reserved",
+                "Another durable job already owns the reviewed result destination.",
+            )
 
 
 def _require_absent_result_path(path: Path, *, label: str) -> None:

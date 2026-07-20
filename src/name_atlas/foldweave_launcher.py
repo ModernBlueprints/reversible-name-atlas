@@ -15,6 +15,14 @@ COMMAND_HELP = (
         "mcp",
         "Run the provider-free Foldweave hosted-planning MCP Apps server.",
     ),
+    ("demo", "Prepare the bundled recorded proposal for review."),
+    ("run", "Prepare a connected-folder proposal for exact review."),
+    ("apply-change", "Prepare a shared change for receiver-local review."),
+    ("preview", "Inspect the exact persisted review DTO."),
+    ("revise", "Request one bounded revision of a reviewed proposal."),
+    ("accept", "Accept one exact preview and create a verified copy."),
+    ("verify-receipt", "Independently verify a portable result."),
+    ("restore-receipt", "Recreate the source selected for one transaction."),
 )
 
 
@@ -51,6 +59,31 @@ def run(argv: Sequence[str] | None = None) -> int:
         from name_atlas.foldweave_chatgpt_mcp import run_foldweave_mcp_server
 
         return run_foldweave_mcp_server(arguments[1:])
+    if arguments[0] in {
+        "run",
+        "apply-change",
+        "preview",
+        "revise",
+        "accept",
+        "verify-receipt",
+        "restore-receipt",
+    }:
+        from name_atlas import foldweave_review_cli
+
+        dispatch = {
+            "run": foldweave_review_cli.run_prepare_origin,
+            "apply-change": foldweave_review_cli.run_prepare_application,
+            "preview": foldweave_review_cli.run_preview,
+            "revise": foldweave_review_cli.run_revise,
+            "accept": foldweave_review_cli.run_accept,
+            "verify-receipt": foldweave_review_cli.run_legacy_verify,
+            "restore-receipt": foldweave_review_cli.run_legacy_restore,
+        }
+        return dispatch[arguments[0]](arguments[1:])
+    if arguments[0] == "demo":
+        from name_atlas.foldweave_demo_cli import run_foldweave_demo
+
+        return run_foldweave_demo(arguments[1:])
 
     print(f"foldweave: unknown command: {arguments[0]}", file=sys.stderr)
     build_root_parser().print_help(sys.stderr)

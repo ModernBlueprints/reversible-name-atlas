@@ -1,6 +1,6 @@
 # Foldweave build state
 
-Observed: **Monday 20 July 2026 at 01:55:51 CEST** using
+Observed: **Monday 20 July 2026 at 02:28:24 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
 Phase: **WAITING_FOR_CHATGPT_DEVELOPER_ACCESS — INDEPENDENT F1 WORK CONTINUES**
@@ -39,10 +39,10 @@ reported from fresh post-commit evidence in the scaffold handoff.
 
 | Boundary | Absolute Oslo time | Remaining |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | 23 hours, 4 minutes, 8 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | 28 hours, 4 minutes, 8 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | 32 hours, 4 minutes, 8 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 48 hours, 4 minutes, 8 seconds |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | 22 hours, 31 minutes, 36 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | 27 hours, 31 minutes, 36 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | 31 hours, 31 minutes, 36 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 47 hours, 31 minutes, 36 seconds |
 
 These windows continue to elapse. F+0 recorded activation and the scaled
 targets; it did not reset the 44-hour envelope. The effective F0a target is
@@ -55,8 +55,8 @@ Sunday 19 July 2026 at 21:55:42 CEST.
 | A1–A3 and C0–C7 inherited foundation | `VERIFIED COMPLETE` |
 | Foldweave branding | `F0A REVIEW SURFACE COMPLETE`; full active-surface rename remains F3 |
 | Job v3 and immutable preview | `F0A VERIFIED COMPLETE` |
-| Review and exact acceptance | `F0A VERIFIED COMPLETE` |
-| Bounded revision | `F0B LIVE ORIGIN PATH VERIFIED`; complete multi-surface engine remains F1 |
+| Review and exact acceptance | `F0A VERIFIED COMPLETE`; F1 append-only mutation history, exact-request rehydration, and cross-job destination reservation verified |
+| Bounded revision | `F0B LIVE ORIGIN PATH VERIFIED`; F1 root retry authority verified; derivative child and complete multi-surface engine remain |
 | Change File v2 and receipt/verifier v3 | `NOT STARTED` |
 | Serial derivative collaboration | `NOT STARTED` |
 | Native Foldweave app | `F0B VERIFIED COMPLETE — GO` |
@@ -103,14 +103,17 @@ Sunday 19 July 2026 at 21:55:42 CEST.
 
 - `uv lock --check` — passed; 62 packages resolved.
 - `PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider` —
-  passed; 918 tests in 69.30 seconds with one existing Starlette warning.
+  passed; 956 tests in 80.20 seconds with one existing Starlette warning.
+- `PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider
+  tests/test_foldweave*.py` — passed; all 109 Foldweave tests in 10.25
+  seconds.
 - Focused independent F0b/native/provider suites — passed; 60 tests and 45
   tests in the two bounded audits.
 - `npm run typecheck` — passed with strict library checking.
 - `npm test` — passed; 8 Vitest tests.
 - `npm run build` — passed; production review assets regenerated.
 - `uv run --no-sync ruff check .` — passed.
-- `uv run --no-sync ruff format --check .` — passed; 181 files already
+- `uv run --no-sync ruff format --check .` — passed; 194 files already
   formatted.
 - PyInstaller production build, arm64/file checks, and strict ad-hoc
   `codesign` verification — passed; unrelated-location launch passed.
@@ -141,7 +144,7 @@ Sunday 19 July 2026 at 21:55:42 CEST.
 
 ## Exact next operation
 
-`Continue the dependency-ready F1 review/revision engine while preserving the exact F0c host-access wait. Retry F0c only when ChatGPT host/workspace access or host behavior changes; do not substitute the direct API or formally start F0d.`
+`Publish the verified F1 review-authority foundation, then implement the immutable receiver-parent/derivative-child review path and its direct and hosted sparse-revision authority. Preserve the exact F0c host-access wait; retry F0c only when ChatGPT host/workspace access or host behavior changes, without substituting the direct API or formally starting F0d.`
 
 ## Compact recovery capsule
 
@@ -151,9 +154,10 @@ Sunday 19 July 2026 at 21:55:42 CEST.
 - **Current F milestone:** F0c waits on the ChatGPT host capability boundary;
   independent F1 work continues; F0a and F0b returned verified `GO`; F+0 is
   Sunday 19 July 2026 at 17:18:14 CEST
-- **Latest verified commands:** lock passed; 936 Python tests, 34 frontend
-  tests, strict TypeScript, Vite build, Ruff lint/format, and Git diff checks
-  passed
+- **Latest verified commands:** lock passed; 956 Python tests and all 109
+  Foldweave tests passed; Ruff lint/format over 194 files and Git diff checks
+  passed; prior 34 frontend tests, strict TypeScript, and Vite builds remain the
+  latest verified frontend evidence
 - **Job / preview:** F0a authority and F0b direct native
   review/revision/acceptance `VERIFIED COMPLETE`
 - **Change File / receipt / verifier / reconstruction:** predecessor evidence
@@ -170,11 +174,12 @@ Sunday 19 July 2026 at 21:55:42 CEST.
 - **Budget:** sole ledger migrated to USD 40; call cap 13 fully reserved; F4
   retains authority to set the final count cap
 - **Feature freeze:** pending; absolute boundary Tuesday 21 July 2026 at 01:00
-  CEST; 23 hours, 4 minutes, 8 seconds remained at this checkpoint
+  CEST; 22 hours, 31 minutes, 36 seconds remained at this checkpoint
 - **Release materials:** stale for Foldweave; predecessor materials preserved
 - **Submission hold:** `ACTIVE`
 - **Blockers:** F0c external ChatGPT host/workspace capability; the acknowledged
   follow-up request produces no model turn or tool call
-- **Next operation:** continue F1 independently; preserve F0c evidence and retry
-  only after a host/access change, without starting formal F0d or using a hidden
-  direct-API substitute
+- **Next operation:** publish the F1 review-authority foundation, then implement
+  immutable receiver parent and derivative child review/revision authority;
+  preserve F0c evidence and retry only after a host/access change, without
+  starting formal F0d or using a hidden direct-API substitute

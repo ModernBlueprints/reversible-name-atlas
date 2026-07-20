@@ -41,7 +41,17 @@ def test_foldweave_app_parser_accepts_exact_development_browser_contract() -> No
     assert args.source == Path("/tmp/source")
     assert args.output == Path("/tmp/output")
     assert args.job == Path("/tmp/job.json")
+    assert args.job_id is None
     assert args.port == 8765
+
+
+def test_browser_parser_accepts_job_id_selection() -> None:
+    args = foldweave_browser_cli.build_foldweave_app_parser().parse_args(
+        ["--browser", "--mode", "development", "--job-id", "a" * 32]
+    )
+
+    assert args.job is None
+    assert args.job_id == "a" * 32
 
 
 def test_default_job_uses_application_support_and_absolute_override(

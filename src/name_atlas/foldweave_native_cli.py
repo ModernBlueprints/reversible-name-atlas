@@ -15,6 +15,7 @@ from typing import Protocol
 from fastapi import FastAPI
 
 from name_atlas.folder_app import create_folder_app
+from name_atlas.foldweave_job_locator import FoldweaveJobLocator
 from name_atlas.foldweave_paths import (
     FoldweavePaths,
     foldweave_paths,
@@ -110,6 +111,11 @@ def build_foldweave_native_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional exact durable FolderRefactorJobV3 JSON file.",
     )
+    parser.add_argument(
+        "--job-id",
+        default=None,
+        help="Resume the exact v3 job with this embedded durable ID.",
+    )
     return parser
 
 
@@ -118,6 +124,7 @@ def compose_foldweave_native_app(
     source: Path | None,
     output: Path | None,
     job: Path | None,
+    job_id: str | None = None,
     mode: str = "development",
     environ: Mapping[str, str] | None = None,
     qualification_environment_credential: bool = False,
@@ -131,7 +138,13 @@ def compose_foldweave_native_app(
 
     environment = os.environ if environ is None else environ
     paths = foldweave_paths(environ=environ)
-    job_path = resolve_foldweave_job_path(job, environ=environ)
+    if job is not None and job_id is not None:
+        raise ValueError("Select either --job or --job-id, not both.")
+    job_path = (
+        FoldweaveJobLocator(paths.jobs).resolve(job_id).path
+        if job_id is not None
+        else resolve_foldweave_job_path(job, environ=environ)
+    )
     initial_source: Path | None = None
     initial_output_parent: Path | None = None
     if not os.path.lexists(job_path):
@@ -210,6 +223,7 @@ def run_foldweave_app(
             source=args.source,
             output=args.output,
             job=args.job,
+            job_id=args.job_id,
             mode=args.mode,
             environ=environ,
             qualification_environment_credential=(

@@ -89,6 +89,10 @@ from name_atlas.folder_refactor.serialization import (
     request_fingerprint,
 )
 from name_atlas.folder_refactor.transaction import scan_folder_with_references
+from name_atlas.foldweave_job_locator import (
+    FoldweaveJobLocator,
+    FoldweaveJobLocatorError,
+)
 from name_atlas.foldweave_local_handles import (
     FoldweaveLocalHandleStore,
     LocalHandleChannel,
@@ -1111,18 +1115,16 @@ class FoldweaveHostPlanningService:
             return saved, record.result, record.error_code
 
     def _find_idempotent_job(self, key_sha256: str) -> FolderRefactorJobV3 | None:
-        jobs = self._paths.jobs
-        if not jobs.is_dir():
-            return None
+        try:
+            discovered = FoldweaveJobLocator(self._paths.jobs).discover()
+        except FoldweaveJobLocatorError as exc:
+            raise FoldweaveHostServiceError(
+                "host_job_registry_invalid",
+                "A durable Foldweave job cannot be inspected safely.",
+            ) from exc
         matches: list[FolderRefactorJobV3] = []
-        for job_path in sorted(jobs.glob("*.json")):
-            try:
-                job = FolderRefactorJobV3Store(job_path).inspect()
-            except Exception as exc:
-                raise FoldweaveHostServiceError(
-                    "host_job_registry_invalid",
-                    "A durable hosted job cannot be inspected safely.",
-                ) from exc
+        for located in discovered:
+            job = located.job
             if job.idempotency.key_sha256 == key_sha256:
                 matches.append(job)
         if len(matches) > 1:
@@ -1144,7 +1146,25 @@ class FoldweaveHostPlanningService:
                 "job_handle_invalid",
                 "Foldweave job handle is invalid.",
             )
-        return self._paths.jobs / f"{job_id}.json"
+        expected = self._paths.jobs / f"{job_id}.json"
+        if os.path.lexists(expected):
+            try:
+                located = FoldweaveJobLocator(self._paths.jobs).resolve(job_id)
+            except FoldweaveJobLocatorError as exc:
+                raise FoldweaveHostServiceError(
+                    "host_job_registry_invalid",
+                    "The durable Foldweave job registry is invalid.",
+                ) from exc
+            return located.path
+        try:
+            return FoldweaveJobLocator(self._paths.jobs).resolve(job_id).path
+        except FoldweaveJobLocatorError as exc:
+            if exc.code == "job_not_found":
+                return expected
+            raise FoldweaveHostServiceError(
+                "host_job_registry_invalid",
+                "The durable Foldweave job registry is invalid.",
+            ) from exc
 
     def _now(self) -> datetime:
         value = self._clock()

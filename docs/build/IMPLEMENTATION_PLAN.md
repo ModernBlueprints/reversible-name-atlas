@@ -1549,8 +1549,20 @@ completed Foldweave.
   reviewers.
 - **Allowed cut:** custom domain and public directory approval; no gateway,
   pairing, companion, or ChatGPT-hosted-product cut.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS` — the shared durable review authority,
+  append-only revision mutation bindings, exact-request job rehydration,
+  cross-job destination reservation, reviewed origin/receiver CLI, and strict
+  embedded-ID job discovery are implemented. Immutable receiver parent and
+  derivative child authority, derivative revision, keep-parent recovery, and
+  the remaining cross-surface matrix are next.
+- **Actual verification:** the complete Python regression passed 956/956; all
+  Foldweave tests passed 109/109; the focused corrected CLI/locator/reservation
+  audit passed 27/27 and returned `GO`; lock, Ruff lint, Ruff format over 194
+  files, and Git diff checks passed. A product-native 24-file replay job stopped
+  in `reviewing` with no output, then exact CLI acceptance, receipt verification,
+  reconstruction, and byte-for-byte source comparison passed. F1 is not complete
+  until the derivative parent/child and remaining race/cross-surface outcomes
+  pass.
 
 ## 12. F1 — Complete review and revision engine
 
