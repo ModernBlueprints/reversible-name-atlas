@@ -112,7 +112,10 @@ class _AsyncProcessFactory(Protocol):
 
 def _picker_script(*, chooser: str, prompt: str) -> str:
     return f'''try
-    set pickedItem to {chooser} with prompt "{prompt}"
+    tell application "System Events"
+        activate
+        set pickedItem to {chooser} with prompt "{prompt}"
+    end tell
     return "{_SELECTED_MARKER}" & linefeed & POSIX path of pickedItem
 on error errorMessage number errorNumber
     if errorNumber is -128 then

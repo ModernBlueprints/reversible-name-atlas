@@ -88,27 +88,33 @@ export interface FolderPlanPreviewV1 {
   preview_fingerprint: string;
 }
 
-export interface ReviewStatus {
+export interface ReviewDisplayStatus {
   job_id: string;
   lifecycle: string;
   job_revision: number;
   proposal_revision: number;
   candidate_fingerprint: string;
   preview_fingerprint: string;
-  output_parent: string;
-  result_folder_name: string;
   revision_available: boolean;
   revision_attempts_remaining: number;
   revision_failure: string | null;
-  done_url: string | null;
 }
 
-export interface AcceptancePayload {
+export interface ReviewStatus extends ReviewDisplayStatus {
+  done_url: string | null;
+  output_parent: string;
+  result_folder_name: string;
+}
+
+export interface AcceptanceBindingPayload {
   candidate_fingerprint: string;
   expected_revision: number;
   idempotency_key: string;
-  output_parent: string;
   preview_fingerprint: string;
+}
+
+export interface AcceptancePayload extends AcceptanceBindingPayload {
+  output_parent: string;
   result_folder_name: string;
 }
 
@@ -141,18 +147,42 @@ export function assertPreview(
     value.schema_version !== "folder-plan-preview.v1" ||
     value.job_id !== expectedJobId ||
     !matchesPattern(value.job_id, JOB_ID) ||
+    (value.proposal_basis !== "fresh_gpt_plan" &&
+      value.proposal_basis !== "imported_change_file" &&
+      value.proposal_basis !== "gpt_derivative") ||
     !matchesPattern(value.source_commitment, SHA256) ||
+    !isNullableFingerprint(value.imported_change_file_fingerprint) ||
+    !isNullableFingerprint(value.match_report_fingerprint) ||
+    !isNullableFingerprint(value.immediate_parent_candidate_fingerprint) ||
     !matchesPattern(value.compiled_candidate_fingerprint, SHA256) ||
     !matchesPattern(value.preview_fingerprint, SHA256) ||
     !Number.isInteger(value.expected_job_revision) ||
+    (value.expected_job_revision as number) < 0 ||
     !Number.isInteger(value.proposal_revision) ||
+    (value.proposal_revision as number) < 0 ||
+    (value.proposal_revision as number) > 2 ||
     !Array.isArray(value.current_tree_members) ||
     !Array.isArray(value.proposed_tree_members) ||
     !Array.isArray(value.member_changes) ||
     !Array.isArray(value.supported_link_effects) ||
+    !Array.isArray(value.collision_findings) ||
+    !Array.isArray(value.blocker_findings) ||
     !isRecord(value.counts)
   ) {
     throw new Error("Foldweave returned an incomplete preview contract.");
+  }
+  if (
+    value.proposal_basis === "imported_change_file" &&
+    (value.imported_change_file_fingerprint === null ||
+      value.match_report_fingerprint === null)
+  ) {
+    throw new Error("An imported Foldweave proposal requires exact matching evidence.");
+  }
+  if (
+    value.proposal_basis !== "imported_change_file" &&
+    value.match_report_fingerprint !== null
+  ) {
+    throw new Error("Only an imported Foldweave proposal may retain a match report.");
   }
 }
 
@@ -160,6 +190,22 @@ export function assertStatus(
   value: unknown,
   expectedJobId: string,
 ): asserts value is ReviewStatus {
+  assertReviewDisplayStatus(value, expectedJobId);
+  const localValue = value as ReviewDisplayStatus & Record<string, unknown>;
+  if (
+    typeof localValue.output_parent !== "string" ||
+    localValue.output_parent.length === 0 ||
+    typeof localValue.result_folder_name !== "string" ||
+    localValue.result_folder_name.length === 0
+  ) {
+    throw new Error("Foldweave returned an incomplete local review status.");
+  }
+}
+
+export function assertReviewDisplayStatus(
+  value: unknown,
+  expectedJobId: string,
+): asserts value is ReviewDisplayStatus {
   if (!isRecord(value)) {
     throw new Error("Foldweave returned an invalid review status.");
   }
@@ -171,10 +217,6 @@ export function assertStatus(
     !Number.isInteger(value.proposal_revision) ||
     !matchesPattern(value.candidate_fingerprint, SHA256) ||
     !matchesPattern(value.preview_fingerprint, SHA256) ||
-    typeof value.output_parent !== "string" ||
-    value.output_parent.length === 0 ||
-    typeof value.result_folder_name !== "string" ||
-    value.result_folder_name.length === 0 ||
     typeof value.revision_available !== "boolean" ||
     typeof value.revision_attempts_remaining !== "number" ||
     !Number.isInteger(value.revision_attempts_remaining) ||
@@ -193,4 +235,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function matchesPattern(value: unknown, pattern: RegExp): value is string {
   return typeof value === "string" && pattern.test(value);
+}
+
+function isNullableFingerprint(value: unknown): value is string | null {
+  return value === null || matchesPattern(value, SHA256);
 }

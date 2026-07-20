@@ -11,6 +11,10 @@ from name_atlas.folder_refactor.connected_change.accepted_plan import (
     FolderAcceptedPlanV2,
 )
 from name_atlas.folder_refactor.contracts import SHA256_PATTERN, StrictFrozenModel
+from name_atlas.folder_refactor.foldweave_host_contracts import (
+    FolderHostEvidenceLedgerV1,
+    FolderHostRevisionTurnRecordV1,
+)
 from name_atlas.folder_refactor.naming import validate_target_path
 from name_atlas.folder_refactor.receipt_contracts import (
     FolderEvidenceLedger,
@@ -36,6 +40,15 @@ FOLDWEAVE_F0B_QUALIFICATION_CALL_GRAPH = (
     "execution_and_verification",
 )
 MAX_FOLDWEAVE_REVISIONS = 2
+# F0b was completed and qualified before the later schema-distinct hosted
+# authority was appended. These two hash-domain identities remain immutable;
+# F0c has its own complete hosted contract freeze.
+FOLDWEAVE_F0B_PREVIEW_REVIEW_CONTRACT_FINGERPRINT = (
+    "f42a1f1f35c76cc4edff03c9b84c3465bdf53afc8c2603b9a07b2b2a240116cd"
+)
+FOLDWEAVE_F0B_EVIDENCE_ENVELOPE_CONTRACT_FINGERPRINT = (
+    "607abd69adcbf3e505868f7b8267f777576fc95d99a154a5d77297a6fe146343"
+)
 
 
 class FoldweaveF0bContractFreezeV1(StrictFrozenModel):
@@ -416,7 +429,7 @@ class FolderEvidenceLedgerV2(StrictFrozenModel):
         "deterministic_development",
     ]
     contract_freeze_fingerprint: str = Field(pattern=SHA256_PATTERN)
-    initial_ledger: FolderEvidenceLedger
+    initial_ledger: FolderEvidenceLedger | FolderHostEvidenceLedgerV1
     segments: tuple[FolderPlanningSegmentV1, ...] = Field(min_length=1, max_length=3)
     response_turn_count: int = Field(ge=1, le=8)
     evidence_call_count: int = Field(ge=0, le=24)
@@ -458,9 +471,17 @@ class FolderEvidenceLedgerV2(StrictFrozenModel):
         if self.segments[0].segment_kind != "initial_plan":
             raise ValueError("Composite evidence must begin with initial planning.")
         initial_segment = self.segments[0]
+        expected_initial_records = (
+            initial.observable_records
+            if isinstance(initial, FolderHostEvidenceLedgerV1)
+            else tuple(
+                turn.model_dump(mode="json") for turn in initial.observable_turns
+            )
+        )
         if not (
             initial_segment.first_response_turn == 1
             and initial_segment.last_response_turn == initial.response_turn_count
+            and initial_segment.observable_records == expected_initial_records
             and initial_segment.final_candidate_fingerprint
             == initial.accepted_plan_fingerprint
         ):
@@ -468,20 +489,16 @@ class FolderEvidenceLedgerV2(StrictFrozenModel):
         expected_clarifications = 1 if initial.clarification_question is not None else 0
         if self.clarification_count != expected_clarifications:
             raise ValueError("Composite clarification count is invalid.")
-        expected_transport = {
-            "deterministic": "deterministic_development",
-            "live": "responses_api",
-            "recorded_replay": "recorded_replay",
-        }[initial.provider_kind]
-        if (
-            self.model_transport
-            in {
-                "deterministic_development",
-                "responses_api",
-                "recorded_replay",
-            }
-            and self.model_transport != expected_transport
-        ):
+        expected_transport = (
+            initial.provider_kind
+            if isinstance(initial, FolderHostEvidenceLedgerV1)
+            else {
+                "deterministic": "deterministic_development",
+                "live": "responses_api",
+                "recorded_replay": "recorded_replay",
+            }[initial.provider_kind]
+        )
+        if self.model_transport != expected_transport:
             raise ValueError("Initial provider and model transport disagree.")
         expected_turn = 1
         expected_candidate: str | None = None
@@ -504,33 +521,61 @@ class FolderEvidenceLedgerV2(StrictFrozenModel):
                 # Observable records are deliberately JSON-mode values. Validate
                 # them through the JSON boundary so strict tuple fields accept
                 # canonical JSON arrays without weakening Python-side strictness.
-                turn = FolderRevisionTurnRecordV1.model_validate_json(
-                    canonical_json_bytes(segment.observable_records[0]),
-                    strict=True,
-                )
-                if turn.input.turn_contract_freeze_fingerprint is None:
-                    if explicit_revision_contract_seen:
+                raw_record = segment.observable_records[0]
+                if not isinstance(raw_record, dict):
+                    raise ValueError("Revision transcript record must be an object.")
+                if (
+                    raw_record.get("schema_version")
+                    == "folder-host-revision-turn-record.v1"
+                ):
+                    host_turn = FolderHostRevisionTurnRecordV1.model_validate_json(
+                        canonical_json_bytes(raw_record),
+                        strict=True,
+                    )
+                    if not (
+                        host_turn.model_transport == self.model_transport
+                        and host_turn.response_turn == segment.first_response_turn
+                        and host_turn.base_candidate_fingerprint
+                        == segment.base_candidate_fingerprint
+                        and host_turn.base_preview_fingerprint
+                        == segment.base_preview_fingerprint
+                        and host_turn.revision_instruction_fingerprint
+                        == segment.revision_instruction_fingerprint
+                        and host_turn.outcome == segment.outcome
+                    ):
                         raise ValueError(
-                            "Historical contract omission cannot follow an explicit "
-                            "binding."
+                            "Hosted revision record differs from its segment."
                         )
                 else:
-                    explicit_revision_contract_seen = True
-                if turn.input.response_turn != segment.first_response_turn:
-                    raise ValueError("Revision segment contains another response turn.")
-                if (
-                    _provider_transport(turn.input.provider_kind)
-                    != self.model_transport
-                ):
-                    raise ValueError("Revision provider and transport disagree.")
-                returned_model = turn.response.returned_model
-                if (
-                    returned_model is not None
-                    and returned_model not in expected_returned_ids
-                ):
-                    expected_returned_ids.append(returned_model)
-                if turn.usage is not None:
-                    expected_usage.append(turn.usage)
+                    turn = FolderRevisionTurnRecordV1.model_validate_json(
+                        canonical_json_bytes(raw_record),
+                        strict=True,
+                    )
+                    if turn.input.turn_contract_freeze_fingerprint is None:
+                        if explicit_revision_contract_seen:
+                            raise ValueError(
+                                "Historical contract omission cannot follow an "
+                                "explicit binding."
+                            )
+                    else:
+                        explicit_revision_contract_seen = True
+                    if turn.input.response_turn != segment.first_response_turn:
+                        raise ValueError(
+                            "Revision segment contains another response turn."
+                        )
+                    if (
+                        _provider_transport(turn.input.provider_kind)
+                        != self.model_transport
+                    ):
+                        raise ValueError("Revision provider and transport disagree.")
+                    returned_model = turn.response.returned_model
+                    if (
+                        returned_model is not None
+                        and returned_model not in expected_returned_ids
+                    ):
+                        expected_returned_ids.append(returned_model)
+                    if turn.usage is not None:
+                        expected_usage.append(turn.usage)
                 if segment.selected:
                     selected_revision_count += 1
                     expected_candidate = segment.final_candidate_fingerprint
@@ -738,16 +783,6 @@ def build_revision_turn_record(
 def build_foldweave_f0b_contract_freeze() -> FoldweaveF0bContractFreezeV1:
     """Build the complete deterministic F0b freeze without touching credentials."""
 
-    # Local imports avoid making the planner contract module depend on the v3 job
-    # module while that job module imports the planning contracts it persists.
-    from name_atlas.folder_refactor.connected_change.job_v3 import (
-        FolderExecutionAuthorizationV1,
-        FolderJobLifecycleV3,
-        FolderRefactorJobV3,
-    )
-    from name_atlas.folder_refactor.connected_change.preview import (
-        FolderPlanPreviewV1,
-    )
     from name_atlas.folder_refactor.demo_fixtures import (
         FOLDWEAVE_F0B_FIXTURE_FINGERPRINT,
         FOLDWEAVE_F0B_FIXTURE_NAME,
@@ -756,7 +791,7 @@ def build_foldweave_f0b_contract_freeze() -> FoldweaveF0bContractFreezeV1:
         FOLDWEAVE_REVISION_INSTRUCTIONS_FINGERPRINT,
         FOLDWEAVE_REVISION_TOOL_SCHEMA_FINGERPRINT,
     )
-    from name_atlas.folder_refactor.live_planner_provider import (
+    from name_atlas.folder_refactor.live_planner_policy import (
         DEFAULT_LIVE_PLANNER_POLICY,
         DEFAULT_LIVE_REVISION_POLICY,
     )
@@ -765,16 +800,8 @@ def build_foldweave_f0b_contract_freeze() -> FoldweaveF0bContractFreezeV1:
         FOLDWEAVE_PLANNER_TOOL_SCHEMA_FINGERPRINT,
     )
 
-    preview_review_contract_fingerprint = canonical_sha256(
-        {
-            "domain": "foldweave:f0b:preview-review-contract:v1",
-            "preview_schema": FolderPlanPreviewV1.model_json_schema(mode="validation"),
-            "authorization_schema": (
-                FolderExecutionAuthorizationV1.model_json_schema(mode="validation")
-            ),
-            "job_schema": FolderRefactorJobV3.model_json_schema(mode="validation"),
-            "job_lifecycle": tuple(item.value for item in FolderJobLifecycleV3),
-        }
+    preview_review_contract_fingerprint = (
+        FOLDWEAVE_F0B_PREVIEW_REVIEW_CONTRACT_FINGERPRINT
     )
     derivative_planning_contract_fingerprint = canonical_sha256(
         {
@@ -794,16 +821,8 @@ def build_foldweave_f0b_contract_freeze() -> FoldweaveF0bContractFreezeV1:
             ),
         }
     )
-    evidence_envelope_contract_fingerprint = canonical_sha256(
-        {
-            "domain": "foldweave:f0b:evidence-envelope-contract:v2",
-            "initial_evidence_schema": FolderEvidenceLedger.model_json_schema(
-                mode="validation"
-            ),
-            "composite_evidence_schema": FolderEvidenceLedgerV2.model_json_schema(
-                mode="validation"
-            ),
-        }
+    evidence_envelope_contract_fingerprint = (
+        FOLDWEAVE_F0B_EVIDENCE_ENVELOPE_CONTRACT_FINGERPRINT
     )
     replay_envelope_identity_fingerprint = canonical_sha256(
         {
@@ -916,7 +935,7 @@ def foldweave_contract_freeze_fingerprint(
 
 def build_initial_composite_evidence(
     *,
-    initial_ledger: FolderEvidenceLedger,
+    initial_ledger: FolderEvidenceLedger | FolderHostEvidenceLedgerV1,
     accepted_plan: FolderAcceptedPlanV2,
     contract_freeze_fingerprint: str,
     planning_basis: Literal["fresh", "derivative", "recorded_replay"] = "fresh",
@@ -933,6 +952,13 @@ def build_initial_composite_evidence(
     accepted_fingerprint = canonical_sha256(accepted_plan)
     if initial_ledger.accepted_plan_fingerprint != accepted_fingerprint:
         raise ValueError("Initial evidence names another accepted Foldweave plan.")
+    observable_records = (
+        initial_ledger.observable_records
+        if isinstance(initial_ledger, FolderHostEvidenceLedgerV1)
+        else tuple(
+            turn.model_dump(mode="json") for turn in initial_ledger.observable_turns
+        )
+    )
     segment = build_planning_segment(
         segment_kind="initial_plan",
         outcome="accepted",
@@ -941,9 +967,7 @@ def build_initial_composite_evidence(
         proposal_revision_after=0,
         first_response_turn=1,
         last_response_turn=initial_ledger.response_turn_count,
-        observable_records=tuple(
-            turn.model_dump(mode="json") for turn in initial_ledger.observable_turns
-        ),
+        observable_records=observable_records,
         final_candidate_fingerprint=accepted_fingerprint,
     )
     values = {
@@ -1117,6 +1141,150 @@ def append_failed_revision_evidence(
         "user_revision_count": ledger.user_revision_count + 1,
         "returned_model_ids": returned_ids,
         "usage": usage,
+    }
+    draft = FolderEvidenceLedgerV2.model_construct(
+        **values,
+        transcript_fingerprint="0" * 64,
+    )
+    return FolderEvidenceLedgerV2(
+        **values,
+        transcript_fingerprint=canonical_sha256(
+            draft.model_dump(mode="json", exclude={"transcript_fingerprint"})
+        ),
+    )
+
+
+def append_successful_host_revision_evidence(
+    *,
+    ledger: FolderEvidenceLedgerV2,
+    turn: FolderHostRevisionTurnRecordV1,
+    accepted_plan: FolderAcceptedPlanV2,
+    base_preview_fingerprint: str,
+    revision_instruction_fingerprint: str,
+) -> FolderEvidenceLedgerV2:
+    """Append one truthful host-model sparse revision without API claims."""
+
+    _require_host_revision_prefix(
+        ledger=ledger,
+        turn=turn,
+        base_preview_fingerprint=base_preview_fingerprint,
+        revision_instruction_fingerprint=revision_instruction_fingerprint,
+    )
+    if turn.outcome != "accepted":
+        raise ValueError("Successful hosted revision requires an accepted turn.")
+    accepted_fingerprint = canonical_sha256(accepted_plan)
+    if turn.accepted_plan_fingerprint != accepted_fingerprint:
+        raise ValueError("Hosted revision names another accepted candidate.")
+    proposal_before = ledger.selected_proposal_revision
+    segment = build_planning_segment(
+        segment_kind="user_revision",
+        outcome="accepted",
+        selected=True,
+        proposal_revision_before=proposal_before,
+        proposal_revision_after=proposal_before + 1,
+        first_response_turn=turn.response_turn,
+        last_response_turn=turn.response_turn,
+        observable_records=(turn.model_dump(mode="json"),),
+        base_candidate_fingerprint=turn.base_candidate_fingerprint,
+        base_preview_fingerprint=base_preview_fingerprint,
+        revision_instruction_fingerprint=revision_instruction_fingerprint,
+        final_candidate_fingerprint=accepted_fingerprint,
+    )
+    return _rebuild_host_revision_ledger(
+        ledger=ledger,
+        segment=segment,
+        response_turn=turn.response_turn,
+        accepted_plan_fingerprint=accepted_fingerprint,
+        selected=True,
+    )
+
+
+def append_failed_host_revision_evidence(
+    *,
+    ledger: FolderEvidenceLedgerV2,
+    turn: FolderHostRevisionTurnRecordV1,
+    base_preview_fingerprint: str,
+    revision_instruction_fingerprint: str,
+) -> FolderEvidenceLedgerV2:
+    """Preserve a rejected host revision while retaining the prior candidate."""
+
+    _require_host_revision_prefix(
+        ledger=ledger,
+        turn=turn,
+        base_preview_fingerprint=base_preview_fingerprint,
+        revision_instruction_fingerprint=revision_instruction_fingerprint,
+    )
+    if turn.outcome != "rejected":
+        raise ValueError("Failed hosted revision requires a rejected turn.")
+    segment = build_planning_segment(
+        segment_kind="user_revision",
+        outcome="rejected",
+        selected=False,
+        proposal_revision_before=ledger.selected_proposal_revision,
+        proposal_revision_after=ledger.selected_proposal_revision,
+        first_response_turn=turn.response_turn,
+        last_response_turn=turn.response_turn,
+        observable_records=(turn.model_dump(mode="json"),),
+        base_candidate_fingerprint=turn.base_candidate_fingerprint,
+        base_preview_fingerprint=base_preview_fingerprint,
+        revision_instruction_fingerprint=revision_instruction_fingerprint,
+        final_candidate_fingerprint=ledger.accepted_plan_fingerprint,
+    )
+    return _rebuild_host_revision_ledger(
+        ledger=ledger,
+        segment=segment,
+        response_turn=turn.response_turn,
+        accepted_plan_fingerprint=ledger.accepted_plan_fingerprint,
+        selected=False,
+    )
+
+
+def _require_host_revision_prefix(
+    *,
+    ledger: FolderEvidenceLedgerV2,
+    turn: FolderHostRevisionTurnRecordV1,
+    base_preview_fingerprint: str,
+    revision_instruction_fingerprint: str,
+) -> None:
+    if ledger.model_transport not in {"chatgpt_hosted", "codex_hosted"}:
+        raise ValueError("Hosted revision requires a hosted evidence transport.")
+    if not (
+        turn.model_transport == ledger.model_transport
+        and turn.response_turn == ledger.response_turn_count + 1
+        and turn.prior_transcript_fingerprint == ledger.transcript_fingerprint
+        and turn.evidence_fingerprint == ledger.evidence_fingerprint
+        and turn.base_candidate_fingerprint == ledger.accepted_plan_fingerprint
+        and turn.base_preview_fingerprint == base_preview_fingerprint
+        and turn.revision_instruction_fingerprint == revision_instruction_fingerprint
+        and turn.revision.base_candidate_fingerprint == ledger.accepted_plan_fingerprint
+    ):
+        raise ValueError("Hosted revision targets another exact transcript or preview.")
+
+
+def _rebuild_host_revision_ledger(
+    *,
+    ledger: FolderEvidenceLedgerV2,
+    segment: FolderPlanningSegmentV1,
+    response_turn: int,
+    accepted_plan_fingerprint: str,
+    selected: bool,
+) -> FolderEvidenceLedgerV2:
+    values = {
+        **{
+            field_name: getattr(ledger, field_name)
+            for field_name in FolderEvidenceLedgerV2.model_fields
+            if field_name != "transcript_fingerprint"
+        },
+        "segments": (*ledger.segments, segment),
+        "response_turn_count": response_turn,
+        "sparse_revision_submission_count": (
+            ledger.sparse_revision_submission_count + 1
+        ),
+        "user_revision_count": ledger.user_revision_count + 1,
+        "selected_proposal_revision": (
+            ledger.selected_proposal_revision + (1 if selected else 0)
+        ),
+        "accepted_plan_fingerprint": accepted_plan_fingerprint,
     }
     draft = FolderEvidenceLedgerV2.model_construct(
         **values,

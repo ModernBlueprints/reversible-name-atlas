@@ -11,6 +11,10 @@ COMMAND_HELP = (
         "app",
         "Run the native Foldweave review application or its browser fallback.",
     ),
+    (
+        "mcp",
+        "Run the provider-free Foldweave hosted-planning MCP Apps server.",
+    ),
 )
 
 
@@ -43,6 +47,10 @@ def run(argv: Sequence[str] | None = None) -> int:
         from name_atlas.foldweave_native_cli import run_foldweave_app
 
         return run_foldweave_app(arguments[1:])
+    if arguments[0] == "mcp":
+        from name_atlas.foldweave_chatgpt_mcp import run_foldweave_mcp_server
+
+        return run_foldweave_mcp_server(arguments[1:])
 
     print(f"foldweave: unknown command: {arguments[0]}", file=sys.stderr)
     build_root_parser().print_help(sys.stderr)

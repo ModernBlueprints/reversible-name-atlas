@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "build:chatgpt": "vite build --mode chatgpt-widget",
+    "build:all": "npm run build && npm run build:chatgpt",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

@@ -19,7 +19,7 @@ import {
 } from "react";
 
 import type {
-  AcceptancePayload,
+  AcceptanceBindingPayload,
   ChangeClassification,
   FolderPlanMemberChange,
   FolderPlanPreviewV1,
@@ -27,7 +27,7 @@ import type {
   Journey,
   KeepProposalPayload,
   RevisionPayload,
-  ReviewStatus,
+  ReviewDisplayStatus,
   ViewSide,
 } from "./contracts";
 
@@ -57,11 +57,13 @@ interface PendingMutationKey {
 
 export interface ReviewIslandProps {
   preview: FolderPlanPreviewV1;
-  status: ReviewStatus;
+  status: ReviewDisplayStatus;
   journey: Journey;
-  acceptPlan: (payload: AcceptancePayload) => Promise<void>;
+  acceptPlan: (payload: AcceptanceBindingPayload) => Promise<void>;
   revisePlan: (payload: RevisionPayload) => Promise<void>;
   keepPrevious: (payload: KeepProposalPayload) => Promise<void>;
+  acceptanceScopeFingerprint?: string;
+  actionsDisabled?: boolean;
   idempotencyKeyFactory?: () => string;
 }
 
@@ -90,6 +92,8 @@ export function ReviewIsland({
   acceptPlan,
   revisePlan,
   keepPrevious,
+  acceptanceScopeFingerprint = "",
+  actionsDisabled = false,
   idempotencyKeyFactory = createIdempotencyKey,
 }: ReviewIslandProps): ReactElement {
   const [side, setSide] = useState<ViewSide>("proposed");
@@ -104,6 +108,7 @@ export function ReviewIsland({
   const [expanded, setExpanded] = useState<Set<string>>(() =>
     initialExpandedPaths(preview),
   );
+  const [activeTreeKey, setActiveTreeKey] = useState<string | null>(null);
   const [revisionInstruction, setRevisionInstruction] = useState("");
   const [accepting, setAccepting] = useState(false);
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
@@ -167,6 +172,14 @@ export function ReviewIsland({
   }, [selectedId, visibleMembers]);
 
   useEffect(() => {
+    if (flatTree.some((node) => node.key === activeTreeKey)) {
+      return;
+    }
+    const selectedNode = flatTree.find((node) => node.memberId === selectedId);
+    setActiveTreeKey(selectedNode?.key ?? flatTree[0]?.key ?? null);
+  }, [activeTreeKey, flatTree, selectedId]);
+
+  useEffect(() => {
     const previous = priorPreview.current;
     if (previous.preview_fingerprint === preview.preview_fingerprint) {
       return;
@@ -204,30 +217,69 @@ export function ReviewIsland({
     index: number,
     node: TreeNode,
   ): void => {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "ArrowUp" ||
+      event.key === "Home" ||
+      event.key === "End"
+    ) {
       event.preventDefault();
-      const nextIndex = event.key === "ArrowDown" ? index + 1 : index - 1;
-      treeItemRefs.current[nextIndex]?.focus();
+      const nextIndex =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? flatTree.length - 1
+            : event.key === "ArrowDown"
+              ? index + 1
+              : index - 1;
+      focusTreeItem(nextIndex);
       return;
     }
     if (node.kind === "directory" && event.key === "ArrowRight") {
       event.preventDefault();
-      setExpanded((current) => new Set(current).add(node.path));
+      if (!expanded.has(node.path)) {
+        setExpanded((current) => new Set(current).add(node.path));
+      } else if (flatTree[index + 1]?.depth === node.depth + 1) {
+        focusTreeItem(index + 1);
+      }
+      return;
     }
-    if (node.kind === "directory" && event.key === "ArrowLeft") {
+    if (event.key === "ArrowLeft") {
       event.preventDefault();
-      setExpanded((current) => {
-        const next = new Set(current);
-        next.delete(node.path);
-        return next;
-      });
+      if (node.kind === "directory" && expanded.has(node.path)) {
+        setExpanded((current) => {
+          const next = new Set(current);
+          next.delete(node.path);
+          return next;
+        });
+        return;
+      }
+      for (let parentIndex = index - 1; parentIndex >= 0; parentIndex -= 1) {
+        if (flatTree[parentIndex]!.depth === node.depth - 1) {
+          focusTreeItem(parentIndex);
+          return;
+        }
+      }
     }
+  };
+
+  const focusTreeItem = (index: number): void => {
+    const next = flatTree[index];
+    if (!next) {
+      return;
+    }
+    setActiveTreeKey(next.key);
+    if (next.memberId !== null) {
+      setSelectedId(next.memberId);
+    }
+    treeItemRefs.current[index]?.focus();
   };
 
   const submitAcceptance = async (): Promise<void> => {
     if (
       accepting ||
       revisionBusy ||
+      actionsDisabled ||
       status.revision_failure !== null ||
       preview.counts.blocker_count > 0
     ) {
@@ -239,8 +291,7 @@ export function ReviewIsland({
       preview.expected_job_revision,
       preview.compiled_candidate_fingerprint,
       preview.preview_fingerprint,
-      status.output_parent,
-      status.result_folder_name,
+      acceptanceScopeFingerprint,
     ]);
     const idempotencyKey = mutationIdempotencyKey(
       acceptanceMutation,
@@ -252,9 +303,7 @@ export function ReviewIsland({
         candidate_fingerprint: preview.compiled_candidate_fingerprint,
         expected_revision: preview.expected_job_revision,
         idempotency_key: idempotencyKey,
-        output_parent: status.output_parent,
         preview_fingerprint: preview.preview_fingerprint,
-        result_folder_name: status.result_folder_name,
       });
       acceptanceMutation.current = null;
     } catch (error) {
@@ -268,6 +317,7 @@ export function ReviewIsland({
     if (
       revisionBusy ||
       accepting ||
+      actionsDisabled ||
       !status.revision_available ||
       instruction.length === 0
     ) {
@@ -304,7 +354,7 @@ export function ReviewIsland({
   };
 
   const submitKeepPrevious = async (): Promise<void> => {
-    if (revisionBusy || status.revision_failure === null) {
+    if (revisionBusy || actionsDisabled || status.revision_failure === null) {
       return;
     }
     setRevisionBusy(true);
@@ -424,9 +474,16 @@ export function ReviewIsland({
                     className={`fw-tree-row ${node.memberId !== null && selectedId === node.memberId ? "is-selected" : ""}`}
                     key={node.key}
                     onClick={() => {
+                      setActiveTreeKey(node.key);
                       if (isDirectory) {
                         setExpanded((current) => toggleSetValue(current, node.path));
                       }
+                      if (node.memberId !== null) {
+                        setSelectedId(node.memberId);
+                      }
+                    }}
+                    onFocus={() => {
+                      setActiveTreeKey(node.key);
                       if (node.memberId !== null) {
                         setSelectedId(node.memberId);
                       }
@@ -437,6 +494,7 @@ export function ReviewIsland({
                     }}
                     role="treeitem"
                     style={{ "--fw-depth": node.depth } as CSSProperties}
+                    tabIndex={node.key === (activeTreeKey ?? flatTree[0]?.key) ? 0 : -1}
                     type="button"
                   >
                     <span className="fw-disclosure" aria-hidden="true">
@@ -507,6 +565,7 @@ export function ReviewIsland({
               preview.counts.blocker_count > 0 ||
               accepting ||
               revisionBusy ||
+              actionsDisabled ||
               status.revision_failure !== null
             }
             intent="success"
@@ -525,13 +584,13 @@ export function ReviewIsland({
             <span>{status.revision_failure}</span>
             <div className="fw-revision-actions">
               <Button
-                disabled={!status.revision_available || revisionBusy}
+                disabled={!status.revision_available || revisionBusy || actionsDisabled}
                 onClick={() => revisionInput.current?.focus()}
               >
                 Try another change
               </Button>
               <Button
-                disabled={revisionBusy}
+                disabled={revisionBusy || actionsDisabled}
                 onClick={() => void submitKeepPrevious()}
               >
                 Keep previous proposal
@@ -545,6 +604,7 @@ export function ReviewIsland({
           Describe a change to this proposal
         </label>
         <textarea
+          disabled={actionsDisabled || accepting || revisionBusy}
           id="foldweave-revision"
           onChange={(event) => setRevisionInstruction(event.currentTarget.value)}
           placeholder="For example: keep the meeting notes together, and move the final brief into Delivery."
@@ -563,7 +623,8 @@ export function ReviewIsland({
               !status.revision_available ||
               revisionInstruction.trim().length === 0 ||
               revisionBusy ||
-              accepting
+              accepting ||
+              actionsDisabled
             }
             intent="primary"
             loading={revisionBusy}

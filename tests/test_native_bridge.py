@@ -154,6 +154,10 @@ async def test_picker_roles_use_only_fixed_shell_free_scripts(
     ]
     assert chooser in FIXED_PICKER_SCRIPTS[role]
     assert prompt in FIXED_PICKER_SCRIPTS[role]
+    assert 'tell application "System Events"' in FIXED_PICKER_SCRIPTS[role]
+    assert FIXED_PICKER_SCRIPTS[role].index("activate") < FIXED_PICKER_SCRIPTS[
+        role
+    ].index(chooser)
     assert "shell" not in factory.calls[0][2]
 
 

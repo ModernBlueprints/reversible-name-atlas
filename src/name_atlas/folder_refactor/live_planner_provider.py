@@ -23,8 +23,12 @@ from name_atlas.folder_refactor.foldweave_revision_prompt import (
     FOLDWEAVE_REVISION_RESPONSE_TOOLS,
     SubmitPlanRevisionArguments,
 )
+from name_atlas.folder_refactor.live_planner_policy import (
+    DEFAULT_LIVE_PLANNER_POLICY,
+    DEFAULT_LIVE_REVISION_POLICY,
+    LivePlannerPolicy,
+)
 from name_atlas.folder_refactor.planner_contracts import (
-    MAX_OUTPUT_TOKENS,
     FolderPlannerTurnInput,
     InspectMarkdownLinksCall,
     ListInventoryPageCall,
@@ -70,20 +74,6 @@ class _ResponsesResource(Protocol):
 
 class _ResponsesClient(Protocol):
     responses: _ResponsesResource
-
-
-@dataclass(frozen=True, slots=True)
-class LivePlannerPolicy:
-    """Fixed provider limits; SDK retries remain disabled."""
-
-    timeout_seconds: float = 120.0
-    max_output_tokens: int = MAX_OUTPUT_TOKENS
-    sdk_max_retries: Literal[0] = 0
-    reasoning_effort: Literal["medium"] = "medium"
-
-
-DEFAULT_LIVE_PLANNER_POLICY = LivePlannerPolicy()
-DEFAULT_LIVE_REVISION_POLICY = LivePlannerPolicy(max_output_tokens=8192)
 
 
 @dataclass(frozen=True, slots=True)

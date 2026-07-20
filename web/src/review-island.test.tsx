@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type {
-  AcceptancePayload,
+  AcceptanceBindingPayload,
   FolderPlanPreviewV1,
   ReviewStatus,
 } from "./contracts";
@@ -27,15 +27,15 @@ const preview: FolderPlanPreviewV1 = {
   immediate_parent_candidate_fingerprint: null,
   current_tree_members: [
     { member_id: A, member_kind: "regular_file", relative_path: ".env.local", directory_prefixes: [], protected: true },
-    { member_id: B, member_kind: "regular_file", relative_path: "notes/brief.md", directory_prefixes: ["notes"], protected: false },
+    { member_id: D, member_kind: "empty_directory", relative_path: "archive/empty", directory_prefixes: ["archive"], protected: true },
     { member_id: C, member_kind: "regular_file", relative_path: "assets/logo.png", directory_prefixes: ["assets"], protected: false },
-    { member_id: D, member_kind: "empty_directory", relative_path: "archive/empty", directory_prefixes: ["archive", "archive/empty"], protected: true },
+    { member_id: B, member_kind: "regular_file", relative_path: "notes/brief.md", directory_prefixes: ["notes"], protected: false },
   ],
   proposed_tree_members: [
     { member_id: A, member_kind: "regular_file", relative_path: ".env.local", directory_prefixes: [], protected: true },
     { member_id: C, member_kind: "regular_file", relative_path: "Delivery/brand/logo.png", directory_prefixes: ["Delivery", "Delivery/brand"], protected: false },
     { member_id: B, member_kind: "regular_file", relative_path: "Delivery/final-brief.md", directory_prefixes: ["Delivery"], protected: false },
-    { member_id: D, member_kind: "empty_directory", relative_path: "archive/empty", directory_prefixes: ["archive", "archive/empty"], protected: true },
+    { member_id: D, member_kind: "empty_directory", relative_path: "archive/empty", directory_prefixes: ["archive"], protected: true },
   ],
   member_changes: [
     {
@@ -51,18 +51,6 @@ const preview: FolderPlanPreviewV1 = {
       supported_link_effect_ids: [],
     },
     {
-      member_id: C,
-      member_kind: "regular_file",
-      current_relative_path: "assets/logo.png",
-      proposed_relative_path: "Delivery/brand/logo.png",
-      change_classification: "moved",
-      protected: false,
-      authority_source: "gpt_plan",
-      rationale: "Move the identity asset into delivery.",
-      link_updated: false,
-      supported_link_effect_ids: [],
-    },
-    {
       member_id: D,
       member_kind: "empty_directory",
       current_relative_path: "archive/empty",
@@ -71,6 +59,18 @@ const preview: FolderPlanPreviewV1 = {
       protected: true,
       authority_source: "protected",
       rationale: "Keep this explicit empty directory unchanged.",
+      link_updated: false,
+      supported_link_effect_ids: [],
+    },
+    {
+      member_id: C,
+      member_kind: "regular_file",
+      current_relative_path: "assets/logo.png",
+      proposed_relative_path: "Delivery/brand/logo.png",
+      change_classification: "moved",
+      protected: false,
+      authority_source: "gpt_plan",
+      rationale: "Move the identity asset into delivery.",
       link_updated: false,
       supported_link_effect_ids: [],
     },
@@ -193,9 +193,34 @@ describe("Foldweave review island", () => {
     await user.click(screen.getByRole("checkbox", { name: "Changed only" }));
     const tree = screen.getByRole("tree");
     const items = within(tree).getAllByRole("treeitem");
+    expect(items[0]).toHaveAttribute("tabindex", "0");
+    items.slice(1).forEach((item) => expect(item).toHaveAttribute("tabindex", "-1"));
     items[0].focus();
     fireEvent.keyDown(items[0], { key: "ArrowDown" });
     expect(items[1]).toHaveFocus();
+    expect(items[1]).toHaveAttribute("tabindex", "0");
+    expect(items[0]).toHaveAttribute("tabindex", "-1");
+    fireEvent.keyDown(items[1], { key: "End" });
+    expect(items.at(-1)).toHaveFocus();
+    fireEvent.keyDown(items.at(-1)!, { key: "Home" });
+    expect(items[0]).toHaveFocus();
+  });
+
+  it("uses standard left and right tree navigation for parents and children", async () => {
+    renderReview();
+    const finalBrief = screen.getByRole("treeitem", { name: /final-brief\.md/ });
+    finalBrief.focus();
+
+    fireEvent.keyDown(finalBrief, { key: "ArrowLeft" });
+    const delivery = screen.getByRole("treeitem", { name: "Delivery" });
+    expect(delivery).toHaveFocus();
+
+    fireEvent.keyDown(delivery, { key: "ArrowLeft" });
+    expect(delivery).toHaveAttribute("aria-expanded", "false");
+    fireEvent.keyDown(delivery, { key: "ArrowRight" });
+    expect(delivery).toHaveAttribute("aria-expanded", "true");
+    fireEvent.keyDown(delivery, { key: "ArrowRight" });
+    expect(screen.getByRole("treeitem", { name: "brand" })).toHaveFocus();
   });
 
   it("submits the exact fingerprint-bound acceptance only after the explicit click", async () => {
@@ -209,16 +234,14 @@ describe("Foldweave review island", () => {
       candidate_fingerprint: B,
       expected_revision: 3,
       idempotency_key: "test-idempotency-key",
-      output_parent: "/tmp/foldweave-output",
       preview_fingerprint: C,
-      result_folder_name: "northstar-organized",
     });
   });
 
   it("reuses the exact acceptance key after an uncertain response", async () => {
     const user = userEvent.setup();
     const acceptPlan = vi
-      .fn<(payload: AcceptancePayload) => Promise<void>>()
+      .fn<(payload: AcceptanceBindingPayload) => Promise<void>>()
       .mockRejectedValueOnce(new Error("The response was not observed."))
       .mockResolvedValueOnce(undefined);
     const idempotencyKeyFactory = vi

@@ -47,6 +47,12 @@ from name_atlas.folder_refactor.contracts import (
     FolderInventory,
     StrictFrozenModel,
 )
+from name_atlas.folder_refactor.foldweave_host_contracts import (
+    FolderHostEvidenceLedgerV1,
+    FolderHostPendingRevisionV1,
+    FolderHostPlanningStateV1,
+    HostModelTransport,
+)
 from name_atlas.folder_refactor.foldweave_planning_contracts import (
     FolderEvidenceLedgerV2,
     FolderPlannerRevisionTurnInputV1,
@@ -69,6 +75,7 @@ from name_atlas.folder_refactor.serialization import (
 FOLDER_REFACTOR_JOB_V3_SCHEMA_VERSION = "folder-refactor-job.v3"
 FOLDER_EXECUTION_AUTHORIZATION_SCHEMA_VERSION = "folder-execution-authorization.v1"
 FOLDER_KEEP_PREVIOUS_ACTION_SCHEMA_VERSION = "folder-keep-previous-action.v1"
+FOLDER_HOST_MUTATION_BINDING_SCHEMA_VERSION = "folder-host-mutation-binding.v1"
 DEFAULT_V3_JOB_DIRECTORY = Path(".foldweave/jobs")
 oslo_tz = ZoneInfo("Europe/Oslo")
 
@@ -290,6 +297,45 @@ class FolderKeepPreviousActionV1(StrictFrozenModel):
         return self
 
 
+class FolderHostMutationBindingV1(StrictFrozenModel):
+    """One exact hosted clarification mutation bound to a caller retry key."""
+
+    schema_version: Literal["folder-host-mutation-binding.v1"] = (
+        FOLDER_HOST_MUTATION_BINDING_SCHEMA_VERSION
+    )
+    operation: Literal["request_clarification", "answer_clarification"]
+    job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    expected_job_revision: int = Field(ge=0)
+    question_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    answer_fingerprint: str | None = Field(default=None, pattern=SHA256_PATTERN)
+    idempotency_key_sha256: str = Field(pattern=SHA256_PATTERN)
+    request_fingerprint: str = Field(pattern=SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_exact_request_fingerprint(self) -> Self:
+        if (self.operation == "request_clarification") != (
+            self.answer_fingerprint is None
+        ):
+            raise ValueError(
+                "Hosted clarification answer binding is present on the wrong operation."
+            )
+        expected = canonical_sha256(
+            {
+                "domain": "foldweave:host-clarification-mutation-request:v1",
+                "operation": self.operation,
+                "job_id": self.job_id,
+                "expected_job_revision": self.expected_job_revision,
+                "question_fingerprint": self.question_fingerprint,
+                "answer_fingerprint": self.answer_fingerprint,
+            }
+        )
+        if self.request_fingerprint != expected:
+            raise ValueError(
+                "Hosted clarification mutation request fingerprint is invalid."
+            )
+        return self
+
+
 class FolderJobStalenessV3(StrictFrozenModel):
     """Terminal observed evidence that an execution input changed."""
 
@@ -383,11 +429,87 @@ class GptPlannedJobAuthorityV3(StrictFrozenModel):
         return self
 
 
+class GptHostedJobAuthorityV3(StrictFrozenModel):
+    """Observable ChatGPT/Codex planning authority with no direct API claims."""
+
+    authority_schema_version: Literal["folder-gpt-hosted-job-authority.v3"] = (
+        "folder-gpt-hosted-job-authority.v3"
+    )
+    kind: Literal["gpt_hosted"] = "gpt_hosted"
+    model_transport: HostModelTransport
+    planning_state: FolderHostPlanningStateV1
+    evidence_ledger: FolderEvidenceLedgerV2 | None = None
+    execution_origin: GptPlannedExecutionOriginV2 | None = None
+    pending_revision: FolderHostPendingRevisionV1 | None = None
+
+    @model_validator(mode="after")
+    def require_truthful_hosted_authority(self) -> Self:
+        accepted = self.planning_state.status == "accepted"
+        if not (
+            accepted
+            == (self.evidence_ledger is not None)
+            == (self.execution_origin is not None)
+        ):
+            raise ValueError(
+                "Accepted hosted planning, evidence, and provenance must coincide."
+            )
+        if self.model_transport != self.planning_state.model_transport:
+            raise ValueError("Hosted authority and planning transport disagree.")
+        if self.pending_revision is not None and not accepted:
+            raise ValueError("Hosted revision requires accepted initial planning.")
+        if self.evidence_ledger is not None:
+            initial = self.evidence_ledger.initial_ledger
+            if not isinstance(initial, FolderHostEvidenceLedgerV1):
+                raise ValueError("Hosted authority requires hosted initial evidence.")
+            state = self.planning_state
+            if not (
+                self.evidence_ledger.model_transport == self.model_transport
+                and initial.provider_kind == self.model_transport
+                and initial.job_id == state.job_id
+                and initial.source_commitment == state.source_commitment
+                and initial.request_fingerprint == state.request_fingerprint
+                and initial.evidence_state == state.evidence_state
+                and initial.observable_records
+                == tuple(event.model_dump(mode="json") for event in state.events)
+                and initial.response_turn_count == state.response_turn_count
+                and initial.plan_submission_count == state.plan_submission_count
+                and initial.accepted_plan_fingerprint == state.accepted_plan_fingerprint
+            ):
+                raise ValueError(
+                    "Hosted composite evidence differs from planning state."
+                )
+        if self.execution_origin is not None:
+            ledger = self.evidence_ledger
+            if ledger is None or not (
+                self.execution_origin.model_transport == self.model_transport
+                and self.execution_origin.provider_call_count == 0
+                and not self.execution_origin.api_used
+                and self.execution_origin.store_false is None
+                and self.execution_origin.model_alias is None
+                and not self.execution_origin.returned_model_ids
+                and self.execution_origin.evidence_fingerprint
+                == ledger.evidence_fingerprint
+                and self.execution_origin.evidence_transcript_fingerprint
+                == ledger.transcript_fingerprint
+                and self.execution_origin.accepted_plan_fingerprint
+                == ledger.accepted_plan_fingerprint
+            ):
+                raise ValueError("Hosted provenance differs from composite evidence.")
+        if self.pending_revision is not None and (
+            self.pending_revision.model_transport != self.model_transport
+        ):
+            raise ValueError("Hosted pending revision uses another transport.")
+        return self
+
+
 # Existing F0a-era v3 files used the predecessor v2 authority. Keep them readable
 # without weakening new-work authority. The two GPT models share a `kind` literal,
 # so schema-shape validation, not an ambiguous discriminator, performs dispatch.
 FolderJobAuthorityV3 = (
-    GptPlannedJobAuthorityV3 | GptPlannedJobAuthorityV2 | CapsuleAppliedJobAuthorityV2
+    GptHostedJobAuthorityV3
+    | GptPlannedJobAuthorityV3
+    | GptPlannedJobAuthorityV2
+    | CapsuleAppliedJobAuthorityV2
 )
 
 
@@ -428,6 +550,10 @@ class FolderRefactorJobV3(StrictFrozenModel):
         max_length=2,
     )
     keep_previous_actions: tuple[FolderKeepPreviousActionV1, ...] = Field(
+        default=(),
+        max_length=2,
+    )
+    host_mutation_bindings: tuple[FolderHostMutationBindingV1, ...] = Field(
         default=(),
         max_length=2,
     )
@@ -574,6 +700,52 @@ class FolderRefactorJobV3(StrictFrozenModel):
                 )
             elif self.authority.pending_revision_turn is not None:
                 self._require_pending_revision_authority()
+        elif isinstance(self.authority, GptHostedJobAuthorityV3):
+            ledger = self.authority.evidence_ledger
+            origin = self.authority.execution_origin
+            if self.candidate_plan is not None and (
+                ledger is None
+                or origin is None
+                or not (
+                    self.candidate_plan.evidence_schema_version
+                    == "folder-evidence-ledger.v2"
+                    and ledger.accepted_plan_fingerprint
+                    == canonical_sha256(self.candidate_plan)
+                    and ledger.evidence_fingerprint
+                    == self.candidate_plan.evidence_fingerprint
+                    and ledger.selected_proposal_revision == self.proposal_revision
+                    and ledger.user_revision_count
+                    + (1 if self.authority.pending_revision is not None else 0)
+                    == self.revision_attempt_count
+                    and origin.accepted_plan_fingerprint
+                    == ledger.accepted_plan_fingerprint
+                )
+            ):
+                raise ValueError(
+                    "Hosted candidate differs from its planning evidence authority."
+                )
+            if self.lifecycle is FolderJobLifecycleV3.REVISING:
+                if (
+                    self.authority.pending_revision is None
+                    or self.revision_instruction is None
+                    or self.candidate_plan is None
+                    or self.preview is None
+                ):
+                    raise ValueError(
+                        "Hosted revising requires the prior preview and exact "
+                        "revision reservation."
+                    )
+                self._require_pending_host_revision_authority()
+            elif (
+                self.authority.pending_revision is not None
+                and self.lifecycle is not FolderJobLifecycleV3.BLOCKED
+            ):
+                raise ValueError(
+                    "Only hosted revising or terminal failure may retain a "
+                    "pending revision."
+                )
+            elif self.authority.pending_revision is not None:
+                self._require_pending_host_revision_authority()
         if self.lifecycle in {
             FolderJobLifecycleV3.REVIEWING,
             FolderJobLifecycleV3.REVISION_FAILED,
@@ -630,7 +802,10 @@ class FolderRefactorJobV3(StrictFrozenModel):
         if self.lifecycle is FolderJobLifecycleV3.REVISION_FAILED:
             if self.revision_failure is None:
                 raise ValueError("revision_failed requires exact failure evidence.")
-            if isinstance(self.authority, GptPlannedJobAuthorityV3) and (
+            if isinstance(
+                self.authority,
+                (GptPlannedJobAuthorityV3, GptHostedJobAuthorityV3),
+            ) and (
                 self.revision_instruction is None
                 or self.revision_failure.attempted_instruction_fingerprint
                 != self.revision_instruction.instruction_fingerprint
@@ -663,6 +838,19 @@ class FolderRefactorJobV3(StrictFrozenModel):
         )
         if len(keep_keys) != len(set(keep_keys)):
             raise ValueError("Keep-previous idempotency keys must be unique.")
+        host_mutation_keys = tuple(
+            binding.idempotency_key_sha256 for binding in self.host_mutation_bindings
+        )
+        if len(host_mutation_keys) != len(set(host_mutation_keys)):
+            raise ValueError("Hosted mutation idempotency keys must be unique.")
+        if self.host_mutation_bindings and not isinstance(
+            self.authority, GptHostedJobAuthorityV3
+        ):
+            raise ValueError("Hosted mutation bindings require hosted authority.")
+        if any(
+            binding.job_id != self.job_id for binding in self.host_mutation_bindings
+        ):
+            raise ValueError("Hosted mutation binding targets another job.")
         blocker = self.blocker_code is not None or self.blocker_message is not None
         if self.lifecycle is FolderJobLifecycleV3.BLOCKED:
             if self.blocker_code is None or self.blocker_message is None:
@@ -790,6 +978,38 @@ class FolderRefactorJobV3(StrictFrozenModel):
             and pending.provider_kind == expected_provider_kind
         ):
             raise ValueError("Pending revision targets another durable review.")
+
+    def _require_pending_host_revision_authority(self) -> None:
+        assert isinstance(self.authority, GptHostedJobAuthorityV3)
+        pending = self.authority.pending_revision
+        ledger = self.authority.evidence_ledger
+        candidate = self.candidate_plan
+        preview = self.preview
+        instruction = self.revision_instruction
+        assert pending is not None
+        assert ledger is not None
+        assert candidate is not None
+        assert preview is not None
+        assert instruction is not None
+        expected_revision_delta = (
+            1 if self.lifecycle is FolderJobLifecycleV3.REVISING else 2
+        )
+        if not (
+            pending.job_id == self.job_id
+            and pending.expected_job_revision == preview.expected_job_revision
+            and pending.expected_job_revision + expected_revision_delta == self.revision
+            and pending.proposal_revision == self.proposal_revision
+            and pending.base_candidate_fingerprint == canonical_sha256(candidate)
+            and pending.base_preview_fingerprint == preview.preview_fingerprint
+            and pending.revision_instruction_fingerprint
+            == instruction.instruction_fingerprint
+            and pending.idempotency_key_sha256 == instruction.idempotency_key_sha256
+            and pending.prior_transcript_fingerprint == ledger.transcript_fingerprint
+            and pending.response_turn == ledger.response_turn_count + 1
+            and pending.evidence_fingerprint == ledger.evidence_fingerprint
+            and pending.model_transport == self.authority.model_transport
+        ):
+            raise ValueError("Hosted pending revision targets another durable review.")
 
     def _require_preview_authority(self) -> None:
         assert self.preview is not None
@@ -1255,6 +1475,69 @@ def build_keep_previous_action(
     )
 
 
+def host_clarification_question_fingerprint(question: str) -> str:
+    """Fingerprint one exact, validated hosted clarification question."""
+
+    normalized = question.strip()
+    if not normalized or normalized != question or "\x00" in question:
+        raise FolderJobV3RevisionError(
+            "Clarification question must be nonblank, trimmed UTF-8 text."
+        )
+    return canonical_sha256(
+        {
+            "domain": "foldweave:host-clarification-question:v1",
+            "text": question,
+        }
+    )
+
+
+def build_host_mutation_binding(
+    *,
+    operation: Literal["request_clarification", "answer_clarification"],
+    job_id: str,
+    expected_job_revision: int,
+    question_fingerprint: str,
+    answer: str | None,
+    idempotency_key: str,
+) -> FolderHostMutationBindingV1:
+    """Bind one hosted clarification mutation without persisting plaintext keys."""
+
+    if operation == "request_clarification":
+        if answer is not None:
+            raise FolderJobV3RevisionError(
+                "Clarification request binding cannot contain an answer."
+            )
+        answer_fingerprint = None
+    else:
+        if answer is None or not answer or answer != answer.strip() or "\x00" in answer:
+            raise FolderJobV3RevisionError(
+                "Clarification answer must be nonblank, trimmed UTF-8 text."
+            )
+        answer_fingerprint = canonical_sha256(
+            {
+                "domain": "foldweave:host-clarification-answer:v1",
+                "text": answer,
+            }
+        )
+    request_payload = {
+        "domain": "foldweave:host-clarification-mutation-request:v1",
+        "operation": operation,
+        "job_id": job_id,
+        "expected_job_revision": expected_job_revision,
+        "question_fingerprint": question_fingerprint,
+        "answer_fingerprint": answer_fingerprint,
+    }
+    return FolderHostMutationBindingV1(
+        operation=operation,
+        job_id=job_id,
+        expected_job_revision=expected_job_revision,
+        question_fingerprint=question_fingerprint,
+        answer_fingerprint=answer_fingerprint,
+        idempotency_key_sha256=_host_mutation_key_sha256(idempotency_key),
+        request_fingerprint=canonical_sha256(request_payload),
+    )
+
+
 def expected_pending_result_path_v3(job: FolderRefactorJobV3) -> Path:
     """Return the existing engine's hidden job-owned pending path."""
 
@@ -1499,6 +1782,40 @@ def _require_append_only_action_history(
                 "Keep-previous action targets another failed preview."
             )
 
+    host_prefix = successor.host_mutation_bindings[
+        : len(current.host_mutation_bindings)
+    ]
+    if host_prefix != current.host_mutation_bindings:
+        raise FolderJobV3RevisionError(
+            "Hosted mutation idempotency history is not append-only."
+        )
+    host_added = len(successor.host_mutation_bindings) - len(
+        current.host_mutation_bindings
+    )
+    if host_added not in {0, 1}:
+        raise FolderJobV3RevisionError(
+            "A transition may append at most one hosted mutation binding."
+        )
+    if host_added:
+        binding = successor.host_mutation_bindings[-1]
+        expected_transition = {
+            "request_clarification": (
+                FolderJobLifecycleV3.PLANNING,
+                FolderJobLifecycleV3.AWAITING_CLARIFICATION,
+            ),
+            "answer_clarification": (
+                FolderJobLifecycleV3.AWAITING_CLARIFICATION,
+                FolderJobLifecycleV3.PLANNING,
+            ),
+        }[binding.operation]
+        if (
+            current.lifecycle,
+            successor.lifecycle,
+        ) != expected_transition or binding.expected_job_revision != current.revision:
+            raise FolderJobV3RevisionError(
+                "Hosted mutation binding changed outside its exact transition."
+            )
+
 
 def _require_transition_payload(
     current: FolderRefactorJobV3,
@@ -1578,6 +1895,22 @@ def _keep_previous_key_sha256(value: str) -> str:
         )
     return canonical_sha256(
         {"domain": "foldweave:keep-previous-idempotency-key:v1", "key": value}
+    )
+
+
+def _host_mutation_key_sha256(value: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or len(value.encode("utf-8")) > 256
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+    ):
+        raise FolderJobV3IdempotencyConflict(
+            "Hosted mutation idempotency key must be trimmed control-free text."
+        )
+    return canonical_sha256(
+        {"domain": "foldweave:host-mutation-idempotency-key:v1", "key": value}
     )
 
 

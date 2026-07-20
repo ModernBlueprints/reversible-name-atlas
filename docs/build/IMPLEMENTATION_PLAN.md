@@ -1,9 +1,9 @@
 # Foldweave — Sole Native-Review Implementation Plan
 
-Status: **FOLDWEAVE EXECUTION ACTIVE; F0A REVIEW AUTHORITY AND F0B NATIVE APPLICATION COMPLETE; F0C CHATGPT DEVELOPER MODE IN PROGRESS;
+Status: **FOLDWEAVE EXECUTION ACTIVE; F0A REVIEW AUTHORITY AND F0B NATIVE APPLICATION COMPLETE; F0C WAITING FOR CHATGPT DEVELOPER ACCESS; INDEPENDENT F1 WORK CONTINUES;
 CONNECTED-CHANGE C0–C7 BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **F0C_CHATGPT_DEVELOPER_MODE_IN_PROGRESS**
+Phase: **WAITING_FOR_CHATGPT_DEVELOPER_ACCESS — INDEPENDENT F1 WORK CONTINUES**
 
 Submission hold: **ACTIVE**
 
@@ -1468,11 +1468,52 @@ completed Foldweave.
 - **Owner:** primary integrator; independent transport/provenance reviewer.
 - **Allowed cut:** no ChatGPT capability cut; developer tunnel is qualification,
   not the consumer topology.
-- **Actual status:** `IN PROGRESS` from Sunday 19 July 2026 at 22:01:53 CEST.
-- **Actual verification:** F0a review authority and F0b packaged native/direct
-  planning both returned independently audited `GO`. No ChatGPT-hosted model
-  request, Secure MCP Tunnel, companion transaction, gateway deployment, or
-  direct-ledger mutation has yet been performed for F0c.
+- **Actual status:** `WAITING — WAITING_FOR_CHATGPT_DEVELOPER_ACCESS` after the
+  bounded initial implementation and two material corrections. F0c positive
+  qualification is `NO-GO`; `DEVELOPER_MODE_VERIFIED` was not achieved. This
+  is the exact external-access/host-behavior disposition, not
+  `FOLDWEAVE_PROFILE_NO_GO` and not completion.
+- **Actual verification:** the provider-free host-planning service, bounded
+  evidence tools, opaque local handles, durable `chatgpt_hosted` job authority,
+  shared review widget, deterministic tool calls, exact acceptance bindings,
+  and direct-ledger isolation are implemented. A fresh ChatGPT task reached the
+  local service through the official Secure MCP Tunnel, used real bounded tools
+  to create a 24-file proposal, stopped in `reviewing`, and rendered the exact
+  immutable preview. No result existed before acceptance. The current portable
+  widget contract uses `text/html;profile=mcp-app` and nested `_meta.ui`
+  metadata while retaining the applicable OpenAI compatibility aliases. The
+  widget prefers `window.openai.sendFollowUpMessage` when actually present and
+  otherwise uses the version-matched MCP Apps 1.0.1 request-based `ui/message`
+  contract, awaits its result, checks `isError`, and requires advertised
+  `hostCapabilities.message.text`.
+
+  The initial implementation established the host-planning transaction and
+  real preview. Correction 1 closed tool-result-envelope, nullable-field, and
+  request-versus-notification defects. Correction 2 aligned the resource and
+  capability contract with the exact official SDK/examples and repeated the
+  transaction in a clean ChatGPT task. In that clean task the host advertised
+  text-message capability and acknowledged the `ui/message` request but created
+  no user/model turn and made no Foldweave tool call. After the user enabled
+  developer mode, the primary integrator reloaded that exact in-app ChatGPT
+  task and repeated one bounded revision request; after 25 seconds the task
+  still contained only its original user/assistant turn and no model activity.
+  The durable job remained byte-identical at SHA-256
+  `0c7b28a976a030250c4b6e38f01f9b914f65204f8ac981054918c5644646c6de`,
+  lifecycle `reviewing`, job revision 9, proposal revision 0, zero revision
+  attempts, zero execution authorization, and no result. The output directory
+  remained empty. The direct ledger remained byte-identical at SHA-256
+  `7f4142aaee9bc6bb14f88c91541d9d611ef5abd1d7f4f958cd3434d401f75f0a`.
+  No direct provider fallback, fabricated revision, premature acceptance, or
+  output mutation occurred. Current evidence therefore locates the remaining
+  premise at the ChatGPT host/session/workspace capability boundary. Formal F0d
+  progression remains prohibited because F0d depends on F0c; F1 and other work
+  independent of a host-generated revision continue under the activated goal.
+  The preserved checkpoint passes 42 focused Python tests, 34 frontend tests,
+  strict TypeScript, the production Vite build, all 936 Python regression
+  tests, `uv lock --check`, Ruff lint, Ruff format over 188 files, and both Git
+  diff checks. The production widget assets are checked into the Python package;
+  the 1,357,465-byte verification wheel contains both exact JS and CSS assets
+  and requires no runtime Node build.
 
 ### F0d — Consumer gateway gate
 

@@ -1,0 +1,99 @@
+@import "./review.css";
+
+:root {
+  color-scheme: dark;
+  background: #07111f;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#foldweave-chatgpt-widget-root {
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  background: #07111f;
+}
+
+.fw-chatgpt-widget {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(85, 214, 255, 0.12), transparent 32%),
+    #07111f;
+  color: var(--fw-gray-100);
+  display: grid;
+  gap: 12px;
+  min-height: 100%;
+  padding: 14px;
+}
+
+.fw-chatgpt-header {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.fw-chatgpt-header h1 {
+  font-size: 20px;
+  margin: 3px 0 1px;
+}
+
+.fw-chatgpt-header p {
+  color: var(--fw-gray-300);
+  margin: 0;
+}
+
+.fw-chatgpt-header-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.fw-chatgpt-loading,
+.fw-chatgpt-terminal-state {
+  align-items: center;
+  background: var(--fw-navy-900) !important;
+  border: 1px solid var(--fw-line);
+  color: var(--fw-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 260px;
+  text-align: center;
+}
+
+.fw-chatgpt-terminal-state h2,
+.fw-chatgpt-terminal-state p {
+  margin: 0;
+}
+
+.fw-chatgpt-terminal-state p {
+  color: var(--fw-gray-300);
+  max-width: 580px;
+}
+
+.fw-chatgpt-terminal-state .bp6-callout {
+  max-width: 580px;
+  width: 100%;
+}
+
+@media (max-width: 620px) {
+  .fw-chatgpt-widget {
+    padding: 9px;
+  }
+
+  .fw-chatgpt-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fw-chatgpt-header-actions {
+    justify-content: space-between;
+  }
+}

@@ -6,6 +6,7 @@ import { StrictMode, type ReactElement, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
+  type AcceptanceBindingPayload,
   type AcceptancePayload,
   type FolderPlanPreviewV1,
   type Journey,
@@ -62,7 +63,12 @@ function ReviewEntry({ bootstrap }: { bootstrap: Bootstrap }): ReactElement {
     return <ReviewLoading />;
   }
 
-  const acceptPlan = async (payload: AcceptancePayload): Promise<void> => {
+  const acceptPlan = async (binding: AcceptanceBindingPayload): Promise<void> => {
+    const payload: AcceptancePayload = {
+      ...binding,
+      output_parent: status.output_parent,
+      result_folder_name: status.result_folder_name,
+    };
     const response = await fetch(`/api/jobs/${encodeURIComponent(bootstrap.jobId)}/accept`, {
       method: "POST",
       credentials: "same-origin",
@@ -130,6 +136,10 @@ function ReviewEntry({ bootstrap }: { bootstrap: Bootstrap }): ReactElement {
 
   return (
     <ReviewIsland
+      acceptanceScopeFingerprint={JSON.stringify([
+        status.output_parent,
+        status.result_folder_name,
+      ])}
       acceptPlan={acceptPlan}
       journey={bootstrap.journey}
       keepPrevious={keepPrevious}
