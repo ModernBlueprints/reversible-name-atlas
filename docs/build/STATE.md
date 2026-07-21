@@ -1,9 +1,9 @@
 # Foldweave build state
 
-Observed: **Tuesday 21 July 2026 at 11:24:38 CEST** using
+Observed: **Tuesday 21 July 2026 at 11:34:10 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
-Phase: **F5–F6 RELEASE QUALIFICATION AND CLEAN-CLONE ACCEPTANCE**
+Phase: **RELEASE CANDIDATE SELECTED — WAITING_FOR_BRANCH_PUSH_AND_SUBMISSION_RESERVE**
 
 Submission hold: **ACTIVE**
 
@@ -12,9 +12,11 @@ deployment, OAuth connection, pairing, outbound companion WSS, opaque local
 selection, consumer root planning/review/revision, exact acceptance, independent
 verification, reconstruction, reconnect, and refusal qualification are no
 longer blocked. The final native-macOS visual polish and release qualification
-have completed. The remaining work is release qualification, clean-clone
-reproduction, final documentation synchronization, and commit/push. This is
-active work rather than a user-owned or global blocker.
+have completed. Release-candidate commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` has passed local and clean-clone
+acceptance. The remaining independent work is final branch push verification and
+then the submission-reserve work. This is active work rather than a user-owned
+or global blocker.
 
 ## Activation and repository
 
@@ -26,19 +28,19 @@ active work rather than a user-owned or global blocker.
 | Historical C+0 | Saturday 18 July 2026 at 23:31:39 CEST — `PRESERVED` |
 | Foldweave F+0 | Sunday 19 July 2026 at 17:18:14 CEST — `ACTIVE` |
 | Current branch | `revision/foldweave-native-review` |
-| Latest published checkpoint and upstream | `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` — `feat: deliver Foldweave native review and shared planning` |
+| Latest local release candidate | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` — `feat: qualify Foldweave release candidate`; push pending at this observation |
 | Exact predecessor, `main`, `origin/main`, and previous revision | `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
 | Historical portable branch | local and remote `revision/portable-change-receipt` at `4baec1ed7b8553775527e3be506edab584b2b8b3` — unchanged |
-| Working tree at observation | intentionally dirty with in-scope F3–F6 visual, screenshot, plugin-cachebuster, release-document, and qualification corrections after `719fc18`; nothing is staged and no unrelated work was discarded |
+| Working tree at observation | intentionally dirty only with post-clean-clone release-state documentation updates after local release-candidate commit `4e9ec44`; nothing is staged and no unrelated work was discarded |
 
 ## Remaining fixed windows
 
 | Boundary | Absolute Oslo time | Remaining at observation |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 10 hours, 24 minutes, 38 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 5 hours, 24 minutes, 38 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 1 hour, 24 minutes, 38 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 14 hours, 35 minutes, 21 seconds |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 10 hours, 34 minutes, 10 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 5 hours, 34 minutes, 10 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 1 hour, 34 minutes, 10 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 14 hours, 25 minutes, 49 seconds |
 
 These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
@@ -60,12 +62,12 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 | ChatGPT-hosted evidence | live root and imported-Change-File derivative review/revision/acceptance/verification/Change File/reconstruction `VERIFIED COMPLETE` in developer mode; consumer topology remains F0d |
 | Consumer gateway and companion | `VERIFIED COMPLETE — GO`; live OAuth, pairing, outbound WSS, opaque selection, origin and receiver-derivative transactions, reconnect, rehydration, deployed refusal checks, and complete automated hostile matrix pass |
 | ChatGPT distribution | `DEVELOPER_MODE_VERIFIED`; `CONSUMER_PAIRING_VERIFIED`; `PUBLICATION_READY` for technical review/submission; `SUBMITTED_FOR_REVIEW`, `APPROVED`, and `PUBLISHED` not achieved |
-| Reviewed MCP/Codex | shared MCP, plugin `0.1.0+codex.20260721091729` installation/cache inspection, stdio MCP initialization/tool discovery, and public consumer transport qualification `VERIFIED COMPLETE`; unrelated clean-clone reproduction remains release-candidate work |
+| Reviewed MCP/Codex | shared MCP, plugin `0.1.0+codex.20260721091729` installation/cache inspection, stdio MCP initialization/tool discovery, public consumer transport qualification, and clean-clone plugin validation/MCP discovery `VERIFIED COMPLETE` |
 | Budget migration | `COMPLETE`; sole USD 40 ledger preserved |
-| Foldweave F3 product experience | `VERIFIED COMPLETE FOR CURRENT WORKTREE` — functional native/browser/ChatGPT journeys, recovery, reconnect, objective visual checks, final macOS visual polish, current screenshot set, and thumbnail hashes pass; final user acceptance and clean-clone reproduction remain |
+| Foldweave F3 product experience | `VERIFIED COMPLETE` — functional native/browser/ChatGPT journeys, recovery, reconnect, objective visual checks, final macOS visual polish, current screenshot set, and thumbnail hashes pass |
 | Foldweave F4 qualification | `VERIFIED COMPLETE` — direct, developer-hosted, consumer-hosted, keyless replay, installed Codex, reconnect, refusal, verification, and reconstruction gates pass |
 | Feature freeze | absolute boundary passed; only release-safe defect, proof, accessibility, visual, packaging, documentation, screenshot, claim, and release work permitted |
-| Foldweave release materials | current README, limitations, provenance, build log, screenshot package, thumbnail, and submission package are being synchronized against the current worktree; final release-candidate acceptance remains pending |
+| Foldweave release materials | current README, limitations, provenance, build log, screenshot package, thumbnail, and submission package are synchronized against the accepted release candidate; branch push remains pending |
 | Devpost submission | `NOT PERFORMED`; hold active |
 
 ## F0c completion evidence
@@ -307,22 +309,21 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
 ## Exact next operation
 
-`Run the F5–F6 release qualification checks, perform clean-clone reproduction,
-commit and push the selected Foldweave release candidate, and keep the
+`Commit the post-clean-clone release-state documentation update, push
+revision/foldweave-native-review, verify the remote branch SHA, and keep the
 submission hold active.`
 
 ## Compact recovery capsule
 
-- **Phase:** `F5–F6 RELEASE QUALIFICATION AND CLEAN-CLONE ACCEPTANCE`
+- **Phase:** `RELEASE CANDIDATE SELECTED — WAITING_FOR_BRANCH_PUSH_AND_SUBMISSION_RESERVE`
 - **Branch / checkpoint:** `revision/foldweave-native-review` /
-  `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87`; current in-scope corrections are
-  uncommitted
+  `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`; post-clean-clone
+  release-state documentation updates are uncommitted
 - **Current milestone:** F0c, F1, and complete F2 live/deterministic evidence;
   deployed F0d consumer origin and receiver-derivative plan/review/revision/
   acceptance/verification/reconstruction plus reconnect/refusal qualification
-  pass; F3 visual polish and screenshot/thumbnail evidence pass in the current
-  worktree; F5/F6 release qualification and clean-clone reproduction are in
-  progress
+  pass; F3 visual polish and screenshot/thumbnail evidence pass; F5/F6 local
+  and clean-clone release qualification pass; branch push is next
 - **Job / preview:** consumer root job
   `976daca126a648a8bee4a5a4d62b6f8c`, revision 11/proposal revision 1
   `verified`; candidate/preview and verified artifact fingerprints recorded

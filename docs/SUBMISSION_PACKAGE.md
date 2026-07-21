@@ -36,11 +36,11 @@ external approval, release the submission hold, or authorize final submission.
 | Public consumer gateway | `CONSUMER_PAIRING_VERIFIED`; deployment `d14d051d-8920-44ea-b336-f3bbea2f6936`, version `9ac88da8-9f85-4685-8a07-073d44b909b9`, is live at <https://foldweave-gateway.skybert-ghostline.workers.dev> and its health endpoint reports ready |
 | Consumer pairing | `CONSUMER_PAIRING_VERIFIED`; live OAuth/PKCE, one-time pairing, outbound WSS, opaque local selection, origin and receiver-derivative transactions, disconnect/reconnect, verification, reconstruction, and bounded refusal behavior passed in Google Chrome |
 | ChatGPT publication | `PUBLICATION_READY` in the narrow technical sense required to prepare an external review submission; `SUBMITTED_FOR_REVIEW`, `APPROVED`, `PUBLISHED`, and public listing are **NOT ESTABLISHED** |
-| Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; final clean-clone release acceptance remains part of the release-candidate gate |
-| Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass; final user acceptance remains pending |
-| Release candidate | **NOT YET SELECTED OR ACCEPTED** |
+| Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; clean-clone plugin validation and stdio MCP discovery passed from commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
+| Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
+| Release candidate | Commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` selected and accepted locally; branch push pending |
 | Final public `main` | Still preserves the predecessor release; Foldweave has not yet been promoted as the final accepted release |
-| Final screenshots and thumbnail | Captured and hash-recorded from the current release worktree; final release-candidate acceptance remains pending |
+| Final screenshots and thumbnail | Captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Final public video | **NOT CREATED OR UPLOADED** |
 | `/feedback` Session ID | **USER ACTION PENDING** |
 | Personal eligibility and ownership attestations | **USER ACTION PENDING** |
@@ -92,10 +92,10 @@ user must personally review and make every personal or legal attestation.
 | ChatGPT path | ChatGPT supplies model inference; no hidden Foldweave Responses API call or direct-ledger reservation |
 | Recorded path | Keyless, provider-free, clearly labelled **Recorded GPT planning run** |
 | Unchanged Change File path | Keyless and model-free deterministic review and application |
-| Final release commit | `[PENDING RELEASE-CANDIDATE ACCEPTANCE]` |
+| Final release commit | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on `revision/foldweave-native-review`; branch push pending |
 | Final native app digest | `[PENDING FINAL RELEASE BUILD AND HASH]` |
 | Final Change File, receipt, and verifier identities | `[PENDING FINAL RELEASE TRANSACTIONS]` |
-| Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured, visually reviewed, and hash-recorded; final release-candidate acceptance remains pending |
+| Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Devpost project copy | `[PENDING FOLDWEAVE REBRAND AND FINAL RELEASE SYNCHRONIZATION]` |
 | Public video URL | `[PENDING FINAL CAPTURE, USER VOICE, EDIT, PUBLIC UPLOAD, AND PLAYBACK VERIFICATION]` |
 | `/feedback` Session ID | `[USER ACTION REQUIRED IN THE PRIMARY CODEX TASK]` |
@@ -900,9 +900,8 @@ Current screenshot and thumbnail hashes:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-These hashes are current working-tree release evidence. The final release SHA is
-not selected until release-candidate acceptance and clean-clone reproduction
-pass.
+These hashes are accepted release-candidate evidence for commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
 
 ## Claims and limitations
 
@@ -1034,7 +1033,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 | Results verify without source or key | Unrelated-location source-free verifier | `VERIFIED` |
 | Each transaction reconstructs its own selected source | Verify-first no-replace reconstruction and exact snapshot equality | `VERIFIED` |
 | Native macOS app works | Clean built `.app`, unrelated-path launch, picker, Keychain, live review/revision/accept, proof, restart, shutdown | `VERIFIED AS UNSIGNED/AD-HOC APP; FINAL RELEASE BUILD PENDING` |
-| Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CURRENT INSTALLED-COPY QUALIFICATION EXISTS; FINAL CLEAN-CLONE RELEASE PASS PENDING` |
+| Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
 | Foldweave is recording-ready | Accepted release commit, clean clone, all mandatory modes, final media package, no planned product/design work | `NOT YET ESTABLISHED` |
@@ -1071,7 +1070,8 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 - [x] Enter feature freeze with every mandatory path continuously runnable;
       the absolute feature-freeze boundary is active and only release-safe work
       remains.
-- [ ] Select one Foldweave release-candidate commit.
+- [x] Select one Foldweave release-candidate commit:
+      `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
 - [ ] Reproduce the complete Python, frontend, gateway, native, MCP, Codex,
       direct, ChatGPT, replay, unchanged-apply, derivative, verifier,
       reconstruction, negative, race, and compatibility matrices from that

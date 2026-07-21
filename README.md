@@ -127,6 +127,14 @@ The current verified worktree, based on pushed checkpoint `719fc182`, records:
 | Direct API ledger | Unchanged at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`; USD 40 ceiling, 14 provider attempts, USD 13.057830 conservative exposure, and USD 0.895450 reported estimated cost |
 | Regression checkpoint | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; strict TypeScript, production builds, lock, Ruff, format, and diff checks passed |
 
+Clean-clone release acceptance for commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` passed from
+`/tmp/foldweave-clean-4e9ec44-1784626262`: `uv sync --frozen`, 1,176 Python
+tests with one upstream warning, `uv lock --check`, Ruff lint/format, Git diff
+check, frontend TypeScript, 80 Vitest tests, both frontend production builds,
+gateway TypeScript, 50 gateway tests, Wrangler dry-run build, plugin validation,
+and stdio MCP initialization/tool discovery with 22 bounded Foldweave tools.
+
 The exact changing operational state belongs in
 [`docs/build/STATE.md`](docs/build/STATE.md). This README deliberately does not
 promote an implementation checkpoint to a public listing, release candidate, or

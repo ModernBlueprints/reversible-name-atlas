@@ -914,13 +914,15 @@ Foldweave Codex plugin `0.1.0+codex.20260721091729` is installed and enabled
 from the repository marketplace. The installed cache copy was inspected, and
 the declared stdio MCP command initialized as `Foldweave` and returned 22
 bounded tools through `tools/list`. This qualifies the current plugin bundle and
-local MCP contract; a final unrelated clean-clone acceptance remains required
-before release-candidate selection.
+local MCP contract. Clean-clone plugin validation and stdio MCP discovery also
+passed from release-candidate commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
 
-The Foldweave branch remains pre-release. No ChatGPT review submission,
+The Foldweave branch remains pre-release. Release-candidate commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected locally; branch push
+remains pending. No ChatGPT review submission,
 approval, publication, or public listing; Developer-ID/notarized distribution;
-final release candidate; final clean-clone acceptance; final video;
-`/feedback`; eligibility or ownership attestation;
+final video; `/feedback`; eligibility or ownership attestation;
 submission-hold release; or Devpost submission is claimed. The submission hold
 remains active.
 
@@ -1118,8 +1120,13 @@ hash-recorded:
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
 These are current working-tree and deployed-service identities, not final
-release identities. Release-candidate commit selection, an unrelated
-clean-clone reproduction, public-`main` promotion, release media, video,
-`/feedback`,
+release identities until the branch push is verified. The clean clone at
+`/tmp/foldweave-clean-4e9ec44-1784626262` reproduced commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` with `uv sync --frozen`, 1,176
+Python tests with one upstream warning, `uv lock --check`, Ruff lint/format, Git
+diff check, frontend TypeScript, 80 Vitest tests, both frontend production
+builds, gateway TypeScript, 50 gateway tests, Wrangler dry-run build, plugin
+validation, and stdio MCP initialization/tool discovery with 22 bounded
+Foldweave tools. Public-`main` promotion, release media, video, `/feedback`,
 and submission remain pending. No ChatGPT review submission, approval,
 publication, or public listing is claimed. The submission hold remains active.
