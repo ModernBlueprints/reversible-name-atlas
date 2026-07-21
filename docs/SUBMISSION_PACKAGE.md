@@ -42,7 +42,7 @@ external approval, release the submission hold, or authorize final submission.
 | Release candidate | Product baseline `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` plus final UI/runtime checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` are selected and accepted; a fresh unrelated clean clone rebuilt and exercised the exact final product code successfully |
 | Final public `main` | Contains the accepted Foldweave release evidence through an ordinary no-force fast-forward; the exact current SHA is reported in the release handoff rather than embedded self-referentially |
 | Final screenshots and thumbnail | Nine UI captures, one explicitly labelled installed-copy Codex evidence card, and the thumbnail are visually reviewed, hash-recorded, and published in current release-evidence history; final focus/runtime corrections are verified separately and do not make a false recapture claim |
-| Final public video | **VERIFIED PUBLIC** — 2:55, <https://youtu.be/aQgpK5z9OUQ>; complete public playback reached Replay at 2:55 with audio enabled; YouTube checks reported no issues |
+| Final public video | **VERIFIED PUBLIC** — replacement 2:54 fixed-frame demo at <https://youtu.be/wY6gL6wfLzo>; exact stream and public metadata verified; YouTube checks reported no issues |
 | `/feedback` Session ID | **CAPTURED PRIVATELY** — exact value reserved for required Devpost field `27950` |
 | Personal eligibility and ownership attestations | **USER ACTION PENDING** |
 | Submission-hold release | **USER ACTION PENDING** |
@@ -106,8 +106,8 @@ user must personally review and make every personal or legal attestation.
 | Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07` |
 | Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `9cadf68fe3207e6de89a2fd3b1fd7ed3d97cb7a1d41dfba483911e4f507d79e0`, receipt `0e33b16b6a7dc26cd171def18b0a01eaf0098315f32e154915373ff5cd6fcd1b`; receiver receipt `c0122b6ee7ed278c2aa7b18396bc8a35f628cbbbd0f3a0ab092f7ae0f24c77a8`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
 | Final screenshots and thumbnail | Nine Foldweave UI captures, one installed-copy Codex evidence card, and the thumbnail are visually reviewed, hash-recorded, and published in current release-evidence history; the evidence card is not represented as a literal Codex UI screenshot |
-| Devpost project copy | Public project `1327974`, version `9`, is synchronized to the accepted product candidate and canonical Foldweave repository URL and includes the judge path, thumbnail, and verified public video without exposing the private `/feedback` identifier; required submission-field answers and personal attestations remain pending |
-| Public video URL | <https://youtu.be/aQgpK5z9OUQ> — Public; exact local master duration 175.000 seconds; public playback verified end to end |
+| Devpost project copy | Public project `1327974`, version `10`, is synchronized to the accepted product candidate, canonical Foldweave repository URL, and replacement public video without exposing the private `/feedback` identifier; required submission-field answers and personal attestations remain pending |
+| Public video URL | <https://youtu.be/wY6gL6wfLzo> — Public; exact local master duration 174.000 seconds; public watch page verified |
 | `/feedback` Session ID | `[CAPTURED PRIVATELY FROM THE PRIMARY CODEX BUILD TASK; ENTER IN REQUIRED FIELD 27950]` |
 | Entrant type and country | `[USER ACTION REQUIRED; DO NOT INFER]` |
 | Eligibility/ownership attestations | `[USER ACTION REQUIRED; READ AND PERSONALLY ATTEST]` |
@@ -750,7 +750,7 @@ production hardening are outside this release.
 | Judge instructions | `Use the final README from the accepted release. The fastest keyless path is uv sync --frozen followed by uv run foldweave demo --mode replay. Review the proposed structure, accept the exact preview, verify the separate result, and recreate the selected source. No API key is required for replay.` |
 | Plugin/developer-tool instructions | `Use the final plugins/foldweave/README.md from the accepted clean clone. Install foldweave@personal, restart or refresh Codex, open a fresh task, and invoke the installed Foldweave tools. Installed-copy release qualification is verified evidence for the accepted release candidate.` |
 | ChatGPT availability | `DEVELOPER_MODE_VERIFIED; CONSUMER_PAIRING_VERIFIED; technically PUBLICATION_READY. Not submitted for review, approved, published, publicly listed, or generally available.` |
-| Public video URL | `https://youtu.be/aQgpK5z9OUQ` — Public, 2:55, playback verified |
+| Public video URL | `https://youtu.be/wY6gL6wfLzo` — Public, 2:54, exact stream and metadata verified |
 | `/feedback` Session ID | `[CAPTURED PRIVATELY; USE THE EXACT PRIMARY-TASK VALUE IN FIELD 27950]` |
 | Submitter type | `[USER CONFIRM: INDIVIDUAL / TEAM / ORGANIZATION]` |
 | Country | `[USER CONFIRM; DO NOT INFER]` |
@@ -759,100 +759,79 @@ production hardening are outside this release.
 
 ## Final public video and demonstration record
 
-The final Build Week demo is public at <https://youtu.be/aQgpK5z9OUQ>.
+The replacement Build Week demo is public at <https://youtu.be/wY6gL6wfLzo>.
+It replaces the earlier moving-crop edit with a problem-first, fixed-frame
+explanation grounded in a fresh real `gpt-5.6` transaction.
 
 | Property | Verified result |
 |---|---|
-| Title | `Foldweave — Change the Structure. Keep the Connections. | OpenAI Build Week 2026` |
+| Title | `Foldweave | One change across different folder layouts | OpenAI Build Week` |
 | Visibility | Public |
-| Exact master duration | 175.000 seconds (`2:55`) |
-| Video | H.264 High, 1920×1080, 30 fps, progressive BT.709, 5,250 frames |
-| Audio | AAC-LC, 48 kHz stereo; −16.3 LUFS; true peak −4.4 dBFS |
-| Master SHA-256 | `94ce318dca73f2c6af5ad6a0ec7e0d6316b162e9c77ac436bec4a6bd660b39a8` |
-| Narration | AI-generated with OpenAI Text-to-Speech from the frozen, evidence-checked script; disclosed on screen and in the YouTube description |
-| Captions | 27-cue English SRT, SHA-256 `b39b33f811b1ff65db7fb84646160fe3dd8f7b428c69096f2d43bb38cc07b8e6`, published in YouTube Studio; public-player propagation may lag |
-| YouTube processing | Checks complete; no issues found |
-| Public playback | Verified from start to Replay at 2:55 in Google Chrome with audio enabled and autoplay disabled |
+| Exact master duration | 174.000 seconds (`2:54`) |
+| Video | H.264 High, 1920×1080, 30 fps, progressive, `yuv420p`, 5,220 frames |
+| Audio | AAC-LC, 48 kHz stereo; −16.0 LUFS; true peak −1.37 dBFS |
+| Master SHA-256 | `034465557eb6c35d947dd19af269440e8684cfb8809ff54037da94f04ce05b18` |
+| Narration | Generated with OpenAI Text-to-Speech model `gpt-4o-mini-tts-2025-12-15`, voice `cedar`; disclosed on the end card and in the YouTube description |
+| Captions | 13-cue timed English SRT, SHA-256 `4befab019e4195297e9a45d496c699006318f592eca3834c822659fc62d5eaeb`, published in YouTube Studio; public-player propagation may lag |
+| YouTube processing | Upload complete; copyright checks complete; no issues found |
+| Public verification | Public watch page loaded the exact title, problem-first description, and 2:54 stream; the complete local master decoded without error |
+| Motion and framing | Thirteen fixed visual states, hard cuts only, no pan, no zoom, no moving crop, no overlay across an app control, and a separate unclipped end card |
 
-The following table is the executed shot plan. The exported master remains five
-seconds below the three-minute maximum after narration, transitions, and final
-encoding.
+The video shows a real exact `gpt-5.6` Responses API proposal for Sofia. After
+exact acceptance, Foldweave creates and verifies a separate 24-file result and
+rewrites 23 supported Markdown links. Martin then applies the resulting
+Foldweave Change File to the same project under different local paths without a
+model call or direct-budget reservation. The two results commit the same
+organized tree:
+
+`d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`
+
+The following table is the executed fixed-frame shot plan.
 
 | Time | Visual and action | Purpose |
 |---:|---|---|
-| 0:00–0:12 | Foldweave title; one project note linking to several local files | Establish that a folder contains connections, not only filenames |
-| 0:12–0:30 | Open `Foldweave.app`; choose Sofia's folder; enter the Northstar request | Show the native, local-first start and plain-language intent |
-| 0:30–0:52 | Review **Original structure** and **Proposed structure**; search or select one changed member | Prove that the complete plan is visible before execution |
-| 0:52–1:10 | Enter one focused revision; show the replacement preview and delta | Demonstrate bounded iteration while the prior valid preview remains safe |
-| 1:10–1:26 | Select **Accept this structure and create copy**; show Done, source unchanged, and independent verification | Show exact authorization and separate verified output |
-| 1:26–1:41 | Download the Foldweave Change File; briefly show the payload-free metadata disclosure | Explain what travels and what does not |
-| 1:41–2:02 | Martin chooses CF1 and his differently arranged project; toggle **Your current folder** / **Shared proposal** | Show deterministic receiver-local review without GPT |
-| 2:02–2:22 | Build and review one T2 derivative through the selected live host; accept exact preview | Show serial collaboration rather than blind replay |
-| 2:22–2:38 | Apply CF2 to Sofia or a verified T1 result; show equal organized-tree proof and source-specific reconstruction | Demonstrate convergence and reversibility within the contract |
-| 2:38–2:48 | Brief ChatGPT widget and Codex installed-tool evidence | Explain the shared host surfaces and model-authority split |
-| 2:48–2:55 | Foldweave end card | Close with the product promise; the public repository remains in the YouTube description and Devpost field |
-
-F0d has passed, so the final video may show the qualified consumer ChatGPT path
-with the explicit same-conversation revision-recovery limitation. Do not imply
-review submission, approval, publication, public listing, or general
-availability.
+| 0:00–0:16 | Sofia and Martin show the same members under different paths | Define the portability problem immediately |
+| 0:16–0:29 | GPT-5.6, Foldweave, and human authority are separated | Explain the core architecture |
+| 0:29–0:42 | Display the exact plain-English request sent to `gpt-5.6` through the Responses API | Prove that the proposal came from a real live request |
+| 0:42–0:55 | Show Sofia's original 24-file tree | Prove that the source is untouched and no output exists |
+| 0:55–1:10 | Show the complete proposed structure and acceptance control | Prove review before execution |
+| 1:10–1:22 | Inspect a concrete Markdown destination rewrite | Show connection preservation at byte-bounded scope |
+| 1:22–1:35 | Show the separate verified result and reconstruction promise | Explain exact acceptance and proof |
+| 1:35–1:49 | Explain what the Foldweave Change File contains and excludes | Distinguish portable change metadata from project payload |
+| 1:49–2:03 | Show Martin's differently arranged current tree | Establish the receiver-local source |
+| 2:03–2:19 | Show Sofia's shared proposal against Martin's copy | Explain deterministic content and relationship matching |
+| 2:19–2:34 | Show equal organized-tree convergence | Prove model-free reuse across layouts |
+| 2:34–2:48 | Distinguish Codex, GPT-5.6, and Foldweave responsibilities | Document Build Week tool use and authority |
+| 2:48–2:54 | Separate Foldweave end card with repository and narration disclosure | Close without covering or clipping product UI |
 
 ## Timed narration script
 
-This is the frozen script used by the final OpenAI Text-to-Speech narration. It
-intentionally avoids a public-listing claim and uses the verified developer-mode
-and consumer-pairing evidence with their exact qualifications. The script
-contains **317 whitespace-delimited words**. Its 27 timed cues end at 2:53.800,
-leaving a 1.2-second silent end-card hold inside the exact 2:55 master.
+The final narration contains **300 whitespace-delimited words** in 13 timed
+cues. Each cue is aligned to one fixed visual state.
 
-> A project folder is more than filenames. Notes connect reports, research,
-> meetings, images, and working files. Reorganizing that folder with AI is easy.
-> Knowing exactly what will change, preserving the connections, and carrying the
-> same structure to a teammate's differently arranged copy is harder.
->
-> Foldweave separates planning, authorization, and proof.
->
-> Sofia selects her Apollo project and asks for a Northstar handoff. A live host
-> or this exact recorded planning run proposes one complete structure from
-> bounded evidence. The model cannot move a file or approve its own work.
->
-> Before Foldweave creates anything, Sofia sees her original folder and the
-> proposed structure. Every admitted file appears once. She can inspect moved
-> items and supported Markdown links, then request a focused revision. Fixed
-> code applies only that sparse change, rebuilds the complete proposal, and
-> checks every destination again.
->
-> Sofia accepts the exact preview. Foldweave creates a separate result, updates
-> supported link destinations, leaves her source unchanged, and verifies the
-> result independently.
->
-> The result includes a Foldweave Change File. It contains no project payload
-> bytes, but it does disclose names, structure, sizes, hashes, link
-> relationships, the instruction, targets, lineage, and proof identifiers.
->
-> Martin has the same supported project under different local paths. Foldweave
-> matches it deterministically and shows Martin's current folder against Sofia's
-> shared proposal. He can accept it unchanged without GPT, or use ChatGPT,
-> Codex, or direct GPT-5.6 planning to build the next complete proposal.
->
-> Martin creates T2 and sends a self-contained Change File back. Sofia can apply
-> it without the earlier file. Accepted T2 results converge to the same organized
-> tree, while each transaction can recreate the source it actually began with.
->
-> The native app, browser fallback, ChatGPT widget, Codex plugin, replay, and
-> Change File workflows all use one deterministic engine. Codex was the primary
-> development environment; GPT-5.6 plans intent, the user accepts the exact
-> structure, and Foldweave proves the result.
->
-> Foldweave. Change the structure. Keep the connections.
+| Time | Narration |
+|---:|---|
+| 0:00–0:16 | Sofia and Martin have the same twenty-four files and supported Markdown relationships, but their folders evolved into different layouts. A path-based rename script cannot safely carry Sofia’s organization to Martin. |
+| 0:16–0:29 | Asking a model twice can produce two different answers. Foldweave separates intent from execution. GPT-5.6 proposes one structure; deterministic code proves what it would do. |
+| 0:29–0:42 | This is a real request to exact GPT-5.6 through Foldweave’s Responses API. Sofia asks for a handoff-ready Northstar structure while keeping every file and connection. The live response produces this proposal. |
+| 0:42–0:55 | Nothing has changed yet. The source remains untouched, all twenty-four files are accounted for, and no output exists. |
+| 0:55–1:10 | Sofia switches to the complete proposal. Twenty-three paths change. Fixed code checks protected files, collisions, and every supported link before acceptance can execute anything. |
+| 1:10–1:22 | Here, one Markdown destination changes because its target moved. The prose and every non-destination byte remain the same. |
+| 1:22–1:35 | After Sofia accepts this exact preview, Foldweave creates a separate copy, verifies it, and can recreate the source layout for this transaction. |
+| 1:35–1:49 | The result includes a payload-free Foldweave Change File. It carries names, hashes, structure, link relationships, targets, and proof identifiers, but not project file contents. |
+| 1:49–2:03 | Martin chooses that Change File and his differently arranged copy. Foldweave scans his actual folder and matches every member without using Sofia’s paths as evidence. |
+| 2:03–2:19 | He compares his folder with Sofia’s proposal. Ordinary files match by size and hash. Markdown matches by unchanged bytes and link relationships. Ambiguity stops the job. |
+| 2:19–2:34 | Martin accepts without another model call. Both results converge to the same organized tree, while each receipt can recreate the source that participant actually selected. |
+| 2:34–2:48 | Codex was our primary build environment for the contracts, engine, native app, MCP integrations, and adversarial tests. GPT-5.6 handles intent. Foldweave handles execution and proof. |
+| 2:48–2:54 | Foldweave. Change the structure. Keep the connections. |
 
 Narration and media acceptance are complete:
 
-- the lexical word count and timed cue map are recorded;
-- every sentence maps to accepted release evidence;
-- the AI narration is intelligible, level-checked, and visibly disclosed;
-- the complete exported video is exactly 2:55; and
-- the public upload was played from start to Replay with audio enabled.
+- every sentence maps to accepted product evidence;
+- the audio was independently transcribed and retained the complete meaning;
+- the complete 174.000-second master decodes without error;
+- the public watch page exposes the correct 2:54 stream; and
+- no screenshot, app control, or end-card line is clipped.
 
 ## Capture and media checklist
 
@@ -923,10 +902,10 @@ Current screenshot and thumbnail hashes:
 |---|---:|---:|---|
 | `docs/screenshots/01-home.png` | 1229×768 | 49,102 | `dd1d3aedce87630f05ac7ea11662ab78ff8f3c4cf473221c490b946de5788d78` |
 | `docs/screenshots/02-create.png` | 1440×900 | 96,013 | `31b43b0f55c08da4a883614b0a8bc612bd7efdd5c79de8c027024cdcd1fce842` |
-| `docs/screenshots/03-origin-review.png` | 1728×940 | 421,008 | `36fc1998d28f574337616a944eeaa90dd019f9e4f302e5b3933d493595cbdc27` |
+| `docs/screenshots/03-origin-review.png` | 1440×900 | 389,408 | `f7c8719ba5b4e2ed2394f33becd5053580fe62dc1036ee28b6f1af76bfc143eb` |
 | `docs/screenshots/04-origin-revision.png` | 1440×900 | 172,864 | `aabb9b11534d6caa96fdaadd102f31f72828c4f735dd0f2084730ccba5ba2e30` |
 | `docs/screenshots/05-origin-done.png` | 3456×1880 | 136,825 | `30deed3a7618e42dd2a7589763fcfe7ac6d93cded51e3f6d2db740dc14e0fa25` |
-| `docs/screenshots/06-receiver-review.png` | 1440×900 | 199,274 | `4511b7f22171d50d8bc4c89ad4cd5f09e0d834bca20d8d44c68b772de8964bc9` |
+| `docs/screenshots/06-receiver-review.png` | 1440×900 | 443,476 | `63de7b9e4724f8dea4f9cc88688ffa9f366d8918688a7c9da73758910b22e015` |
 | `docs/screenshots/07-derivative-review.png` | 1440×900 | 207,760 | `f5a3a01f4beb241578a10db9cfe268e7b4c06b12467bd3e51ccd7b700a9ecc37` |
 | `docs/screenshots/08-chatgpt-widget.png` | 1536×800 | 114,880 | `18b15bb3a86c7be46760e675b2d29ede4318e9bcd4cff017468b2fcb241b35bc` |
 | `docs/screenshots/09-codex-plugin.png` | 1280×720 | 100,281 | `78a18e7f568787e2a78fca62a70e4f1d4de75665ada2c70034adf82e0be7ea70` |
@@ -934,8 +913,10 @@ Current screenshot and thumbnail hashes:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-These unchanged release-image hashes remain truthful for the default states they
-show. Final implementation checkpoint
+The origin and receiver README captures were refreshed from the same exact
+`gpt-5.6` and model-free receiver transactions shown in the replacement video.
+The remaining release-image hashes remain truthful for their recorded states.
+Final implementation checkpoint
 `68aba38a643d95f69e9aacd392904ef310f6994c` changes pointer-focus presentation
 and fail-closed noninteractive Keychain behavior; those changes are verified by
 the separate computed-style, rendered-geometry, packaged-route, and regression
@@ -1074,7 +1055,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 | Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
-| Foldweave public video is complete | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, 2:55 master, public YouTube playback, disclosed narration, and no planned product/design work | `VERIFIED — https://youtu.be/aQgpK5z9OUQ; Devpost project version 9 contains the video and canonical repository URLs` |
+| Foldweave public video is complete | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, 2:54 fixed-frame master, public YouTube stream, disclosed narration, and no planned product/design work | `VERIFIED — https://youtu.be/wY6gL6wfLzo; Devpost project version 10 contains the replacement video and canonical repository URLs` |
 | Final submission is complete | Captured `/feedback` Session ID, personal/legal attestations, explicit hold release, Devpost submission, and confirmation | `PENDING USER-OWNED ATTESTATIONS, HOLD RELEASE, AND FINAL SUBMISSION` |
 
 ## Due-diligence checklist
@@ -1154,18 +1135,17 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       video uses no music, uses repository-owned or generated visual material,
       and discloses its OpenAI Text-to-Speech narration.
 - [x] Confirm no unlicensed music or footage.
-- [x] Run the macOS synthetic-speech timing preflight for the frozen 317-word
-      narration: 150.304 seconds at 125 words per minute and 148.652 seconds
-      at 130 words per minute. This is timing-margin evidence only.
+- [x] Freeze the replacement 300-word, 13-cue narration and align every cue to
+      one fixed visual state.
 - [x] Time the final narrated master and verify comfortable cue/shot pacing.
 - [x] Generate and disclose the authorized OpenAI Text-to-Speech narration.
 - [x] Export a complete video strictly below 3:00 with intelligible audio:
-      exact duration 175.000 seconds, −16.3 LUFS, no decode errors.
+      exact duration 174.000 seconds, −16.0 LUFS, no decode errors.
 - [x] Decode and inspect the complete local master; independently audit its
       visuals, claims, timing, and sensitive-data boundary.
 - [x] Upload the video Public to YouTube and publish the English caption track.
-- [x] Play the complete public upload from start to Replay with audio enabled
-      and verify <https://youtu.be/aQgpK5z9OUQ>.
+- [x] Verify the public watch page, exact 2:54 stream, title, description,
+      checks, and published caption track at <https://youtu.be/wY6gL6wfLzo>.
 
 ### Devpost and user-owned actions
 
@@ -1188,7 +1168,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       reproduced the keyless review/accept/verify/reconstruct path, and passed
       the final local Markdown-link and release-state checks.
 - [x] Add the verified public YouTube URL and canonical Foldweave repository URL
-      to Devpost project `1327974`; version `9` reports both and remains
+      to Devpost project `1327974`; version `10` reports both and remains
       unsubmitted.
 - [x] Capture the primary Codex task's exact `/feedback` Session ID privately
       for required Devpost field `27950`; do not duplicate it in public release

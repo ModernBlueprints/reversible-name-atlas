@@ -22,7 +22,7 @@ proposed one. The user can revise the proposal or accept what is on screen. Only
 acceptance creates a separate verified copy. The original folder is left
 untouched.
 
-[Watch the 2:55 demo](https://youtu.be/aQgpK5z9OUQ) ·
+[Watch the 2:54 demo](https://youtu.be/wY6gL6wfLzo) ·
 [Try the keyless replay](#try-foldweave-in-five-minutes) ·
 [See how the cross-layout matching works](#the-key-idea-one-change-different-layouts)
 

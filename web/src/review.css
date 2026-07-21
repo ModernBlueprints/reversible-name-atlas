@@ -485,6 +485,8 @@ html[data-focus-origin="pointer"] .fw-review :where(button, input, textarea, sum
 }
 
 .fw-link-section {
+  min-width: 0;
+  overflow: hidden;
   padding: 4px 12px 14px;
 }
 
@@ -517,6 +519,8 @@ html[data-focus-origin="pointer"] .fw-review :where(button, input, textarea, sum
   display: grid;
   gap: 6px;
   grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .fw-link-section code,
@@ -527,6 +531,9 @@ html[data-focus-origin="pointer"] .fw-review :where(button, input, textarea, sum
 }
 
 .fw-link-section code {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

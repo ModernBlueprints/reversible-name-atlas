@@ -2237,23 +2237,25 @@ held.
   replay, unchanged-apply, derivative, verifier, reconstruction, and gateway
   paths remain stable. Nine UI captures, one explicitly labelled installed-copy
   Codex evidence card, and the current thumbnail are hash-recorded. The exact
-  317-word narration and 11-shot 2:55 story are frozen. A macOS speech-synthesis
-  timing proxy and the Sofia/Martin visual rehearsal passed below the
-  three-minute limit. The proxy is recording-margin evidence only; it is not the
-  user's final voice or video. No product or design change is planned. The
-  submission hold remains active.
+  original 317-word narration and 11-shot 2:55 story were frozen at F7 and later
+  superseded by the replacement public-video record below. No product or design
+  change is planned. The submission hold remains active.
 
-- **Post-F7 public-video completion:** on Tuesday 21 July 2026, the frozen
-  evidence-checked script was rendered with an authorized and visibly disclosed
-  OpenAI Text-to-Speech voice into an exact 175.000-second (`2:55`) 1920×1080
-  master. Full decode, frame-count, loudness, visual, claim, sensitive-data, and
-  independent media audits passed. The video was published Public at
-  <https://youtu.be/aQgpK5z9OUQ>, YouTube checks reported no issues, the 27-cue
-  English caption track was published in YouTube Studio, and Google Chrome
-  playback reached Replay at 2:55 with audio enabled. GitHub repository
-  `ModernBlueprints/Foldweave` is the canonical public repository, and Devpost
-  project `1327974` version `9` contains both the video and canonical repository
-  URLs and remains unsubmitted.
+- **Post-F7 replacement public-video completion:** on Tuesday 21 July 2026, a
+  fresh real exact `gpt-5.6` Responses API origin transaction and model-free
+  receiver transaction were completed and verified. Their 24-file results each
+  rewrote 23 supported links and converged to organized-tree commitment
+  `d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`.
+  The problem-first 300-word script was rendered with authorized, disclosed
+  OpenAI Text-to-Speech into an exact 174.000-second (`2:54`) fixed-frame
+  1920×1080 master. Full decode, frame-count, loudness, visual, claim,
+  sensitive-data, and transcription audits passed. The replacement video is
+  Public at <https://youtu.be/wY6gL6wfLzo>; YouTube checks reported no issues;
+  the 13-cue timed English track is published in YouTube Studio; and the public
+  player reports the exact 2:54 stream. GitHub repository
+  `ModernBlueprints/Foldweave` remains canonical. Devpost project `1327974`,
+  version `10`, contains the replacement video and canonical repository URLs;
+  Build Week `submitted_at` remains `null`.
 
 ## 19. Protected final 16-hour reserve and submission hold
 

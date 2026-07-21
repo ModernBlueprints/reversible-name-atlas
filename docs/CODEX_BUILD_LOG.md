@@ -1115,10 +1115,10 @@ hash-recorded:
 |---|---:|---:|---|
 | `docs/screenshots/01-home.png` | 1229×768 | 49,102 | `dd1d3aedce87630f05ac7ea11662ab78ff8f3c4cf473221c490b946de5788d78` |
 | `docs/screenshots/02-create.png` | 1440×900 | 96,013 | `31b43b0f55c08da4a883614b0a8bc612bd7efdd5c79de8c027024cdcd1fce842` |
-| `docs/screenshots/03-origin-review.png` | 1728×940 | 421,008 | `36fc1998d28f574337616a944eeaa90dd019f9e4f302e5b3933d493595cbdc27` |
+| `docs/screenshots/03-origin-review.png` | 1440×900 | 389,408 | `f7c8719ba5b4e2ed2394f33becd5053580fe62dc1036ee28b6f1af76bfc143eb` |
 | `docs/screenshots/04-origin-revision.png` | 1440×900 | 172,864 | `aabb9b11534d6caa96fdaadd102f31f72828c4f735dd0f2084730ccba5ba2e30` |
 | `docs/screenshots/05-origin-done.png` | 3456×1880 | 136,825 | `30deed3a7618e42dd2a7589763fcfe7ac6d93cded51e3f6d2db740dc14e0fa25` |
-| `docs/screenshots/06-receiver-review.png` | 1440×900 | 199,274 | `4511b7f22171d50d8bc4c89ad4cd5f09e0d834bca20d8d44c68b772de8964bc9` |
+| `docs/screenshots/06-receiver-review.png` | 1440×900 | 443,476 | `63de7b9e4724f8dea4f9cc88688ffa9f366d8918688a7c9da73758910b22e015` |
 | `docs/screenshots/07-derivative-review.png` | 1440×900 | 207,760 | `f5a3a01f4beb241578a10db9cfe268e7b4c06b12467bd3e51ccd7b700a9ecc37` |
 | `docs/screenshots/08-chatgpt-widget.png` | 1536×800 | 114,880 | `18b15bb3a86c7be46760e675b2d29ede4318e9bcd4cff017468b2fcb241b35bc` |
 | `docs/screenshots/09-codex-plugin.png` | 1280×720 | 100,281 | `78a18e7f568787e2a78fca62a70e4f1d4de75665ada2c70034adf82e0be7ea70` |
@@ -1126,12 +1126,11 @@ hash-recorded:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-Final release-artifact inspection found that the original bytes behind the
-`.png` filename for `03-origin-review.png` were JPEG-encoded. The capture was
-decoded and losslessly re-encoded as genuine PNG bytes; a decoded RGB
-pixel-equivalence check preserved its 1728×940 rendered content exactly. The
-table records the normalized asset's new size and SHA-256. No product state,
-claim, or visual content changed.
+The replacement-video pass later refreshed `03-origin-review.png` and
+`06-receiver-review.png` from the fresh exact `gpt-5.6` origin and model-free
+receiver transactions. Both are genuine 1440×900 PNG captures with current
+hashes in the table. The selected link rows remain inside the inspector panel,
+and the complete acceptance control remains inside the review surface.
 
 The final gallery contact-sheet review confirmed that the nine UI captures, one
 installed-copy Codex evidence card, and thumbnail retain the intended restrained
@@ -1327,7 +1326,7 @@ The final public YouTube video, user-owned eligibility and ownership entries,
 explicit submission-hold release, final submission, and confirmation remain
 pending. The submission hold remains active.
 
-### Public Build Week video and Devpost-draft synchronization — 21 July 2026
+### Initial public Build Week video and Devpost-draft synchronization — 21 July 2026
 
 The user authorized an AI-narrated final video because illness made a personal
 voice recording impractical. The frozen 317-word evidence-checked script was
@@ -1344,10 +1343,10 @@ Full decode, frame-count, audio-level, visual, claim-to-evidence,
 synchronization, and sensitive-data checks passed. An independent read-only
 media audit returned `GO` for upload.
 
-The video was uploaded and published Public on YouTube as **Foldweave — Change
-the Structure. Keep the Connections. | OpenAI Build Week 2026**:
-
-<https://youtu.be/aQgpK5z9OUQ>
+The initial video was uploaded and published Public on YouTube as **Foldweave:
+Change the Structure. Keep the Connections. | OpenAI Build Week 2026**. The
+replacement-video record below supersedes that upload and removes it from all
+active release references.
 
 YouTube reported **Checks complete. No issues found.** A 27-cue English caption
 track with SHA-256
@@ -1386,3 +1385,45 @@ description was saved with the canonical Foldweave repository URL. Devpost
 project `1327974` was updated to version `9`; connector readback reports the
 canonical repository and public video while Build Week `submitted_at` remains
 `null`. No final submission occurred, and the submission hold remains active.
+
+### Replacement problem-first video and fresh live transaction — 21 July 2026
+
+The user rejected the initial moving-crop edit because it did not explain the
+cross-layout problem clearly enough and clipped the final application frame.
+The replacement uses thirteen fixed 1920×1080 visual states, hard cuts only,
+and no pan, zoom, moving crop, or overlay across an application control. The
+final frame is a separate unclipped end card.
+
+A fresh exact `gpt-5.6` Responses API transaction produced Sofia's complete
+24-file proposal. The provider returned `gpt-5.6-sol`; the durable execution
+origin is `gpt_planned`; and one provider attempt used three bounded response
+turns. After exact acceptance, the result rewrote 23 of 23 supported Markdown
+links. Martin then applied the resulting Foldweave Change File to a differently
+arranged equivalent source with `planning_basis: none`, `model_transport: none`,
+and `execution_origin: capsule_applied`. Both verified results commit organized
+tree `d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`.
+
+The 300-word narration was rendered as thirteen aligned cues with authorized
+OpenAI Text-to-Speech model `gpt-4o-mini-tts-2025-12-15`, voice `cedar`. The
+complete master is exactly 174.000 seconds (`2:54`), 1920×1080 at 30 fps, H.264
+High / AAC-LC, `yuv420p`, with 5,220 frames, −16.0 LUFS integrated loudness,
+and true peak −1.37 dBFS. Its SHA-256 is
+`034465557eb6c35d947dd19af269440e8684cfb8809ff54037da94f04ce05b18`.
+The 13-cue timed English SRT has SHA-256
+`4befab019e4195297e9a45d496c699006318f592eca3834c822659fc62d5eaeb`.
+Full decode, fixed-frame, end-frame, loudness, transcript, visual, claim, and
+sensitive-data checks passed.
+
+The replacement was published Public as **Foldweave | One change across
+different folder layouts | OpenAI Build Week**:
+
+<https://youtu.be/wY6gL6wfLzo>
+
+YouTube reported **Checks complete. No issues found.** The timed English caption
+track is published in Studio. Google Chrome loaded the public watch page with
+the exact title, problem-first description, and 2:54 stream. The video
+description links the canonical Foldweave repository and discloses the
+text-to-speech narration. Devpost project `1327974` was synchronized to the
+replacement URL as version `10`; connector readback returned Build Week
+`submitted_at: null`. Final Devpost submission remains prohibited until the user
+completes personal attestations and explicitly releases the hold.

@@ -1,6 +1,6 @@
 # Foldweave build state
 
-Observed: **Tuesday 21 July 2026 at 21:38:04 CEST** using
+Observed: **Wednesday 22 July 2026 at 00:08:51 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
 Phase: **WAITING_FOR_SUBMISSION_HOLD_RELEASE**
@@ -22,17 +22,17 @@ occurred.
 | Current branch | `revision/foldweave-native-review` |
 | Preserved product release baseline | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Final implementation checkpoint | `68aba38a643d95f69e9aacd392904ef310f6994c` — final UI focus and fail-closed packaged-runtime corrections included |
-| Final release-documentation locator | subject `docs: record final Foldweave release verification`, parent `68aba38a643d95f69e9aacd392904ef310f6994c`; the resulting SHA belongs in the handoff, not this file |
+| Replacement-video release locator | subject `fix: finalize Foldweave replacement demo`, parent `9d778eac35b368535c54d79e74526f40e8416751`; the resulting SHA belongs in the handoff, not this file |
 | Previous revision / portable branch | `1023999f2acc7b806775b407dc01a15af3447e90` and `revision/portable-change-receipt` at `4baec1ed7b8553775527e3be506edab584b2b8b3` — preserved |
 
 ## Remaining fixed window
 
 | Boundary | Absolute Oslo time | State at observation |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 20 hours, 38 minutes, 4 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 15 hours, 38 minutes, 4 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 11 hours, 38 minutes, 4 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 4 hours, 21 minutes, 56 seconds remained |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 23 hours, 8 minutes, 51 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 18 hours, 8 minutes, 51 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 14 hours, 8 minutes, 51 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 1 hour, 51 minutes, 8 seconds remained |
 
 F+0 did not reset the 44-hour envelope. Only release-safe work is now
 permitted.
@@ -50,10 +50,10 @@ permitted.
 | Gateway and companion | `VERIFIED COMPLETE` — deployed `workers.dev` gateway, OAuth/pairing, outbound companion, reconnect, and refusal matrix |
 | Regression and source checks | 1,184 Python tests, 80 frontend tests, 50 gateway tests; lock, lint, format, packaging, visual, and claim scans pass as recorded in the plan and build log |
 | Public clone judge path | `VERIFIED COMPLETE` — public `main` clone installed with `uv sync --frozen`; keyless replay reached review, served `/review`, accepted the exact preview, verified, and reconstructed source paths and bytes exactly |
-| Public video | `VERIFIED COMPLETE` — Public at <https://youtu.be/aQgpK5z9OUQ>; exact 175.000-second master, disclosed OpenAI Text-to-Speech narration, no-music/repository-owned visuals, YouTube checks passed, English captions published in Studio, and public playback reached Replay at 2:55 with audio enabled |
+| Public video | `VERIFIED COMPLETE` — replacement is Public at <https://youtu.be/wY6gL6wfLzo>; exact 174.000-second fixed-frame master, disclosed OpenAI Text-to-Speech narration, repository-owned visuals, no music, YouTube checks passed, a 13-cue English track is published in Studio, and the public player reports the exact 2:54 stream |
 | `/feedback` | `CAPTURED PRIVATELY` — exact primary Codex Session ID reserved for Devpost field `27950` |
 | Public repository | `VERIFIED COMPLETE` — canonical repository is <https://github.com/ModernBlueprints/Foldweave>; local `origin` uses the canonical URL, both release refs are synchronized, and the historical GitHub slug redirects to Foldweave |
-| Devpost project preparation | `COMPLETE WITHOUT SUBMISSION` — public project `1327974`, version `9`, has Foldweave project copy, canonical public repository URL, technology list, thumbnail, verified public video, keyless judge guidance, and captured-status `/feedback` evidence without exposing the identifier; the exact value is ready for field `27950`, **Work & Productivity** is frozen for field `27947`, and only user-owned fields, hold release, and submission remain pending |
+| Devpost project preparation | `COMPLETE WITHOUT SUBMISSION` — public project `1327974`, version `10`, has Foldweave project copy, canonical public repository URL, technology list, thumbnail, replacement public video, keyless judge guidance, and captured-status `/feedback` evidence without exposing the identifier; the exact value is ready for field `27950`, **Work & Productivity** is frozen for field `27947`, and only user-owned fields, hold release, and submission remain pending |
 | Devpost submission | `NOT PERFORMED` |
 
 The category decision is complete: **Work & Productivity** will be supplied as
@@ -80,15 +80,20 @@ unsubmitted project record is not a missing product decision.
 - Public gateway Worker version
   `77598fb6-72e4-48ee-919e-27488a60a515` serves byte-matched `review-v37`
   assets and reports ready with all required bindings.
-- Final public media: 175.000-second H.264/AAC master SHA-256
-  `94ce318dca73f2c6af5ad6a0ec7e0d6316b162e9c77ac436bec4a6bd660b39a8`;
-  full decode, 5,250-frame count, −16.3 LUFS audio, visual/claim/privacy audit,
-  YouTube checks, and complete public playback passed. The 27-cue English SRT
-  SHA-256 is
-  `b39b33f811b1ff65db7fb84646160fe3dd8f7b428c69096f2d43bb38cc07b8e6`.
+- Replacement public media: 174.000-second H.264 High/AAC-LC master SHA-256
+  `034465557eb6c35d947dd19af269440e8684cfb8809ff54037da94f04ce05b18`;
+  full decode, 5,220 frames, fixed hard cuts, no pan or zoom, −16.0 LUFS audio,
+  −1.37 dBFS true peak, visual/claim/privacy audit, YouTube checks, and public
+  page load at the exact 2:54 duration passed. The 13-cue English SRT SHA-256 is
+  `4befab019e4195297e9a45d496c699006318f592eca3834c822659fc62d5eaeb`.
+- The replacement demonstration used an actual exact `gpt-5.6` Responses API
+  planning transaction for Sofia, followed by a separate `capsule_applied`
+  Martin transaction with no model or direct-budget use. Both 24-file results
+  rewrote 23 supported links and committed organized tree
+  `d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`.
 - Repository and Devpost readback: canonical repository
   `https://github.com/ModernBlueprints/Foldweave`; project `1327974`, version
-  `9`, video URL `https://youtu.be/aQgpK5z9OUQ`, Build Week
+  `10`, replacement video URL `https://youtu.be/wY6gL6wfLzo`, Build Week
   `submitted_at: null`; live key-date state `submissions_open` through Wednesday
   22 July 2026 at 02:00 CEST.
 
@@ -115,8 +120,8 @@ already prepared. Do not submit before that explicit release.`
   reported in the handoff.
 - **Evidence:** job/preview, Change File/receipt/verifier/reconstruction,
   native/browser, direct/hosted/replay, gateway, MCP/Codex, release visuals,
-  final 2:55 public video, canonical Foldweave repository, Devpost project
-  version 9, and the Codex evidence
+  final 2:54 replacement public video, canonical Foldweave repository, Devpost project
+  version 10, and the Codex evidence
   card are verified; detailed fingerprints remain in the sole plan and build
   log.
 - **Budget:** sole USD 40 ledger; no further direct call is needed for the
