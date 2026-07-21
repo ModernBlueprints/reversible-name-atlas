@@ -2,232 +2,252 @@
 
 **Change the structure. Keep the connections.**
 
-> OpenAI Build Week 2026 · **Work & Productivity** · Tested native platform:
-> macOS on Apple Silicon
+> OpenAI Build Week 2026 · **Work & Productivity** · Native release tested on
+> macOS Apple Silicon
 
-Foldweave is a local-first macOS application for reviewing and applying
-AI-planned changes to connected project folders. It renders the complete
-current and proposed structures before execution, lets the user request bounded
-revisions, and creates a separate verified copy only after the user accepts the
-exact preview.
+**Foldweave is a deterministic change engine for connected project folders.
+GPT-5.6 proposes a structure. Foldweave checks it, shows it to the user, and can
+apply the same approved change to another strictly equivalent copy even when
+that copy uses different local paths.**
 
-Foldweave keeps every admitted file exactly once, preserves protected members,
-rewrites the supported relative Markdown links that connect files, and produces
-a payload-free **Foldweave Change File** that another person can review, apply
-unchanged, or use as the parent of a new proposal.
+A project folder is more than a list of files. Notes point to reports, briefs
+point to research, and delivery instructions point to approved assets. Moving
+the files without updating those connections breaks the project. Foldweave
+moves the structure as a whole, updates supported Markdown links, and packages
+the approved organization as a **Foldweave Change File**. The Change File
+carries the plan and proof data, not the project files themselves.
 
-**[Watch the 2:55 OpenAI Build Week demo on YouTube](https://youtu.be/aQgpK5z9OUQ)**
+Before any result is created, Foldweave shows the full current tree beside the
+proposed one. The user can revise the proposal or accept what is on screen. Only
+acceptance creates a separate verified copy. The original folder is left
+untouched.
 
-The public demo uses an AI-generated OpenAI narration voice reading the frozen,
-evidence-checked script. The narration is disclosed on screen and is not
-presented as a live model interaction.
+[Watch the 2:55 demo](https://youtu.be/aQgpK5z9OUQ) ·
+[Try the keyless replay](#try-foldweave-in-five-minutes) ·
+[See how the cross-layout matching works](#the-key-idea-one-change-different-layouts)
 
-> **Current build status:** the Foldweave product release baseline
-> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is preserved, and final UI/runtime
-> correction checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c`
-> has passed renewed clean-clone release acceptance. The reconciled release is
-> published on the public Git repository's `main` branch; the exact final
-> documentation SHA is reported in the release handoff rather than embedded
-> self-referentially here.
-> Earlier checkpoint
-> `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified integrated
-> implementation baseline. The native application,
-> review/revision authority, purpose-built macOS visual system, direct planning,
-> ChatGPT developer mode, deterministic collaboration proof, and current
-> Foldweave installed-copy qualification plus clean-clone plugin/MCP validation
-> are recorded. The public gateway, ChatGPT connector OAuth,
-> consumer pairing, outbound companion, origin and receiver-derivative
-> transactions, reconnect, and refusal paths are also qualified through the
-> user-authorized Google Chrome route. Foldweave is technically
-> `PUBLICATION_READY` for review submission, but it has not been submitted for
-> ChatGPT review, approved, published, or publicly listed. The product release
-> and capture package are complete. The final public Build Week video is
-> available at <https://youtu.be/aQgpK5z9OUQ>; its exact duration is 2:55 and
-> its complete public playback has been verified. The primary Codex
-> `/feedback` Session ID is captured and reserved for the required Devpost
-> submission field. The project is not a notarized app, a public ChatGPT listing,
-> or a submitted Devpost entry. The Devpost draft includes the video and public
-> repository, but personal/legal attestations and the explicit submission-hold
-> release remain user-owned; the submission hold remains active.
+![Foldweave showing the proposed structure, changed paths, and rewritten links before execution](docs/screenshots/03-origin-review.png)
+
+## What makes Foldweave different
+
+Most folder automation records paths: “move A to B.” That recipe stops working
+as soon as another copy of the project is organized differently. Asking a model
+to reorganize every copy from scratch is not reliable either, because each run
+can produce a different result.
+
+Foldweave makes the **change itself** portable. Sofia can plan and approve one
+organization, then send it to Martin as a Foldweave Change File. Foldweave
+recognizes Martin's corresponding files from exact content descriptors and
+supported-link relationships instead of Sofia's paths. Martin can apply the
+same change with no model call or use it as the starting point for his own
+proposal. Both people can verify what happened, and both original folders stay
+untouched.
+
+Codex was the main build and integration environment for Foldweave, and it is
+also a working host through the product's MCP tools. In direct mode, GPT-5.6
+proposes the structure. In ChatGPT and Codex, the host model uses the same
+bounded planning tools. The deterministic engine underneath does not change.
 
 ## Why Foldweave exists
 
-A connected project folder is not just a list of filenames. Notes point to
-presentations, briefings point to research, and delivery instructions point to
-approved material. A bulk rename can make the tree look cleaner while silently
-breaking those relationships. Asking a model to reorganize two equivalent
-copies independently can also produce two different structures.
+Consider a consultant handing a project to a client, a researcher preparing a
+study archive, or a small agency cleaning up a delivery folder. The current
+layout grew organically. Some filenames are inconsistent. Drafts and approved
+material are mixed together. Markdown notes contain relative links that depend
+on today's paths.
 
-Foldweave separates model judgment from filesystem authority:
+The usual approaches leave an important gap:
 
-1. A model proposes one complete structure from bounded evidence.
-2. Deterministic code accounts for every admitted member, checks paths and
-   collisions, and derives supported-link rewrites.
-3. Foldweave renders one immutable current/proposed preview.
-4. The user accepts that exact fingerprint-bound preview or requests a bounded
-   revision.
-5. Only exact acceptance creates a separate result, receipt, verifier output,
-   reconstruction authority, and—where applicable—a Foldweave Change File.
+- **Manual reorganization is understandable but fragile.** Moving one file can
+  break references elsewhere, and proving that nothing was lost is tedious.
+- **A fixed script can move files reliably but cannot understand a plain-English
+  request** such as “separate approved deliverables from working material and
+  prepare this project for handoff.”
+- **An unconstrained AI agent can understand the request but should not be the
+  authority that mutates the filesystem, approves its own plan, or declares its
+  own work correct.** Running the same prompt independently on two copies can
+  also produce two different organizations.
 
-The source is never modified in place. A model cannot write files, approve its
-own proposal, bypass the compiler, construct a receipt, or mark a result
-verified.
+Foldweave gives each part of the job to the right authority. GPT-5.6 interprets
+the request. Fixed code accounts for every file, validates the plan, and updates
+supported links. The user approves the exact structure. The verifier checks the
+result without trusting the model or the interface.
 
-## Two complete user journeys
+## What a Foldweave transaction looks like
 
-### Journey A — Create a new Foldweave
+### 1. Describe the outcome
 
-Sofia chooses a local project folder and describes the organization she wants.
-She may use either native direct API planning or ChatGPT-hosted planning.
+Choose a local folder and write an ordinary request:
 
-```text
-local project
-  -> bounded model planning
-  -> deterministic compilation
-  -> Original structure / Proposed structure review
-  -> optional bounded revision
-  -> exact human acceptance
-  -> separate verified result
-  -> Foldweave Change File
-```
+> Prepare this Apollo client-project folder for handoff as Northstar. Keep every
+> file. Organize approved deliverables, working material, research, and meeting
+> notes into clear folders, and keep every supported link working.
 
-The review is an execution barrier. While the job is in `reviewing`, no result,
-receipt, proof, reconstruction authority, or transferable Change File exists.
-The primary action is **Accept this structure and create copy**.
+### 2. Plan with bounded evidence
 
-### Journey B — Apply or build on a shared change
+The planner can inspect the relative inventory, selected eligible text
+excerpts, and supported Markdown-link evidence. It cannot read protected
+credentials, issue filesystem commands, execute a plan, or manufacture proof.
 
-Martin selects Sofia's Foldweave Change File and his differently arranged but
-strictly equivalent project folder. Foldweave verifies the file, scans Martin's
-source, performs deterministic complete matching, and renders **Your current
-folder** versus **Shared proposal** without calling a model.
+### 3. Compile and stop at review
 
-Martin can then choose either path:
+Foldweave turns the model proposal into one immutable preview. At this point:
 
-- **Accept unchanged.** Foldweave makes no model call, reads no API key, and
-  makes no direct-API budget reservation. It creates and verifies Martin's own
-  separate result.
-- **Build the next proposal.** A direct API, ChatGPT, or Codex host proposes a
-  bounded revision in a new immutable child job. Martin reviews and accepts the
-  complete child preview. Only verified execution can export a complete,
-  self-contained child Foldweave Change File.
+- the source has not changed;
+- no result folder exists;
+- every admitted file and explicit empty directory is represented;
+- protected members, collisions, unsafe paths, and supported links have been
+  checked; and
+- the exact proposed tree and link rewrites are visible.
 
-The parent remains available if a derivative attempt fails. Foldweave supports
-explicit serial forks with immediate-parent lineage; it does not implement live
-co-editing, automatic merge, accounts, or cloud project synchronization.
+### 4. Revise or accept
 
-## Four execution modes
+The user can send a focused change request. Foldweave applies the model's sparse
+revision to the prior candidate, rebuilds the complete plan, and reruns every
+mechanical check. A failed revision leaves the prior valid preview intact.
 
-| Mode | Who supplies inference | Credential and budget behavior |
+The primary action says exactly what it does: **Accept this structure and create
+copy**.
+
+### 5. Create the result and verify it
+
+After exact acceptance, Foldweave creates a separate result, rewrites only the
+supported Markdown destination spans, and verifies the transaction. The result
+contains the organized data plus versioned plans, maps, a receipt, verification
+evidence, and the information needed to recreate the selected source layout and
+bytes in a new location.
+
+The selected source is never renamed, edited, or deleted in place.
+
+## The key idea: one change, different layouts
+
+This is what makes Foldweave useful beyond one person's machine.
+
+Sofia and Martin have the same supported project, but years of handoffs and
+personal organization have left them with different paths. In the bundled
+24-file demonstration, the same logical members begin like this:
+
+| Logical member | Sofia's path | Martin's path | Shared target |
+|---|---|---|---|
+| Client brief | `briefing/Apollo-client-brief.md` | `intake/client/brief.md` | `handoff-guides/Northstar-client-brief.md` |
+| Kickoff notes | `notes/meetings/Apollo-kickoff-notes.md` | `conversations/kickoff.md` | `meeting-notes/Northstar-kickoff-notes.md` |
+| Approved budget | `approved/Apollo-budget.csv` | `ready/budget.csv` | `approved-deliverables/Northstar-budget.csv` |
+
+Sofia asks GPT-5.6 for the Northstar handoff structure, reviews it, requests a
+small revision, and accepts it. Foldweave creates her verified result and a
+**Foldweave Change File**.
+
+That Change File does **not** contain Sofia's PDFs, images, audio, spreadsheets,
+or document payloads. It contains the reviewed structural intent and the exact
+descriptors, supported-link relationships, fingerprints, and proof identifiers
+needed to recognize an equivalent project.
+
+Martin then chooses two local items:
+
+1. Sofia's Foldweave Change File; and
+2. his differently arranged copy of the project.
+
+Foldweave does not assume that Sofia's paths exist on Martin's machine. It
+builds a deterministic one-to-one correspondence:
+
+- ordinary files are described by kind, byte size, SHA-256, suffix, and
+  protection status;
+- Markdown files are described by all bytes outside supported link destinations
+  plus the ordered link slots, fragments, and relationship structure;
+- incoming and outgoing Markdown relationships refine possible matches until
+  each member is unique;
+- protected members and explicit empty directories retain their stricter path
+  requirements; and
+- if any member is missing, extra, changed, or still ambiguous, the transaction
+  blocks instead of guessing.
+
+After every member has one unambiguous match, Foldweave applies Sofia's target
+structure to Martin's actual files. The screen compares Martin's **Your current
+folder** with Sofia's **Shared proposal**. Martin then chooses:
+
+- **Accept unchanged:** create and verify the shared organization with no GPT
+  call, no API key, and no model fallback; or
+- **Build the next proposal:** ask GPT-5.6, ChatGPT, or Codex for a bounded
+  derivative revision, review the complete replacement, and export a new
+  self-contained Change File only after verified execution.
+
+![Foldweave matching Martin's different local layout and rendering it against Sofia's shared proposal](docs/screenshots/06-receiver-review.png)
+
+Martin can send his revised Change File back to Sofia. If each copy still meets
+the supported contract, both people can produce the same organized tree. Each
+transaction can also restore the exact local layout it began with. The
+collaboration is serial and explicit. Foldweave does not live-sync, merge
+branches automatically, or reconcile independently edited projects.
+
+## Why execution can be trusted
+
+Foldweave keeps four responsibilities separate:
+
+| Authority | Responsibility | What it cannot do |
 |---|---|---|
-| Native direct API | Exact `gpt-5.6` through the OpenAI Responses API | Uses a user-supplied API key stored in macOS Keychain and the sole bounded direct-API ledger |
-| ChatGPT-hosted | The model supplied by the user's ChatGPT session | Uses no Foldweave Responses API key and does not reserve or mutate the direct-API ledger |
-| Recorded replay | No model | Keyless, model-free replay of exact labelled planning evidence |
-| Unchanged Change File application | No model | Keyless deterministic matching, review, exact application, verification, and reconstruction |
+| Model | Propose one complete plan or one bounded revision | Mutate files, accept a proposal, bypass checks, or create proof |
+| Deterministic engine | Scan, match, compile, rewrite links, create the copy and receipt, verify, and reconstruct | Invent user intent or silently resolve ambiguity |
+| User | Review and authorize one exact preview | Accidentally authorize a stale or substituted preview |
+| Independent verifier | Recompute receipt, artifact, link, and organized-tree consistency | Trust the planner or UI merely because they reported success |
 
-ChatGPT subscription access and OpenAI API billing are separate. OAuth and
-pairing authorize access to Foldweave; they do not turn a ChatGPT subscription
-into Responses API credit. ChatGPT-hosted mode is genuine only when ChatGPT
-supplies inference—there is no hidden direct API fallback.
+When the user accepts, Foldweave records which job revision, source, preview,
+and destination were approved. A stale tab, changed input, double-click, retry,
+or simultaneous revision cannot silently execute a different plan.
 
-Codex is an additional access surface over the same bounded MCP and local domain
-services. It is not a fifth provenance mode or a second execution engine.
+## Four ways to use the same engine
 
-## Current qualification snapshot
+| Mode | Planning | Credential behavior |
+|---|---|---|
+| **Native direct API** | Exact `gpt-5.6` through the OpenAI Responses API | Uses the user's API key from macOS Keychain; direct API billing is separate from ChatGPT |
+| **ChatGPT-hosted** | The model supplied by the user's ChatGPT session calls bounded Foldweave tools | No Foldweave Responses API key and no hidden direct API call |
+| **Recorded replay** | Replays exact, labelled planning evidence | Keyless and model-free; ideal for evaluation |
+| **Unchanged Change File application** | Deterministic matching and rebinding only | Keyless and model-free |
 
-The current release record distinguishes the earlier integrated baseline
-`719fc182` from product release candidate `4e9ec44`. The following evidence is
-backed by the accepted product candidate and the published revision branch:
+Codex is an additional host over the same bounded MCP tools and durable job
+authority. Native, browser, CLI, ChatGPT, and Codex surfaces do not contain
+separate planners or execution engines.
 
-| Surface | Evidence-backed state |
-|---|---|
-| Review authority | `GO` — origin and receiver jobs stop at immutable review; stale, duplicate, substituted, and conflicting acceptance paths fail closed |
-| Native macOS application | `GO` — clean-clone 55 MiB Apple-Silicon `Foldweave.app`, native picker, temporary Keychain configure/read/remove, unrelated-directory launch, durable restart, review rendering, exact acceptance, verification, reconstruction, bounded noninteractive Keychain failure, and clean shutdown; the qualification credential was removed |
-| Native visual system | Objective `GO` — restrained macOS dark utility styling across native, browser, review, settings, pairing, Done/proof, and ChatGPT widget surfaces; field labels no longer intersect controls, manual-path labels retain measured spacing, pointer clicks create no blue focus box, keyboard focus remains visible, and open/closed Settings alignment is stable; no gradients, glow, text shadows, cyber palette, or decorative full-width rules |
-| ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` — actual macOS ChatGPT, Secure MCP Tunnel, hosted tools, rendered widget, revision, exact widget acceptance, verification, Change File retrieval, and reconstruction; no direct-ledger mutation |
-| Review/revision engine | Complete through F1, including v3 jobs, immutable previews, bounded revisions, destination reservation, restart, strict legacy dispatch, and public-authority corrections |
-| Deterministic serial collaboration | Direct and actual ChatGPT-hosted derivative transactions converge to one organized-tree commitment; self-contained child Change Files, source immutability, compatibility, refusal, and participant-specific reconstruction evidence pass |
-| Consumer gateway and companion | `CONSUMER_PAIRING_VERIFIED` — Chrome completed ChatGPT connector OAuth, pairing, outbound WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, duplicate/refusal checks, verification, and reconstruction. Worker version `77598fb6-72e4-48ee-919e-27488a60a515` serves the final `review-v37` widget; technical `PUBLICATION_READY` is achieved, but review submission, approval, publication, and public listing are not claimed |
-| Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; the installed cache copy and stdio MCP initialization/tool discovery passed with 22 bounded Foldweave tools |
-| Direct API ledger | Unchanged at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`; USD 40 ceiling, 14 provider attempts, USD 13.057830 conservative exposure, and USD 0.895450 reported estimated cost |
-| Regression checkpoint | 1,184 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; strict TypeScript, production builds, lock, Ruff, format, and diff checks passed |
+## Try Foldweave in five minutes
 
-Fresh clean-clone release reproduction from exact checkpoint `68aba38` passed
-`uv sync --frozen`, 1,184 Python tests with one upstream warning,
-`uv lock --check`, Ruff lint/format, Git diff checks, frontend TypeScript, 80
-Vitest tests, both frontend production builds, gateway TypeScript, 50 gateway
-tests, Wrangler dry-run build, plugin validation, and stdio MCP initialization/
-tool discovery with 22 bounded Foldweave tools. It also rebuilt the wheel and
-the arm64 native app, ran a model-free origin and receiver transaction through
-review, exact acceptance, source-free/source-aware verification, and exact
-reconstruction, then repeated the origin transaction from the installed wheel.
-
-The exact changing operational state belongs in
-[`docs/build/STATE.md`](docs/build/STATE.md). The accepted release is public on
-`main`, and the required `/feedback` Session ID is captured privately as
-described above. The final public video is verified; personal/legal
-attestations, explicit hold release, and final Devpost submission remain
-separately controlled.
-
-## Review before execution
-
-Foldweave is a review product, not a bulk-rename screen. These verified release
-captures show the native Home surface, Sofia's immutable origin review, and
-Martin's receiver-local review of a shared proposal. The full ten-image release
-gallery—nine UI captures plus one installed-copy Codex evidence card—is in
-[`docs/screenshots/`](docs/screenshots).
-
-![Foldweave native Home — create or apply a shared change](docs/screenshots/01-home.png)
-
-![Foldweave origin review — original and proposed structures before execution](docs/screenshots/03-origin-review.png)
-
-![Foldweave receiver review — Martin's current folder versus the shared proposal](docs/screenshots/06-receiver-review.png)
-
-## Quick start
+The fastest judge path is the bundled recorded replay. It needs no API key,
+ChatGPT login, Cloudflare account, or network model request.
 
 ### Prerequisites
 
-- macOS on Apple Silicon for the tested native application;
+- macOS on Apple Silicon;
 - Python 3.11; and
 - [`uv`](https://docs.astral.sh/uv/).
 
-Node.js 22 and npm are required only to run the full frontend/gateway source
-checks or to rebuild those web assets. They are not required for the keyless
-judge path below or to run a packaged `Foldweave.app`.
+### Run the complete review flow
 
-Foldweave's accepted release evidence is public on `main`. Clone that branch
-for the judge path:
-
-```text
-git clone https://github.com/ModernBlueprints/Foldweave.git foldweave
-cd foldweave
+```bash
+git clone https://github.com/ModernBlueprints/Foldweave.git
+cd Foldweave
 uv sync --frozen
-```
 
-For development of the active release branch, use
-`revision/foldweave-native-review`; it is fast-forwarded with `main` at the
-accepted public release evidence.
-
-### Fastest judge path: a complete keyless transaction
-
-This path needs no API key, ChatGPT login, Cloudflare account, or provider
-request. It materializes the bundled synthetic 24-file Sofia project in a
-disposable directory, stops at review, and uses the same engine as the native
-app, browser fallback, MCP surfaces, and direct mode.
-
-```text
 DEMO_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/foldweave-judge.XXXXXX")"
 uv run foldweave demo --mode replay --root "$DEMO_ROOT"
-JOB="$DEMO_ROOT/jobs/active.json"
-uv run foldweave app --browser --mode development --job "$JOB"
+uv run foldweave app --browser --mode development \
+  --job "$DEMO_ROOT/jobs/active.json"
 ```
 
-In the browser, inspect **Original structure** and **Proposed structure**, then
-select **Accept this structure and create copy**. The source stays unchanged;
-the result is created separately. In a second terminal, verify and reconstruct
-the result:
+Leave that terminal running. Foldweave prints its private loopback address but
+does not open a browser for you. Open it from a second terminal:
 
-```text
+```bash
+open http://127.0.0.1:8000
+```
+
+In the review screen:
+
+1. switch between **Original structure** and **Proposed structure**;
+2. inspect a moved Markdown file and its rewritten links; and
+3. select **Accept this structure and create copy**.
+
+The source remains unchanged. In a second terminal, independently verify the
+result and recreate Sofia's exact starting layout:
+
+```bash
 RESULT="$DEMO_ROOT/results/Northstar-client-project-handoff"
 uv run foldweave verify-receipt "$RESULT" \
   --source "$DEMO_ROOT/fixture/sofia-apollo"
@@ -235,436 +255,216 @@ uv run foldweave restore-receipt "$RESULT" "$DEMO_ROOT/restored"
 diff -qr "$DEMO_ROOT/fixture/sofia-apollo" "$DEMO_ROOT/restored"
 ```
 
-The recorded replay is deliberately labelled **Recorded GPT planning run**. It
-is keyless and provider-free, bound to its exact fixture, request, schemas,
-evidence, and plan, and fails closed on fingerprint drift. It is not presented
-as live planning.
+`diff` produces no output when reconstruction is exact. The replay is visibly
+labelled **Recorded GPT planning run**; it is not presented as a live provider
+call.
 
-### Browser fallback
+The sample is entirely synthetic. It contains 24 files across Markdown, text,
+CSV, PDF, images, audio, XLSX, and opaque binary data, plus one protected file
+and one explicit empty directory. Opaque formats are carried byte-for-byte;
+Foldweave does not claim to understand their contents. See
+[`sample_data/README.md`](sample_data/README.md) for provenance.
 
-Run the same local control plane in a normal browser:
+## Other judge paths
 
-```text
-uv run foldweave app --browser
-```
+### Build the native macOS application
 
-The browser uses loopback HTTP on the same machine. It remains a supported
-fallback, but it is not a hosted web service or mobile interface.
-
-## Bundled sample data
-
-No sample download is required. The keyless judge path materializes the
-synthetic `sample_data/connected_change/` fixture family: Sofia and Martin each
-start with the same supported 24 logical files under different local layouts.
-The demo preserves every admitted file, keeps the protected `.env.example` at
-its exact path, preserves an explicit empty directory, and rewrites only the
-supported relative Markdown-link destinations. All sample project content is
-synthetic; it contains no personal project data or third-party project payload.
-
-See [`sample_data/README.md`](sample_data/README.md) for exact fixture and
-provenance details. The other sample directories are historical regression
-evidence, not alternative current judge workflows.
-
-## Build and run `Foldweave.app`
-
-The exact tested unsigned/ad-hoc judge route is to build the app locally from a
-clean Apple-Silicon clone, verify the produced bundle, and launch that same
-bundle from outside the repository:
-
-```text
-uv sync --frozen
+```bash
 uv run pyinstaller --noconfirm --clean packaging/Foldweave.spec
-codesign --verify --deep --strict --verbose=2 dist/Foldweave.app
-file dist/Foldweave.app/Contents/MacOS/Foldweave
-APP="$(pwd)/dist/Foldweave.app"
-cd /private/tmp
-open "$APP"
+open dist/Foldweave.app
 ```
 
-The tested profile is a PyInstaller `onedir --windowed` application with an
-arm64 entry point. The final clean-clone executable SHA-256 is
-`1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`;
-the corresponding wheel SHA-256 is
-`7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07`.
-Strict deep ad-hoc signature verification, unrelated-directory launch, Home,
-and the persisted review surface pass.
-Gatekeeper assessment rejects the bundle because it has no Developer ID and is
-not notarized; Foldweave therefore does not claim warning-free installation of
-a separately downloaded copy. The tested judge route is the local clean build
-above, with `uv run foldweave app --browser` as the supported fallback.
+The tested native release is an unsigned/ad-hoc Apple-Silicon judge build. It
+is not Developer-ID signed or notarized, so macOS may require an explicit local
+launch action. The browser path above uses the same local engine and remains
+the simplest evaluation route.
 
-The native app starts one private FastAPI loopback control plane, waits for its
-health endpoint, opens a narrow pywebview shell, and uses native bridges only
-for fixed-role selection, Keychain-backed settings, Finder reveal, and window
-lifecycle. Durable application state defaults to:
+### Use live GPT-5.6 planning
 
-```text
-~/Library/Application Support/Foldweave/
-```
+Provide `OPENAI_API_KEY` only through the trusted local environment, or enter it
+in Foldweave's Keychain-backed native settings. Then prepare a job:
 
-React, TypeScript, BlueprintJS, and Vite implement the focused review tree and
-shared ChatGPT widget. Node.js is a build-time dependency, not a packaged
-runtime requirement.
-
-## Direct API planning from the CLI
-
-For CLI development or automation, provide `OPENAI_API_KEY` to the trusted
-Python process through the environment. Do not put a key in the repository,
-command arguments, shell history, screenshots, logs, jobs, receipts, replays,
-Change Files, MCP traffic, or chat.
-
-Prepare an origin job and stop at review:
-
-```text
-uv run foldweave run \
-  --mode live \
+```bash
+uv run foldweave run --mode live \
   --source SOURCE_ROOT \
   --output OUTPUT_PARENT \
   --job JOB_FILE \
   --request "Prepare this project for handoff. Keep every file and every supported link working."
-```
 
-Inspect the immutable preview:
-
-```text
 uv run foldweave preview JOB_FILE
-uv run foldweave preview JOB_FILE --json
 ```
 
-Optionally request a bounded revision:
+The command stops at review. Use `foldweave revise` for an optional bounded
+change and `foldweave accept` with the displayed preview fingerprint to create
+the separate result. Direct mode uses exact alias `gpt-5.6`, strict tools and
+schemas, `store=false`, no fallback model, and no provider retry. `store=false`
+is not a zero-retention guarantee.
 
-```text
-uv run foldweave revise JOB_FILE \
-  --instruction "Move only the approved budget into an approved finance folder." \
-  --idempotency-key judge-revision-20260720-01
-```
+### Apply a shared Foldweave Change File
 
-Create a result only after accepting the exact displayed preview fingerprint:
-
-```text
-uv run foldweave accept JOB_FILE \
-  --preview-fingerprint PREVIEW_SHA256 \
-  --idempotency-key judge-accept-20260720-01
-```
-
-Direct mode uses exact alias `gpt-5.6`, the Responses API, strict tools and
-schemas, `store=false`, no provider retry, and no model fallback. `store=false`
-is not a zero-retention guarantee; standard abuse-monitoring and prompt-caching
-retention may still apply.
-
-## Apply a Foldweave Change File
-
-Prepare receiver-local review; this command does not execute the proposal:
-
-```text
+```bash
 uv run foldweave apply-change CHANGE_FILE \
   --source RECEIVER_SOURCE \
   --output OUTPUT_PARENT \
   --job RECEIVER_JOB
-```
 
-Then inspect and accept the exact receiver preview:
-
-```text
 uv run foldweave preview RECEIVER_JOB
 uv run foldweave accept RECEIVER_JOB \
   --preview-fingerprint PREVIEW_SHA256 \
-  --idempotency-key receiver-accept-20260720-01
+  --idempotency-key judge-receiver-accept-01
 ```
 
-Unchanged application is model-free. A mismatch never invokes GPT for semantic
-guessing or clarification.
+Preparation, matching, and unchanged application are model-free. A mismatch
+never triggers semantic guessing or a hidden GPT fallback.
 
-## Verify and reconstruct independently
+### Install the Codex plugin
 
-Verify a portable result without its local job, source folder, model, API key,
-or browser:
+From the repository root:
 
-```text
-uv run foldweave verify-receipt RESULT_BAG
-```
-
-Add an optional comparison against a current source:
-
-```text
-uv run foldweave verify-receipt RESULT_BAG --source SOURCE_ROOT
-```
-
-Recreate the source selected for that particular transaction into an absent
-destination:
-
-```text
-uv run foldweave restore-receipt RESULT_BAG RESTORE_DESTINATION
-```
-
-A receiver result reconstructs the receiver's own starting paths and exact
-in-scope bytes—not the producer's layout or the first ancestor of a
-collaboration chain. Verification and reconstruction are provider-independent.
-
-## ChatGPT-hosted planning
-
-The consumer architecture is:
-
-```text
-ChatGPT + Foldweave widget
-  -> authenticated public MCP gateway
-  -> paired outbound Foldweave companion
-  -> one local deterministic engine
-```
-
-The remote widget cannot access the filesystem. Local selection returns opaque,
-device-bound handles rather than absolute paths. The gateway is a transport and
-authorization layer; the local `FolderRefactorJobV3` remains the sole job and
-idempotency authority.
-
-Developer-mode qualification through OpenAI's Secure MCP Tunnel has passed in
-the actual macOS ChatGPT application. The public Cloudflare Worker is deployed
-at <https://foldweave-gateway.skybert-ghostline.workers.dev> as version
-`77598fb6-72e4-48ee-919e-27488a60a515`. The deployed `review-v37` widget bundle
-has JS
-SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`
-and CSS SHA-256
-`606dcee47981ac80cdb0a9bcbcc9f082d5bfb84087716ad8bbcbea5dd6b3b323`;
-the checked-in gateway regression passes 50/50 tests.
-
-The consumer qualification used Google Chrome for the ChatGPT OAuth callback.
-It completed connector OAuth, device pairing, outbound companion WSS, opaque
-local selection, consumer origin and receiver-derivative transactions, exact
-acceptance, verification, reconstruction, disconnect/reconnect, and deployed
-refusal checks. This establishes
-`CONSUMER_PAIRING_VERIFIED` and narrow technical `PUBLICATION_READY` for review
-submission. Foldweave has not been submitted for ChatGPT review, approved,
-published, or publicly listed.
-
-The widget's standard `ui/message` revision request was acknowledged and shown
-in ChatGPT but did not automatically trigger the host's revision tool call. A
-single explicit same-conversation continuation was verified for both consumer
-revisions. This limitation is not relabelled as automatic component-authored
-continuation.
-
-Companion commands are available for development and qualification:
-
-```text
-uv run foldweave companion register \
-  --gateway https://foldweave-gateway.skybert-ghostline.workers.dev \
-  --device-name "Judge Mac"
-uv run foldweave companion approve
-uv run foldweave companion status
-uv run foldweave companion run
-uv run foldweave companion revoke
-```
-
-Registration creates a short-lived one-time pairing code; it does not expose an
-absolute path, project payload, or provider credential. Use the standard
-browser callback route during developer qualification; browser policy is not a
-claim about Foldweave's OAuth implementation or public availability.
-
-## MCP and Codex
-
-Start the local STDIO MCP server for Codex:
-
-```text
-uv run foldweave mcp --transport stdio
-```
-
-For ChatGPT developer qualification, the same server can expose a loopback-only
-Streamable HTTP endpoint:
-
-```text
-uv run foldweave mcp \
-  --transport streamable-http \
-  --surface chatgpt-hosted
-```
-
-The shared service exposes bounded host-planning tools and high-level reviewed
-workflow tools. It exposes no arbitrary filesystem read/write/move/delete,
-shell execution, compiler bypass, receipt construction, verification override,
-or provider credential tool.
-
-Install the thin Foldweave plugin from a clean clone for developer testing:
-
-```text
+```bash
 CODEX_BIN="/Applications/ChatGPT.app/Contents/Resources/codex"
 "$CODEX_BIN" plugin marketplace add .
 "$CODEX_BIN" plugin add foldweave@personal
 ```
 
-Refresh or restart Codex and open a new task whose working directory is the
-clean clone. The plugin launches the same relative
-`uv run --frozen foldweave mcp --transport stdio` command; it contains no copy
-of the product engine and no developer-specific path.
+Refresh or restart Codex, then open a new task rooted in the clone. The plugin
+launches the repository's local STDIO MCP server and exposes bounded planning,
+review, acceptance, verification, and reconstruction tools. It never exposes
+arbitrary filesystem or shell access. Full install, use, and uninstall
+instructions are in
+[`plugins/foldweave/README.md`](plugins/foldweave/README.md).
 
-Uninstall with:
-
-```text
-"$CODEX_BIN" plugin remove foldweave@personal
-"$CODEX_BIN" plugin marketplace remove personal
-```
-
-Current plugin version `0.1.0+codex.20260721091729` is installed and enabled
-from the repository marketplace. Its installed cache copy was inspected, and
-the declared stdio MCP command initialized as `Foldweave` and returned 22
-bounded tools through `tools/list`. Fresh clean-clone plugin validation and
-stdio MCP discovery passed for the accepted product candidate. The earlier
-installed-copy UI invocation remains the qualified local transaction; no claim
-is made that a separate fresh clean-clone GUI invocation occurred during this
-final package reproduction. Historical Name Atlas plugin qualification remains
-predecessor evidence and is not relabelled.
-
-## Supported folder and connection contract
-
-A job accepts an existing readable folder with:
-
-- 1–500 regular files;
-- at most 1,000 directories;
-- at most 10,000 supported local Markdown references; and
-- `.md` or `.markdown` files no larger than 16 MiB each.
-
-Foldweave includes hidden regular files and explicit empty directories. It
-blocks on symlinks, hard-linked regular files, special or unreadable members,
-changing input, unsafe source/output overlap, inadequate capacity, or an
-existing destination.
-
-Protected dotfiles, version-control internals, and common credential/key files
-remain at their exact relative paths and are never exposed as model evidence.
-
-“Connections” means only the supported relative Markdown links inside the
-selected folder:
-
-- inline links and inline images in UTF-8 Markdown;
-- relative local file targets, including lexically safe in-root `../` paths;
-- optional fragments; and
-- strict percent-decoding and canonical rewriting.
-
-Foldweave does not claim to update arbitrary references inside source code,
-databases, Office files, PDFs, design files, spreadsheets, or media catalogs.
-Opaque files are copied byte-for-byte; their contents are not semantically
-understood.
-
-## Foldweave Change Files and proof
-
-New output uses `*.foldweave-change.json`. Each verified child file is complete
-and self-contained, records one immediate parent, and is usable without its
-parent file. Historical `*.nameatlas-change.json` files and v1/v2 artifacts
-remain under strict legacy dispatch.
-
-> A Foldweave Change File contains no project payload bytes. It does contain
-> project names and structure, file sizes and hashes, supported-link
-> relationships, the original instruction, target names, lineage, and proof
-> identifiers.
-
-The accurate privacy claim is **No project payload bytes are transferred.** It
-is not accurate to say that nothing about the project is shared.
-
-An accepted result is a BagIt-backed portable folder:
+## Architecture
 
 ```text
-<verified-result>/
-├── data/          # the reorganized project
-└── name-atlas/    # versioned plans, maps, proof, receipt, and restore data
+Foldweave.app   Browser   CLI   ChatGPT widget   Codex plugin
+      \            |      |          |               /
+       +-----------+------+----------+--------------+
+                              |
+                one FastAPI control plane
+                              |
+          one durable FolderRefactorJobV3 authority
+                              |
+     scanner -> planner tools -> compiler -> immutable preview
+                              |
+       copy transaction -> receipt -> verifier -> reconstruction
 ```
 
-The historical `name-atlas/` artifact path is intentionally preserved for
-schema and fingerprint compatibility. Receipts and Change Files support strict
-identity and internal-consistency verification. They are not signatures and do
-not prove sender identity, authorship, institutional authorization, historical
-authenticity, or tamper-proofing.
+- **Python 3.11, Pydantic v2, FastAPI, and standard filesystem primitives**
+  implement the local domain engine and strict versioned contracts.
+- **React 18, TypeScript, BlueprintJS, and Vite** implement the focused visual
+  review tree shared by the native/browser surface and ChatGPT widget.
+- **pywebview and PyInstaller** provide the narrow macOS shell; Keychain stores
+  the direct API credential outside React and browser storage.
+- **MCP** exposes the same bounded domain operations to Codex and ChatGPT.
+- **A Cloudflare Workers OAuth gateway and outbound paired companion** let
+  ChatGPT reach the local engine without exposing a public inbound listener or
+  sending absolute local paths through the gateway.
+- **BagIt and canonical SHA-256 commitments** support portable receipts,
+  independent verification, Change Files, and reconstruction.
+
+The gateway is transport, not product authority. Durable job state, file
+access, execution, proof, and idempotency remain local.
+
+## Supported boundary
+
+Foldweave accepts an existing readable folder with up to 500 regular files,
+1,000 directories, and 10,000 supported local Markdown references. It includes
+hidden regular files and explicit empty directories, and blocks on symlinks,
+hard links, special or unreadable members, changing input, unsafe overlap, an
+existing destination, or inadequate capacity.
+
+“Connections” currently means UTF-8 inline Markdown links and images whose
+destinations are relative local files inside the selected root, including safe
+in-root `../` paths and optional fragments. Foldweave rewrites only the exact
+destination spans. It does not claim to understand references embedded in
+source code, databases, Office documents, PDFs, design files, spreadsheets, or
+media.
+
+A Foldweave Change File contains no project payload bytes, but it does disclose
+project names and structure, file sizes and hashes, supported-link
+relationships, the instruction, target names, immediate-parent lineage where
+applicable, and proof identifiers.
+
+The receiver must still contain the same supported project. If a file is
+missing, extra, changed, or impossible to match uniquely, Foldweave stops
+instead of guessing. It does not try to merge independently edited copies or
+authenticate the sender of a Change File.
+
+Only macOS Apple Silicon has been tested as a native application. The complete
+boundary is in
+[`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+
+## How Codex and GPT-5.6 were used
+
+### We began with a project-selection tournament
+
+Before writing product code, we used Codex to compare several Build Week ideas.
+We tested each idea against user value, technical feasibility, differentiation,
+demo clarity, and whether we could build one complete trustworthy transaction
+in the available time. That process led us to the connected-folder problem and
+one clear rule: **let AI interpret intent, but keep execution, verification, and
+final approval under deterministic and human control.**
+
+The tournament was a decision tool, not part of the Foldweave runtime. Its
+scoring and evaluator machinery is intentionally not included in this product
+repository.
+
+### Codex was the primary build and integration environment
+
+Codex was our main development environment. We used it to turn the selected idea
+into working end-to-end flows, then to attack the cases that could make those
+flows incorrect or misleading. It accelerated work on:
+
+- the scanner, compiler, safe path rules, Markdown link rewriting, and copy
+  transaction;
+- review jobs, revisions, exact acceptance, retries, race handling, and restart
+  recovery;
+- path-independent receiver matching, Change File lineage, receipts,
+  independent verification, convergence, and source-specific reconstruction;
+- the native macOS application, focused React review UI, ChatGPT widget, Codex
+  plugin, MCP services, OAuth gateway, and paired companion; and
+- regression tests, refusal cases, packaging, visual review, documentation, and
+  the final demo.
+
+The user made the main product decisions: no in-place mutation; review before
+execution; supported Markdown links rather than vague “all connections”;
+deterministic ambiguity blocking; exact preview-bound acceptance; and truthful
+privacy, platform, and publication claims. The chronological record is in
+[`docs/CODEX_BUILD_LOG.md`](docs/CODEX_BUILD_LOG.md).
+
+### GPT-5.6 plans; Foldweave executes
+
+Native direct mode calls exact `gpt-5.6` through the Responses API. GPT-5.6 can
+inspect the bounded inventory, selected text excerpts, and supported-link
+evidence. It can submit one complete plan, ask one essential clarification, or
+propose a focused revision. It cannot change the source, approve its own
+proposal, bypass the compiler, produce a receipt, or mark a result verified.
+
+ChatGPT-hosted and Codex-hosted planning use the model supplied by the host
+through the same bounded tools. Neither route silently calls the Foldweave
+Responses API. Recorded replay and unchanged Change File application are
+model-free.
 
 ## Development checks
 
-Run from the repository root:
-
-```text
+```bash
 uv lock --check
 PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider
 uv run --no-sync ruff check .
 uv run --no-sync ruff format --check .
-cd web && npm ci && npm run typecheck && npm test && npm run build:all
-cd ../gateway && npm ci && npm run check
 ```
 
-The exact verified commands and current milestone evidence are recorded in
-[`docs/build/IMPLEMENTATION_PLAN.md`](docs/build/IMPLEMENTATION_PLAN.md) and
-[`docs/build/STATE.md`](docs/build/STATE.md).
+Frontend and gateway checks are documented in their package scripts and in
+[`docs/build/IMPLEMENTATION_PLAN.md`](docs/build/IMPLEMENTATION_PLAN.md).
 
-## Claim boundaries
+## License and provenance
 
-Foldweave does not claim:
+Foldweave is released under the [MIT License](LICENSE). Third-party notices are
+in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). The boundary between the
+Build Week implementation, earlier mechanical lessons, historical Name Atlas
+artifacts, and excluded tournament machinery is documented in
+[`docs/PREEXISTING_WORK.md`](docs/PREEXISTING_WORK.md).
 
-- semantic correctness or reconciliation of independently edited copies;
-- reconciliation when a receiver has extra or missing members;
-- general graph isomorphism or semantic-similarity matching;
-- universal format understanding, connection preservation, portability, or
-  reversibility;
-- source-code, import, database, Office, PDF, spreadsheet, image, audio, or
-  video-aware refactoring;
-- native Windows or Linux support, mobile access, or remote phone file access;
-- full privacy, zero retention, or absence of disclosed metadata;
-- sender identity, authorship, signatures, institutional authorization,
-  historical authenticity, tamper-proofing, compliance, or production
-  readiness;
-- real-time collaboration, automatic merge, public ChatGPT listing before
-  publication, universal zero-question behavior, measured time savings, broad
-  adoption, uniqueness, or a probability of winning.
-
-The complete boundary is in
-[`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
-
-## How Foldweave was built with Codex and GPT-5.6
-
-### Start with a project-selection tournament
-
-Before building Foldweave, we used a constrained project-selection tournament
-to challenge candidate product directions against feasibility, user value,
-Build Week fit, and the ability to demonstrate a complete, trustworthy
-transaction. That process led to the connected-folder problem: use a model to
-propose structure, but make deterministic code and the user—not the model—the
-authority for execution and proof.
-
-The tournament was a decision aid, not Foldweave's runtime. Its semantic,
-scoring, evaluator, and transport machinery is deliberately excluded from this
-repository. The current product was built and materially extended here during
-Build Week; only a small, disclosed set of mechanical lessons was adapted or
-rewritten. See [`docs/PREEXISTING_WORK.md`](docs/PREEXISTING_WORK.md).
-
-### Codex's role
-
-Codex was the primary implementation and integration environment. In the
-primary build task it helped turn the selected direction into one frozen
-product contract, one dependency-ordered plan, and a continuously tested
-application. It accelerated implementation and review of the deterministic
-engine, v3 review jobs, immutable previews, native macOS shell, focused React
-review tree, ChatGPT widget, shared MCP services, Codex plugin, gateway and
-companion, packaging, clean-clone checks, visual QA, and adversarial regression
-coverage.
-
-The user made the consequential product decisions: review before execution;
-one narrow supported-link contract; no in-place mutation; exact
-fingerprint-bound acceptance; model-free unchanged Change File application;
-and truthful boundaries for provenance, privacy, platform support, and ChatGPT
-publication. The chronological evidence is in
-[`docs/CODEX_BUILD_LOG.md`](docs/CODEX_BUILD_LOG.md).
-
-### GPT-5.6's runtime role
-
-In native direct mode, Foldweave uses the exact `gpt-5.6` alias through the
-Responses API with strict tools, bounded eligible evidence, `store=false`, no
-model fallback, and no provider retry. GPT-5.6 proposes one complete plan or a
-strict sparse revision; it cannot move a file, approve a proposal, bypass the
-compiler, produce a receipt, or mark a result verified. Deterministic code
-scans, validates, compiles, rewrites supported links, renders the preview,
-executes the separate copy, and independently verifies and reconstructs it.
-
-ChatGPT-hosted and Codex-hosted modes use the host-supplied model through the
-same bounded MCP/domain services. They do not hide a Foldweave Responses API
-call. Recorded replay and unchanged Change File application are model-free.
-
-## Provenance and licenses
-
-Earlier Reversible Name Atlas/Name Atlas commits remain traceable predecessor
-evidence, not the active release identity. The complete adaptation boundary is
-in [`docs/PREEXISTING_WORK.md`](docs/PREEXISTING_WORK.md).
-
-Foldweave is distributed under the [MIT License](LICENSE). Third-party notices,
-including Blueprint and packaged Python dependencies, are recorded in
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+The demo narration was generated with OpenAI Text-to-Speech from an
+evidence-checked script and is identified as such in the video.
