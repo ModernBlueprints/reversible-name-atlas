@@ -2,8 +2,8 @@
 
 Status: **FOLDWEAVE PRODUCT RELEASE CANDIDATE ACCEPTED — FRESH CLEAN-CLONE
 PACKAGE, REPLAY, ORIGIN/RECEIVER, AND NATIVE-REVIEW EVIDENCE ARE RECORDED;
-PUBLIC-`main` PROMOTION, FINAL MEDIA, USER-OWNED ATTESTATIONS, AND FINAL
-SUBMISSION REMAIN PENDING**
+PUBLIC-`main` PROMOTION IS COMPLETE; FINAL MEDIA, USER-OWNED ATTESTATIONS,
+AND FINAL SUBMISSION REMAIN PENDING**
 
 Submission hold: **ACTIVE — FINAL DEVPOST SUBMISSION IS PROHIBITED UNTIL THE
 USER EXPLICITLY RELEASES THE HOLD**
@@ -40,7 +40,7 @@ external approval, release the submission hold, or authorize final submission.
 | Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; clean-clone plugin validation and stdio MCP discovery passed from commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
 | Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected and accepted; a fresh unrelated clean clone of the later documentation checkpoint rebuilt and exercised the same product code successfully |
-| Final public `main` | Still preserves the predecessor release; Foldweave has not yet been promoted as the final accepted release |
+| Final public `main` | Contains the accepted Foldweave release evidence through an ordinary no-force fast-forward; the exact current SHA is reported in the release handoff rather than embedded self-referentially |
 | Final screenshots and thumbnail | Captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Final public video | **NOT CREATED OR UPLOADED** |
 | `/feedback` Session ID | **USER ACTION PENDING** |
@@ -85,7 +85,7 @@ user must personally review and make every personal or legal attestation.
 | Tagline | `Change the structure. Keep the connections.` |
 | Track/category | `Work & Productivity` / `AI refactoring for connected project folders` |
 | One-line summary | `Foldweave shows a complete connected-folder reorganization before execution, lets the user refine the proposal, and applies or extends the same verified structure on an equivalent copy while preserving supported Markdown links.` |
-| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — repository slug may remain historical; the accepted release branch is public and final no-force `main` promotion remains pending |
+| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — repository slug may remain historical; the accepted Foldweave release evidence is public on `main` and the revision branch |
 | License | MIT, subject to final package and third-party-notice inspection |
 | Tested native platform | macOS Apple Silicon only |
 | Native distribution statement | Unsigned/ad-hoc judge build; no notarization, Developer ID, or warning-free public installation claim |
@@ -93,7 +93,7 @@ user must personally review and make every personal or legal attestation.
 | ChatGPT path | ChatGPT supplies model inference; no hidden Foldweave Responses API call or direct-ledger reservation |
 | Recorded path | Keyless, provider-free, clearly labelled **Recorded GPT planning run** |
 | Unchanged Change File path | Keyless and model-free deterministic review and application |
-| Final release commit | Product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on `revision/foldweave-native-review`; published branch SHA is verified in the handoff rather than embedded self-referentially |
+| Final release commit | Product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`; reconciled release evidence is fast-forwarded to public `main` and the revision branch, with the current SHA verified in the handoff rather than embedded self-referentially |
 | Fresh clean-clone native app digest | 55 MiB Apple-Silicon `Foldweave.app`; executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; `codesign --verify --deep --strict` passed; unsigned/ad-hoc only |
 | Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276` |
 | Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `940774830794366ce6c27bd6365629c6efed6a18461a3303298f295420efc214`, receipt `f24ca69126ba56b8aa950fe0056b9494aab6bb11c945da256f867e6ea23f5fd8`; receiver receipt `b00296cbd83a5cf9daad1f00400e41ed9759dbda21bce797cc852967c0c37169`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
@@ -495,9 +495,8 @@ revision-branch documentation checkpoint, whose product source is unchanged
 from accepted product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
 It passed the full Python suite, frontend and gateway builds, an installed-wheel
 replay, origin/receiver acceptance, source-free and source-aware verification,
-and reconstruction. After the final no-force public `main` promotion, the same
-commands remain the public judge path; no claim is made that a final Devpost
-submission has occurred.
+and reconstruction. The same commands are now the public judge path; no claim
+is made that a final Devpost submission has occurred.
 
 ### Fastest keyless path
 
@@ -616,9 +615,9 @@ not substitute a hidden direct API request.
 ## Current verified implementation evidence
 
 The following combines earlier qualification with a fresh unrelated clean-clone
-release reproduction. The product-source evidence is release-candidate evidence;
-the final public-`main` promotion, video, user-owned `/feedback`, legal
-attestations, and submission are intentionally separate gates.
+release reproduction. The product-source evidence is release-candidate evidence
+now fast-forwarded to public `main`; video, user-owned `/feedback`, legal
+attestations, and submission remain intentionally separate gates.
 
 | Surface | Latest verified evidence |
 |---|---|
@@ -636,8 +635,8 @@ attestations, and submission are intentionally separate gates.
 
 The clean-clone artifact hashes above identify the reproduced package, not a
 notarized or externally hosted distribution. The no-force public `main`
-promotion, final media, user-owned form actions, and final submission remain
-separate controlled steps.
+promotion is complete; final media, user-owned form actions, and final submission
+remain separate controlled steps.
 
 ## Devpost description draft
 
@@ -735,7 +734,7 @@ production hardening are outside this release.
 | Project name | `Foldweave` |
 | Tagline | `Change the structure. Keep the connections.` |
 | Category | `Work & Productivity` |
-| Repository | `https://github.com/ModernBlueprints/reversible-name-atlas` — final public release SHA pending |
+| Repository | `https://github.com/ModernBlueprints/reversible-name-atlas` — accepted Foldweave release evidence is fast-forwarded to public `main`; exact current SHA is recorded in the release handoff |
 | Technologies | `Codex, GPT-5.6, OpenAI Responses API, OpenAI Apps SDK, MCP, Python 3.11, Pydantic, FastAPI, Uvicorn, Jinja2, React, TypeScript, BlueprintJS, Vite, pywebview, PyInstaller, macOS Keychain, Cloudflare Workers, OAuth 2.1/PKCE, Durable Objects, Workers KV, WebSockets, BagIt, uv, pytest, Ruff, Vitest, GitHub` |
 | Tested platform | `macOS Apple Silicon; unsigned/ad-hoc judge build. Browser fallback and CLI use the same local engine.` |
 | Judge instructions | `Use the final README from the accepted release. The fastest keyless path is uv sync --frozen followed by uv run foldweave demo --mode replay. Review the proposed structure, accept the exact preview, verify the separate result, and recreate the selected source. No API key is required for replay.` |
@@ -1096,7 +1095,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 - [x] Run final lock, Ruff lint/format, TypeScript, Vite, Vitest, Wrangler,
       package, diff, secret/response-ID/path, and active-brand scans. Historical
       compatibility/provenance records retain their original names and paths.
-- [ ] Fast-forward accepted Foldweave release to public `main` without rebase or
+- [x] Fast-forward accepted Foldweave release to public `main` without rebase or
       force-push.
 
 ### Documentation, claims, and media

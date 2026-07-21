@@ -19,9 +19,9 @@ itself evidence that an external distribution surface is publicly available.
 Checkpoint `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified
 integrated implementation baseline. Product release candidate
 `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is the current accepted Foldweave
-candidate on the published revision branch; it is not yet a public-`main`,
-recording-ready, or submitted release. The following distinctions are part of
-the claim boundary:
+candidate whose reconciled release evidence is fast-forwarded to public `main`;
+it is not yet a recording-ready or submitted release. The following distinctions
+are part of the claim boundary:
 
 | Surface | Current evidence-backed state |
 |---|---|
@@ -33,7 +33,7 @@ the claim boundary:
 | Codex | Foldweave plugin `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery pass against the same local MCP server |
 | Integrated regression | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; the sole direct ledger remained byte-identical at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9` |
 | Public ChatGPT availability | Not submitted for review, approved, published, publicly listed, or claimed |
-| Foldweave product release candidate | Accepted on the revision branch; public-`main` promotion, recording readiness, final video, `/feedback`, personal attestations, and explicit hold release remain separate gates |
+| Foldweave product release candidate | Accepted and fast-forwarded to public `main`; recording readiness, final video, `/feedback`, personal attestations, and explicit hold release remain separate gates |
 
 The operational checkpoint in `docs/build/STATE.md` changes as qualification
 continues. This document intentionally states only the minimum durable boundary

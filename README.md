@@ -13,9 +13,10 @@ rewrites the supported relative Markdown links that connect files, and produces
 a payload-free **Foldweave Change File** that another person can review, apply
 unchanged, or use as the parent of a new proposal.
 
-> **Current build status:** the Foldweave product release candidate is
-> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on
-> `revision/foldweave-native-review`. Earlier checkpoint
+> **Current build status:** the Foldweave product release candidate
+> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` and its reconciled release
+> evidence are now fast-forwarded to the public Git repository's `main` branch.
+> Earlier checkpoint
 > `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified integrated
 > implementation baseline. The native application,
 > review/revision authority, purpose-built macOS visual system, direct planning,
@@ -143,10 +144,10 @@ review, exact acceptance, source-free/source-aware verification, and exact
 reconstruction, then repeated the origin transaction from the installed wheel.
 
 The exact changing operational state belongs in
-[`docs/build/STATE.md`](docs/build/STATE.md). The product release candidate is
-accepted; public-`main` promotion, recording readiness, the final video,
-`/feedback`, personal attestations, explicit hold release, and final Devpost
-submission remain separately controlled.
+[`docs/build/STATE.md`](docs/build/STATE.md). The accepted release is public on
+`main`; recording readiness, the final video, `/feedback`, personal
+attestations, explicit hold release, and final Devpost submission remain
+separately controlled.
 
 ## Quick start
 

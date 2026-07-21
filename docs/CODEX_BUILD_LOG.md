@@ -1122,9 +1122,9 @@ hash-recorded:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-These are current published revision-branch and deployed-service identities, not
-public-main release identities. A fresh unrelated clean clone of the published
-revision branch reproduced the accepted product candidate with `uv sync
+These are current published `main`/revision-branch and deployed-service
+identities. A fresh unrelated clean clone of the published revision branch
+reproduced the accepted product candidate with `uv sync
 --frozen`, 1,176 Python tests with one upstream warning, `uv lock --check`,
 Ruff lint/format, Git diff checks, frontend TypeScript, 80 Vitest tests, both
 frontend production builds, gateway TypeScript, 50 gateway tests, Wrangler
@@ -1157,7 +1157,7 @@ use `false`, and external-network use `false`. An isolated environment with
 only the built wheel repeated the keyless origin review, acceptance,
 verification, and reconstruction.
 
-Public-`main` promotion, final media, video, `/feedback`, personal
-attestations, explicit hold release, and submission remain pending. No ChatGPT
-review submission, approval, publication, or public listing is claimed. The
-submission hold remains active.
+The accepted release evidence is fast-forwarded to public `main`. Final media,
+video, `/feedback`, personal attestations, explicit hold release, and submission
+remain pending. No ChatGPT review submission, approval, publication, or public
+listing is claimed. The submission hold remains active.

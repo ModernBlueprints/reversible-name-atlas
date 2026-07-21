@@ -1,10 +1,10 @@
 # Foldweave — Sole Native-Review Implementation Plan
 
 Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F6 ARE VERIFIED COMPLETE;
-NO-FORCE PUBLIC-`main` PROMOTION AND F7 MEDIA-READINESS PREPARATION REMAIN;
+PUBLIC-`main` PROMOTION IS COMPLETE; F7 MEDIA-READINESS PREPARATION REMAINS;
 CONNECTED-CHANGE C0–C7 BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **PUBLIC-`main` PROMOTION AND F7 MEDIA-READINESS PREPARATION**
+Phase: **F7 MEDIA-READINESS PREPARATION — PUBLIC-`main` PROMOTION COMPLETE**
 
 Submission hold: **ACTIVE**
 
@@ -2178,8 +2178,8 @@ release work are permitted.
   clean-clone provider or host call. The release documents were reconciled and
   two independent read-only audits found no material contradiction, stale active
   claim, exposed credential/response-ID/personal path, or Markdown/table defect.
-  The permitted no-force public promotion follows this release acceptance; it is
-  not a reason to relabel F6 as incomplete.
+  The permitted ordinary no-force public promotion was then completed. It is not
+  a reason to relabel F6 as incomplete.
 
 After complete release acceptance, fast-forward `main` to the selected
 Foldweave release commit and push without force. Safely update repository

@@ -1,10 +1,9 @@
 # Foldweave build state
 
-Observed: **Tuesday 21 July 2026 at 12:24:12 CEST** using
+Observed: **Tuesday 21 July 2026 at 12:28:10 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
-Phase: **RELEASE EVIDENCE ACCEPTED — PUBLIC-`main` PROMOTION AND F7
-MEDIA-READINESS PREPARATION**
+Phase: **F7 MEDIA-READINESS PREPARATION — PUBLIC-`main` PROMOTION COMPLETE**
 
 Submission hold: **ACTIVE**
 
@@ -18,9 +17,10 @@ have completed. Release-candidate product commit
 acceptance, and the revision branch has been published. A fresh clean-clone
 package, wheel replay, origin/receiver proof, and native review render have
 also passed. The reconciled release documents passed two independent read-only
-audits. The remaining independent work is the coherent release-evidence commit,
-no-force public promotion, and media-readiness preparation. This is active work
-rather than a user-owned or global blocker.
+audits. The reconciled release-evidence commit was pushed and fast-forwarded to
+public `main` without force. The remaining independent work is F7
+media-readiness preparation. This is active work rather than a user-owned or
+global blocker.
 
 ## Activation and repository
 
@@ -32,19 +32,19 @@ rather than a user-owned or global blocker.
 | Historical C+0 | Saturday 18 July 2026 at 23:31:39 CEST — `PRESERVED` |
 | Foldweave F+0 | Sunday 19 July 2026 at 17:18:14 CEST — `ACTIVE` |
 | Current branch | `revision/foldweave-native-review` |
-| Latest product release candidate | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` — `feat: qualify Foldweave release candidate`; earlier release-state documentation is published on `revision/foldweave-native-review`, while the reconciled release-evidence documentation awaits its coherent commit |
-| Exact predecessor, `main`, `origin/main`, and previous revision | `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
+| Latest product release candidate | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` — `feat: qualify Foldweave release candidate`; reconciled release evidence is pushed on the revision branch and fast-forwarded to public `main` |
+| Exact predecessor and previous revision | `1023999f2acc7b806775b407dc01a15af3447e90` — preserved; public `main` and `origin/main` now contain accepted Foldweave release evidence, with exact current SHA reported in the handoff |
 | Historical portable branch | local and remote `revision/portable-change-receipt` at `4baec1ed7b8553775527e3be506edab584b2b8b3` — unchanged |
-| Working tree at observation | intentional six-document release-evidence commit is being prepared; no unrelated user work was discarded |
+| Working tree at observation | post-promotion release-state update is being prepared; no unrelated user work was discarded |
 
 ## Remaining fixed windows
 
 | Boundary | Absolute Oslo time | Remaining at observation |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 11 hours, 24 minutes, 12 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 6 hours, 24 minutes, 12 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 2 hours, 24 minutes, 12 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 13 hours, 35 minutes, 47 seconds |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 11 hours, 28 minutes, 10 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 6 hours, 28 minutes, 10 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 2 hours, 28 minutes, 10 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 13 hours, 31 minutes, 49 seconds |
 
 These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
@@ -72,9 +72,9 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 | Foldweave F4 qualification | `VERIFIED COMPLETE` — direct, developer-hosted, consumer-hosted, keyless replay, installed Codex, reconnect, refusal, verification, and reconstruction gates pass |
 | Feature freeze | absolute boundary passed; only release-safe defect, proof, accessibility, visual, packaging, documentation, screenshot, claim, and release work permitted |
 | Foldweave F5 hardening | `VERIFIED COMPLETE` — feature freeze is active, no required product defect is open, and required test/packaging/accessibility/compatibility evidence passes |
-| Foldweave F6 release candidate | `VERIFIED COMPLETE` — product candidate, fresh clean-clone package/replay/origin/receiver proof, release documentation, and independent audits pass; permitted public `main` promotion follows release acceptance |
+| Foldweave F6 release candidate | `VERIFIED COMPLETE` — product candidate, fresh clean-clone package/replay/origin/receiver proof, release documentation, independent audits, revision-branch publication, and ordinary no-force public `main` promotion pass |
 | Foldweave F7 recording readiness | `IN PROGRESS` — storyboard, narration draft, screenshots, and product proof are prepared; actual spoken timing, voice/video, `/feedback`, and personal attestations are not inferred |
-| Foldweave release materials | reconciled against the accepted product candidate and fresh clean-clone evidence; coherent commit and publication remain next |
+| Foldweave release materials | reconciled against the accepted product candidate and fresh clean-clone evidence; release-evidence commit is published on the revision branch and public `main` |
 | Devpost submission | `NOT PERFORMED`; hold active |
 
 ## F0c completion evidence
@@ -326,23 +326,21 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
 ## Exact next operation
 
-`Make one coherent release-evidence commit; push the revision branch; then
-fast-forward the accepted release to public main without force. Keep the
-submission hold active.`
+`Prepare and rehearse the exact F7 Sofia/Martin recording path and final
+under-three-minute narration/shot package while keeping the submission hold
+active. Do not create the user's voice-over or submit.`
 
 ## Compact recovery capsule
 
-- **Phase:** `RELEASE EVIDENCE ACCEPTED — PUBLIC-main PROMOTION AND F7
-  MEDIA-READINESS PREPARATION`
+- **Phase:** `F7 MEDIA-READINESS PREPARATION — PUBLIC-main PROMOTION COMPLETE`
 - **Branch / checkpoint:** `revision/foldweave-native-review` /
   product release candidate `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`;
   release-state documentation is published on the revision branch, with exact
   remote branch SHA verified in the handoff
-- **Current milestone:** F0–F6 verified complete; current release evidence is
-  ready for one coherent commit, revision-branch push, and no-force public-main
-  promotion. F7 media-readiness preparation remains in progress and cannot be
-  called recording-ready before the actual narration/shot rehearsal and final
-  capture gates are complete
+- **Current milestone:** F0–F6 verified complete; reconciled release evidence
+  is published on the revision branch and public main. F7 media-readiness
+  preparation remains in progress and cannot be called recording-ready before
+  the actual narration/shot rehearsal and final capture gates are complete
 - **Job / preview:** consumer root job
   `976daca126a648a8bee4a5a4d62b6f8c`, revision 11/proposal revision 1
   `verified`; candidate/preview and verified artifact fingerprints recorded
@@ -371,11 +369,11 @@ submission hold active.`
 - **Budget:** sole USD 40 ledger; direct call cap 16 with 14 attempts reserved;
   hosted derivative left it byte-identical
 - **Feature freeze:** absolute boundary passed; release-safe work only
-- **Release materials:** reconciled; historical predecessor materials remain
-  preserved as provenance, not active Foldweave claims
+- **Release materials:** reconciled and published; historical predecessor
+  materials remain preserved as provenance, not active Foldweave claims
 - **Submission hold:** `ACTIVE`
 - **Blockers:** no global blocker; automatic component continuation is a known
   host limitation with safe same-conversation recovery
-- **Next operation:** make one coherent release-evidence commit, push the
-  revision branch, and perform the permitted no-force public promotion; keep the
-  submission hold active
+- **Next operation:** prepare and rehearse the F7 Sofia/Martin recording path,
+  narration, and shot package without creating the user's voice-over or
+  releasing the submission hold
