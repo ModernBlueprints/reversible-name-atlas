@@ -17,11 +17,14 @@ itself evidence that an external distribution surface is publicly available.
 ## Qualification status at the current checkpoint
 
 Checkpoint `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified
-integrated implementation baseline. Product release candidate
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is the current accepted Foldweave
-candidate whose reconciled release evidence is fast-forwarded to public `main`;
-it is not yet a recording-ready or submitted release. The following distinctions
-are part of the claim boundary:
+integrated implementation baseline. Product release baseline
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is preserved; final UI/runtime
+correction checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` passed
+renewed clean-clone acceptance and is included in the release fast-forwarded to
+public `main`.
+Its product and capture package are `RECORDING_READY`; it is not a completed
+public video or submitted Devpost entry. The following distinctions are part of
+the claim boundary:
 
 | Surface | Current evidence-backed state |
 |---|---|
@@ -29,11 +32,11 @@ are part of the claim boundary:
 | Native direct mode | Qualified in the packaged Apple-Silicon app: Keychain configure/read/remove and a separately scoped bounded live transaction with revision, exact acceptance, verification, reconstruction, restart, and clean shutdown; the development credential was removed |
 | Native visual system | Objective conformance passed for the restrained macOS dark utility language across native, browser, review, settings, pairing, Done/proof, and widget surfaces, including large/narrow fixtures, keyboard behavior, focus, overflow, and measured contrast; this is not a claim of every user's subjective preference |
 | ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` in the actual macOS ChatGPT app through the Secure MCP Tunnel; this is not consumer distribution |
-| Consumer gateway and pairing | `CONSUMER_PAIRING_VERIFIED` through the user-authorized Google Chrome route: ChatGPT connector OAuth, device pairing, outbound companion WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, refusal checks, verification, and reconstruction passed. Deployment `d14d051d-8920-44ea-b336-f3bbea2f6936` serves Worker version `9ac88da8-9f85-4685-8a07-073d44b909b9`; technical `PUBLICATION_READY` is achieved for review submission |
+| Consumer gateway and pairing | `CONSUMER_PAIRING_VERIFIED` through the user-authorized Google Chrome route: ChatGPT connector OAuth, device pairing, outbound companion WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, refusal checks, verification, and reconstruction passed. Worker version `77598fb6-72e4-48ee-919e-27488a60a515` serves final `review-v37`; technical `PUBLICATION_READY` is achieved for review submission |
 | Codex | Foldweave plugin `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery pass against the same local MCP server |
-| Integrated regression | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; the sole direct ledger remained byte-identical at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9` |
+| Integrated regression | 1,184 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; the sole direct ledger remained byte-identical at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9` |
 | Public ChatGPT availability | Not submitted for review, approved, published, publicly listed, or claimed |
-| Foldweave product release candidate | Accepted and fast-forwarded to public `main`; recording readiness, final video, `/feedback`, personal attestations, and explicit hold release remain separate gates |
+| Foldweave product release candidate | Accepted and fast-forwarded to public `main`; recording package complete; `/feedback` Session ID captured privately for the required submission field; final video, personal attestations, and explicit hold release remain separate gates |
 
 The operational checkpoint in `docs/build/STATE.md` changes as qualification
 continues. This document intentionally states only the minimum durable boundary
@@ -217,8 +220,8 @@ rendered against a shared proposal without a GPT call.
 
 The checked-in gateway and companion implementation is now deployed at
 <https://foldweave-gateway.skybert-ghostline.workers.dev>, version
-`9ac88da8-9f85-4685-8a07-073d44b909b9` in deployment
-`d14d051d-8920-44ea-b336-f3bbea2f6936`. The earlier
+`77598fb6-72e4-48ee-919e-27488a60a515`, serving the `review-v37` widget. The
+earlier
 `ERR_BLOCKED_BY_CLIENT` occurred at the Codex in-app Browser policy layer. The
 user-authorized Google Chrome route completed ChatGPT connector OAuth, device
 pairing, outbound companion WSS, opaque local selection, complete consumer
@@ -318,7 +321,7 @@ Developer ID signing, Mac App Store distribution, or warning-free Gatekeeper
 launch on every machine. The fresh clean-clone 55 MiB arm64 bundle has identifier
 `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, and
 executable SHA-256
-`3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`.
+`1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`.
 Strict deep ad-hoc validation, unrelated-directory launch, Home/review rendering,
 Original/Proposed switching, and clean shutdown pass. The browser and CLI remain
 supported fallback paths.
@@ -401,7 +404,7 @@ behavior, semantic correctness, measured time savings, market adoption, legal
 compliance, universal portability or reversibility, or a universal organizer
 for every file format and relationship.
 
-The final public video, `/feedback`, eligibility and ownership attestations,
-submission-hold release, and Devpost submission remain separate user-owned
-completion steps. No release document may imply those steps occurred until
-their evidence exists.
+The primary `/feedback` Session ID is captured. The final public video,
+eligibility and ownership attestations, submission-hold release, and Devpost
+submission remain separate user-owned completion steps. No release document may
+imply those remaining steps occurred until their evidence exists.

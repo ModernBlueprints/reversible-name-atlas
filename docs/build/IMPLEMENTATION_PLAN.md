@@ -808,7 +808,7 @@ downstream consumer, owner, allowed cut, actual status, and actual verification.
 - **Actual verification:** the official plugin-creator workflow generated one
   thin `name-atlas` plugin, relative `.mcp.json`, and repository marketplace;
   its official validator passes. Local marketplace installation created cache
-  `/Users/nikolai/.codex/plugins/cache/personal/name-atlas/0.1.0`, whose manifest
+  `$CODEX_HOME/plugins/cache/personal/name-atlas/0.1.0`, whose manifest
   and MCP-config hashes exactly match the repository plugin. Fresh Codex task
   `019f78fe-5fc9-7392-b452-975af8447d3b` invoked installed
   `name-atlas.verify_result` and returned the expected receipt
@@ -1166,12 +1166,12 @@ extended by activation.
 Historical integrated Foldweave checkpoint:
 `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` —
 `feat: deliver Foldweave native review and shared planning`. It remains a
-verified implementation baseline. Product release candidate
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` and later published
-release-state documentation checkpoint
-`53fa3206c505292f4204d25a7fd8552093ed41fb` supersede it as current release
-evidence. The current release-document reconciliation is intentionally
-uncommitted until the next coherent checkpoint.
+verified implementation baseline. Product release baseline
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is preserved. Final UI/runtime
+implementation checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c`
+supersedes the earlier candidate for current implementation evidence; the
+current documentation commit is intentionally identified only in the release
+handoff, never self-referentially inside that commit.
 
 At F+0 calculate, using `oslo_tz = ZoneInfo("Europe/Oslo")`:
 
@@ -1593,7 +1593,8 @@ completed Foldweave.
   Revoked, expired, missing, wrong-grant, wrong-device, wrong-job, guessed, and
   duplicate authority paths fail closed. The raw capability never enters an MCP
   input or result, `structuredContent`, `_meta`, model/widget state, gateway
-  state, browser storage, logs, or rendered content. Current checks pass strict
+  state, browser storage, logs, or rendered content. At that F0d checkpoint,
+  checks passed strict
   TypeScript, 50/50 Worker tests, a Wrangler production dry build, both frontend
   production builds, 76/76 frontend tests, and the complete 1,121-test Python
   regression. The bounded re-audit found no HIGH or MEDIUM issue and returned
@@ -1602,7 +1603,7 @@ completed Foldweave.
   namespaces were bound, and deployment version
   `fb97746a-8d6c-497c-aa48-29ecd798dff3` was created on Monday 20 July 2026 at
   13:46:59 CEST with both SQLite Durable Object classes and the production KV
-  binding. The latest deployed version is
+  binding. At that F0d checkpoint the latest deployed version was
   `ece68561-0740-47d3-9052-4e311cabf483` at the stable endpoint
   `https://foldweave-gateway.skybert-ghostline.workers.dev`. Google Chrome
   safely bypassed the Codex in-app Browser's pre-navigation hostname policy
@@ -1612,8 +1613,9 @@ completed Foldweave.
   root job `976daca126a648a8bee4a5a4d62b6f8c`. ChatGPT inspected the complete
   24-file source through bounded tools and reached `reviewing` with no result.
   A stale ChatGPT descriptor still referenced
-  `ui://foldweave/review-v31.html`; the gateway now advertises canonical v33
-  while serving only explicit v31/v32 compatibility aliases with current v33
+  `ui://foldweave/review-v31.html`; the gateway then advertised canonical v33
+  while serving only explicit v31/v32 compatibility aliases with the
+  then-current v33
   assets. Live retry rendered the widget, and authenticated plus unauthenticated
   gateway regressions cover both aliases while unknown URIs remain blocked.
 
@@ -1764,8 +1766,8 @@ completed Foldweave.
   shared device identity/host service; focused regression proves the context is
   visible at dispatch. The audit's second high-severity finding—the first
   design's raw capability exposure through MCP results—was also removed and the
-  independent re-audit found no remaining HIGH or MEDIUM issue. The complete
-  current Python regression passes 1,121 tests with one upstream warning. Ruff
+  independent re-audit found no remaining HIGH or MEDIUM issue. At F1 closure,
+  the complete Python regression passed 1,121 tests with one upstream warning. Ruff
   lint, Ruff format
   over 224 files, lock, and Git diff checks pass.
 
@@ -1857,7 +1859,7 @@ completed Foldweave.
   revalidated source immutability, BagIt manifests, all 21 receipt artifact
   commitments, the acyclic proof DAG, complete immediate-parent lineage,
   self-contained CF2, and absence of payload bytes, absolute paths, and secrets
-  in the transferable artifact. The current complete regression passes
+  in the transferable artifact. At F2 closure, the complete regression passed
   1,121 tests with one upstream warning.
 
 ## 14. F3 — Complete native, browser, and ChatGPT experience
@@ -1943,7 +1945,7 @@ completed Foldweave.
   companion outage and reconnect then preserved and rehydrated the verified
   derivative. A later fresh unrelated clean-clone package rebuilt a 55 MiB arm64
   app with executable SHA-256
-  `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`.
+  `1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`.
   It passed strict deep signature verification, unrelated-directory launch,
   Home and immutable-review rendering, Original/Proposed switching, and clean
   shutdown. This completes F3; its unsigned/ad-hoc distribution boundary
@@ -2008,7 +2010,7 @@ completed Foldweave.
   0.895450 reported estimated cost, and SHA-256
   `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`;
   the hosted derivative left it byte-identical. Current preflight passes
-  1,176 Python tests with one upstream warning, 80/80 frontend tests, 50/50
+  1,184 Python tests with one upstream warning, 80/80 frontend tests, 50/50
   gateway tests,
   `uv lock --check` with 63 packages, Ruff lint/format over 224 files, strict
   TypeScript, both frontend production builds with exact generated-asset
@@ -2107,7 +2109,7 @@ external evidence, and only `PUBLISHED` supports a public-listing claim.
 - **Allowed cut:** only the ordered optional list in Section 10.
 - **Actual status:** `VERIFIED COMPLETE — ABSOLUTE FEATURE-FREEZE BOUNDARY
   PASSED; RELEASE-SAFE WORK ONLY`.
-- **Actual verification:** full current preflight passes 1,176 Python tests
+- **Actual verification:** full current preflight passes 1,184 Python tests
   (one upstream warning), 80 frontend tests, 50 gateway tests, lock, Ruff,
   TypeScript, production builds, Wrangler dry build, package, and diff checks.
   The required native/browser/ChatGPT/Codex/replay/unchanged-apply/derivative
@@ -2162,10 +2164,12 @@ release work are permitted.
   pending, but developer and consumer pairing plus publication readiness must
   pass.
 - **Actual status:** `VERIFIED COMPLETE — PRODUCT RELEASE CANDIDATE ACCEPTED`.
-- **Actual verification:** product commit
-  `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is accepted. A fresh unrelated
-  clone of the published documentation checkpoint passed `uv sync --frozen`,
-  1,176 Python tests, lock, Ruff, strict TypeScript, frontend and gateway
+- **Actual verification:** product baseline
+  `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is preserved and final
+  implementation checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` is
+  accepted. A fresh unrelated clone of that exact implementation checkpoint
+  passed `uv sync --frozen`, 1,184 Python tests, lock, Ruff, strict TypeScript,
+  frontend and gateway
   production builds, 80 frontend tests, 50 gateway tests, wheel packaging, and
   a 55 MiB arm64 `Foldweave.app` build/launch/review/shutdown. The clean clone
   also completed a keyless origin replay and unchanged receiver application:
@@ -2175,11 +2179,11 @@ release work are permitted.
   An installed fresh wheel independently repeated the replay, exact acceptance,
   verification, and reconstruction. Existing direct, ChatGPT, and installed
   Codex qualification remains authoritative and is not relabelled as a new
-  clean-clone provider or host call. The release documents were reconciled and
-  two independent read-only audits found no material contradiction, stale active
-  claim, exposed credential/response-ID/personal path, or Markdown/table defect.
-  The permitted ordinary no-force public promotion was then completed. It is not
-  a reason to relabel F6 as incomplete.
+  clean-clone provider or host call. Independent release audits identified the
+  final pointer-focus defect, the Codex evidence-card wording, and stale
+  documentation identities; each finding was corrected and renewed verification
+  passed before the permitted ordinary no-force public promotion. This is not a
+  reason to relabel F6 as incomplete.
 
 After complete release acceptance, fast-forward `main` to the selected
 Foldweave release commit and push without force. Safely update repository
@@ -2219,28 +2223,33 @@ held.
 - **Owner:** primary integrator; user owns voice recording and the final gates.
 - **Allowed cut:** none from the recording-ready definition.
 - **Actual status:** `COMPLETE — RECORDING_READY`. The accepted public release
-  and capture package are ready. This does not assert that a user voice-over,
-  public video, `/feedback` Session ID, personal attestation, hold release, or
+  and capture package are ready. The primary Codex `/feedback` Session ID is
+  captured privately for required Devpost field `27950`. This does not assert
+  that a user voice-over, public video, personal attestation, hold release, or
   Devpost submission exists.
-- **Actual verification:** a fresh public `main` clone of the final
-  judge-documentation checkpoint passed the documented keyless replay → review
-  → exact-acceptance → verification → reconstruction path, including bytewise
-  reconstruction of the selected synthetic source. The tested native app,
-  direct, ChatGPT-hosted, Codex, replay, unchanged-apply, derivative, verifier,
-  reconstruction, and gateway paths remain stable. The exact 317-word narration
-  and 11-shot 2:55 story are frozen. A macOS speech-synthesis timing proxy and
-  the Sofia/Martin visual rehearsal passed below the three-minute limit. The
-  proxy is recording-margin evidence only; it is not the user's final voice or
-  video. No product or design change is planned. The submission hold remains
-  active.
+- **Actual verification:** a fresh unrelated clone of exact final
+  implementation checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c`
+  passed 1,184 Python tests, frontend and gateway suites/builds, native packaging,
+  and the keyless origin/receiver review → exact-acceptance → verification →
+  reconstruction paths, including bytewise reconstruction of both selected
+  synthetic sources. The tested native app, direct, ChatGPT-hosted, Codex,
+  replay, unchanged-apply, derivative, verifier, reconstruction, and gateway
+  paths remain stable. Nine UI captures, one explicitly labelled installed-copy
+  Codex evidence card, and the current thumbnail are hash-recorded. The exact
+  317-word narration and 11-shot 2:55 story are frozen. A macOS speech-synthesis
+  timing proxy and the Sofia/Martin visual rehearsal passed below the
+  three-minute limit. The proxy is recording-margin evidence only; it is not the
+  user's final voice or video. No product or design change is planned. The
+  submission hold remains active.
 
 ## 19. Protected final 16-hour reserve and submission hold
 
-After F7, the reserved work is the user's voice recording, final screen capture,
-editing and audio cleanup, public upload and playback verification, `/feedback`,
-eligibility and ownership attestations, final rules/claims audit, final clean
-run, Devpost completion, explicit submission-hold release, submission, and
-receipt confirmation.
+After F7, the primary `/feedback` Session ID was captured privately for required
+Devpost field `27950`. The remaining reserved work is the user's voice recording,
+final screen capture, editing and audio cleanup, public upload and playback
+verification, eligibility and ownership attestations, final rules/claims audit,
+final clean run, Devpost completion, explicit submission-hold release,
+submission, and receipt confirmation.
 
 The submission hold remains binding:
 

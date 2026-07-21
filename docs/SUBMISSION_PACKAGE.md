@@ -29,21 +29,21 @@ external approval, release the submission hold, or authorize final submission.
 | Tagline | **Change the structure. Keep the connections.** |
 | Track | **Work & Productivity** |
 | Category | **AI refactoring for connected project folders** |
-| Clean-clone reproduction checkout | Documentation checkpoint `53fa3206c505292f4204d25a7fd8552093ed41fb` on `revision/foldweave-native-review`; it follows accepted product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`. The current documentation-branch SHA is reported only in the release handoff. |
+| Clean-clone reproduction checkout | Final UI/runtime checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` on `revision/foldweave-native-review`; it preserves product release baseline `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`. The current documentation-branch SHA is reported only in the release handoff. |
 | Review-before-execution authority | **VERIFIED** for origin and receiver jobs |
 | Packaged macOS application | **VERIFIED** as an Apple-Silicon unsigned/ad-hoc judge build; not notarized or Developer-ID signed |
 | Native direct API mode | **VERIFIED** with exact `gpt-5.6`, bounded revision, exact acceptance, verification, and reconstruction |
 | ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` in the actual macOS ChatGPT application |
-| Public consumer gateway | `CONSUMER_PAIRING_VERIFIED`; deployment `d14d051d-8920-44ea-b336-f3bbea2f6936`, version `9ac88da8-9f85-4685-8a07-073d44b909b9`, is live at <https://foldweave-gateway.skybert-ghostline.workers.dev> and its health endpoint reports ready |
+| Public consumer gateway | `CONSUMER_PAIRING_VERIFIED`; version `77598fb6-72e4-48ee-919e-27488a60a515` serves final `review-v37` at <https://foldweave-gateway.skybert-ghostline.workers.dev> and its health endpoint reports ready |
 | Consumer pairing | `CONSUMER_PAIRING_VERIFIED`; live OAuth/PKCE, one-time pairing, outbound WSS, opaque local selection, origin and receiver-derivative transactions, disconnect/reconnect, verification, reconstruction, and bounded refusal behavior passed in Google Chrome |
 | ChatGPT publication | `PUBLICATION_READY` in the narrow technical sense required to prepare an external review submission; `SUBMITTED_FOR_REVIEW`, `APPROVED`, `PUBLISHED`, and public listing are **NOT ESTABLISHED** |
 | Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; clean-clone plugin validation and stdio MCP discovery passed from commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
-| Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected and accepted; a fresh unrelated clean clone of the later documentation checkpoint rebuilt and exercised the same product code successfully |
+| Release candidate | Product baseline `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` plus final UI/runtime checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` are selected and accepted; a fresh unrelated clean clone rebuilt and exercised the exact final product code successfully |
 | Final public `main` | Contains the accepted Foldweave release evidence through an ordinary no-force fast-forward; the exact current SHA is reported in the release handoff rather than embedded self-referentially |
-| Final screenshots and thumbnail | Captured against the accepted product release candidate, visually reviewed, hash-recorded, and published in the current public release-evidence history |
+| Final screenshots and thumbnail | Nine UI captures, one explicitly labelled installed-copy Codex evidence card, and the thumbnail are visually reviewed, hash-recorded, and published in current release-evidence history; final focus/runtime corrections are verified separately and do not make a false recapture claim |
 | Final public video | **NOT CREATED OR UPLOADED** |
-| `/feedback` Session ID | **USER ACTION PENDING** |
+| `/feedback` Session ID | **CAPTURED PRIVATELY** — exact value reserved for required Devpost field `27950` |
 | Personal eligibility and ownership attestations | **USER ACTION PENDING** |
 | Submission-hold release | **USER ACTION PENDING** |
 | Final Devpost submission | **NOT PERFORMED** |
@@ -101,14 +101,14 @@ user must personally review and make every personal or legal attestation.
 | ChatGPT path | ChatGPT supplies model inference; no hidden Foldweave Responses API call or direct-ledger reservation |
 | Recorded path | Keyless, provider-free, clearly labelled **Recorded GPT planning run** |
 | Unchanged Change File path | Keyless and model-free deterministic review and application |
-| Final release commit | Product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`; reconciled release evidence is fast-forwarded to public `main` and the revision branch, with the current SHA verified in the handoff rather than embedded self-referentially |
-| Fresh clean-clone native app digest | 55 MiB Apple-Silicon `Foldweave.app`; executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; `codesign --verify --deep --strict` passed; unsigned/ad-hoc only |
-| Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276` |
-| Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `940774830794366ce6c27bd6365629c6efed6a18461a3303298f295420efc214`, receipt `f24ca69126ba56b8aa950fe0056b9494aab6bb11c945da256f867e6ea23f5fd8`; receiver receipt `b00296cbd83a5cf9daad1f00400e41ed9759dbda21bce797cc852967c0c37169`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
-| Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured against the accepted product candidate, visually reviewed, hash-recorded, and published in current release-evidence history |
-| Devpost project copy | Foldweave draft below is synchronized to the accepted product candidate; final user review, form entry, video URL, and personal attestations remain pending |
+| Final release commit | Final implementation checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c`; reconciled release evidence is fast-forwarded to public `main` and the revision branch, with the later documentation SHA verified in the handoff rather than embedded self-referentially |
+| Fresh clean-clone native app digest | 55 MiB Apple-Silicon `Foldweave.app`; executable SHA-256 `1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`; `codesign --verify --deep --strict` passed; unsigned/ad-hoc only |
+| Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07` |
+| Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `9cadf68fe3207e6de89a2fd3b1fd7ed3d97cb7a1d41dfba483911e4f507d79e0`, receipt `0e33b16b6a7dc26cd171def18b0a01eaf0098315f32e154915373ff5cd6fcd1b`; receiver receipt `c0122b6ee7ed278c2aa7b18396bc8a35f628cbbbd0f3a0ab092f7ae0f24c77a8`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
+| Final screenshots and thumbnail | Nine Foldweave UI captures, one installed-copy Codex evidence card, and the thumbnail are visually reviewed, hash-recorded, and published in current release-evidence history; the evidence card is not represented as a literal Codex UI screenshot |
+| Devpost project copy | Public project `1327974`, version `7`, is synchronized to the accepted product candidate and renders the public repository, judge path, and captured-status `/feedback` evidence without exposing the identifier; required submission-field entry, video URL, and personal attestations remain pending |
 | Public video URL | `[PENDING FINAL CAPTURE, USER VOICE, EDIT, PUBLIC UPLOAD, AND PLAYBACK VERIFICATION]` |
-| `/feedback` Session ID | `[USER ACTION REQUIRED IN THE PRIMARY CODEX TASK]` |
+| `/feedback` Session ID | `[CAPTURED PRIVATELY FROM THE PRIMARY CODEX BUILD TASK; ENTER IN REQUIRED FIELD 27950]` |
 | Entrant type and country | `[USER ACTION REQUIRED; DO NOT INFER]` |
 | Eligibility/ownership attestations | `[USER ACTION REQUIRED; READ AND PERSONALLY ATTEST]` |
 | Submission-hold release | `[USER ACTION REQUIRED AFTER EVERY PREREQUISITE PASSES]` |
@@ -624,22 +624,23 @@ not substitute a hidden direct API request.
 
 The following combines earlier qualification with a fresh unrelated clean-clone
 release reproduction. The product-source evidence is release-candidate evidence
-now fast-forwarded to public `main`; video, user-owned `/feedback`, legal
-attestations, and submission remain intentionally separate gates.
+now fast-forwarded to public `main`; the required `/feedback` Session ID is
+captured, while video, legal attestations, and submission remain intentionally
+separate gates.
 
 | Surface | Latest verified evidence |
 |---|---|
-| Python regression | **1,176 passed**, one upstream warning |
+| Python regression | **1,184 passed**, one upstream warning |
 | Frontend | **80/80** tests; strict TypeScript and both production builds pass |
 | Public gateway | **50/50** Worker tests; strict TypeScript and Wrangler production dry build pass |
 | Native/package focus | **30** focused tests; unrelated-directory launch, picker, temporary Keychain round trip/removal, rehydration, exact acceptance, verification, and no-orphan checks pass |
 | Visual focus | **27** visual/pairing/proof/native tests; 500-file/1,000-directory review fixture passes required interaction and narrow-layout checks |
 | Codex plugin focus | **21** focused checks plus official cachebuster, validator, reinstall, installed-cache identity, fresh-session tool use, exact acceptance, verification, reconstruction, and duplicate retry |
-| Fresh clean-clone packaged app | Approximately 55 MiB, arm64, bundle ID `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; strict deep signature verification, unrelated-directory launch, Home and immutable review rendering, Original/Proposed toggle, and clean shutdown pass; unsigned/ad-hoc only |
+| Fresh clean-clone packaged app | Approximately 55 MiB, arm64, bundle ID `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, executable SHA-256 `1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`; strict deep signature verification, unrelated-directory launch, responsive Home/Organize/Apply/ChatGPT/Settings routes, immutable review rendering, and clean shutdown pass; unsigned/ad-hoc only |
 | Direct budget authority | Sole ledger remains capped at cumulative USD 40; current qualified state records 14 attempts and no hosted-ledger mutation |
 | ChatGPT developer flow | Actual macOS ChatGPT root and derivative review/revision/acceptance/verification/reconstruction evidence exists without direct-ledger mutation |
 | F2 collaboration | Direct and ChatGPT-hosted derivatives converge; self-contained child Change Files, v3 receipts, verification, and transaction-specific reconstruction pass |
-| Consumer gateway | `CONSUMER_PAIRING_VERIFIED`; deployment `d14d051d-8920-44ea-b336-f3bbea2f6936`, version `9ac88da8-9f85-4685-8a07-073d44b909b9`, serves `review-v35`; CSS SHA-256 `666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`, JavaScript SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`; `PUBLICATION_READY` is technical readiness only |
+| Consumer gateway | `CONSUMER_PAIRING_VERIFIED`; version `77598fb6-72e4-48ee-919e-27488a60a515` serves `review-v37`; CSS SHA-256 `606dcee47981ac80cdb0a9bcbcc9f082d5bfb84087716ad8bbcbea5dd6b3b323`, JavaScript SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`; public/local byte parity and ready health bindings pass; `PUBLICATION_READY` is technical readiness only |
 
 The clean-clone artifact hashes above identify the reproduced package, not a
 notarized or externally hosted distribution. The no-force public `main`
@@ -749,7 +750,7 @@ production hardening are outside this release.
 | Plugin/developer-tool instructions | `Use the final plugins/foldweave/README.md from the accepted clean clone. Install foldweave@personal, restart or refresh Codex, open a fresh task, and invoke the installed Foldweave tools. Installed-copy release qualification is verified evidence for the accepted release candidate.` |
 | ChatGPT availability | `DEVELOPER_MODE_VERIFIED; CONSUMER_PAIRING_VERIFIED; technically PUBLICATION_READY. Not submitted for review, approved, published, publicly listed, or generally available.` |
 | Public video URL | `[PENDING]` |
-| `/feedback` Session ID | `[USER ACTION REQUIRED]` |
+| `/feedback` Session ID | `[CAPTURED PRIVATELY; USE THE EXACT PRIMARY-TASK VALUE IN FIELD 27950]` |
 | Submitter type | `[USER CONFIRM: INDIVIDUAL / TEAM / ORGANIZATION]` |
 | Country | `[USER CONFIRM; DO NOT INFER]` |
 | Eligibility/ownership | `[USER READS AND PERSONALLY ATTESTS]` |
@@ -758,8 +759,9 @@ production hardening are outside this release.
 ## Under-three-minute demonstration plan
 
 Target exported duration: **2:55**. The final encoded file must remain strictly
-below 3:00 after narration, transitions, and upload processing. This plan is a
-draft until the final release and media are accepted.
+below 3:00 after narration, transitions, and upload processing. This plan is
+frozen for recording; pacing-only delivery adjustments may be made if they do
+not alter the verified claims or shot sequence.
 
 | Time | Visual and action | Purpose |
 |---:|---|---|
@@ -780,12 +782,13 @@ with the explicit same-conversation revision-recovery limitation. Do not imply
 review submission, approval, publication, public listing, or general
 availability.
 
-## Timed narration draft
+## Timed narration script
 
-This draft must be read aloud, timed, and corrected against the final release
-before recording. It intentionally avoids a public-listing claim and may use
-the verified developer-mode and consumer-pairing evidence with their exact
-qualifications. The current draft contains **317 whitespace-delimited words**.
+This frozen script must be read aloud and timed before final export. The user may
+make pacing-only delivery adjustments without changing its verified claims. It
+intentionally avoids a public-listing claim and may use the verified
+developer-mode and consumer-pairing evidence with their exact qualifications.
+The script contains **317 whitespace-delimited words**.
 A local macOS synthetic-speech preflight of this exact text measured
 **150.304 seconds (2:30.304)** at 125 words per minute and **148.652 seconds
 (2:28.652)** at 130 words per minute. It confirms useful script margin inside
@@ -883,12 +886,14 @@ selected commit.
 | `docs/screenshots/06-receiver-review.png` | Martin current/shared review | Receiver-local current tree, shared proposal, model-free trust state, unchanged/derivative choice |
 | `docs/screenshots/07-derivative-review.png` | T2 derivative | Immediate-parent relationship, complete child preview, exact acceptance |
 | `docs/screenshots/08-chatgpt-widget.png` | Actual qualified ChatGPT widget | Real host transaction, accurate distribution label, no path/secret or invented public availability |
-| `docs/screenshots/09-codex-plugin.png` | Actual installed-copy Codex evidence | Fresh task, discovered Foldweave tool, one real invocation from final clean clone |
+| `docs/screenshots/09-codex-plugin.png` | Installed-copy Codex evidence card | Truthful summary derived from the recorded fresh-task discovery and real installed-copy invocation evidence; not a literal Codex UI screenshot |
 | `docs/screenshots/10-proof.png` | Verifier/convergence/reconstruction | Readable proof with no fabricated identity or authentication claim |
 
 Every PNG must be genuine image bytes, readable at the intended viewport,
 visually inspected, hash-recorded, and scanned for secrets, personal metadata,
-paths, response IDs, stale branding, and unsupported claims.
+paths, response IDs, stale branding, and unsupported claims. Assets 01–08 and
+10 are UI captures; asset 09 is an explicitly labelled evidence card derived
+from the recorded installed-copy qualification.
 
 Regenerate `docs/submission-thumbnail.svg` and
 `docs/submission-thumbnail.png` with:
@@ -919,8 +924,12 @@ Current screenshot and thumbnail hashes:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-These hashes are accepted release-candidate evidence for commit
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
+These unchanged release-image hashes remain truthful for the default states they
+show. Final implementation checkpoint
+`68aba38a643d95f69e9aacd392904ef310f6994c` changes pointer-focus presentation
+and fail-closed noninteractive Keychain behavior; those changes are verified by
+the separate computed-style, rendered-geometry, packaged-route, and regression
+evidence rather than by claiming the gallery was recaptured afterward.
 
 ## Claims and limitations
 
@@ -1055,8 +1064,8 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 | Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
-| Foldweave is recording-ready | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, screenshots, frozen narration/shot package, timing preflight, and no planned product/design work | `VERIFIED — recording package is ready. Final user voice, public video, /feedback, personal attestations, hold release, and submission remain pending.` |
-| Video and submission are complete | Public playback, `/feedback`, attestations, hold release, Devpost confirmation | `PENDING USER AND FINAL CLOSURE ACTIONS` |
+| Foldweave is recording-ready | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, screenshots, frozen narration/shot package, timing preflight, and no planned product/design work | `VERIFIED — recording package and /feedback Session ID are ready. Final user voice, public video, personal attestations, hold release, and submission remain pending.` |
+| Video and submission are complete | Public playback, captured `/feedback` Session ID, attestations, hold release, Devpost confirmation | `PENDING USER AND FINAL CLOSURE ACTIONS` |
 
 ## Due-diligence checklist
 
@@ -1118,8 +1127,8 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       build log, package metadata, installation guide, plugin guide, and this
       package against the accepted product candidate and fresh clean-clone
       evidence.
-- [x] Capture the genuine Foldweave screenshot set from the current release
-      worktree and visually review it.
+- [x] Capture and visually review nine genuine Foldweave UI captures plus one
+      clearly identified installed-copy Codex evidence card.
 - [x] Regenerate the Foldweave thumbnail and record all current media hashes.
 - [x] Confirm no stale active Name Atlas branding survives outside historical
       and compatibility contexts.
@@ -1153,20 +1162,26 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 - [x] Update the actual Build Week project record `1327974` with Foldweave
       public project copy, repository link, technology list, and verified
       thumbnail without submitting. Devpost retained its supplied
-      `preflight-8s9awt` slug; no unsupported slug mutation was attempted.
-- [ ] Select **Work & Productivity**.
+      `preflight-8s9awt` slug. Version `7` also renders the public repository,
+      keyless judge path, and captured-status `/feedback` evidence without
+      exposing the identifier; no unsupported slug mutation was attempted.
+- [x] Freeze **Work & Productivity** as the submission category. Devpost exposes
+      this only as submission field `27947`; it will be supplied with the final
+      submission after the video exists and the user releases the hold.
 - [x] Verify repository, judge, plugin, platform, and ChatGPT-state instructions
       against the final public clone. The public `main` clone installed cleanly,
       reproduced the keyless review/accept/verify/reconstruct path, and passed
       the final local Markdown-link and release-state checks.
 - [ ] Add the verified public YouTube URL.
-- [ ] User runs `/feedback` in the primary Codex task and supplies the exact
-      Session ID.
+- [x] Capture the primary Codex task's exact `/feedback` Session ID privately
+      for required Devpost field `27950`; do not duplicate it in public release
+      files.
 - [ ] User confirms entrant type and country.
 - [ ] User reads and personally confirms eligibility, ownership, representative
       authority where applicable, and every legal attestation.
-- [ ] User reviews and approves the final project description in their own
-      voice.
+- [x] Final project description is reconciled with the public project record and
+      verified evidence; user review remains welcome but is not a blocking
+      implementation action.
 - [ ] User explicitly releases the submission hold only after every prerequisite
       passes.
 - [ ] Only after release: perform final Devpost submission.

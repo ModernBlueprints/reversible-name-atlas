@@ -16,9 +16,13 @@ rewrites the supported relative Markdown links that connect files, and produces
 a payload-free **Foldweave Change File** that another person can review, apply
 unchanged, or use as the parent of a new proposal.
 
-> **Current build status:** the Foldweave product release candidate
-> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` and its reconciled release
-> evidence are now fast-forwarded to the public Git repository's `main` branch.
+> **Current build status:** the Foldweave product release baseline
+> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is preserved, and final UI/runtime
+> correction checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c`
+> has passed renewed clean-clone release acceptance. The reconciled release is
+> published on the public Git repository's `main` branch; the exact final
+> documentation SHA is reported in the release handoff rather than embedded
+> self-referentially here.
 > Earlier checkpoint
 > `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified integrated
 > implementation baseline. The native application,
@@ -32,9 +36,10 @@ unchanged, or use as the parent of a new proposal.
 > `PUBLICATION_READY` for review submission, but it has not been submitted for
 > ChatGPT review, approved, published, or publicly listed. The product release
 > and capture package are `RECORDING_READY`: the final Foldweave product and
-> under-three-minute recording plan are ready to record. The project is not a
-> notarized app, a public ChatGPT listing, a completed public video, a
-> `/feedback` Session ID, or a submitted Devpost entry; the submission hold
+> under-three-minute recording plan are ready to record. The primary Codex
+> `/feedback` Session ID is captured and reserved for the required Devpost
+> submission field. The project is not a notarized app, a public ChatGPT listing,
+> a completed public video, or a submitted Devpost entry; the submission hold
 > remains active.
 
 ## Why Foldweave exists
@@ -129,18 +134,18 @@ backed by the accepted product candidate and the published revision branch:
 | Surface | Evidence-backed state |
 |---|---|
 | Review authority | `GO` — origin and receiver jobs stop at immutable review; stale, duplicate, substituted, and conflicting acceptance paths fail closed |
-| Native macOS application | `GO` — clean-clone 55 MiB Apple-Silicon `Foldweave.app`, native picker, temporary Keychain configure/read/remove, unrelated-directory launch, durable restart, review rendering, exact acceptance, verification, reconstruction, and clean shutdown; the qualification credential was removed |
-| Native visual system | Objective `GO` — restrained macOS dark utility styling across native, browser, review, settings, pairing, Done/proof, and ChatGPT widget surfaces; no gradients, glow, text shadows, cyber palette, or decorative full-width rules; large/narrow fixtures, keyboard behavior, focus, overflow, and contrast checks passed |
+| Native macOS application | `GO` — clean-clone 55 MiB Apple-Silicon `Foldweave.app`, native picker, temporary Keychain configure/read/remove, unrelated-directory launch, durable restart, review rendering, exact acceptance, verification, reconstruction, bounded noninteractive Keychain failure, and clean shutdown; the qualification credential was removed |
+| Native visual system | Objective `GO` — restrained macOS dark utility styling across native, browser, review, settings, pairing, Done/proof, and ChatGPT widget surfaces; field labels no longer intersect controls, manual-path labels retain measured spacing, pointer clicks create no blue focus box, keyboard focus remains visible, and open/closed Settings alignment is stable; no gradients, glow, text shadows, cyber palette, or decorative full-width rules |
 | ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` — actual macOS ChatGPT, Secure MCP Tunnel, hosted tools, rendered widget, revision, exact widget acceptance, verification, Change File retrieval, and reconstruction; no direct-ledger mutation |
 | Review/revision engine | Complete through F1, including v3 jobs, immutable previews, bounded revisions, destination reservation, restart, strict legacy dispatch, and public-authority corrections |
 | Deterministic serial collaboration | Direct and actual ChatGPT-hosted derivative transactions converge to one organized-tree commitment; self-contained child Change Files, source immutability, compatibility, refusal, and participant-specific reconstruction evidence pass |
-| Consumer gateway and companion | `CONSUMER_PAIRING_VERIFIED` — Chrome completed ChatGPT connector OAuth, pairing, outbound WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, duplicate/refusal checks, verification, and reconstruction. Deployment `d14d051d-8920-44ea-b336-f3bbea2f6936` serves Worker version `9ac88da8-9f85-4685-8a07-073d44b909b9`; technical `PUBLICATION_READY` is achieved, but review submission, approval, publication, and public listing are not claimed |
+| Consumer gateway and companion | `CONSUMER_PAIRING_VERIFIED` — Chrome completed ChatGPT connector OAuth, pairing, outbound WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, duplicate/refusal checks, verification, and reconstruction. Worker version `77598fb6-72e4-48ee-919e-27488a60a515` serves the final `review-v37` widget; technical `PUBLICATION_READY` is achieved, but review submission, approval, publication, and public listing are not claimed |
 | Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; the installed cache copy and stdio MCP initialization/tool discovery passed with 22 bounded Foldweave tools |
 | Direct API ledger | Unchanged at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`; USD 40 ceiling, 14 provider attempts, USD 13.057830 conservative exposure, and USD 0.895450 reported estimated cost |
-| Regression checkpoint | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; strict TypeScript, production builds, lock, Ruff, format, and diff checks passed |
+| Regression checkpoint | 1,184 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; strict TypeScript, production builds, lock, Ruff, format, and diff checks passed |
 
-Fresh clean-clone release reproduction from the published revision branch
-passed `uv sync --frozen`, 1,176 Python tests with one upstream warning,
+Fresh clean-clone release reproduction from exact checkpoint `68aba38` passed
+`uv sync --frozen`, 1,184 Python tests with one upstream warning,
 `uv lock --check`, Ruff lint/format, Git diff checks, frontend TypeScript, 80
 Vitest tests, both frontend production builds, gateway TypeScript, 50 gateway
 tests, Wrangler dry-run build, plugin validation, and stdio MCP initialization/
@@ -151,16 +156,18 @@ reconstruction, then repeated the origin transaction from the installed wheel.
 
 The exact changing operational state belongs in
 [`docs/build/STATE.md`](docs/build/STATE.md). The accepted release is public on
-`main`; recording readiness, the final video, `/feedback`, personal
-attestations, explicit hold release, and final Devpost submission remain
-separately controlled.
+`main`, and the required `/feedback` Session ID is captured privately as
+described above. The final
+video, personal attestations, explicit hold release, and final Devpost
+submission remain separately controlled.
 
 ## Review before execution
 
 Foldweave is a review product, not a bulk-rename screen. These verified release
 captures show the native Home surface, Sofia's immutable origin review, and
-Martin's receiver-local review of a shared proposal. The full ten-image
-evidence gallery is in [`docs/screenshots/`](docs/screenshots).
+Martin's receiver-local review of a shared proposal. The full ten-image release
+gallery—nine UI captures plus one installed-copy Codex evidence card—is in
+[`docs/screenshots/`](docs/screenshots).
 
 ![Foldweave native Home — create or apply a shared change](docs/screenshots/01-home.png)
 
@@ -267,10 +274,10 @@ open "$APP"
 ```
 
 The tested profile is a PyInstaller `onedir --windowed` application with an
-arm64 entry point. The latest clean-clone executable SHA-256 is
-`3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`;
+arm64 entry point. The final clean-clone executable SHA-256 is
+`1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`;
 the corresponding wheel SHA-256 is
-`c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276`.
+`7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07`.
 Strict deep ad-hoc signature verification, unrelated-directory launch, Home,
 and the persisted review surface pass.
 Gatekeeper assessment rejects the bundle because it has no Developer ID and is
@@ -404,13 +411,12 @@ idempotency authority.
 
 Developer-mode qualification through OpenAI's Secure MCP Tunnel has passed in
 the actual macOS ChatGPT application. The public Cloudflare Worker is deployed
-at
-<https://foldweave-gateway.skybert-ghostline.workers.dev> as version
-`9ac88da8-9f85-4685-8a07-073d44b909b9` in deployment
-`d14d051d-8920-44ea-b336-f3bbea2f6936`. The deployed v35 widget bundle has JS
+at <https://foldweave-gateway.skybert-ghostline.workers.dev> as version
+`77598fb6-72e4-48ee-919e-27488a60a515`. The deployed `review-v37` widget bundle
+has JS
 SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`
 and CSS SHA-256
-`666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`;
+`606dcee47981ac80cdb0a9bcbcc9f082d5bfb84087716ad8bbcbea5dd6b3b323`;
 the checked-in gateway regression passes 50/50 tests.
 
 The consumer qualification used Google Chrome for the ChatGPT OAuth callback.
@@ -565,8 +571,8 @@ uv lock --check
 PYTHONDONTWRITEBYTECODE=1 uv run --no-sync pytest -p no:cacheprovider
 uv run --no-sync ruff check .
 uv run --no-sync ruff format --check .
-cd web && npm ci && npm run typecheck && npm test && npm run build
-cd ../gateway && npm ci && npm test && npm run build
+cd web && npm ci && npm run typecheck && npm test && npm run build:all
+cd ../gateway && npm ci && npm run check
 ```
 
 The exact verified commands and current milestone evidence are recorded in

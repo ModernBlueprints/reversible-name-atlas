@@ -29,16 +29,19 @@ The gateway is intentionally a transport and authorization boundary:
 The current public deployment is:
 
 - origin: <https://foldweave-gateway.skybert-ghostline.workers.dev>;
-- deployment: `d14d051d-8920-44ea-b336-f3bbea2f6936`;
-- Worker version: `9ac88da8-9f85-4685-8a07-073d44b909b9`;
-- widget asset cache: `review-v35`;
+- Worker version: `77598fb6-72e4-48ee-919e-27488a60a515`;
+- widget asset cache: `review-v37`;
 - JavaScript SHA-256:
   `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`;
 - CSS SHA-256:
-  `666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`;
+  `606dcee47981ac80cdb0a9bcbcc9f082d5bfb84087716ad8bbcbea5dd6b3b323`;
   and
 - local qualification: 50/50 gateway tests, strict TypeScript, and the Wrangler
   production dry-run bundle.
+
+The public health endpoint reports `ready: true` with the device-session,
+pairing-directory, and OAuth KV bindings present. The deployed `review-v37`
+JavaScript and CSS bytes match the checked-in production assets exactly.
 
 The earlier `ERR_BLOCKED_BY_CLIENT` occurred in the Codex in-app Browser policy
 layer. The user-authorized Google Chrome route completed ChatGPT connector

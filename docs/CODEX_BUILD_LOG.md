@@ -781,7 +781,7 @@ exposure, USD 0.895450 reported estimated cost, and SHA-256
 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`.
 The ChatGPT-hosted derivative left those bytes unchanged.
 
-The current integrated preflight passes 1,176/1,176 Python tests, 80/80
+At that F2 checkpoint the integrated preflight passed 1,176/1,176 Python tests, 80/80
 frontend tests, 50/50 gateway tests, `uv lock --check` with 63 packages, Ruff
 lint and formatting over 224 files, strict TypeScript, both frontend production
 builds, exact generated review/widget asset parity, the Wrangler production dry
@@ -849,15 +849,16 @@ or tamper-proofing claim.
 
 This paragraph records the pre-F3/F6 status that existed before the later
 post-qualification record below. It is retained as historical evidence only and
-must not be read as the current release state. The current state is: product
+must not be read as the current release state. At that superseded checkpoint,
+the state was: product
 release candidate `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` accepted on the
 published revision branch; technical ChatGPT state
 `DEVELOPER_MODE_VERIFIED` / `CONSUMER_PAIRING_VERIFIED` /
 `PUBLICATION_READY`; and no ChatGPT review submission, approval, publication,
 public listing, final video, `/feedback`, personal attestation, hold release, or
-Devpost submission claimed.
+Devpost submission was claimed.
 
-### Post-checkpoint visual, native, gateway, and Codex qualification
+### Historical post-checkpoint visual, native, gateway, and Codex qualification
 
 The binding visual correction completed after the earlier rejection. Active
 native, browser, review, settings, pairing, Done/proof, and ChatGPT widget
@@ -888,7 +889,7 @@ review rehydration, exact acceptance, Done, Verify Again, CLI receipt
 verification, no runtime Node, and no-orphan-process checks passed. Gatekeeper
 rejection is expected because no Developer ID or notarization is claimed.
 
-The latest full integrated Python regression passed 1,176 tests with one
+At that checkpoint the full integrated Python regression passed 1,176 tests with one
 upstream warning. The frontend passed 80/80 and the gateway passed 50/50 tests;
 strict TypeScript, production builds, lock validation, Ruff lint and format,
 generated asset parity, and Git diff checks passed. The sole direct ledger remained
@@ -897,7 +898,7 @@ byte-identical at SHA-256
 USD 40 ceiling, 14 requests/provider attempts, USD 13.057830 conservative
 exposure, and USD 0.895450 reported estimated cost.
 
-The latest deployed public Worker is deployment
+The deployed public Worker at that checkpoint was deployment
 `d14d051d-8920-44ea-b336-f3bbea2f6936`, version
 `9ac88da8-9f85-4685-8a07-073d44b909b9`, at
 <https://foldweave-gateway.skybert-ghostline.workers.dev>. Its health endpoint
@@ -943,18 +944,19 @@ host-planning tools to create durable hosted root job
 supported links, and stop in `reviewing` before any output.
 
 The first preview render exposed a separate product defect. ChatGPT had cached
-`ui://foldweave/review-v31.html`, while the current gateway accepted only
-canonical `ui://foldweave/review-v33.html`. The gateway now keeps v33 as the
+`ui://foldweave/review-v31.html`, while the gateway at that qualification
+checkpoint accepted only canonical `ui://foldweave/review-v33.html`. The
+gateway then kept v33 as the
 sole advertised template and admits only the explicit known v31 and v32 aliases
-for `resources/read`, echoing the requested URI while serving current v33
-assets. Unknown resource URIs remain fail-closed. Deployment
-`ece68561-0740-47d3-9052-4e311cabf483` is live at the stable `workers.dev`
+for `resources/read`, echoing the requested URI while serving the then-current
+v33 assets. Unknown resource URIs remain fail-closed. Deployment
+`ece68561-0740-47d3-9052-4e311cabf483` was live at the stable `workers.dev`
 endpoint. Live ChatGPT retry rendered the Foldweave widget successfully.
 Unauthenticated and authenticated OAuth-MCP regressions cover both aliases.
 Gateway TypeScript, all 50 Worker tests, and the Wrangler production dry build
 passed. Frontend TypeScript, all 76 component tests, and both production builds
-also passed; the deployed v33 JavaScript and CSS bytes match the current local
-production assets exactly.
+also passed; the deployed v33 JavaScript and CSS bytes matched the then-current
+local production assets exactly.
 
 The widget submitted one revision instruction and the standard `ui/message`
 request was acknowledged and visibly inserted into the ChatGPT transcript. The
@@ -1083,9 +1085,10 @@ revision continuation. The live `ui/message` acknowledgement still required
 the explicitly documented same-conversation recovery, which completed one and
 only one durable revision.
 
-### Current post-qualification release evidence
+### Historical post-qualification release checkpoint
 
-After the Chrome consumer transaction and reconnect/refusal qualification, the
+At this intermediate checkpoint, after the Chrome consumer transaction and
+reconnect/refusal qualification, the
 gateway was rebuilt and redeployed as deployment
 `d14d051d-8920-44ea-b336-f3bbea2f6936`, version
 `9ac88da8-9f85-4685-8a07-073d44b909b9`. The stable health endpoint reports
@@ -1095,7 +1098,7 @@ match the local production bytes exactly: CSS SHA-256
 and JavaScript SHA-256
 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`.
 
-The current regression floor is 1,176/1,176 Python tests with one upstream
+The regression floor at that checkpoint was 1,176/1,176 Python tests with one upstream
 warning, 80/80 frontend tests, and 50/50 gateway tests. A focused post-template
 native/pairing/visual/package matrix passed 35/35; Ruff lint, Ruff format, and
 Git diff checks also passed. The fresh clean-clone rebuilt arm64
@@ -1104,7 +1107,8 @@ Git diff checks also passed. The fresh clean-clone rebuilt arm64
 installed wheel SHA-256 is
 `c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276`.
 
-Current Foldweave screenshot and thumbnail evidence is captured and
+The Foldweave release-image and thumbnail evidence at that checkpoint was
+captured and
 hash-recorded:
 
 | Asset | Pixels or kind | Bytes | SHA-256 |
@@ -1129,9 +1133,11 @@ pixel-equivalence check preserved its 1728×940 rendered content exactly. The
 table records the normalized asset's new size and SHA-256. No product state,
 claim, or visual content changed.
 
-The final gallery contact-sheet review confirmed that the ten captures and
-thumbnail retain the intended restrained macOS dark visual language, readable
-controls, and no stale Name Atlas, gradient, neon, or cyber-dashboard surface.
+The final gallery contact-sheet review confirmed that the nine UI captures, one
+installed-copy Codex evidence card, and thumbnail retain the intended restrained
+macOS dark visual language, readable controls, and no stale Name Atlas,
+gradient, neon, or cyber-dashboard surface. The evidence card is not a literal
+Codex UI screenshot.
 The exact 317-word narration was also rendered through a local macOS
 synthetic-speech preflight: 150.304 seconds at 125 words per minute and
 148.652 seconds at 130. Those results validate the script's timing margin only;
@@ -1145,8 +1151,8 @@ primary `/feedback` Session ID, and no submission edits after the July 21 17:00
 PDT deadline (Wednesday 22 July 2026 at 02:00 CEST). No Devpost or submission
 state was modified by that recheck.
 
-These are current published `main`/revision-branch and deployed-service
-identities. A fresh unrelated clean clone of the published revision branch
+These were the published `main`/revision-branch and deployed-service identities
+at that checkpoint. A fresh unrelated clean clone of the published revision branch
 reproduced the accepted product candidate with `uv sync
 --frozen`, 1,176 Python tests with one upstream warning, `uv lock --check`,
 Ruff lint/format, Git diff checks, frontend TypeScript, 80 Vitest tests, both
@@ -1219,10 +1225,104 @@ mutation, category selection, personal form entry, or submission was attempted.
 GitHub public metadata now identifies Foldweave as a review-and-verify connected
 folder product and carries current product topics.
 
-This establishes `RECORDING_READY` only in the narrow, governed sense: the
-accepted Foldweave product, public repository, keyless judge path, screenshots,
+This established `RECORDING_READY` only in the narrow, governed sense: the
+accepted Foldweave product, public repository, keyless judge path, release images,
 frozen 317-word narration, 11-shot 2:55 capture plan, and timing-margin
 preflight are ready for the user's recording work. It does not establish a user
 voice recording, a public YouTube video, `/feedback` Session ID, personal or
 legal attestation, release of the submission hold, or a Devpost submission. All
 of those remain pending and the hold remains active.
+
+### Primary `/feedback` Session ID captured — 21 July 2026
+
+The user ran `/feedback` in the primary Codex build task and supplied the exact
+Session ID. It is retained in an ignored, owner-only local submission record for
+required Devpost field `27950`; public release files record its captured status
+without duplicating the identifier. The authenticated Devpost connector updated
+project `1327974` to version `6`, then a minimum-disclosure correction removed
+the identifier from its public description in version `7` while preserving the
+repository and keyless judge guidance. Connector readback retained an empty
+`video_url` and a Build Week association with `submitted_at: null`. The public
+video, personal form and legal attestations, explicit submission-hold release,
+final Devpost submission, and confirmation remain pending. Capturing the Session
+ID did not release the submission hold.
+
+### Final UI, packaged-runtime, and release verification — 21 July 2026
+
+The user identified concrete residual UI defects across Organize, Apply,
+ChatGPT, Settings, and the hosted review widget: field legends intersected
+their controls, manual-path labels lacked breathing room, pointer clicks drew
+blue focus boxes or a stray line on empty space, and the closed/open Key storage
+disclosure did not retain one alignment. The correction preserved keyboard
+focus while removing pointer-only focus decoration. Fieldset surfaces now sit
+inside their labelled containers, pointer and keyboard modality are tracked at
+the document boundary, disclosure layout is stable in both states, and the
+public ChatGPT widget uses the same focus-origin rule. No workflow or proof
+authority moved into the renderer.
+
+The packaged `/pairing` route exposed a second root cause during final QA:
+noninteractive Keychain and companion probes could wait on an unavailable UI
+credential surface. The Python runtime now fails closed and promptly in that
+context while preserving normal native Keychain behavior. Product corrections
+were committed as:
+
+- `c84780fbab6da859352624e9e713a26ce385929c` — `fix: polish Foldweave native UI and runtime`;
+- `68aba38a643d95f69e9aacd392904ef310f6994c` — `fix: remove hosted widget pointer focus outline`.
+
+Rendered geometry and computed-style inspection at 1280×720 established zero
+legend/control overlap on both Organize and Apply, a 7.6875-pixel manual-label
+gap, no pointer outline or shadow on disclosures or blank-space clicks, stable
+Key storage position across closed/open states, no horizontal overflow, and no
+pointer outline on ChatGPT's How planning works or Advanced disclosures.
+Keyboard-visible focus remains available. The rebuilt packaged app rendered
+Home, Organize, ChatGPT, and Settings, returned every tested route in less than
+20 milliseconds, exited with status zero, and left no server process or
+listener.
+
+The final public Worker version is
+`77598fb6-72e4-48ee-919e-27488a60a515`. It serves `review-v37`; deployed bytes
+match the checked-in production assets exactly: CSS SHA-256
+`606dcee47981ac80cdb0a9bcbcc9f082d5bfb84087716ad8bbcbea5dd6b3b323` and JavaScript
+SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`.
+The public health endpoint reports ready with all three required bindings.
+
+A fresh unrelated clone at exact implementation checkpoint
+`68aba38a643d95f69e9aacd392904ef310f6994c` passed `uv sync --frozen`,
+`uv lock --check`, 1,184 Python tests with one upstream Starlette deprecation
+warning, Ruff lint and format over 224 files, frontend typecheck, both production
+builds and 80/80 tests, gateway typecheck, 50/50 tests, Wrangler dry-run,
+generated-asset parity, and Git diff checks. It built a 55 MiB arm64
+`Foldweave.app` whose executable SHA-256 is
+`1c2316e26a23ecc9d3608e37d8a6ebf23ee2c128f468a9ec68018cf54cc606d4`, and a
+wheel whose SHA-256 is
+`7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07`.
+The app has bundle identifier `com.modernblueprints.foldweave`, version `0.1.0`,
+minimum macOS `13.0`; strict deep ad-hoc signature verification passed. It is
+still truthfully unsigned and unnotarized.
+
+The same clean clone completed a fresh keyless origin and model-free receiver
+transaction. Origin job `4aa71552bffa422c9b997724a713cfb1` produced Change
+File fingerprint
+`9cadf68fe3207e6de89a2fd3b1fd7ed3d97cb7a1d41dfba483911e4f507d79e0` and receipt
+`0e33b16b6a7dc26cd171def18b0a01eaf0098315f32e154915373ff5cd6fcd1b`.
+Receiver job `d4a8588ab2a843b9b3937a1885e9691d` produced receipt
+`c0122b6ee7ed278c2aa7b18396bc8a35f628cbbbd0f3a0ab092f7ae0f24c77a8`.
+Both source-free and source-aware verifiers passed; Sofia and Martin
+reconstructions matched their selected source paths and bytes exactly; both
+accepted results committed organized tree
+`a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+
+The release gallery remains ten image assets, accurately described as nine UI
+captures plus one installed-copy Codex evidence card. Asset 09 is a truthful
+summary derived from the recorded installed-copy qualification, not a literal
+Codex UI screenshot. The unchanged gallery continues to represent the default
+states shown; the final pointer-focus and noninteractive-Keychain corrections
+are supported by the separate rendered-style, packaged-route, regression, and
+clean-clone evidence above rather than by a false recapture claim.
+
+The primary `/feedback` Session ID remains stored only in the ignored,
+owner-only local submission record for Devpost field `27950`. Devpost project
+`1327974`, version `7`, still has an empty video URL and `submitted_at: null`.
+The final public YouTube video, user-owned eligibility and ownership entries,
+explicit submission-hold release, final submission, and confirmation remain
+pending. The submission hold remains active.
