@@ -16,8 +16,13 @@ from name_atlas.folder_refactor.connected_change import (
 from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderJobLifecycleV3,
     FolderJobV3IdempotencyConflict,
+    FolderRefactorJobV3Store,
     GptPlannedJobAuthorityV3,
     canonical_job_v3_bytes,
+)
+from name_atlas.folder_refactor.connected_change.proposal_delta import (
+    FolderProposalDeltaProjectionError,
+    project_latest_accepted_proposal_delta,
 )
 from name_atlas.folder_refactor.connected_change.review_service import (
     FOLDWEAVE_F0B_CONTRACT_FREEZE,
@@ -137,6 +142,7 @@ async def test_f0b_scripted_initial_revision_accept_and_verify(
     assert reviewing.authority.evidence_ledger.contract_freeze_fingerprint == (
         FOLDWEAVE_F0B_CONTRACT_FREEZE.contract_freeze_fingerprint
     )
+    assert project_latest_accepted_proposal_delta(reviewing) is None
     assert tuple(output.iterdir()) == ()
     assert tree_state(fixture.sofia_root) == source_before
 
@@ -185,6 +191,56 @@ async def test_f0b_scripted_initial_revision_accept_and_verify(
     )
     assert tuple(output.iterdir()) == ()
     assert tree_state(fixture.sofia_root) == source_before
+
+    persisted_bytes = job_path.read_bytes()
+    persisted = FolderRefactorJobV3Store(job_path).load()
+    delta = project_latest_accepted_proposal_delta(persisted)
+    assert delta is not None
+    assert delta.proposal_revision_before == 0
+    assert delta.proposal_revision_after == 1
+    assert delta.base_candidate_fingerprint == canonical_sha256(
+        reviewing.candidate_plan
+    )
+    assert delta.base_preview_fingerprint == reviewing.preview.preview_fingerprint
+    assert delta.current_candidate_fingerprint == canonical_sha256(
+        revised.candidate_plan
+    )
+    assert delta.current_preview_fingerprint == revised.preview.preview_fingerprint
+    assert len(delta.entries) == 1
+    assert (
+        delta.entries[0].member_id,
+        delta.entries[0].previous_path,
+        delta.entries[0].current_path,
+    ) == (
+        selected.file_id,
+        selected.target_path,
+        f"reviewed/{Path(selected.target_path).name}",
+    )
+    assert job_path.read_bytes() == persisted_bytes
+
+    assert isinstance(persisted.authority, GptPlannedJobAuthorityV3)
+    assert persisted.authority.evidence_ledger is not None
+    corrupted_ledger = persisted.authority.evidence_ledger.model_copy(
+        update={"accepted_plan_fingerprint": "0" * 64}
+    )
+    corrupted_authority = persisted.authority.model_copy(
+        update={"evidence_ledger": corrupted_ledger}
+    )
+    with pytest.raises(
+        FolderProposalDeltaProjectionError,
+        match="proposal_delta_current_binding_mismatch",
+    ):
+        project_latest_accepted_proposal_delta(
+            persisted.model_copy(update={"authority": corrupted_authority})
+        )
+    missing_authority = persisted.authority.model_copy(update={"evidence_ledger": None})
+    with pytest.raises(
+        FolderProposalDeltaProjectionError,
+        match="proposal_delta_evidence_missing",
+    ):
+        project_latest_accepted_proposal_delta(
+            persisted.model_copy(update={"authority": missing_authority})
+        )
 
     verified = service.accept(
         revised.job_path,

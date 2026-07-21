@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+import fcntl
 import hashlib
 import json
+import logging
+import os
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 import httpx
 import pytest
 from fastapi import FastAPI, Response
+from mcp.server.fastmcp import FastMCP
+from websockets.exceptions import ConnectionClosedError
+from websockets.frames import Close
 
 from name_atlas.foldweave_companion import (
     MAX_MCP_RESPONSE_WIRE_BYTES,
@@ -21,17 +30,22 @@ from name_atlas.foldweave_companion import (
     current_trusted_public_invocation,
     describe_mcp_operation,
     parse_companion_rpc_request,
+    trusted_public_invocation,
 )
 from name_atlas.foldweave_companion_client import (
     CompanionGatewayProfileV1,
-    CompanionGatewayStatusV1,
+    CompanionGatewayStatusV2,
     CompanionPairingClient,
     CompanionPairingStateStore,
     CompanionPairingStateV1,
+    CompanionRuntimeLock,
     CompanionTransportError,
     FoldweaveCompanionSession,
     InProcessMcpProxy,
     LoopbackMcpProxy,
+    _classify_mcp_error_body,
+    _classify_mcp_operation,
+    _companion_failure_code,
     _NoRedirectWebSocketConnect,
     _wait_for_reconnect,
 )
@@ -167,6 +181,259 @@ async def test_pairing_state_sequence_is_persisted_before_use(tmp_path: Path) ->
 
 
 @pytest.mark.anyio
+async def test_control_and_companion_sequences_advance_independently(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "state" / "companion.json"
+    store = CompanionPairingStateStore(path=path)
+    await store.write(
+        CompanionPairingStateV1(
+            gateway=CompanionGatewayProfileV1(
+                base_url="https://foldweave-gateway.example"
+            ),
+            device_id="fwd_" + "a" * 32,
+            session_id="s" * 43,
+            pairing_code_expires_at=1_000_000,
+            next_device_sequence=40,
+            next_companion_sequence=7,
+        )
+    )
+
+    control_state, control_sequence = await store.allocate_control_sequence()
+    companion_state, companion_sequence = await store.allocate_companion_sequence()
+
+    assert control_sequence == 40
+    assert companion_sequence == 7
+    assert control_state.next_companion_sequence == 7
+    assert companion_state.next_device_sequence == 41
+    assert companion_state.next_companion_sequence == 8
+
+
+@pytest.mark.anyio
+async def test_pairing_state_sidecar_serializes_independent_store_instances(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "state" / "companion-pairing.json"
+    await CompanionPairingStateStore(path=path).write(
+        CompanionPairingStateV1(
+            gateway=CompanionGatewayProfileV1(
+                base_url="https://foldweave-gateway.example"
+            ),
+            device_id="fwd_" + "a" * 32,
+            session_id="s" * 43,
+            pairing_code_expires_at=1_000_000,
+            next_device_sequence=2,
+            next_companion_sequence=2,
+        )
+    )
+    stores = [CompanionPairingStateStore(path=path) for _ in range(32)]
+
+    allocations = await asyncio.gather(
+        *(store.allocate_companion_sequence() for store in stores)
+    )
+
+    assert sorted(sequence for _state, sequence in allocations) == list(range(2, 34))
+    persisted = await CompanionPairingStateStore(path=path).read()
+    assert persisted.next_companion_sequence == 34
+    lock_path = CompanionPairingStateStore(path=path).lock_path
+    assert lock_path.name == "companion-pairing.lock"
+    assert lock_path.stat().st_mode & 0o777 == 0o600
+
+
+def test_pairing_state_rmw_waits_for_cross_process_sidecar(tmp_path: Path) -> None:
+    path = tmp_path / "state" / "companion-pairing.json"
+    store = CompanionPairingStateStore(path=path)
+    asyncio.run(
+        store.write(
+            CompanionPairingStateV1(
+                gateway=CompanionGatewayProfileV1(
+                    base_url="https://foldweave-gateway.example"
+                ),
+                device_id="fwd_" + "a" * 32,
+                session_id="s" * 43,
+                pairing_code_expires_at=1_000_000,
+                next_device_sequence=2,
+            )
+        )
+    )
+    ready_path = tmp_path / "child-ready"
+    descriptor = os.open(store.lock_path, os.O_RDWR)
+    fcntl.flock(descriptor, fcntl.LOCK_EX)
+    script = (
+        "import asyncio, sys\n"
+        "from pathlib import Path\n"
+        "from name_atlas.foldweave_companion_client import "
+        "CompanionPairingStateStore\n"
+        "state_path, ready_path = map(Path, sys.argv[1:])\n"
+        "ready_path.write_text('ready', encoding='utf-8')\n"
+        "_state, sequence = asyncio.run("
+        "CompanionPairingStateStore(path=state_path).allocate_companion_sequence())\n"
+        "print(sequence)\n"
+    )
+    process = subprocess.Popen(
+        [sys.executable, "-c", script, str(path), str(ready_path)],
+        cwd=Path.cwd(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    ready_observed = False
+    child_waited_for_lock = False
+    try:
+        deadline = time.monotonic() + 5
+        while not ready_path.exists() and process.poll() is None:
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.01)
+        ready_observed = ready_path.exists()
+        if ready_observed:
+            time.sleep(0.1)
+            child_waited_for_lock = process.poll() is None
+    finally:
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
+
+    stdout, stderr = process.communicate(timeout=10)
+    assert ready_observed
+    assert child_waited_for_lock
+    assert process.returncode == 0, stderr
+    assert stdout.strip() == "2"
+    assert asyncio.run(store.read()).next_companion_sequence == 3
+
+
+def test_companion_runtime_lock_is_exclusive_and_reusable(tmp_path: Path) -> None:
+    path = tmp_path / "companion-runtime.lock"
+    owner = CompanionRuntimeLock(path)
+    contender = CompanionRuntimeLock(path)
+    owner.acquire()
+
+    with pytest.raises(CompanionTransportError) as exc_info:
+        contender.acquire()
+
+    assert exc_info.value.code == "companion_already_running"
+    script = (
+        "import sys\n"
+        "from pathlib import Path\n"
+        "from name_atlas.foldweave_companion_client import "
+        "CompanionRuntimeLock, CompanionTransportError\n"
+        "try:\n"
+        "    CompanionRuntimeLock(Path(sys.argv[1])).acquire()\n"
+        "except CompanionTransportError as exc:\n"
+        "    print(exc.code)\n"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", script, str(path)],
+        cwd=Path.cwd(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.stdout.strip() == "companion_already_running"
+    assert completed.stderr == ""
+    assert path.stat().st_mode & 0o777 == 0o600
+    owner.release()
+    contender.acquire()
+    contender.release()
+
+
+def test_websocket_close_diagnostics_include_only_numeric_close_code() -> None:
+    policy = ConnectionClosedError(Close(1008, "sensitive policy detail"), None)
+    service_restart = ConnectionClosedError(
+        Close(1012, "sensitive deployment detail"),
+        None,
+    )
+    unframed = ConnectionClosedError(None, None)
+
+    assert _companion_failure_code(policy) == "websocket_closed_1008"
+    assert _companion_failure_code(service_restart) == "websocket_closed_1012"
+    assert _companion_failure_code(unframed) == "websocket_closed_unframed"
+    assert "sensitive" not in _companion_failure_code(policy)
+
+
+@pytest.mark.anyio
+async def test_registration_persists_only_the_sanitized_device_label(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    keychain = _MemoryKeychain()
+    identity_store = DeviceIdentityStore(adapter=keychain)
+    identity = identity_store.load_or_create()
+    state_store = CompanionPairingStateStore(path=tmp_path / "pairing.json")
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        sent = json.loads(request.content)
+        assert sent["body"]["deviceName"] == "Nikolai's Mac"
+        return httpx.Response(
+            201,
+            json={
+                "expiresAt": 8_000_000,
+                "pairingCode": "23456789AB",
+                "sessionId": "s" * 43,
+            },
+            headers={"content-type": "application/json"},
+        )
+
+    transport = httpx.MockTransport(handler)
+    original_client = httpx.AsyncClient
+
+    def client_factory(*args, **kwargs):
+        return original_client(transport=transport, **kwargs)
+
+    monkeypatch.setattr(httpx, "AsyncClient", client_factory)
+    registration = await CompanionPairingClient(
+        identity_store=identity_store,
+        state_store=state_store,
+    ).register(
+        CompanionGatewayProfileV1(base_url="https://foldweave-gateway.example"),
+        device_name="  Nikolai's Mac  ",
+    )
+
+    assert registration.session.device_id == identity.device_id
+    assert registration.session.device_name == "Nikolai's Mac"
+    assert (await state_store.read()).device_name == "Nikolai's Mac"
+
+
+@pytest.mark.anyio
+async def test_legacy_pairing_state_without_device_name_migrates_truthfully(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "state" / "companion.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        json.dumps(
+            {
+                "device_id": "fwd_" + "a" * 32,
+                "gateway": {
+                    "base_url": "https://foldweave-gateway.example",
+                    "schema_version": "foldweave-gateway-profile.v1",
+                },
+                "last_gateway_sequence": 0,
+                "next_device_sequence": 2,
+                "pairing_code_expires_at": 1_000_000,
+                "schema_version": "foldweave-companion-pairing.v1",
+                "session_id": "s" * 43,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    store = CompanionPairingStateStore(path=path)
+
+    legacy = await store.read()
+    assert legacy.device_name is None
+    assert legacy.next_companion_sequence == legacy.next_device_sequence == 2
+
+    migrated, sequence = await store.allocate_companion_sequence()
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert sequence == 2
+    assert migrated.device_name is None
+    assert persisted["device_name"] is None
+    assert persisted["next_companion_sequence"] == 3
+    assert persisted["next_device_sequence"] == 2
+    assert path.stat().st_mode & 0o777 == 0o600
+
+
+@pytest.mark.anyio
 async def test_companion_challenge_relays_without_claiming_oauth_authorization(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -225,7 +492,9 @@ async def test_companion_challenge_relays_without_claiming_oauth_authorization(
     challenge_response = json.loads(socket.sent[0])
     response = json.loads(socket.sent[1])
     assert challenge_response["body"]["type"] == "challenge_response"
+    assert challenge_response["sequence"] == 3
     assert response["body"]["type"] == "mcp_response"
+    assert response["sequence"] == 4
     assert response["body"]["requestId"] == request["requestId"]
     assert response["body"]["schemaVersion"] == ("foldweave-mcp-response-envelope.v1")
     assert response["body"]["bodyEncoding"] == "gzip+base64url"
@@ -248,7 +517,8 @@ async def test_companion_challenge_relays_without_claiming_oauth_authorization(
     }
     assert response["requestId"] == request["requestId"]
     persisted = await state_store.read()
-    assert persisted.next_device_sequence == 5
+    assert persisted.next_device_sequence == 3
+    assert persisted.next_companion_sequence == 5
     assert persisted.last_gateway_sequence == 1
     assert "authorized_at" not in persisted.model_dump()
     assert "grant_expires_at" not in persisted.model_dump()
@@ -475,6 +745,242 @@ async def test_embedded_proxy_runs_mcp_without_a_second_loopback_listener() -> N
     assert json.loads(response.body)["result"] == {"tools": []}
 
 
+@pytest.mark.anyio
+async def test_embedded_proxy_logs_only_bounded_jsonrpc_error_class(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    app = FastAPI()
+
+    @app.post("/mcp")
+    async def mcp() -> Response:
+        return Response(
+            content=(
+                '{"jsonrpc":"2.0","id":1,"error":'
+                '{"code":-32602,"message":"Sensitive invalid parameters"}}'
+            ),
+            media_type="application/json",
+        )
+
+    request = _public_rpc_request(
+        body='{"jsonrpc":"2.0","method":"tools/list","id":1}',
+        issued_at=9_000_000,
+        expires_at=9_025_000,
+        request_id="r" * 64,
+        sequence=1,
+        device_id="fwd_" + "d" * 32,
+        session_id="s" * 43,
+        headers={
+            "content-type": "application/json",
+            "x-foldweave-http-method": "POST",
+        },
+    )
+
+    with caplog.at_level(
+        logging.WARNING,
+        logger="name_atlas.foldweave_companion_client",
+    ):
+        response = await InProcessMcpProxy(app).relay(request)
+
+    assert response.status == 200
+    assert caplog.messages == [
+        "Embedded Foldweave MCP returned HTTP 200 with jsonrpc_-32602 (tools/list)."
+    ]
+    assert "Sensitive invalid parameters" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ("Invalid Host header", "host_header_invalid"),
+        ('{"error":{"code":-32600,"message":"Invalid request"}}', "jsonrpc_-32600"),
+        (
+            'event: message\ndata: {"jsonrpc":"2.0","id":1,"error":'
+            '{"code":-32602,"message":"Sensitive invalid parameters"}}\n\n',
+            "jsonrpc_-32602",
+        ),
+        (
+            'event: message\ndata: {"jsonrpc":"2.0","id":1,"result":'
+            '{"isError":true,"content":[{"type":"text",'
+            '"text":"Error executing accept_plan_and_create_copy: '
+            "preview_binding_mismatch: "
+            'Sensitive details"}]}}\n\n',
+            "mcp_tool_error:preview_binding_mismatch",
+        ),
+        ('{"error":{"message":"Invalid request"}}', "jsonrpc_error"),
+        ("not json", "non_json_error"),
+    ],
+)
+def test_mcp_error_diagnostics_never_include_response_content(
+    body: str,
+    expected: str,
+) -> None:
+    assert _classify_mcp_error_body(body) == expected
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ('{"jsonrpc":"2.0","method":"tools/list","id":1}', "tools/list"),
+        (
+            '{"jsonrpc":"2.0","method":"tools/call","id":1,"params":'
+            '{"name":"job_status","arguments":{"job_id":"sensitive"}}}',
+            "tools/call:job_status",
+        ),
+        ("not json", "rpc_invalid"),
+    ],
+)
+def test_mcp_operation_diagnostic_excludes_arguments(
+    body: str,
+    expected: str,
+) -> None:
+    assert _classify_mcp_operation(body) == expected
+    assert "sensitive" not in expected
+
+
+@pytest.mark.anyio
+async def test_embedded_proxy_uses_the_real_mcp_transport_security_contract() -> None:
+    from name_atlas.foldweave_chatgpt_mcp import build_foldweave_chatgpt_server
+
+    server = build_foldweave_chatgpt_server()
+    app = server.streamable_http_app()
+    body = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "capabilities": {},
+                "clientInfo": {
+                    "name": "foldweave-companion-regression",
+                    "version": "1.0",
+                },
+                "protocolVersion": "2025-11-25",
+            },
+        },
+        separators=(",", ":"),
+    )
+    request = _public_rpc_request(
+        body=body,
+        issued_at=9_000_000,
+        expires_at=9_025_000,
+        request_id="mcp_transport_security_request_01",
+        sequence=1,
+        device_id="fwd_" + "d" * 32,
+        session_id="s" * 43,
+        headers={
+            "accept": "application/json, text/event-stream",
+            "content-type": "application/json",
+            "x-foldweave-http-method": "POST",
+        },
+    )
+
+    async with app.router.lifespan_context(app):
+        response = await InProcessMcpProxy(app).relay(request)
+
+    assert response.status == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert response.headers["mcp-session-id"]
+    assert '"serverInfo":{"name":"Foldweave"' in response.body
+    assert "Invalid Host header" not in response.body
+
+
+@pytest.mark.anyio
+async def test_stateless_embedded_mcp_rebinds_public_context_per_job_call() -> None:
+    server: FastMCP[None] = FastMCP(
+        name="Foldweave context regression",
+        streamable_http_path="/mcp",
+        stateless_http=True,
+    )
+
+    @server.tool(name="job_status")
+    def job_status(job_id: str) -> dict[str, str | None]:
+        invocation = current_trusted_public_invocation()
+        return {
+            "argument_job_id": job_id,
+            "context_job_id": None if invocation is None else invocation.job_id,
+        }
+
+    app = server.streamable_http_app()
+    proxy = InProcessMcpProxy(app)
+    initialize_body = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "capabilities": {},
+                "clientInfo": {
+                    "name": "foldweave-public-context-regression",
+                    "version": "1.0",
+                },
+                "protocolVersion": "2025-11-25",
+            },
+        },
+        separators=(",", ":"),
+    )
+    job_id = "4" * 32
+    call_body = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+                "name": "job_status",
+                "arguments": {"job_id": job_id},
+            },
+        },
+        separators=(",", ":"),
+    )
+    initialize = _public_rpc_request(
+        body=initialize_body,
+        issued_at=9_000_000,
+        expires_at=9_025_000,
+        request_id="public_context_initialize_01",
+        sequence=1,
+        device_id="fwd_" + "d" * 32,
+        session_id="s" * 43,
+        headers={
+            "accept": "application/json, text/event-stream",
+            "content-type": "application/json",
+            "x-foldweave-http-method": "POST",
+        },
+    )
+    call = _public_rpc_request(
+        body=call_body,
+        issued_at=9_000_100,
+        expires_at=9_025_100,
+        request_id="public_context_job_call_01",
+        sequence=2,
+        device_id="fwd_" + "d" * 32,
+        session_id="s" * 43,
+        headers={
+            "accept": "application/json, text/event-stream",
+            "content-type": "application/json",
+            "x-foldweave-http-method": "POST",
+        },
+    )
+
+    async with app.router.lifespan_context(app):
+        with trusted_public_invocation(initialize.invocation):
+            initialized = await proxy.relay(initialize)
+        with trusted_public_invocation(call.invocation):
+            called = await proxy.relay(call)
+
+    assert initialized.status == 200
+    assert "mcp-session-id" not in initialized.headers
+    assert called.status == 200
+    event_data = next(
+        line.removeprefix("data: ")
+        for line in called.body.splitlines()
+        if line.startswith("data: ")
+    )
+    structured = json.loads(event_data)["result"]["structuredContent"]
+    assert structured == {
+        "argument_job_id": job_id,
+        "context_job_id": job_id,
+    }
+
+
 def test_actual_built_widget_uses_deterministic_bounded_response_envelope() -> None:
     from name_atlas.folder_refactor.serialization import canonical_json_bytes
     from name_atlas.foldweave_chatgpt_mcp import _load_widget_html
@@ -570,15 +1076,17 @@ async def test_authoritative_pairing_status_is_exact_bound_and_persists_sequence
         return httpx.Response(
             200,
             json={
-                "authorized": True,
+                "authorizationCodeIssued": True,
+                "clientAccessObserved": True,
+                "clientAccessObservedAt": 7_400_000,
                 "connected": True,
                 "deviceId": identity.device_id,
                 "expiresAt": 9_000_000,
                 "lastSeenAt": 7_500_000,
-                "pairingState": "authorized",
+                "pairingState": "client_access_observed",
                 "requestId": sent["requestId"],
                 "revoked": False,
-                "schemaVersion": "foldweave-pairing-status.v1",
+                "schemaVersion": "foldweave-pairing-status.v2",
                 "sessionId": state.session_id,
             },
             headers={"content-type": "application/json"},
@@ -596,13 +1104,15 @@ async def test_authoritative_pairing_status_is_exact_bound_and_persists_sequence
         state_store=state_store,
     ).status()
 
-    assert status == CompanionGatewayStatusV1(
-        schema_version="foldweave-pairing-status.v1",
+    assert status == CompanionGatewayStatusV2(
+        schema_version="foldweave-pairing-status.v2",
         request_id=status.request_id,
         device_id=identity.device_id,
         session_id=state.session_id,
-        pairing_state="authorized",
-        authorized=True,
+        pairing_state="client_access_observed",
+        authorization_code_issued=True,
+        client_access_observed=True,
+        client_access_observed_at=7_400_000,
         connected=True,
         revoked=False,
         expires_at=9_000_000,
@@ -620,7 +1130,8 @@ async def test_authoritative_pairing_status_is_exact_bound_and_persists_sequence
         ({"sessionId": "x" * 43}, "pairing_status_binding_invalid"),
         ({"requestId": "wrong_request_123456789"}, "pairing_status_binding_invalid"),
         ({"extra": "unsupported"}, "gateway_response_invalid"),
-        ({"authorized": False}, "gateway_response_invalid"),
+        ({"authorizationCodeIssued": False}, "gateway_response_invalid"),
+        ({"clientAccessObservedAt": None}, "gateway_response_invalid"),
         (
             {"connected": True, "pairingState": "expired"},
             "gateway_response_invalid",
@@ -653,15 +1164,17 @@ async def test_pairing_status_fails_closed_on_wrong_binding_or_schema(
     async def handler(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
         payload: dict[str, object] = {
-            "authorized": True,
+            "authorizationCodeIssued": True,
+            "clientAccessObserved": True,
+            "clientAccessObservedAt": 7_400_000,
             "connected": False,
             "deviceId": identity.device_id,
             "expiresAt": 9_000_000,
             "lastSeenAt": None,
-            "pairingState": "authorized",
+            "pairingState": "client_access_observed",
             "requestId": sent["requestId"],
             "revoked": False,
-            "schemaVersion": "foldweave-pairing-status.v1",
+            "schemaVersion": "foldweave-pairing-status.v2",
             "sessionId": state.session_id,
         }
         payload.update(mutation)

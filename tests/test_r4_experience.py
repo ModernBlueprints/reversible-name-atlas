@@ -241,7 +241,8 @@ def _assert_shell_contract(
     assert document.descendants("h1") or document.descendants("h2")
     bodies = document.descendants("body")
     assert len(bodies) == 1
-    assert "bp6-dark" in bodies[0].classes
+    assert "bp6-dark" not in bodies[0].classes
+    assert "document.documentElement.dataset.bpColorScheme" in response.text
     active = _active_navigation(document)
     assert len(active) == 1
     assert active[0].attrs.get("href") == route
@@ -253,7 +254,8 @@ def _assert_shell_contract(
     }
     assert set(WORKBENCH_ROUTES) <= nav_paths
     shell_text = document.text()
-    assert "Reversible Name Atlas" in shell_text
+    assert "Foldweave" in shell_text
+    assert "Legacy compatibility" in shell_text
     assert "Migration Case" in shell_text
     assert "Source" in shell_text
     assert "Recorded GPT-5.6 response" in shell_text
@@ -865,7 +867,7 @@ def test_mobile_shell_keeps_required_case_facts_visible() -> None:
     )
 
 
-def test_receipt_card_status_modifiers_control_border_text_and_icon_color() -> None:
+def test_receipt_card_status_modifiers_control_accent_text_and_icon_color() -> None:
     styles = (STATIC_ROOT / "styles.css").read_text(encoding="utf-8")
 
     expected_colors = {
@@ -876,7 +878,7 @@ def test_receipt_card_status_modifiers_control_border_text_and_icon_color() -> N
     for status, color in expected_colors.items():
         assert re.search(
             rf"\.receipt-card--{status}\s*\{{[^}}]*"
-            rf"border-top:\s*3px\s+solid\s+var\(--{color}-strong\)",
+            rf"border-left:\s*3px\s+solid\s+var\(--{color}-strong\)",
             styles,
             flags=re.DOTALL,
         )
@@ -897,16 +899,16 @@ def test_receipt_card_status_modifiers_control_border_text_and_icon_color() -> N
 def test_small_text_and_primary_hover_meet_normal_text_contrast() -> None:
     styles = (STATIC_ROOT / "styles.css").read_text(encoding="utf-8")
     faint = re.search(r"--text-faint:\s*(#[0-9a-fA-F]{6})", styles)
-    hover = re.search(
-        r"\.button\.bp6-intent-primary:hover:not\(:disabled\),\s*"
-        r"a\.button\.bp6-intent-primary:hover\s*\{[^}]*"
-        r"background:\s*(#[0-9a-fA-F]{6})",
-        styles,
-        flags=re.DOTALL,
-    )
+    action = re.search(r"--action-blue:\s*(#[0-9a-fA-F]{6})", styles)
+    hover = re.search(r"--action-blue-hover:\s*(#[0-9a-fA-F]{6})", styles)
+    focus = re.search(r"--focus:\s*(#[0-9a-fA-F]{6})", styles)
 
     assert faint is not None
+    assert action is not None
     assert hover is not None
-    assert _contrast_ratio(faint.group(1), "#20252c") >= 4.5
-    assert _contrast_ratio(faint.group(1), "#1c2127") >= 4.5
+    assert focus is not None
+    assert _contrast_ratio(faint.group(1), "#ffffff") >= 4.5
+    assert _contrast_ratio(faint.group(1), "#f2f2f7") >= 4.5
+    assert _contrast_ratio("#ffffff", action.group(1)) >= 4.5
     assert _contrast_ratio("#ffffff", hover.group(1)) >= 4.5
+    assert _contrast_ratio(focus.group(1), "#ffffff") >= 3.0

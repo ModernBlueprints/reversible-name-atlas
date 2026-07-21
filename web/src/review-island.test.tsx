@@ -7,9 +7,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   AcceptanceBindingPayload,
   FolderPlanPreviewV1,
+  FolderPlanRevisionDeltaV1,
   ReviewStatus,
   RevisionPayload,
 } from "./contracts";
+import { assertStatus } from "./contracts";
 import { ReviewIsland } from "./review-island";
 
 const A = "a".repeat(64);
@@ -134,8 +136,35 @@ const status: ReviewStatus = {
   revision_available: true,
   revision_attempts_remaining: 2,
   revision_failure: null,
+  latest_proposal_delta: null,
   done_url: null,
 };
+
+function revisionDelta(
+  overrides: Partial<FolderPlanRevisionDeltaV1> = {},
+): FolderPlanRevisionDeltaV1 {
+  return {
+    schema_version: "folder-plan-revision-delta.v1",
+    job_id: JOB_ID,
+    proposal_revision_before: 0,
+    proposal_revision_after: 1,
+    base_candidate_fingerprint: D,
+    base_preview_fingerprint: E,
+    current_candidate_fingerprint: B,
+    current_preview_fingerprint: C,
+    previous_result_folder_name: "northstar-organized",
+    current_result_folder_name: "northstar-organized",
+    entries: [
+      {
+        member_id: C,
+        previous_path: "Delivery/draft/logo.png",
+        current_path: "Delivery/brand/logo.png",
+      },
+    ],
+    delta_fingerprint: A,
+    ...overrides,
+  };
+}
 
 function renderReview(journey: "organize" | "apply" = "organize") {
   const acceptPlan = vi.fn(async () => undefined);
@@ -268,18 +297,99 @@ function directoryPrefixes(path: string): string[] {
 afterEach(cleanup);
 
 describe("Foldweave review island", () => {
-  it("shows all members by default for a small preview and exact proposal counts", () => {
+  it("accepts only a fail-closed stale local status", () => {
+    const staleStatus: ReviewStatus = {
+      ...status,
+      lifecycle: "stale",
+      revision_available: false,
+      revision_attempts_remaining: 0,
+      action_lock_reason: "Selected source differs from the immutable review snapshot.",
+    };
+
+    expect(() => assertStatus(staleStatus, JOB_ID)).not.toThrow();
+    expect(() =>
+      assertStatus(
+        { ...staleStatus, revision_available: true },
+        JOB_ID,
+      ),
+    ).toThrow("incomplete stale review status");
+  });
+
+  it("requires a strict durable delta exactly when a revised proposal is visible", () => {
+    const revisedStatus: ReviewStatus = {
+      ...status,
+      proposal_revision: 1,
+      latest_proposal_delta: revisionDelta(),
+    };
+
+    expect(() => assertStatus(revisedStatus, JOB_ID)).not.toThrow();
+    expect(() =>
+      assertStatus(
+        { ...revisedStatus, latest_proposal_delta: null },
+        JOB_ID,
+      ),
+    ).toThrow("omitted the durable delta");
+    expect(() =>
+      assertStatus(
+        {
+          ...revisedStatus,
+          latest_proposal_delta: revisionDelta({
+            current_preview_fingerprint: D,
+          }),
+        },
+        JOB_ID,
+      ),
+    ).toThrow("does not match the durable review");
+    expect(() =>
+      assertStatus(
+        {
+          ...revisedStatus,
+          latest_proposal_delta: {
+            ...revisionDelta(),
+            entries: [
+              {
+                member_id: C,
+                previous_path: "../outside.md",
+                current_path: "Delivery/brand/logo.png",
+              },
+            ],
+          },
+        },
+        JOB_ID,
+      ),
+    ).toThrow("invalid proposal-delta entry");
+    expect(() => assertStatus(status, JOB_ID)).not.toThrow();
+    expect(() =>
+      assertStatus(
+        { ...status, latest_proposal_delta: revisionDelta() },
+        JOB_ID,
+      ),
+    ).toThrow("does not match the durable review");
+    expect(() =>
+      assertStatus(
+        { ...revisedStatus, result_folder_name: "another-result" },
+        JOB_ID,
+      ),
+    ).toThrow("does not match the durable review");
+  });
+
+  it("shows all members by default with a compact trust summary", () => {
     renderReview();
 
     expect(screen.getByRole("checkbox", { name: "Changed only" })).not.toBeChecked();
-    expect(screen.getByText("4 shown")).toBeInTheDocument();
-    const counts = screen.getByRole("region", { name: "Exact proposal counts" });
-    expect(counts).toHaveTextContent("3 files");
-    expect(counts).toHaveTextContent("1 explicit empty directory");
-    expect(counts).toHaveTextContent("2 changed paths");
-    expect(counts).toHaveTextContent("1 updated link");
-    expect(counts).toHaveTextContent("1 protected member");
-    expect(screen.getByText("No result exists during review")).toBeInTheDocument();
+    expect(screen.getByText("4 items")).toBeInTheDocument();
+    const summary = screen.getByRole("region", { name: "Plan trust summary" });
+    expect(summary).toHaveTextContent("3 · 1 protected · 1 empty");
+    expect(summary).toHaveTextContent("2 paths");
+    expect(summary).toHaveTextContent("1 · 1 updated");
+    expect(summary).toHaveTextContent("Unchanged");
+    expect(summary).toHaveTextContent("Not created");
+    expect(summary).toHaveTextContent(
+      "Files: 3; 1 protected; 1 empty directories.",
+    );
+    expect(summary.querySelector(".fw-status-accessible")).toHaveTextContent(
+      "Output: not created.",
+    );
   });
 
   it("toggles the complete origin labels without losing selected member details", async () => {
@@ -296,7 +406,25 @@ describe("Foldweave review island", () => {
   });
 
   it("uses receiver-specific current and shared proposal labels", () => {
-    const receiverPreview = makeReceiverPreview();
+    const receiverPreview: FolderPlanPreviewV1 = {
+      ...makeReceiverPreview(),
+      supported_link_effects: [
+        ...preview.supported_link_effects,
+        {
+          reference_id: E,
+          source_member_id: B,
+          target_member_id: A,
+          current_source_path: "notes/brief.md",
+          current_target_path: ".env.local",
+          proposed_source_path: "Delivery/final-brief.md",
+          proposed_target_path: ".env.local",
+          original_destination: "../.env.local",
+          proposed_destination: "../.env.local",
+          status: "unchanged",
+        },
+      ],
+      counts: { ...preview.counts, link_count: 2 },
+    };
     render(
       <ReviewIsland
         acceptPlan={vi.fn(async () => undefined)}
@@ -309,11 +437,100 @@ describe("Foldweave review island", () => {
     );
     expect(screen.getByRole("button", { name: "Your current folder" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Shared proposal" })).toHaveAttribute("aria-pressed", "true");
-    const evidence = screen.getByRole("region", { name: "Receiver preparation evidence" });
-    expect(within(evidence).getByText("Deterministic receiver match")).toBeInTheDocument();
+    const evidence = screen.getByText("Receiver match").closest("details")!;
+    expect(within(evidence).getByText("Verified")).toBeInTheDocument();
     expect(within(evidence).getByText(D)).toBeInTheDocument();
     expect(within(evidence).getByText(E)).toBeInTheDocument();
+    expect(within(evidence).getByText(A)).toBeInTheDocument();
     expect(within(evidence).getByText("0 GPT calls so far")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Plan trust summary" })).toHaveTextContent(
+      "2 · 1 updated",
+    );
+  });
+
+  it("renders every deterministic finding and explains why acceptance is disabled", () => {
+    const findingsPreview: FolderPlanPreviewV1 = {
+      ...makeReceiverPreview(),
+      collision_findings: [
+        {
+          finding_id: "target_path_collision",
+          severity: "collision",
+          detail: "Two members would use Delivery/final-brief.md.",
+          member_ids: [B, C],
+        },
+      ],
+      blocker_findings: [
+        {
+          finding_id: "receiver_ambiguous_duplicate_group",
+          severity: "blocker",
+          detail: "Two equivalent members cannot be rebound uniquely.",
+          member_ids: [B, C],
+        },
+        {
+          finding_id: "receiver_relationship_changed",
+          severity: "blocker",
+          detail: "A supported Markdown relationship differs.",
+          member_ids: [B],
+        },
+      ],
+      counts: { ...preview.counts, blocker_count: 2 },
+    };
+    render(
+      <ReviewIsland
+        acceptPlan={vi.fn(async () => undefined)}
+        journey="apply"
+        keepPrevious={vi.fn(async () => undefined)}
+        preview={findingsPreview}
+        revisePlan={vi.fn(async () => undefined)}
+        status={status}
+      />,
+    );
+
+    const findings = screen.getByRole("region", { name: "Acceptance is unavailable" });
+    expect(within(findings).getByText("target_path_collision")).toBeInTheDocument();
+    expect(within(findings).getByText("receiver_ambiguous_duplicate_group")).toBeInTheDocument();
+    expect(within(findings).getByText("receiver_relationship_changed")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Resolve the items below.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+  });
+
+  it("locks stale review actions and no longer asserts that the source is unchanged", () => {
+    const durableDelta = revisionDelta();
+    render(
+      <ReviewIsland
+        acceptPlan={vi.fn(async () => undefined)}
+        journey="apply"
+        keepPrevious={vi.fn(async () => undefined)}
+        preview={{ ...makeReceiverPreview(), proposal_revision: 1 }}
+        revisePlan={vi.fn(async () => undefined)}
+        status={{
+          ...status,
+          lifecycle: "stale",
+          proposal_revision: 1,
+          revision_available: false,
+          revision_attempts_remaining: 0,
+          latest_proposal_delta: durableDelta,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("region", { name: "Plan trust summary" })).toHaveTextContent(
+      "Changed",
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("This review is stale.");
+    const delta = screen.getByRole("status");
+    expect(within(delta).getByText("1 path changed.")).toBeInTheDocument();
+    expect(within(delta).getByText("Delivery/draft/logo.png")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Send changes" })).toBeDisabled();
   });
 
   it("does not invent zero-call evidence for a model-derived receiver proposal", () => {
@@ -333,9 +550,15 @@ describe("Foldweave review island", () => {
       />,
     );
 
+    expect(screen.getByRole("button", { name: "Revised proposal" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.queryByRole("button", { name: "Shared proposal" })).not.toBeInTheDocument();
     expect(screen.queryByText("0 GPT calls so far")).not.toBeInTheDocument();
-    const evidence = screen.getByRole("region", { name: "Receiver preparation evidence" });
-    expect(within(evidence).getByText("Model-derived receiver revision")).toBeInTheDocument();
+    const evidence = screen
+      .getByText("Parent proposal", { selector: "summary" })
+      .closest("details")!;
     expect(within(evidence).getByText("GPT used for this derivative proposal")).toBeInTheDocument();
     expect(within(evidence).getByText(E)).toBeInTheDocument();
   });
@@ -443,7 +666,7 @@ describe("Foldweave review island", () => {
   it("submits one exact bounded revision after nonblank user input", async () => {
     const user = userEvent.setup();
     const { acceptPlan, revisePlan } = renderReview();
-    const input = screen.getByLabelText("Describe a change to this proposal");
+    const input = screen.getByLabelText("Change this proposal");
     expect(screen.getByRole("button", { name: "Send changes" })).toBeDisabled();
     await user.type(input, "Keep the notes together");
     await user.click(screen.getByRole("button", { name: "Send changes" }));
@@ -478,7 +701,7 @@ describe("Foldweave review island", () => {
       />,
     );
 
-    const input = screen.getByLabelText("Describe a change to this proposal");
+    const input = screen.getByLabelText("Change this proposal");
     const send = screen.getByRole("button", { name: "Send changes" });
     await user.type(input, "Keep the notes together");
     await user.click(send);
@@ -581,15 +804,91 @@ describe("Foldweave review island", () => {
           proposal_revision: 1,
           candidate_fingerprint: D,
           preview_fingerprint: E,
+          latest_proposal_delta: revisionDelta({
+            base_candidate_fingerprint: B,
+            base_preview_fingerprint: C,
+            current_candidate_fingerprint: D,
+            current_preview_fingerprint: E,
+            entries: [
+              {
+                member_id: C,
+                previous_path: "Delivery/brand/logo.png",
+                current_path: "Delivery/final/logo.png",
+              },
+            ],
+          }),
         }}
       />,
     );
 
     expect(screen.getByRole("tree").scrollTop).toBe(173);
     const delta = await screen.findByRole("status");
-    expect(within(delta).getByText("1 mapping changed from the previous proposal.")).toBeInTheDocument();
+    expect(within(delta).getByText("1 path changed.")).toBeInTheDocument();
     expect(within(delta).getByText("Delivery/brand/logo.png")).toBeInTheDocument();
     expect(within(delta).getByText("Delivery/final/logo.png")).toBeInTheDocument();
+  });
+
+  it("renders the latest persisted revision delta on the first mount after restart", () => {
+    render(
+      <ReviewIsland
+        acceptPlan={vi.fn(async () => undefined)}
+        journey="organize"
+        keepPrevious={vi.fn(async () => undefined)}
+        preview={{ ...preview, proposal_revision: 2 }}
+        revisePlan={vi.fn(async () => undefined)}
+        status={{
+          ...status,
+          proposal_revision: 2,
+          revision_available: false,
+          revision_attempts_remaining: 0,
+          latest_proposal_delta: revisionDelta({
+            proposal_revision_before: 1,
+            proposal_revision_after: 2,
+            entries: [
+              {
+                member_id: C,
+                previous_path: "Delivery/intermediate/logo.png",
+                current_path: "Delivery/brand/logo.png",
+              },
+            ],
+          }),
+        }}
+      />,
+    );
+
+    const delta = screen.getByRole("status");
+    expect(within(delta).getByText("1 path changed.")).toBeInTheDocument();
+    expect(
+      within(delta).getByText("Delivery/intermediate/logo.png"),
+    ).toBeInTheDocument();
+    expect(within(delta).queryByText("Delivery/draft/logo.png")).not.toBeInTheDocument();
+  });
+
+  it("renders a result-folder-only revision without inventing a path change", () => {
+    render(
+      <ReviewIsland
+        acceptPlan={vi.fn(async () => undefined)}
+        journey="organize"
+        keepPrevious={vi.fn(async () => undefined)}
+        preview={{ ...preview, proposal_revision: 1 }}
+        revisePlan={vi.fn(async () => undefined)}
+        status={{
+          ...status,
+          proposal_revision: 1,
+          latest_proposal_delta: revisionDelta({
+            previous_result_folder_name: "northstar-draft",
+            current_result_folder_name: "northstar-final",
+            entries: [],
+          }),
+        }}
+      />,
+    );
+
+    const delta = screen.getByRole("status");
+    expect(within(delta).getByText("0 paths changed.")).toBeInTheDocument();
+    expect(within(delta).getByText("Result folder")).toBeInTheDocument();
+    expect(within(delta).getByText("northstar-draft")).toBeInTheDocument();
+    expect(within(delta).getByText("northstar-final")).toBeInTheDocument();
   });
 
   it("keeps the bounded 500-file and 1000-directory review usable", async () => {
@@ -607,17 +906,16 @@ describe("Foldweave review island", () => {
     );
 
     expect(screen.getByRole("checkbox", { name: "Changed only" })).toBeChecked();
-    expect(screen.getByText("495 shown")).toBeInTheDocument();
-    const counts = screen.getByRole("region", { name: "Exact proposal counts" });
-    expect(within(counts).getByText("500", { selector: "strong" })).toBeInTheDocument();
-    expect(within(counts).getByText("1000", { selector: "strong" })).toBeInTheDocument();
-    expect(within(counts).getAllByText("495", { selector: "strong" })).toHaveLength(1);
+    expect(screen.getByText("495 items")).toBeInTheDocument();
+    const summary = screen.getByRole("region", { name: "Plan trust summary" });
+    expect(summary).toHaveTextContent("500 · 5 protected · 1000 empty");
+    expect(summary).toHaveTextContent("495 paths");
 
     const search = screen.getByRole("textbox", {
       name: "Search current and proposed paths",
     });
     await user.type(search, "item-0499");
-    expect(screen.getByText("1 shown")).toBeInTheDocument();
+    expect(screen.getByText("1 items")).toBeInTheDocument();
     const matchingItem = screen.getByRole("treeitem", { name: /item-0499\.md/ });
     await user.click(matchingItem);
     expect(screen.getByText(/organized\/bucket-09\/item-0499\.md/, { selector: "h2" })).toBeInTheDocument();
@@ -634,14 +932,82 @@ describe("Foldweave review island", () => {
 
     await user.clear(search);
     await user.click(screen.getByRole("checkbox", { name: "Empty directory" }));
-    expect(screen.getByText("1000 shown")).toBeInTheDocument();
+    expect(screen.getByText("1000 items")).toBeInTheDocument();
 
     const reviewCss = readFileSync(
       resolve(process.cwd(), "src/review.css"),
       "utf8",
     );
-    expect(reviewCss).toMatch(/\.fw-review\s*\{[^}]*overflow-x:\s*clip;/s);
+    expect(reviewCss).not.toMatch(/overflow-x:\s*clip/);
+    expect(reviewCss).toMatch(/\.fw-review\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
+    expect(reviewCss).toMatch(/@media \(max-width:\s*520px\)[\s\S]*\.fw-toolbar \.bp6-button-group\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/s);
+    expect(reviewCss).toMatch(/@media \(max-width:\s*520px\)[\s\S]*\.fw-filter-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);/s);
+    expect(reviewCss).toMatch(
+      /@media \(max-width:\s*520px\)[\s\S]*\.fw-status-items\s*\{[^}]*display:\s*none;[^}]*\}[\s\S]*\.fw-status-compact\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\);[^}]*max-width:\s*100%;[^}]*min-width:\s*0;[^}]*width:\s*100%;/s,
+    );
+    expect(reviewCss).toMatch(
+      /\.fw-main-grid\s*\{[^}]*max-width:\s*100%;[^}]*min-width:\s*0;[^}]*overflow:\s*hidden;[^}]*width:\s*calc\(100% - 16px\);/s,
+    );
     expect(reviewCss).toMatch(/\.fw-tree\s*\{[^}]*max-width:\s*100%;[^}]*overflow:\s*auto;/s);
     expect(reviewCss).toMatch(/\.fw-tree-row\s*\{[^}]*min-width:\s*0;/s);
+    expect(reviewCss).not.toMatch(/(?:linear|radial)-gradient\s*\(/);
+    expect(reviewCss).not.toMatch(/(?:text-shadow|filter:\s*drop-shadow)/);
+    expect(reviewCss).not.toMatch(/--fw-(?:cyan|violet|navy)/);
+    expect(reviewCss).toMatch(
+      /body\.folder-app \.folder-main:has\(\.foldweave-review-shell\)\s*\{[^}]*padding:\s*0;/s,
+    );
+    expect(reviewCss).toMatch(
+      /\.foldweave-review-shell\s*\{[^}]*height:\s*calc\(100dvh - 2\.75rem\);[^}]*min-height:\s*0;[^}]*overflow:\s*hidden;/s,
+    );
+    expect(reviewCss).toMatch(
+      /\.fw-review-window\s*\{[^}]*display:\s*flex;[^}]*height:\s*100%;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden;/s,
+    );
+    expect(reviewCss).toMatch(
+      /\.fw-main-grid\s*\{[^}]*flex:\s*1 1 0;[^}]*gap:\s*0;[^}]*min-height:\s*0;[^}]*overflow:\s*hidden;/s,
+    );
+    expect(reviewCss).toMatch(/\.fw-detail-panel\s*\{[^}]*border-left:\s*1px solid/s);
+    expect(reviewCss).not.toMatch(/\.fw-(?:toolbar|status-bar|panel-heading|detail-heading|decision-panel)\s*\{[^}]*border-(?:top|bottom):\s*1px solid/s);
+    expect(reviewCss).not.toMatch(/\.fw-details > div\s*\{[^}]*border-bottom:/s);
+    expect(reviewCss).toMatch(
+      /font-family:\s*-apple-system,\s*BlinkMacSystemFont,\s*system-ui,\s*"Helvetica Neue"/,
+    );
+    const reviewSource = readFileSync(
+      resolve(process.cwd(), "src/review-island.tsx"),
+      "utf8",
+    );
+    const widgetSource = readFileSync(
+      resolve(process.cwd(), "src/chatgpt-widget.tsx"),
+      "utf8",
+    );
+    const widgetCss = readFileSync(
+      resolve(process.cwd(), "src/chatgpt-widget.css"),
+      "utf8",
+    );
+    expect(`${reviewSource}\n${widgetSource}`).not.toContain("bp6-dark");
+    expect(reviewSource).not.toMatch(/<(?:Card|Tag)\b/);
+    expect(reviewSource).not.toContain(">Unchanged</span>");
+    expect(widgetSource).not.toMatch(/<(?:Card|Tag)\b/);
+    expect(widgetCss).not.toMatch(/(?:linear|radial)-gradient\s*\(/);
+    expect(widgetCss).not.toMatch(/\.fw-chatgpt-(?:header|progress)\s*\{[^}]*border-bottom:/s);
+    expect(widgetCss).not.toMatch(/\.fw-chatgpt-header\s*\{[^}]*border-radius:/s);
+    expect(widgetCss).toMatch(
+      /\.fw-chatgpt-widget\s*\{[^}]*display:\s*flex;[^}]*height:\s*100dvh;[^}]*overflow:\s*hidden;/s,
+    );
+    const widgetHeaders = readFileSync(
+      resolve(process.cwd(), "chatgpt-widget-assets/_headers"),
+      "utf8",
+    );
+    expect(widgetHeaders).toMatch(
+      /\/foldweave-chatgpt-widget\.js[\s\S]*Access-Control-Allow-Origin:\s*\*[\s\S]*Cross-Origin-Resource-Policy:\s*cross-origin/,
+    );
+    expect(widgetHeaders).toMatch(
+      /\/foldweave-chatgpt-widget\.css[\s\S]*Access-Control-Allow-Origin:\s*\*[\s\S]*Cross-Origin-Resource-Policy:\s*cross-origin/,
+    );
+    const shellCss = readFileSync(
+      resolve(process.cwd(), "../src/name_atlas/static/folder.css"),
+      "utf8",
+    );
+    expect(shellCss).not.toMatch(/\.folder-mode\s*\{/);
+    expect(shellCss).toMatch(/@media \(max-width:\s*39rem\)[\s\S]*\.folder-header-actions\s*\{[^}]*margin-left:\s*auto;/s);
   });
 });

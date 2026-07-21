@@ -1,41 +1,18 @@
 {% extends "folder/base.html" %}
-{% set product_name = "Foldweave" if foldweave_active else "Name Atlas" %}
-{% block title %}Home · {% if foldweave_active %}Foldweave{% else %}Reversible Name Atlas{% endif %}{% endblock %}
+{% set product_name = "Foldweave" %}
+{% block title %}Home · Foldweave{% if not foldweave_active %} · Legacy compatibility{% endif %}{% endblock %}
 {% block content %}
   <section class="folder-panel folder-panel--home" aria-labelledby="home-title">
-    <div class="folder-kicker">Connected project folders</div>
-    <h1 id="home-title">What would you like to do?</h1>
-    <p class="folder-lede">Create a verified organization once, or apply an existing {{ product_name }} Change File to your equivalent copy.</p>
-
-    <nav class="folder-home-choices" aria-label="Choose a {{ product_name }} journey">
+    <h1 id="home-title" class="folder-sr-only">Choose an action</h1>
+    <nav class="folder-home-choices" aria-label="Choose a {{ product_name }} journey"{% if foldweave_active %} aria-description="Direct API and ChatGPT-hosted planning are available from Settings and ChatGPT."{% endif %}>
       <a class="folder-choice" href="/start">
-        <span class="folder-choice-number" aria-hidden="true">01</span>
         <strong>Organize a folder</strong>
-        <small>Describe the result in plain English and create a separate verified copy.</small>
+        <small>Plan and review a new structure.</small>
       </a>
       <a class="folder-choice" href="/apply">
-        <span class="folder-choice-number" aria-hidden="true">02</span>
         <strong>Apply a shared change</strong>
-        <small>Use a {{ product_name }} Change File locally without another AI planning run.</small>
+        <small>Review a {{ product_name }} Change File.</small>
       </a>
     </nav>
-
-    {% if foldweave_active %}
-      <section class="folder-planning-modes" aria-labelledby="planning-modes-title">
-        <h2 id="planning-modes-title">Choose how Foldweave plans</h2>
-        <div>
-          <article>
-            <strong>Direct API</strong>
-            <p>Use exact GPT-5.6 through the Responses API with a key held only by trusted Python.</p>
-            {% if native_settings_available %}<a href="/settings">Open secure settings</a>{% endif %}
-          </article>
-          <article>
-            <strong>ChatGPT-hosted</strong>
-            <p>Use your ChatGPT session through a paired local companion, without a Foldweave Responses API call.</p>
-            {% if pairing_available %}<a href="/pairing">Manage ChatGPT pairing</a>{% endif %}
-          </article>
-        </div>
-      </section>
-    {% endif %}
   </section>
 {% endblock %}

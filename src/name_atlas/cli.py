@@ -109,15 +109,15 @@ class _FolderRestoreBlocked(RuntimeError):
         self.failed_check_ids = failed_check_ids
 
 
-def build_parser() -> argparse.ArgumentParser:
-    """Build the stable judge-facing command parser."""
+def build_parser(*, prog: str = "name-atlas") -> argparse.ArgumentParser:
+    """Build the stable parser for the selected compatibility command name."""
 
-    parser = argparse.ArgumentParser(prog="name-atlas")
+    parser = argparse.ArgumentParser(prog=prog)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     demo = subparsers.add_parser(
         "demo",
-        help="Run the loopback-only Reversible Name Atlas application.",
+        help="Run the loopback-only Foldweave legacy compatibility application.",
     )
     demo.add_argument(
         "--mode",
@@ -213,10 +213,11 @@ def run(
     argv: Sequence[str] | None = None,
     *,
     environ: Mapping[str, str] | None = None,
+    prog: str = "name-atlas",
 ) -> int:
     """Run the CLI and return a process exit code."""
 
-    args = build_parser().parse_args(argv)
+    args = build_parser(prog=prog).parse_args(argv)
     if args.command == "verify-receipt":
         received_bag = args.received_bag.expanduser()
         supplied_source = args.source.expanduser() if args.source is not None else None
@@ -437,8 +438,11 @@ def run(
         )
 
         logging.basicConfig(level=logging.INFO)
-        LOGGER.info("Starting Reversible Name Atlas: %s", config.safe_diagnostics())
-        print(f"Reversible Name Atlas: http://{LOOPBACK_HOST}:{config.port}")
+        LOGGER.info(
+            "Starting Foldweave legacy compatibility mode: %s",
+            config.safe_diagnostics(),
+        )
+        print(f"Foldweave legacy compatibility: http://{LOOPBACK_HOST}:{config.port}")
         print(config.provider_status)
         print(f"Migration Case: {case_path}")
         uvicorn.run(
@@ -590,8 +594,10 @@ def _run_development_folder_app(args: argparse.Namespace) -> int:
         print(f"Startup blocked: folder job cannot be opened: {exc}", file=sys.stderr)
         return 2
     logging.basicConfig(level=logging.INFO)
-    LOGGER.info("Starting AI-first A2 Reversible Name Atlas on loopback; no API call.")
-    print(f"Reversible Name Atlas: http://{LOOPBACK_HOST}:{args.port}")
+    LOGGER.info(
+        "Starting Foldweave legacy compatibility mode on loopback; no API call."
+    )
+    print(f"Foldweave legacy compatibility: http://{LOOPBACK_HOST}:{args.port}")
     print(PLANNER_LABEL)
     print(f"FolderRefactorJob: {job_path}")
     uvicorn.run(

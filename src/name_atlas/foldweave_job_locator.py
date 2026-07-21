@@ -12,7 +12,8 @@ from pathlib import Path
 from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderJobV3LoadError,
     FolderRefactorJobV3,
-    FolderRefactorJobV3Store,
+    UnsupportedPreFinalFolderJobV3,
+    load_folder_job_routing_record_v3,
 )
 
 _JOB_ID_PATTERN = re.compile(r"^[a-f0-9]{32}$")
@@ -35,6 +36,22 @@ class LocatedFoldweaveJob:
     job: FolderRefactorJobV3
 
 
+@dataclass(frozen=True, slots=True)
+class UnsupportedLocatedFoldweaveJob:
+    """One preserved pre-final authority usable only for safe routing."""
+
+    path: Path
+    record: UnsupportedPreFinalFolderJobV3
+
+
+@dataclass(frozen=True, slots=True)
+class FoldweaveJobRegistrySnapshot:
+    """Strict current jobs plus isolated, non-resumable pre-final headers."""
+
+    current: tuple[LocatedFoldweaveJob, ...]
+    unsupported: tuple[UnsupportedLocatedFoldweaveJob, ...]
+
+
 class FoldweaveJobLocator:
     """Resolve jobs without mirroring, migrating, or mutating their authority."""
 
@@ -45,10 +62,15 @@ class FoldweaveJobLocator:
         self.jobs_root = Path(os.path.abspath(candidate))
 
     def discover(self) -> tuple[LocatedFoldweaveJob, ...]:
-        """Strictly load every immediate JSON authority under the jobs root."""
+        """Return current jobs while preserving classified pre-final records."""
+
+        return self.inspect_registry().current
+
+    def inspect_registry(self) -> FoldweaveJobRegistrySnapshot:
+        """Classify every authority without treating pre-final state as current."""
 
         if not os.path.lexists(self.jobs_root):
-            return ()
+            return FoldweaveJobRegistrySnapshot(current=(), unsupported=())
         metadata = self.jobs_root.lstat()
         if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
             raise FoldweaveJobLocatorError(
@@ -58,6 +80,7 @@ class FoldweaveJobLocator:
 
         resolved_root = self.jobs_root.resolve(strict=True)
         by_id: dict[str, LocatedFoldweaveJob] = {}
+        unsupported_by_id: dict[str, UnsupportedLocatedFoldweaveJob] = {}
         for candidate in sorted(self.jobs_root.iterdir(), key=lambda path: path.name):
             if candidate.suffix.casefold() != ".json":
                 continue
@@ -76,21 +99,32 @@ class FoldweaveJobLocator:
                     "Foldweave job candidate resolves outside the jobs root.",
                 )
             try:
-                job = FolderRefactorJobV3Store(resolved).inspect()
+                record = load_folder_job_routing_record_v3(resolved)
             except FolderJobV3LoadError as exc:
                 raise FoldweaveJobLocatorError(
                     "job_authority_invalid",
                     "Foldweave job candidate is not a strict v3 record: "
                     f"{candidate.name}",
                 ) from exc
-            previous = by_id.get(job.job_id)
-            if previous is not None:
+            job_id = record.job_id
+            if job_id in by_id or job_id in unsupported_by_id:
                 raise FoldweaveJobLocatorError(
                     "duplicate_job_id",
                     "More than one durable authority contains the requested job ID.",
                 )
-            by_id[job.job_id] = LocatedFoldweaveJob(path=resolved, job=job)
-        return tuple(by_id[job_id] for job_id in sorted(by_id))
+            if isinstance(record, FolderRefactorJobV3):
+                by_id[job_id] = LocatedFoldweaveJob(path=resolved, job=record)
+            else:
+                unsupported_by_id[job_id] = UnsupportedLocatedFoldweaveJob(
+                    path=resolved,
+                    record=record,
+                )
+        return FoldweaveJobRegistrySnapshot(
+            current=tuple(by_id[item] for item in sorted(by_id)),
+            unsupported=tuple(
+                unsupported_by_id[item] for item in sorted(unsupported_by_id)
+            ),
+        )
 
     def resolve(self, job_id: str) -> LocatedFoldweaveJob:
         """Resolve exactly one strict v3 authority by its embedded UUID4 hex ID."""
@@ -112,7 +146,17 @@ class FoldweaveJobLocator:
                 "job_id_invalid",
                 "Foldweave job ID must be lowercase UUID4 hex.",
             )
-        matches = tuple(item for item in self.discover() if item.job.job_id == job_id)
+        registry = self.inspect_registry()
+        matches = tuple(item for item in registry.current if item.job.job_id == job_id)
+        unsupported_matches = tuple(
+            item for item in registry.unsupported if item.record.job_id == job_id
+        )
+        if unsupported_matches:
+            raise FoldweaveJobLocatorError(
+                "job_requires_fresh_start",
+                "This preserved pre-final Foldweave job cannot be resumed; "
+                "create a fresh job.",
+            )
         if not matches:
             raise FoldweaveJobLocatorError(
                 "job_not_found",

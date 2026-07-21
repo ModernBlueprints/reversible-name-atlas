@@ -12,10 +12,11 @@ from fastapi.testclient import TestClient
 from name_atlas.folder_app import DeterministicFolderRunService, create_folder_app
 from name_atlas.foldweave_companion_client import (
     CompanionGatewayProfileV1,
-    CompanionGatewayStatusV1,
+    CompanionGatewayStatusV2,
     CompanionPairingRegistrationV1,
     CompanionPairingStateStore,
     CompanionPairingStateV1,
+    CompanionRuntimeLock,
     CompanionTransportError,
 )
 from name_atlas.foldweave_companion_supervisor import (
@@ -116,18 +117,20 @@ class _PairingProbe:
         self.approved = True
         return await self.store.read()
 
-    async def status(self) -> CompanionGatewayStatusV1:
+    async def status(self) -> CompanionGatewayStatusV2:
         try:
             state = await self.store.read()
         except CompanionTransportError:
             raise
-        return CompanionGatewayStatusV1(
-            schema_version="foldweave-pairing-status.v1",
+        return CompanionGatewayStatusV2(
+            schema_version="foldweave-pairing-status.v2",
             request_id="r" * 24,
             device_id=state.device_id,
             session_id=state.session_id,
             pairing_state="local_approved" if self.approved else "pending",
-            authorized=False,
+            authorization_code_issued=False,
+            client_access_observed=False,
+            client_access_observed_at=None,
             connected=False,
             revoked=False,
             expires_at=state.pairing_code_expires_at,
@@ -203,6 +206,52 @@ async def test_registration_or_approval_wakeup_starts_one_companion(
     assert supervisor.connection_state() is PairingConnectionState.RECONNECTING
     await supervisor.shutdown()
     assert runtime.cancelled == 1
+
+
+@pytest.mark.anyio
+async def test_supervisor_holds_runtime_ownership_until_shutdown(
+    tmp_path: Path,
+) -> None:
+    store = CompanionPairingStateStore(path=tmp_path / "companion-pairing.json")
+    await store.write(_pairing_state())
+    runtime = _BlockingRuntime()
+    supervisor = FoldweaveCompanionSupervisor(state_store=store, runtime=runtime)
+    await supervisor.start()
+    await runtime.started.wait()
+    contender = CompanionRuntimeLock(store.runtime_lock_path)
+
+    with pytest.raises(CompanionTransportError) as exc_info:
+        contender.acquire()
+
+    assert exc_info.value.code == "companion_already_running"
+    await supervisor.shutdown()
+    contender.acquire()
+    contender.release()
+
+
+@pytest.mark.anyio
+async def test_second_supervisor_fails_with_stable_owner_blocker(
+    tmp_path: Path,
+) -> None:
+    store = CompanionPairingStateStore(path=tmp_path / "companion-pairing.json")
+    await store.write(_pairing_state())
+    first_runtime = _BlockingRuntime()
+    first = FoldweaveCompanionSupervisor(state_store=store, runtime=first_runtime)
+    await first.start()
+    await first_runtime.started.wait()
+    second_runtime = _BlockingRuntime()
+    second = FoldweaveCompanionSupervisor(
+        state_store=CompanionPairingStateStore(path=store.path),
+        runtime=second_runtime,
+    )
+
+    with pytest.raises(CompanionTransportError) as exc_info:
+        await second.start()
+
+    assert exc_info.value.code == "companion_already_running"
+    assert second_runtime.calls == 0
+    await second.shutdown()
+    await first.shutdown()
 
 
 @pytest.mark.anyio

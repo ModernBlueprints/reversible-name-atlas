@@ -2,6 +2,7 @@ declare module "*.css";
 
 interface OpenAIWidgetRuntime {
   toolOutput?: unknown;
+  widgetState?: unknown;
   callTool?: (
     name: string,
     argumentsValue: Record<string, unknown>,
@@ -10,6 +11,7 @@ interface OpenAIWidgetRuntime {
     prompt: string;
     scrollToBottom?: boolean;
   }) => Promise<void> | void;
+  setWidgetState?: (state: Record<string, unknown>) => Promise<void> | void;
 }
 
 interface Window {

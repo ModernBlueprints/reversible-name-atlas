@@ -3,25 +3,42 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101317">
-    <title>{% block title %}{% if foldweave_active %}Foldweave{% else %}Reversible Name Atlas{% endif %}{% endblock %}</title>
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+    <title>{% block title %}Foldweave{% if not foldweave_active %} · Legacy compatibility{% endif %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/vendor/blueprint/blueprint.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/folder.css') }}?v={{ folder_asset_version }}">
+    <script>
+      (function () {
+        "use strict";
+        const appearance = window.matchMedia("(prefers-color-scheme: dark)");
+        function applyAppearance(event) {
+          document.documentElement.dataset.bpColorScheme = event.matches ? "dark" : "light";
+        }
+        applyAppearance(appearance);
+        appearance.addEventListener("change", applyAppearance);
+      }());
+    </script>
   </head>
-  <body class="bp6-dark folder-app">
+  <body class="folder-app">
     <a class="folder-skip-link" href="#main-content">Skip to main content</a>
     <header class="folder-header">
-      <a class="folder-wordmark" href="/" aria-label="{% if foldweave_active %}Foldweave{% else %}Reversible Name Atlas{% endif %} home">
-        <span class="folder-mark" aria-hidden="true">{% if foldweave_active %}FW{% else %}NA{% endif %}</span>
+      <a class="folder-wordmark" href="/" aria-label="Foldweave home">
+        <span class="folder-mark" aria-hidden="true">
+          <svg viewBox="0 0 20 20" focusable="false">
+            <path d="M3.5 6.5h5l1.8 2h6.2v6.5h-13z"></path>
+            <path d="M6 11.5h2.4l1.6-2 1.7 3 1.2-1.5H15"></path>
+          </svg>
+        </span>
         <span>
-          <strong>{% if foldweave_active %}Foldweave{% else %}Reversible Name Atlas{% endif %}</strong>
-          <small>{% if foldweave_active %}Change the structure. Keep the connections.{% else %}Describe the change once. Apply it wherever the same project exists.{% endif %}</small>
+          <strong>Foldweave</strong>
+          {% if not foldweave_active %}<small>Legacy compatibility</small>{% endif %}
         </span>
       </a>
-      {% if planner_label|default("") %}<span class="folder-mode">{{ planner_label }}</span>{% endif %}
+      {% if planner_label|default("") and not foldweave_active %}<span class="folder-planner-label">{{ planner_label }}</span>{% endif %}
       <nav class="folder-header-actions" aria-label="Foldweave configuration">
-        {% if pairing_available|default(false) %}<a class="bp6-button bp6-minimal" href="/pairing">ChatGPT pairing</a>{% endif %}
-        {% if native_settings_available|default(false) %}<a class="bp6-button bp6-minimal" href="/settings">Secure settings</a>{% endif %}
+        {% if pairing_available|default(false) %}<a class="bp6-button bp6-minimal" href="/pairing" aria-label="Pair ChatGPT" aria-description="ChatGPT-hosted planning"><span aria-hidden="true">ChatGPT</span><span class="folder-sr-only">Pair ChatGPT</span></a>{% endif %}
+        {% if native_settings_available|default(false) %}<a class="bp6-button bp6-minimal" href="/settings" aria-description="Direct API settings">Settings</a>{% endif %}
       </nav>
     </header>
     <main id="main-content" class="folder-main" tabindex="-1">
@@ -82,11 +99,11 @@
             const target = document.getElementById(picker.dataset.pickerTarget || "");
             const status = pickerStatus(picker);
             if (!token || !target) {
-              if (status) status.textContent = "Native selection is unavailable; enter the path manually.";
+              if (status) status.textContent = "Choose a path manually.";
               return;
             }
             picker.disabled = true;
-            if (status) status.textContent = "Waiting for the native selection window…";
+            if (status) status.textContent = "Waiting for selection…";
             try {
               const response = await window.fetch("/choose-path", {
                 method: "POST",
@@ -110,12 +127,12 @@
                     output.value = deriveParent(result.path);
                   }
                 }
-                if (status) status.textContent = "Selected. You can still edit the path manually.";
+                if (status) status.textContent = "Selected.";
               } else if (status) {
-                status.textContent = result.message || "No path was selected; enter it manually if needed.";
+                status.textContent = result.message || "No path selected.";
               }
             } catch (_) {
-              if (status) status.textContent = "Native selection is unavailable; enter the path manually.";
+              if (status) status.textContent = "Choose a path manually.";
             } finally {
               picker.disabled = false;
               picker.focus({preventScroll: true});

@@ -1,12 +1,10 @@
 import {
   Button,
   ButtonGroup,
-  Card,
   Checkbox,
   Icon,
   InputGroup,
   Spinner,
-  Tag,
 } from "@blueprintjs/core";
 import {
   type CSSProperties,
@@ -24,6 +22,7 @@ import type {
   ChangeClassification,
   FolderPlanMemberChange,
   FolderPlanPreviewV1,
+  FolderPlanRevisionDeltaV1,
   FolderPlanTreeMember,
   Journey,
   KeepProposalPayload,
@@ -54,16 +53,6 @@ interface TreeNode {
 interface PendingMutationKey {
   requestFingerprint: string;
   idempotencyKey: string;
-}
-
-interface ProposalDeltaItem {
-  memberId: string;
-  previousPath: string;
-  currentPath: string;
-}
-
-interface ProposalDelta {
-  items: ProposalDeltaItem[];
 }
 
 export interface ReviewIslandProps {
@@ -129,8 +118,6 @@ export function ReviewIsland({
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
   const [revisionBusy, setRevisionBusy] = useState(false);
   const [revisionError, setRevisionError] = useState<string | null>(null);
-  const [revisionDelta, setRevisionDelta] = useState<ProposalDelta | null>(null);
-  const priorPreview = useRef(preview);
   const acceptanceMutation = useRef<PendingMutationKey | null>(null);
   const revisionMutation = useRef<PendingMutationKey | null>(null);
   const keepMutation = useRef<PendingMutationKey | null>(null);
@@ -199,40 +186,13 @@ export function ReviewIsland({
   }, [activeTreeKey, flatTree, selectedId]);
 
   useEffect(() => {
-    const previous = priorPreview.current;
-    if (previous.preview_fingerprint === preview.preview_fingerprint) {
-      return;
-    }
+    acceptanceMutation.current = null;
     revisionMutation.current = null;
+    keepMutation.current = null;
     setRevisionInstruction("");
     setRevisionError(null);
-    const previousPaths = new Map(
-      previous.member_changes.map((change) => [
-        change.member_id,
-        change.proposed_relative_path,
-      ]),
-    );
-    const items = preview.member_changes
-      .flatMap((change): ProposalDeltaItem[] => {
-        const previousPath = previousPaths.get(change.member_id);
-        if (
-          previousPath === undefined ||
-          previousPath === change.proposed_relative_path
-        ) {
-          return [];
-        }
-        return [
-          {
-            memberId: change.member_id,
-            previousPath,
-            currentPath: change.proposed_relative_path,
-          },
-        ];
-      })
-      .sort((left, right) => compareCodePointStrings(left.memberId, right.memberId));
-    setRevisionDelta({ items });
-    priorPreview.current = preview;
-  }, [preview]);
+    setAcceptanceError(null);
+  }, [preview.preview_fingerprint]);
 
   useLayoutEffect(() => {
     const treeElement = treeScrollElement.current;
@@ -327,8 +287,9 @@ export function ReviewIsland({
       accepting ||
       revisionBusy ||
       actionsDisabled ||
+      !reviewInputsCurrent ||
       status.revision_failure !== null ||
-      preview.counts.blocker_count > 0
+      hasBlockingFindings
     ) {
       return;
     }
@@ -365,6 +326,7 @@ export function ReviewIsland({
       revisionBusy ||
       accepting ||
       actionsDisabled ||
+      !reviewInputsCurrent ||
       !status.revision_available ||
       instruction.length === 0
     ) {
@@ -399,7 +361,12 @@ export function ReviewIsland({
   };
 
   const submitKeepPrevious = async (): Promise<void> => {
-    if (revisionBusy || actionsDisabled || status.revision_failure === null) {
+    if (
+      revisionBusy ||
+      actionsDisabled ||
+      !reviewInputsCurrent ||
+      status.revision_failure === null
+    ) {
       return;
     }
     setRevisionBusy(true);
@@ -432,18 +399,34 @@ export function ReviewIsland({
   };
 
   const currentLabel = journey === "apply" ? "Your current folder" : "Original structure";
-  const proposedLabel = journey === "apply" ? "Shared proposal" : "Proposed structure";
+  const proposedLabel =
+    journey === "apply"
+      ? preview.proposal_basis === "gpt_derivative"
+        ? "Revised proposal"
+        : "Shared proposal"
+      : "Proposed structure";
   const importedReceiverEvidence =
     journey === "apply" &&
-    status.lifecycle === "reviewing" &&
     preview.proposal_basis === "imported_change_file" &&
     preview.imported_change_file_fingerprint !== null &&
     preview.match_report_fingerprint !== null;
   const derivativeReceiverEvidence =
     journey === "apply" &&
-    status.lifecycle === "reviewing" &&
     preview.proposal_basis === "gpt_derivative" &&
     preview.immediate_parent_candidate_fingerprint !== null;
+  const reviewInputsCurrent =
+    status.lifecycle === "reviewing" || status.lifecycle === "revision_failed";
+  const sourceTrustState = reviewInputsCurrent ? "Unchanged" : "Changed";
+  const trustSummary = [
+    `Source: ${sourceTrustState}.`,
+    `Files: ${preview.counts.file_count}; ${preview.counts.protected_count} protected; ${preview.counts.empty_directory_count} empty directories.`,
+    `Changes: ${preview.counts.changed_path_count} paths.`,
+    `Links: ${preview.counts.link_count}; ${preview.counts.link_updated_count} updated.`,
+    "Output: not created.",
+  ].join(" ");
+  const collisionCount = preview.collision_findings.length;
+  const blockerCount = preview.blocker_findings.length;
+  const hasBlockingFindings = collisionCount + blockerCount > 0;
 
   const switchSide = (nextSide: ViewSide): void => {
     if (nextSide === side) {
@@ -456,140 +439,138 @@ export function ReviewIsland({
   };
 
   return (
-    <div className="fw-review bp6-dark">
-      <section className="fw-trust-strip" aria-label="Plan trust summary">
-        <TrustItem
-          icon="lock"
-          label="Source unchanged"
-          value={
-            status.lifecycle === "reviewing"
-              ? "No result exists during review"
-              : "Result state not asserted"
-          }
-        />
-        <TrustItem
-          icon="tick-circle"
-          label="Complete accounting"
-          value={`${formatCount(preview.counts.file_count, "file")} + ${formatCount(preview.counts.empty_directory_count, "empty directory", "empty directories")}`}
-        />
-        <TrustItem icon="shield" label="Protected" value={`${preview.counts.protected_count} fixed`} />
-        <TrustItem icon="link" label="Supported links" value={`${preview.counts.link_updated_count} updates`} />
-        <TrustItem icon="folder-new" label="Output" value="Created only after accept" />
-      </section>
-
-      {(importedReceiverEvidence || derivativeReceiverEvidence) && (
-        <section className="fw-receiver-evidence" aria-label="Receiver preparation evidence">
-          <div>
-            <Icon icon="git-pull" aria-hidden="true" />
-            <span>
-              <strong>
-                {importedReceiverEvidence
-                  ? "Deterministic receiver match"
-                  : "Model-derived receiver revision"}
-              </strong>
-              <small>
-                {importedReceiverEvidence
-                  ? "Change File and receiver match report are bound to this preview."
-                  : "This replacement remains bound to its exact parent proposal."}
-              </small>
-            </span>
-          </div>
-          <dl>
-            {preview.imported_change_file_fingerprint !== null && (
-              <div>
-                <dt>Change File</dt>
-                <dd><code>{preview.imported_change_file_fingerprint}</code></dd>
-              </div>
-            )}
-            {importedReceiverEvidence && (
-              <div>
-                <dt>Match report</dt>
-                <dd><code>{preview.match_report_fingerprint}</code></dd>
-              </div>
-            )}
-            {derivativeReceiverEvidence && (
-              <div>
-                <dt>Parent proposal</dt>
-                <dd><code>{preview.immediate_parent_candidate_fingerprint}</code></dd>
-              </div>
-            )}
-            <div>
-              <dt>Model use</dt>
-              <dd>
-                {importedReceiverEvidence
-                  ? "0 GPT calls so far"
-                  : "GPT used for this derivative proposal"}
-              </dd>
-            </div>
-          </dl>
-        </section>
-      )}
-
-      <section className="fw-count-summary" aria-label="Exact proposal counts">
-        <span>{formatCountElement(preview.counts.file_count, "file")}</span>
-        <span>{formatCountElement(preview.counts.empty_directory_count, "explicit empty directory", "explicit empty directories")}</span>
-        <span>{formatCountElement(preview.counts.changed_path_count, "changed path")}</span>
-        <span>{formatCountElement(preview.counts.link_updated_count, "updated link")}</span>
-        <span>{formatCountElement(preview.counts.protected_count, "protected member")}</span>
-      </section>
-
-      <div className="fw-toolbar">
-        <ButtonGroup aria-label="Structure view">
-          <Button
-            aria-pressed={side === "current"}
-            intent={side === "current" ? "primary" : "none"}
-            onClick={() => switchSide("current")}
-          >
-            {currentLabel}
-          </Button>
-          <Button
-            aria-pressed={side === "proposed"}
-            intent={side === "proposed" ? "primary" : "none"}
-            onClick={() => switchSide("proposed")}
-          >
-            {proposedLabel}
-          </Button>
-        </ButtonGroup>
-        <div className="fw-toolbar-spacer" />
-        <InputGroup
-          aria-label="Search current and proposed paths"
-          leftIcon="search"
-          onChange={(event) => setQuery(event.currentTarget.value)}
-          placeholder="Search paths"
-          value={query}
-        />
-        <Checkbox
-          checked={changedOnly}
-          label="Changed only"
-          onChange={(event) => {
-            setChangedOnly(event.currentTarget.checked);
-            if (event.currentTarget.checked) {
-              setActiveFilters(new Set());
-            }
-          }}
-        />
-      </div>
-
-      <div className="fw-filter-row" role="group" aria-label="Member filters">
-        {FILTERS.map(({ key, label }) => (
-          <Checkbox
-            checked={activeFilters.has(key)}
-            inline
-            key={key}
-            label={label}
-            onChange={() => toggleFilter(key)}
+    <div className="fw-review">
+      <section className="fw-review-window" aria-label="Structure review">
+        <div className="fw-toolbar">
+          <ButtonGroup aria-label="Structure view">
+            <Button
+              aria-pressed={side === "current"}
+              intent={side === "current" ? "primary" : "none"}
+              onClick={() => switchSide("current")}
+            >
+              {currentLabel}
+            </Button>
+            <Button
+              aria-pressed={side === "proposed"}
+              intent={side === "proposed" ? "primary" : "none"}
+              onClick={() => switchSide("proposed")}
+            >
+              {proposedLabel}
+            </Button>
+          </ButtonGroup>
+          <div className="fw-toolbar-spacer" />
+          <InputGroup
+            aria-label="Search current and proposed paths"
+            leftIcon="search"
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder="Search"
+            value={query}
           />
-        ))}
-      </div>
-
-      <div className="fw-main-grid">
-        <Card className="fw-tree-panel" compact>
-          <header className="fw-panel-heading">
-            <div>
-              <span className="fw-eyebrow">{side === "current" ? "CURRENT" : "PROPOSED"}</span>
-              <h2>{side === "current" ? currentLabel : proposedLabel}</h2>
+          <Checkbox
+            checked={changedOnly}
+            label="Changed only"
+            onChange={(event) => {
+              setChangedOnly(event.currentTarget.checked);
+              if (event.currentTarget.checked) {
+                setActiveFilters(new Set());
+              }
+            }}
+          />
+          <details className="fw-filter-menu">
+            <summary>Filters</summary>
+            <div className="fw-filter-row" role="group" aria-label="Member filters">
+              {FILTERS.map(({ key, label }) => (
+                <Checkbox
+                  checked={activeFilters.has(key)}
+                  key={key}
+                  label={label}
+                  onChange={() => toggleFilter(key)}
+                />
+              ))}
             </div>
-            <Tag minimal>{visibleMembers.length} shown</Tag>
+          </details>
+        </div>
+
+        <section className="fw-status-bar" aria-label="Plan trust summary">
+          <span className="fw-status-accessible">{trustSummary}</span>
+          <div className="fw-status-items" aria-hidden="true">
+            <TrustItem
+              icon="lock"
+              label="Source"
+              value={sourceTrustState}
+            />
+            <TrustItem
+              icon="document"
+              label="Files"
+              value={`${preview.counts.file_count} · ${preview.counts.protected_count} protected · ${preview.counts.empty_directory_count} empty`}
+            />
+            <TrustItem
+              icon="changes"
+              label="Changes"
+              value={`${preview.counts.changed_path_count} paths`}
+            />
+            <TrustItem
+              icon="link"
+              label="Links"
+              value={`${preview.counts.link_count} · ${preview.counts.link_updated_count} updated`}
+            />
+            <TrustItem icon="folder-new" label="Output" value="Not created" />
+          </div>
+          <div className="fw-status-compact" aria-hidden="true">
+            <span><Icon icon="lock" />{sourceTrustState}</span>
+            <span><Icon icon="document" />{preview.counts.file_count} files</span>
+            <span><Icon icon="changes" />{preview.counts.changed_path_count} changed</span>
+            <span><Icon icon="link" />{preview.counts.link_updated_count} updated</span>
+          </div>
+        </section>
+
+        {(importedReceiverEvidence || derivativeReceiverEvidence) && (
+          <details className="fw-receiver-evidence">
+            <summary>{importedReceiverEvidence ? "Receiver match" : "Parent proposal"}</summary>
+            <dl>
+              {preview.imported_change_file_fingerprint !== null && (
+                <div>
+                  <dt>Change File</dt>
+                  <dd className="fw-verified-identity">
+                    <Icon icon="tick-circle" aria-hidden="true" />
+                    <span>Verified</span>
+                    <code>{preview.imported_change_file_fingerprint}</code>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>Receiver source</dt>
+                <dd><code>{preview.source_commitment}</code></dd>
+              </div>
+              {importedReceiverEvidence && (
+                <div>
+                  <dt>Match report</dt>
+                  <dd><code>{preview.match_report_fingerprint}</code></dd>
+                </div>
+              )}
+              {derivativeReceiverEvidence && (
+                <div>
+                  <dt>Fingerprint</dt>
+                  <dd><code>{preview.immediate_parent_candidate_fingerprint}</code></dd>
+                </div>
+              )}
+              <div>
+                <dt>Model use</dt>
+                <dd>
+                  {importedReceiverEvidence
+                    ? "0 GPT calls so far"
+                    : "GPT used for this derivative proposal"}
+                </dd>
+              </div>
+            </dl>
+          </details>
+        )}
+
+        <div className="fw-main-grid">
+          <section className="fw-tree-panel">
+          <header className="fw-panel-heading">
+            <h2>{side === "current" ? currentLabel : proposedLabel}</h2>
+            <span className="fw-item-count">{visibleMembers.length} items</span>
           </header>
           <div
             className="fw-tree"
@@ -650,17 +631,18 @@ export function ReviewIsland({
               })
             )}
           </div>
-        </Card>
+          </section>
 
-        <Card className="fw-detail-panel" compact>
+          <aside className="fw-detail-panel">
           {selected ? (
             <>
               <div className="fw-detail-heading">
-                <div>
-                  <span className="fw-eyebrow">SELECTED MEMBER</span>
-                  <h2>{side === "current" ? selected.current_relative_path : selected.proposed_relative_path}</h2>
-                </div>
-                <Tag intent={intentForChange(selected)}>{CLASS_LABELS[selected.change_classification]}</Tag>
+                <h2>{side === "current" ? selected.current_relative_path : selected.proposed_relative_path}</h2>
+                {selected.change_classification !== "unchanged" && (
+                  <span className="fw-detail-status">
+                    {CLASS_LABELS[selected.change_classification]}
+                  </span>
+                )}
               </div>
               <dl className="fw-details">
                 <div><dt>Current</dt><dd>{selected.current_relative_path}</dd></div>
@@ -669,16 +651,16 @@ export function ReviewIsland({
                 <div><dt>Reason</dt><dd>{selected.rationale}</dd></div>
               </dl>
               <section className="fw-link-section" aria-labelledby="link-effects-title">
-                <h3 id="link-effects-title">Supported link effects</h3>
+                <h3 id="link-effects-title">Links</h3>
                 {selectedLinks.length === 0 ? (
-                  <p>No supported links originate from this member.</p>
+                  <p>No supported links.</p>
                 ) : (
                   <ul>
                     {selectedLinks.map((effect) => (
                       <li key={effect.reference_id}>
-                        <Tag intent={effect.status === "rewritten" ? "warning" : "success"} minimal>
+                        <span className={`fw-link-status is-${effect.status}`}>
                           {effect.status === "rewritten" ? "Rewritten" : "Still valid"}
-                        </Tag>
+                        </span>
                         <code>{effect.original_destination}</code>
                         <span aria-hidden="true">→</span>
                         <code>{effect.proposed_destination}</code>
@@ -691,49 +673,71 @@ export function ReviewIsland({
           ) : (
             <div className="fw-empty-state">Select a member to inspect its exact change.</div>
           )}
-        </Card>
-      </div>
-
-      <section className="fw-decision-panel" aria-labelledby="decision-title">
-        <div className="fw-accept-row">
-          <div>
-            <span className="fw-eyebrow">EXACT AUTHORIZATION</span>
-            <h2 id="decision-title">Create a separate, verified copy</h2>
-            <p>The source stays unchanged. Acceptance is bound to this exact preview.</p>
-          </div>
-          <Button
-            className="fw-accept-button"
-            disabled={
-              preview.counts.blocker_count > 0 ||
-              accepting ||
-              revisionBusy ||
-              actionsDisabled ||
-              status.revision_failure !== null
-            }
-            intent="success"
-            loading={accepting}
-            onClick={() => void submitAcceptance()}
-            rightIcon="arrow-right"
-          >
-            Accept this structure and create copy
-          </Button>
+          </aside>
         </div>
+
+      {hasBlockingFindings && (
+        <section className="fw-findings" aria-labelledby="deterministic-findings-title">
+          <div>
+            <Icon icon="error" aria-hidden="true" />
+            <span>
+              <strong id="deterministic-findings-title">Acceptance is unavailable</strong>
+              <small>Resolve the items below.</small>
+            </span>
+          </div>
+          <ul>
+            {[...preview.collision_findings, ...preview.blocker_findings].map((finding) => (
+              <li key={`${finding.severity}:${finding.finding_id}`}>
+                <span className="fw-finding-kind">
+                  {finding.severity === "collision" ? "Collision" : "Blocker"}
+                </span>
+                <span>
+                  <strong>{finding.detail}</strong>
+                  <small><code>{finding.finding_id}</code></small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!reviewInputsCurrent && (
+        <section className="fw-stale-review" role="alert">
+          <Icon icon="outdated" aria-hidden="true" />
+          <span>
+            <strong>This review is stale.</strong>
+            <small>
+              {status.action_lock_reason ??
+                "The source or Change File changed. Start again with the current inputs."}
+            </small>
+          </span>
+        </section>
+      )}
+
+        <section className="fw-decision-panel" aria-label="Review actions">
         {acceptanceError && <div className="fw-error" role="alert">{acceptanceError}</div>}
-        {revisionDelta && (
+        {status.latest_proposal_delta && (
           <section className="fw-revision-delta" aria-labelledby="revision-delta-title" role="status">
-            <strong id="revision-delta-title">Previous proposal delta</strong>
+            <strong id="revision-delta-title">Changes from previous proposal</strong>
             <p>
-              {revisionDelta.items.length}{" "}
-              {revisionDelta.items.length === 1 ? "mapping" : "mappings"} changed from
-              the previous proposal.
+              {status.latest_proposal_delta.entries.length}{" "}
+              {status.latest_proposal_delta.entries.length === 1 ? "path" : "paths"} changed.
             </p>
-            {revisionDelta.items.length > 0 && (
+            {resultFolderChanged(status.latest_proposal_delta) && (
+              <div className="fw-revision-root-delta">
+                <span>Result folder</span>
+                <code>{status.latest_proposal_delta.previous_result_folder_name}</code>
+                <span aria-hidden="true">→</span>
+                <code>{status.latest_proposal_delta.current_result_folder_name}</code>
+              </div>
+            )}
+            {status.latest_proposal_delta.entries.length > 0 && (
               <ul>
-                {revisionDelta.items.map((item) => (
-                  <li data-member-id={item.memberId} key={item.memberId}>
-                    <code>{item.previousPath}</code>
+                {status.latest_proposal_delta.entries.map((item) => (
+                  <li data-member-id={item.member_id} key={item.member_id}>
+                    <code>{item.previous_path}</code>
                     <span aria-hidden="true">→</span>
-                    <code>{item.currentPath}</code>
+                    <code>{item.current_path}</code>
                   </li>
                 ))}
               </ul>
@@ -742,7 +746,7 @@ export function ReviewIsland({
         )}
         {status.revision_failure && (
           <div className="fw-error" role="alert">
-            <strong>The replacement proposal did not pass Foldweave checks.</strong>
+            <strong>That change could not be applied.</strong>
             <span>{status.revision_failure}</span>
             <div className="fw-revision-actions">
               <Button
@@ -761,41 +765,61 @@ export function ReviewIsland({
           </div>
         )}
         {revisionError && <div className="fw-error" role="alert">{revisionError}</div>}
-        <div className="fw-revision-divider" />
-        <label className="fw-revision-label" htmlFor="foldweave-revision">
-          Describe a change to this proposal
-        </label>
-        <textarea
-          disabled={actionsDisabled || accepting || revisionBusy}
-          id="foldweave-revision"
-          onChange={(event) => setRevisionInstruction(event.currentTarget.value)}
-          placeholder="For example: keep the meeting notes together, and move the final brief into Delivery."
-          ref={revisionInput}
-          rows={3}
-          value={revisionInstruction}
-        />
-        <div className="fw-revision-footer">
-          <span>
-            {status.revision_available
-              ? `${status.revision_attempts_remaining} revision ${status.revision_attempts_remaining === 1 ? "attempt" : "attempts"} remaining.`
-              : "Start a new job to request another revision."}
-          </span>
+        <div className="fw-decision-controls">
+          <div className="fw-revision-composer">
+            <label className="fw-revision-label" htmlFor="foldweave-revision">
+              Change this proposal
+            </label>
+            <textarea
+              disabled={actionsDisabled || accepting || revisionBusy || !reviewInputsCurrent}
+              id="foldweave-revision"
+              onChange={(event) => setRevisionInstruction(event.currentTarget.value)}
+              placeholder="Describe a change"
+              ref={revisionInput}
+              rows={2}
+              value={revisionInstruction}
+            />
+            <span className="fw-revision-count">
+              {status.revision_available
+                ? `${status.revision_attempts_remaining} left`
+                : "No revisions left"}
+            </span>
+          </div>
           <Button
+            className="fw-send-button"
             disabled={
               !status.revision_available ||
               revisionInstruction.trim().length === 0 ||
               revisionBusy ||
               accepting ||
-              actionsDisabled
+              actionsDisabled ||
+              !reviewInputsCurrent
             }
-            intent="primary"
             loading={revisionBusy}
             onClick={() => void submitRevision()}
             rightIcon="send-message"
           >
             Send changes
           </Button>
+          <Button
+            className="fw-accept-button"
+            disabled={
+              hasBlockingFindings ||
+              accepting ||
+              revisionBusy ||
+              actionsDisabled ||
+              !reviewInputsCurrent ||
+              status.revision_failure !== null
+            }
+            intent="primary"
+            loading={accepting}
+            onClick={() => void submitAcceptance()}
+            rightIcon="arrow-right"
+          >
+            Accept this structure and create copy
+          </Button>
         </div>
+        </section>
       </section>
     </div>
   );
@@ -814,6 +838,10 @@ function mutationIdempotencyKey(
   return idempotencyKey;
 }
 
+function resultFolderChanged(delta: FolderPlanRevisionDeltaV1): boolean {
+  return delta.previous_result_folder_name !== delta.current_result_folder_name;
+}
+
 function TrustItem({ icon, label, value }: { icon: React.ComponentProps<typeof Icon>["icon"]; label: string; value: string }): ReactElement {
   return (
     <div className="fw-trust-item">
@@ -823,15 +851,22 @@ function TrustItem({ icon, label, value }: { icon: React.ComponentProps<typeof I
   );
 }
 
-function StatusSignals({ change }: { change: FolderPlanMemberChange }): ReactElement {
+function StatusSignals({ change }: { change: FolderPlanMemberChange }): ReactElement | null {
+  const signals: string[] = [];
+  if (change.protected) {
+    signals.push("Protected");
+  } else if (change.change_classification !== "unchanged") {
+    signals.push(CLASS_LABELS[change.change_classification]);
+  }
+  if (change.link_updated) {
+    signals.push("Link updated");
+  }
+  if (signals.length === 0) {
+    return null;
+  }
   return (
     <span className="fw-status-signals">
-      {change.protected && <span className="fw-signal is-protected">Protected</span>}
-      {change.link_updated && <span className="fw-signal is-link">Link</span>}
-      {!change.protected && change.change_classification !== "unchanged" && (
-        <span className={`fw-signal is-${change.change_classification}`}>{CLASS_LABELS[change.change_classification]}</span>
-      )}
-      {change.change_classification === "unchanged" && <span className="fw-signal is-unchanged">Unchanged</span>}
+      {signals.join(" · ")}
     </span>
   );
 }
@@ -987,16 +1022,6 @@ function authorityLabel(change: FolderPlanMemberChange): string {
   return "Protected by deterministic policy";
 }
 
-function intentForChange(change: FolderPlanMemberChange): "none" | "primary" | "warning" | "success" {
-  if (change.protected || change.change_classification === "unchanged") {
-    return "none";
-  }
-  if (change.link_updated) {
-    return "warning";
-  }
-  return "primary";
-}
-
 function toggleSetValue(current: Set<string>, value: string): Set<string> {
   const next = new Set(current);
   if (next.has(value)) {
@@ -1019,14 +1044,6 @@ function formatCount(count: number, singular: string, plural = `${singular}s`): 
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function formatCountElement(
-  count: number,
-  singular: string,
-  plural = `${singular}s`,
-): ReactElement {
-  return <><strong>{count}</strong> {count === 1 ? singular : plural}</>;
-}
-
 export function ReviewLoading(): ReactElement {
-  return <div className="fw-loading"><Spinner size={24} /><span>Loading the verified preview…</span></div>;
+  return <div className="fw-loading"><Spinner size={24} /><span>Loading preview…</span></div>;
 }

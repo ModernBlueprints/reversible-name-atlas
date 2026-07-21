@@ -30,6 +30,8 @@ import {
   type CompanionRpcRequest,
   type CompanionRpcResponseEnvelope,
   type DeviceSessionRecord,
+  type PairingStateV2,
+  type PairingStatusV2,
   type SignedDeviceEnvelope,
 } from "./contracts";
 import { verifyDeviceEnvelope } from "./device-crypto";
@@ -50,6 +52,7 @@ interface SocketAttachment {
   authenticated: boolean;
   challenge: string;
   challengeExpiresAt: number;
+  connectionId: string;
   deviceId: string;
   sessionId: string;
 }
@@ -68,6 +71,25 @@ interface InternalRelayRequest {
   headers: Record<string, string>;
   invocation: PublicInvocationSeed;
   requestId: string;
+}
+
+type DeviceSequenceDomain = "companion" | "control";
+
+interface DeviceSequenceCheckpoint {
+  lastCompanionSequence?: number;
+  lastControlSequence?: number;
+  lastSequence: number;
+}
+
+export function initializeDeviceSequenceDomains(
+  checkpoint: DeviceSequenceCheckpoint,
+): { companion: number; control: number } {
+  checkpoint.lastCompanionSequence ??= checkpoint.lastSequence;
+  checkpoint.lastControlSequence ??= checkpoint.lastSequence;
+  return {
+    companion: checkpoint.lastCompanionSequence,
+    control: checkpoint.lastControlSequence,
+  };
 }
 
 const SESSION_STORAGE_KEY = "device-session";
@@ -145,6 +167,16 @@ export class PendingRelayRegistry {
       this.cancel(requestId, error);
     }
   }
+
+}
+
+export function responseMatchesKnownRelay(
+  record: Pick<DeviceSessionRecord, "recentRelays">,
+  requestId: string,
+): boolean {
+  return (record.recentRelays ?? []).some(
+    (correlation) => correlation.requestId === requestId,
+  );
 }
 
 export function authorizedSessionExpiresAt(authorizedAt: number): number {
@@ -190,6 +222,27 @@ function parseStatusBody(value: unknown): JsonValue {
   return {
     deviceId: requireDeviceId(value.deviceId),
     intent: "pairing_status",
+    sessionId: requireSessionId(value.sessionId),
+  };
+}
+
+function parseClientAccessObservedBody(value: unknown): JsonValue {
+  if (!isPlainRecord(value)) {
+    throw new HttpError(
+      400,
+      "client_access_observation_invalid",
+      "Client access observation is invalid.",
+    );
+  }
+  requireExactKeys(
+    value,
+    ["authorizedAt", "deviceId", "scopes", "sessionId"],
+    "client_access_observation",
+  );
+  return {
+    authorizedAt: nowTimestamp(value.authorizedAt, "authorized_at"),
+    deviceId: requireDeviceId(value.deviceId),
+    scopes: parseScopeList(value.scopes),
     sessionId: requireSessionId(value.sessionId),
   };
 }
@@ -260,6 +313,12 @@ export class DeviceSession implements DurableObject {
       if (request.method === "POST" && url.pathname === "/oauth-authorized") {
         return await this.markAuthorized(request);
       }
+      if (
+        request.method === "POST" &&
+        url.pathname === "/client-access-observed"
+      ) {
+        return await this.markClientAccessObserved(request);
+      }
       if (request.method === "POST" && url.pathname === "/revoke") {
         return await this.revoke(request);
       }
@@ -295,7 +354,7 @@ export class DeviceSession implements DurableObject {
       const record = await this.requireRecord();
       if (!attachment.authenticated) {
         const envelope = parseSignedEnvelope(parsed, parseChallengeBody);
-        await this.verifyAndAdvance(envelope, record);
+        await this.verifyAndAdvance(envelope, record, { domain: "companion" });
         const body = envelope.body as unknown as CompanionChallengeBody;
         if (
           body.challenge !== attachment.challenge ||
@@ -306,19 +365,38 @@ export class DeviceSession implements DurableObject {
         }
         attachment.authenticated = true;
         webSocket.serializeAttachment(attachment);
+        this.rejectPending("Companion reconnected before responding.");
+        for (const candidate of this.state.getWebSockets("companion")) {
+          const candidateAttachment =
+            candidate.deserializeAttachment() as SocketAttachment | null;
+          if (
+            candidateAttachment !== null &&
+            candidateAttachment.connectionId !== attachment.connectionId
+          ) {
+            candidate.close(1012, "Companion reconnected");
+          }
+        }
         webSocket.send(JSON.stringify({ type: "companion_ready", sessionId: record.sessionId }));
         return;
       }
 
       const envelope = parseSignedEnvelope(parsed, parseCompanionRpcResponseEnvelope);
-      await this.verifyAndAdvance(envelope, record);
+      await this.verifyAndAdvance(envelope, record, { domain: "companion" });
       const body = envelope.body as unknown as CompanionRpcResponseEnvelope;
       if (envelope.requestId !== body.requestId) {
         throw new HttpError(400, "rpc_response_invalid", "Companion response request binding is invalid.");
       }
-      if (!this.pending.resolve(body.requestId, body)) {
+      if (
+        !this.pending.resolve(body.requestId, body) &&
+        !responseMatchesKnownRelay(record, body.requestId)
+      ) {
         throw new HttpError(409, "rpc_response_unexpected", "Companion response is not expected.");
       }
+      // A cryptographically valid response can arrive after the bounded public
+      // request timed out, or after an identical retry already consumed a
+      // response. The persisted, conflict-protected relay correlation proves it
+      // was issued by this session, so discard it without destroying the healthy
+      // companion connection. A never-issued request ID still fails closed.
     } catch (error) {
       const code = error instanceof HttpError ? error.code : "companion_message_invalid";
       webSocket.send(JSON.stringify({ error: code, type: "companion_error" }));
@@ -327,16 +405,22 @@ export class DeviceSession implements DurableObject {
   }
 
   public webSocketClose(
-    _webSocket: WebSocket,
+    webSocket: WebSocket,
     _code: number,
     _reason: string,
     _wasClean: boolean,
   ): void {
-    this.rejectPending("Companion disconnected before responding.");
+    this.rejectPendingIfNoAuthenticatedCompanion(
+      webSocket,
+      "Companion disconnected before responding.",
+    );
   }
 
-  public webSocketError(_webSocket: WebSocket, _error: unknown): void {
-    this.rejectPending("Companion transport failed before responding.");
+  public webSocketError(webSocket: WebSocket, _error: unknown): void {
+    this.rejectPendingIfNoAuthenticatedCompanion(
+      webSocket,
+      "Companion transport failed before responding.",
+    );
   }
 
   private async register(request: Request): Promise<Response> {
@@ -371,10 +455,13 @@ export class DeviceSession implements DurableObject {
     const record: DeviceSessionRecord = {
       activeCodeHash: requireSha256(body.activeCodeHash, "active_code_hash"),
       authorizedAt: null,
+      clientAccessObservedAt: null,
       createdAt,
       deviceId: requireDeviceId(body.deviceId),
       deviceName: body.deviceName,
       expiresAt,
+      lastCompanionSequence: initialSequence,
+      lastControlSequence: initialSequence,
       lastRelaySequence: 0,
       lastSeenAt: null,
       lastSequence: initialSequence,
@@ -444,6 +531,7 @@ export class DeviceSession implements DurableObject {
       if (
         record === undefined ||
         record.sessionId !== sessionId ||
+        record.authorizedAt !== null ||
         record.revokedAt !== null ||
         record.expiresAt <= authorizedAt ||
         record.localApprovedAt === null
@@ -456,6 +544,46 @@ export class DeviceSession implements DurableObject {
       await transaction.put(SESSION_STORAGE_KEY, record);
     });
     return jsonResponse({ authorized: true });
+  }
+
+  private async markClientAccessObserved(request: Request): Promise<Response> {
+    const body = parseClientAccessObservedBody(await readJsonBody(request)) as Record<
+      string,
+      JsonValue
+    >;
+    const observedAt = Date.now();
+    const clientAccessObservedAt = await this.state.storage.transaction(
+      async (transaction) => {
+        const record = await transaction.get<DeviceSessionRecord>(
+          SESSION_STORAGE_KEY,
+        );
+        const scopes = parseScopeList(body.scopes);
+        if (
+          record === undefined ||
+          !sessionIsActiveAt(record, observedAt) ||
+          record.authorizedAt === null ||
+          record.authorizedAt !== body.authorizedAt ||
+          record.deviceId !== body.deviceId ||
+          record.sessionId !== body.sessionId ||
+          JSON.stringify(canonicalScopes(record.scopes)) !==
+            JSON.stringify(canonicalScopes(scopes))
+        ) {
+          throw new HttpError(
+            401,
+            "client_access_observation_invalid",
+            "Client access observation is not bound to the active OAuth grant.",
+          );
+        }
+        const firstObservedAt = record.clientAccessObservedAt ?? observedAt;
+        record.clientAccessObservedAt = firstObservedAt;
+        await transaction.put(SESSION_STORAGE_KEY, record);
+        return firstObservedAt;
+      },
+    );
+    return jsonResponse({
+      clientAccessObserved: true,
+      clientAccessObservedAt,
+    });
   }
 
   private async revoke(request: Request): Promise<Response> {
@@ -496,6 +624,8 @@ export class DeviceSession implements DurableObject {
     return jsonResponse({
       active: sessionIsActiveAt(record, now),
       authorized: record.authorizedAt !== null,
+      clientAccessObserved: (record.clientAccessObservedAt ?? null) !== null,
+      clientAccessObservedAt: record.clientAccessObservedAt ?? null,
       codeHash: record.activeCodeHash,
       deviceId: record.deviceId,
       exists: true,
@@ -511,7 +641,11 @@ export class DeviceSession implements DurableObject {
     const parsed = await readJsonBody(request);
     const envelope = parseSignedEnvelope(parsed, parseStatusBody);
     const record = await this.requireRecord();
-    await this.verifyAndAdvance(envelope, record, false, true);
+    await this.verifyAndAdvance(envelope, record, {
+      domain: "control",
+      preserveLastSeen: true,
+      requireActive: false,
+    });
     const body = envelope.body as Record<string, JsonValue>;
     if (
       body.sessionId !== record.sessionId ||
@@ -528,22 +662,28 @@ export class DeviceSession implements DurableObject {
       this.state.getWebSockets("companion").some((candidate) => {
         const attachment = candidate.deserializeAttachment() as SocketAttachment | null;
         return (
+          candidate.readyState === WebSocket.OPEN &&
           attachment?.authenticated === true &&
           attachment.deviceId === current.deviceId &&
           attachment.sessionId === current.sessionId
         );
       });
-    const pairingState = current.revokedAt !== null
+    const clientAccessObservedAt = current.clientAccessObservedAt ?? null;
+    const pairingState: PairingStateV2 = current.revokedAt !== null
       ? "revoked"
       : expired
         ? "expired"
-        : current.authorizedAt !== null
-          ? "authorized"
-          : current.localApprovedAt !== null
-            ? "local_approved"
-            : "pending";
+        : clientAccessObservedAt !== null
+          ? "client_access_observed"
+          : current.authorizedAt !== null
+            ? "authorization_code_issued"
+            : current.localApprovedAt !== null
+              ? "local_approved"
+              : "pending";
     return jsonResponse({
-      authorized: current.authorizedAt !== null,
+      authorizationCodeIssued: current.authorizedAt !== null,
+      clientAccessObserved: clientAccessObservedAt !== null,
+      clientAccessObservedAt,
       connected,
       deviceId: current.deviceId,
       expiresAt: current.expiresAt,
@@ -551,9 +691,9 @@ export class DeviceSession implements DurableObject {
       pairingState,
       requestId: envelope.requestId,
       revoked: current.revokedAt !== null,
-      schemaVersion: "foldweave-pairing-status.v1",
+      schemaVersion: "foldweave-pairing-status.v2",
       sessionId: current.sessionId,
-    });
+    } satisfies PairingStatusV2);
   }
 
   private async openWebSocket(request: Request): Promise<Response> {
@@ -562,7 +702,11 @@ export class DeviceSession implements DurableObject {
     }
     const record = await this.requireActiveRecord();
     for (const existing of this.state.getWebSockets("companion")) {
-      existing.close(1012, "Companion reconnected");
+      const attachment =
+        existing.deserializeAttachment() as SocketAttachment | null;
+      if (attachment?.authenticated !== true) {
+        existing.close(1012, "Companion challenge replaced");
+      }
     }
     const pair = new WebSocketPair();
     const client = pair[0];
@@ -572,6 +716,9 @@ export class DeviceSession implements DurableObject {
       authenticated: false,
       challenge,
       challengeExpiresAt: Date.now() + COMPANION_CHALLENGE_TTL_MS,
+      connectionId: bytesToBase64Url(
+        crypto.getRandomValues(new Uint8Array(16)),
+      ),
       deviceId: record.deviceId,
       sessionId: record.sessionId,
     };
@@ -638,7 +785,10 @@ export class DeviceSession implements DurableObject {
       .getWebSockets("companion")
       .find((candidate) => {
         const attachment = candidate.deserializeAttachment() as SocketAttachment | null;
-        return attachment?.authenticated === true;
+        return (
+          candidate.readyState === WebSocket.OPEN &&
+          attachment?.authenticated === true
+        );
       });
     if (webSocket === undefined) {
       throw new HttpError(503, "companion_offline", "Foldweave companion is not connected.");
@@ -723,12 +873,17 @@ export class DeviceSession implements DurableObject {
   private async verifyAndAdvance<T extends JsonValue>(
     envelope: SignedDeviceEnvelope<T>,
     record: DeviceSessionRecord,
-    requireActive = true,
-    preserveLastSeen = false,
+    options: {
+      domain: DeviceSequenceDomain;
+      preserveLastSeen?: boolean;
+      requireActive?: boolean;
+    } = { domain: "control" },
   ): Promise<void> {
     await verifyDeviceEnvelope(envelope, record.publicKeyJwk);
     const nonceHash = await sha256Hex(envelope.nonce);
     const now = Date.now();
+    const preserveLastSeen = options.preserveLastSeen ?? false;
+    const requireActive = options.requireActive ?? true;
     await this.state.storage.transaction(async (transaction) => {
       const current = await transaction.get<DeviceSessionRecord>(SESSION_STORAGE_KEY);
       if (
@@ -737,14 +892,27 @@ export class DeviceSession implements DurableObject {
       ) {
         throw new HttpError(401, "session_inactive", "Pairing session is not active.");
       }
+      // Records written before the split carried one combined high-water mark.
+      // Seed both new domains before advancing either one so a delayed signed
+      // WebSocket response cannot be invalidated by a newer HTTP control call.
+      const legacySequence = current.lastSequence;
+      const domains = initializeDeviceSequenceDomains(current);
+      const lastDomainSequence = options.domain === "companion"
+        ? domains.companion
+        : domains.control;
       current.recentNonces = current.recentNonces.filter((nonce) => nonce.expiresAt > now);
       if (
-        envelope.sequence <= current.lastSequence ||
+        envelope.sequence <= lastDomainSequence ||
         current.recentNonces.some((nonce) => nonce.hash === nonceHash)
       ) {
         throw new HttpError(409, "device_request_replayed", "Signed device request was replayed.");
       }
-      current.lastSequence = envelope.sequence;
+      if (options.domain === "companion") {
+        current.lastCompanionSequence = envelope.sequence;
+      } else {
+        current.lastControlSequence = envelope.sequence;
+      }
+      current.lastSequence = Math.max(legacySequence, envelope.sequence);
       if (!preserveLastSeen) {
         current.lastSeenAt = now;
       }
@@ -807,5 +975,30 @@ export class DeviceSession implements DurableObject {
 
   private rejectPending(message: string): void {
     this.pending.rejectAll(new HttpError(503, "companion_offline", message));
+  }
+
+  private rejectPendingIfNoAuthenticatedCompanion(
+    disconnected: WebSocket,
+    message: string,
+  ): void {
+    const disconnectedAttachment =
+      disconnected.deserializeAttachment() as SocketAttachment | null;
+    const disconnectedConnectionId =
+      disconnectedAttachment?.connectionId ?? null;
+    const replacementExists = this.state
+      .getWebSockets("companion")
+      .some((candidate) => {
+        const attachment =
+          candidate.deserializeAttachment() as SocketAttachment | null;
+        return (
+          candidate.readyState === WebSocket.OPEN &&
+          attachment?.authenticated === true &&
+          (disconnectedConnectionId === null ||
+            attachment.connectionId !== disconnectedConnectionId)
+        );
+      });
+    if (!replacementExists) {
+      this.rejectPending(message);
+    }
   }
 }

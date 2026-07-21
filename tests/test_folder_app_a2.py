@@ -177,7 +177,7 @@ async def test_one_question_continues_same_job_once(tmp_path: Path) -> None:
     assert service.answer == "The Northstar final presentation."
     assert completed.json()["lifecycle"] == "verified"
     assert done.status_code == 200
-    assert "2 of 2, exactly once" in done.text
+    assert "Files</dt><dd>2, exactly once" in done.text
     assert late_answer.status_code == 409
 
 

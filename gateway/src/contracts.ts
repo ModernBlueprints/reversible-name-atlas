@@ -39,11 +39,15 @@ export interface DeviceRegistrationBody {
 export interface DeviceSessionRecord {
   activeCodeHash: string;
   authorizedAt: number | null;
+  clientAccessObservedAt: number | null;
   createdAt: number;
   deviceId: string;
   deviceName: string;
   expiresAt: number;
+  lastCompanionSequence?: number;
+  lastControlSequence?: number;
   lastRelaySequence: number;
+  /** Legacy combined high-water mark retained for stored-record migration. */
   lastSequence: number;
   localApprovedAt: number | null;
   lastSeenAt: number | null;
@@ -66,6 +70,29 @@ export interface PairingDirectoryRecord {
   failedAttempts: number;
   localApprovedAt: number | null;
   revokedAt: number | null;
+  sessionId: string;
+}
+
+export type PairingStateV2 =
+  | "pending"
+  | "local_approved"
+  | "authorization_code_issued"
+  | "client_access_observed"
+  | "revoked"
+  | "expired";
+
+export interface PairingStatusV2 {
+  authorizationCodeIssued: boolean;
+  clientAccessObserved: boolean;
+  clientAccessObservedAt: number | null;
+  connected: boolean;
+  deviceId: string;
+  expiresAt: number;
+  lastSeenAt: number | null;
+  pairingState: PairingStateV2;
+  requestId: string;
+  revoked: boolean;
+  schemaVersion: "foldweave-pairing-status.v2";
   sessionId: string;
 }
 

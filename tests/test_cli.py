@@ -66,7 +66,7 @@ def test_replay_mode_runs_on_loopback(monkeypatch: Any) -> None:
     assert exit_code == 0
     assert called["host"] == "127.0.0.1"
     assert called["port"] == 8123
-    assert called["app"].title == "Reversible Name Atlas"
+    assert called["app"].title == "Foldweave — legacy compatibility"
     runtime_config = called["app"].state.runtime_config
     assert runtime_config.replay_record_configured is True
     assert runtime_config.provider_status == "Recorded GPT-5.6 response"

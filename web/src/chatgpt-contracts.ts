@@ -6,7 +6,7 @@ import type {
   Journey,
   ReviewDisplayStatus,
 } from "./contracts";
-import { assertPreview } from "./contracts";
+import { assertLatestProposalDelta, assertPreview } from "./contracts";
 
 export type HostedReviewLifecycle =
   | "reviewing"
@@ -86,6 +86,24 @@ export interface FoldweaveHostedJobStatusV1 {
   revision_attempts_remaining: number;
   revision_failure_code: string | null;
   blocker_code: string | null;
+}
+
+export interface HostedRevisionParentBinding {
+  parent_job_id: string;
+  parent_job_revision: number;
+  parent_candidate_fingerprint: string;
+  parent_preview_fingerprint: string;
+  source_commitment: string;
+}
+
+export interface FoldweaveHostedRevisionRecoveryV1
+  extends HostedRevisionParentBinding {
+  schema_version: "foldweave-hosted-revision-recovery.v1";
+  recovery_status: "none" | "recovered";
+  status: FoldweaveHostedJobStatusV1 | null;
+  revision_instruction: string | null;
+  revision_instruction_fingerprint: string | null;
+  submit_call_id: string | null;
 }
 
 export interface FoldweaveVerificationResultV1 {
@@ -235,6 +253,76 @@ export function parseHostedJobStatus(
   return normalized as unknown as FoldweaveHostedJobStatusV1;
 }
 
+export function parseHostedRevisionRecovery(
+  value: unknown,
+  expectedParent: HostedRevisionParentBinding,
+): FoldweaveHostedRevisionRecoveryV1 {
+  assertNoSensitiveBoundaryData(value);
+  const normalized = normalizeHostedRevisionRecovery(value);
+  if (
+    !isRecord(normalized) ||
+    normalized.schema_version !== "foldweave-hosted-revision-recovery.v1" ||
+    (normalized.recovery_status !== "none" &&
+      normalized.recovery_status !== "recovered") ||
+    normalized.parent_job_id !== expectedParent.parent_job_id ||
+    normalized.parent_job_revision !== expectedParent.parent_job_revision ||
+    normalized.parent_candidate_fingerprint !==
+      expectedParent.parent_candidate_fingerprint ||
+    normalized.parent_preview_fingerprint !==
+      expectedParent.parent_preview_fingerprint ||
+    normalized.source_commitment !== expectedParent.source_commitment
+  ) {
+    throw new Error("Foldweave returned recovery for another visible review.");
+  }
+  const continuation = [
+    normalized.revision_instruction,
+    normalized.revision_instruction_fingerprint,
+    normalized.submit_call_id,
+  ];
+  if (normalized.recovery_status === "none") {
+    if (
+      normalized.status !== null ||
+      continuation.some((item) => item !== null)
+    ) {
+      throw new Error("Foldweave returned a contradictory empty recovery.");
+    }
+    return normalized as unknown as FoldweaveHostedRevisionRecoveryV1;
+  }
+  const status = parseHostedJobStatus(normalized.status);
+  if (
+    status.source_commitment !== expectedParent.source_commitment ||
+    status.model_transport !== "chatgpt_hosted" ||
+    (status.lifecycle !== "revising" &&
+      status.lifecycle !== "reviewing" &&
+      status.lifecycle !== "revision_failed" &&
+      status.lifecycle !== "executing" &&
+      status.lifecycle !== "verified")
+  ) {
+    throw new Error("Foldweave returned an unrelated revision continuation.");
+  }
+  if (status.lifecycle === "revising") {
+    if (
+      typeof normalized.revision_instruction !== "string" ||
+      normalized.revision_instruction.length < 1 ||
+      normalized.revision_instruction.length > 2_000 ||
+      !isSha256(normalized.revision_instruction_fingerprint) ||
+      typeof normalized.submit_call_id !== "string" ||
+      normalized.submit_call_id.length < 1 ||
+      normalized.submit_call_id.length > 128 ||
+      normalized.submit_call_id !==
+        `revision-submit:${status.job_id}:${status.job_revision}`
+    ) {
+      throw new Error("Foldweave returned an incomplete revision continuation.");
+    }
+  } else if (continuation.some((item) => item !== null)) {
+    throw new Error("Foldweave exposed continuation data after revision completion.");
+  }
+  return {
+    ...(normalized as unknown as FoldweaveHostedRevisionRecoveryV1),
+    status,
+  };
+}
+
 function normalizeHostedReviewEnvelope(value: unknown): unknown {
   if (!isRecord(value) || value.schema_version !== "foldweave-chatgpt-review.v1") {
     return value;
@@ -269,6 +357,21 @@ function normalizeHostedJobStatus(value: unknown): unknown {
     "clarification_question_fingerprint",
     "revision_failure_code",
     "blocker_code",
+  ]);
+}
+
+function normalizeHostedRevisionRecovery(value: unknown): unknown {
+  if (
+    !isRecord(value) ||
+    value.schema_version !== "foldweave-hosted-revision-recovery.v1"
+  ) {
+    return value;
+  }
+  return withMissingNullFields(value, [
+    "status",
+    "revision_instruction",
+    "revision_instruction_fingerprint",
+    "submit_call_id",
   ]);
 }
 
@@ -465,6 +568,12 @@ function assertHostedStatus(
   ) {
     throw new Error("The Foldweave review status does not match its exact preview.");
   }
+  assertLatestProposalDelta(value.latest_proposal_delta, {
+    job_id: value.job_id,
+    proposal_revision: value.proposal_revision,
+    candidate_fingerprint: value.candidate_fingerprint,
+    preview_fingerprint: value.preview_fingerprint,
+  });
   if (
     (lifecycle === "reviewing" || lifecycle === "revision_failed") &&
     value.job_revision !== preview.expected_job_revision

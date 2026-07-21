@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:chatgpt": "vite build --mode chatgpt-widget",
+    "build:chatgpt": "vite build --mode chatgpt-widget && npm run sync:chatgpt-widget",
     "build:all": "npm run build && npm run build:chatgpt",
+    "sync:chatgpt-widget": "mkdir -p dist/chatgpt-widget && cp ../src/name_atlas/assets/chatgpt-widget/foldweave-chatgpt-widget.css ../src/name_atlas/assets/chatgpt-widget/foldweave-chatgpt-widget.js dist/chatgpt-widget/ && cp chatgpt-widget-assets/_headers dist/chatgpt-widget/_headers",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

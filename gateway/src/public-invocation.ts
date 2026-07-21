@@ -83,9 +83,11 @@ const TOOL_SCOPES = {
   plan_change: "foldweave.plan",
   prepare_change_application: "foldweave.plan",
   read_text_excerpt: "foldweave.plan",
+  recover_revision: "foldweave.review",
   request_clarification: "foldweave.plan",
   revise_plan: "foldweave.plan",
   submit_plan: "foldweave.plan",
+  submit_compact_plan: "foldweave.plan",
   submit_plan_revision: "foldweave.plan",
 } as const satisfies Record<string, FoldweaveScope>;
 

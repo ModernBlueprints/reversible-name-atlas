@@ -1,9 +1,15 @@
 export interface ChatGptHostBridge {
   connect(): Promise<void>;
   getInitialStructuredContent(): unknown;
+  getWidgetState(): unknown;
+  setWidgetState(state: Record<string, unknown>): Promise<void>;
   subscribeToolResults(listener: (structuredContent: unknown) => void): () => void;
   subscribeInterruptions(listener: (interruption: HostInterruption) => void): () => void;
   callTool(name: string, argumentsValue: Record<string, unknown>): Promise<unknown>;
+  updateModelContext(
+    content: string,
+    structuredContent: Record<string, unknown>,
+  ): Promise<void>;
   sendFollowUpMessage(prompt: string): Promise<void>;
 }
 
@@ -31,6 +37,7 @@ const FOLDWEAVE_STRUCTURED_SCHEMAS = new Set([
   "foldweave-chatgpt-review.v1",
   "foldweave-change-file-result.v1",
   "foldweave-hosted-job-status.v1",
+  "foldweave-hosted-revision-recovery.v1",
   "foldweave-reconstruction-result.v1",
   "foldweave-verification-result.v1",
 ]);
@@ -67,6 +74,18 @@ export class McpAppsHostBridge implements ChatGptHostBridge {
 
   getInitialStructuredContent(): unknown {
     return this.hostWindow.openai?.toolOutput;
+  }
+
+  getWidgetState(): unknown {
+    return this.hostWindow.openai?.widgetState;
+  }
+
+  async setWidgetState(state: Record<string, unknown>): Promise<void> {
+    const setter = this.hostWindow.openai?.setWidgetState;
+    if (typeof setter !== "function") {
+      throw new Error("The ChatGPT host does not support durable widget state.");
+    }
+    await setter(state);
   }
 
   subscribeToolResults(listener: (structuredContent: unknown) => void): () => void {
@@ -109,24 +128,38 @@ export class McpAppsHostBridge implements ChatGptHostBridge {
     return this.request("tools/call", { name, arguments: argumentsValue });
   }
 
-  async sendFollowUpMessage(prompt: string): Promise<void> {
-    const openAiRuntime = this.hostWindow.openai;
-    if (typeof openAiRuntime?.sendFollowUpMessage === "function") {
-      await openAiRuntime.sendFollowUpMessage({
-        prompt,
-        scrollToBottom: true,
-      });
-      return;
-    }
+  async updateModelContext(
+    content: string,
+    structuredContent: Record<string, unknown>,
+  ): Promise<void> {
     if (!this.standardBridgeReady) {
       try {
         await this.initialize();
         this.standardBridgeReady = true;
       } catch (error) {
         this.standardBridgeReady = false;
-        const delayedOpenAiRuntime = this.hostWindow.openai;
-        if (typeof delayedOpenAiRuntime?.sendFollowUpMessage === "function") {
-          await delayedOpenAiRuntime.sendFollowUpMessage({
+        // Widget-local persistence is not model-visible context. Report the
+        // unsupported operation truthfully; the caller may continue with a
+        // self-contained follow-up after its durable reservation succeeds.
+        throw error;
+      }
+    }
+    await this.request("ui/update-model-context", {
+      content: [{ type: "text", text: content }],
+      structuredContent,
+    });
+  }
+
+  async sendFollowUpMessage(prompt: string): Promise<void> {
+    if (!this.standardBridgeReady) {
+      try {
+        await this.initialize();
+        this.standardBridgeReady = true;
+      } catch (error) {
+        this.standardBridgeReady = false;
+        const compatibilityRuntime = this.hostWindow.openai;
+        if (typeof compatibilityRuntime?.sendFollowUpMessage === "function") {
+          await compatibilityRuntime.sendFollowUpMessage({
             prompt,
             scrollToBottom: true,
           });
@@ -135,21 +168,20 @@ export class McpAppsHostBridge implements ChatGptHostBridge {
         throw error;
       }
     }
-    const delayedOpenAiRuntime = this.hostWindow.openai;
-    if (typeof delayedOpenAiRuntime?.sendFollowUpMessage === "function") {
-      await delayedOpenAiRuntime.sendFollowUpMessage({
-        prompt,
-        scrollToBottom: true,
-      });
-      return;
-    }
-    // ui/message is a notification in the MCP Apps contract. It must not use
-    // request/response semantics: an ambiguous retry could create two model
-    // turns and therefore two planning attempts.
-    this.notify("ui/message", {
+    // ui/message is an MCP Apps request. Await the host response so the widget
+    // never reports a follow-up as accepted after a silently discarded
+    // notification. Do not retry through the compatibility extension after a
+    // request error or timeout because delivery is then ambiguous.
+    const result = await this.request("ui/message", {
       role: "user",
       content: [{ type: "text", text: prompt }],
     });
+    if (!isRecord(result)) {
+      throw new Error("The ChatGPT host returned a malformed follow-up response.");
+    }
+    if (result.isError === true) {
+      throw new Error("The ChatGPT host rejected the follow-up message.");
+    }
   }
 
   private async selectTransport(
@@ -174,12 +206,18 @@ export class McpAppsHostBridge implements ChatGptHostBridge {
   private initialize(): Promise<void> {
     this.startListening();
     if (this.initialized === null) {
-      this.initialized = this.request("ui/initialize", {
+      const attempt = this.request("ui/initialize", {
         appInfo: { name: "foldweave-review-widget", version: "0.1.0" },
         appCapabilities: {},
         protocolVersion: PROTOCOL_VERSION,
       }).then(() => {
         this.notify("ui/notifications/initialized", {});
+      });
+      this.initialized = attempt;
+      void attempt.catch(() => {
+        if (this.initialized === attempt) {
+          this.initialized = null;
+        }
       });
     }
     return this.initialized;

@@ -4,11 +4,14 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-19",
   "compatibility_flags": ["global_fetch_strictly_public"],
+  "assets": {
+    "directory": "../web/dist/chatgpt-widget"
+  },
   "kv_namespaces": [
     {
       "binding": "OAUTH_KV",
-      "id": "00000000000000000000000000000000",
-      "preview_id": "00000000000000000000000000000000"
+      "id": "70d821c4796f4c8a880207f54a84cf01",
+      "preview_id": "3870450c68594551ac4dd2092d5f9133"
     }
   ],
   "durable_objects": {

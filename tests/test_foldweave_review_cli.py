@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from connected_change_fixtures import make_connected_change_fixture, tree_state
 
-from name_atlas import foldweave_launcher, foldweave_review_cli
+from name_atlas import cli, foldweave_launcher, foldweave_review_cli
 from name_atlas.folder_refactor.connected_change.job_v2 import build_new_gpt_job_v2
 from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderJobLifecycleV3,
@@ -164,6 +164,28 @@ def test_launcher_exposes_reviewed_commands(capsys) -> None:
         "restore-receipt",
     ):
         assert command in output
+
+
+@pytest.mark.parametrize("command", ["verify-receipt", "restore-receipt"])
+def test_primary_receipt_help_uses_foldweave_command_name(
+    command: str,
+    capsys,
+) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        foldweave_launcher.run([command, "--help"])
+
+    assert exit_info.value.code == 0
+    output = capsys.readouterr().out
+    assert output.startswith(f"usage: foldweave {command}")
+    assert f"usage: name-atlas {command}" not in output
+
+
+def test_legacy_alias_keeps_its_historical_command_name(capsys) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        cli.run(["verify-receipt", "--help"])
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.startswith("usage: name-atlas verify-receipt")
 
 
 @pytest.mark.parametrize("lifecycle", ["planning", "reviewing", "verified"])

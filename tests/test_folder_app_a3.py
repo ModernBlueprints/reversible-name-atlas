@@ -171,11 +171,11 @@ async def test_done_runs_keyless_verifier_and_reconstruction_actions(
 
     assert started.status_code == 303
     assert done.status_code == 200
-    assert "Independent receipt verification" in done.text
+    assert "<strong>Verified</strong>" in done.text
     assert "Passed without GPT or an API key" in done.text
     assert 'action="/verify-again"' in done.text
     assert 'action="/recreate-original"' in done.text
-    assert "Creates another folder matching the original paths and bytes" in done.text
+    assert "Reconstruction</dt><dd>Available" in done.text
     assert invalid_verify.status_code == 422
     assert service.verification_calls == 1
     assert verified.status_code == 303
@@ -262,7 +262,7 @@ async def test_blocked_reverification_replaces_positive_browser_authority(
     assert rerun.status_code == 303
     assert rerun.headers["location"] == "/working"
     assert blocked.status_code == 200
-    assert "Transaction blocked" in blocked.text
+    assert "Could not continue" in blocked.text
     assert "artifact_digest_mismatch:accepted_plan" in blocked.text
     assert "Deterministic checks passed" not in blocked.text
     assert done.status_code == 303

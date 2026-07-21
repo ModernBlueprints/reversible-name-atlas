@@ -14,16 +14,17 @@ import {
   validateClientRegistration,
 } from "./gateway";
 import { PairingDirectory } from "./pairing-directory";
+import { PUBLIC_MCP_PATH } from "./public-discovery";
 
 export { DeviceSession, PairingDirectory };
 
-export default new OAuthProvider<Env>({
+const oauthProvider = new OAuthProvider<Env>({
   accessTokenTTL: ACCESS_TOKEN_TTL_SECONDS,
   allowImplicitFlow: false,
   allowPlainPKCE: false,
   allowTokenExchangeGrant: false,
   apiHandler: McpApiHandler,
-  apiRoute: "/mcp",
+  apiRoute: PUBLIC_MCP_PATH,
   authorizeEndpoint: "/authorize",
   clientIdMetadataDocumentEnabled: true,
   clientRegistrationCallback: validateClientRegistration,
@@ -40,3 +41,32 @@ export default new OAuthProvider<Env>({
   scopesSupported: [...SUPPORTED_SCOPES],
   tokenEndpoint: "/oauth/token",
 });
+
+export default {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
+    const url = new URL(request.url);
+    const hasBearerToken = request.headers
+      .get("authorization")
+      ?.startsWith("Bearer ");
+    if (
+      url.pathname === PUBLIC_MCP_PATH &&
+      request.method === "POST" &&
+      !hasBearerToken
+    ) {
+      return defaultHandler.fetch!(
+        request as Parameters<NonNullable<typeof defaultHandler.fetch>>[0],
+        env,
+        ctx,
+      );
+    }
+    return oauthProvider.fetch(
+      request as Parameters<typeof oauthProvider.fetch>[0],
+      env,
+      ctx,
+    );
+  },
+} satisfies ExportedHandler<Env>;

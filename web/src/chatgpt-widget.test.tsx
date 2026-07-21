@@ -13,8 +13,10 @@ import {
   parseHostedChangeFileResult,
   parseHostedJobStatus,
   parseHostedReconstructionResult,
+  parseHostedRevisionRecovery,
   parseHostedReviewEnvelope,
 } from "./chatgpt-contracts";
+import type { FolderPlanRevisionDeltaV1 } from "./contracts";
 import { FoldweaveChatGptWidget } from "./chatgpt-widget";
 
 const A = "a".repeat(64);
@@ -29,6 +31,32 @@ const CHILD_JOB_ID = "2".repeat(32);
 const RAW_CAPABILITY_ID = `fwjc_${"A".repeat(86)}`;
 const CHANGE_FILE_HANDLE = `fw_${"A".repeat(43)}`;
 const RESTORE_HANDLE = `fw_${"B".repeat(43)}`;
+
+function revisionDelta(
+  overrides: Partial<FolderPlanRevisionDeltaV1> = {},
+): FolderPlanRevisionDeltaV1 {
+  return {
+    schema_version: "folder-plan-revision-delta.v1",
+    job_id: JOB_ID,
+    proposal_revision_before: 0,
+    proposal_revision_after: 1,
+    base_candidate_fingerprint: B,
+    base_preview_fingerprint: E,
+    current_candidate_fingerprint: C,
+    current_preview_fingerprint: D,
+    previous_result_folder_name: "northstar-draft",
+    current_result_folder_name: "northstar-draft",
+    entries: [
+      {
+        member_id: B,
+        previous_path: "Draft/brief.md",
+        current_path: "Delivery/brief.md",
+      },
+    ],
+    delta_fingerprint: F,
+    ...overrides,
+  };
+}
 
 function changeFileResult() {
   return {
@@ -138,6 +166,7 @@ const reviewingSnapshot: FoldweaveChatGptReviewV1 = {
     revision_available: true,
     revision_attempts_remaining: 1,
     revision_failure: null,
+    latest_proposal_delta: revisionDelta(),
     authorization_context_fingerprint: E,
     planning_basis: "fresh",
     model_transport: "chatgpt_hosted",
@@ -204,6 +233,23 @@ function revisedSnapshot(): FoldweaveChatGptReviewV1 {
       authorization_context_fingerprint: B,
       revision_available: false,
       revision_attempts_remaining: 0,
+      latest_proposal_delta: revisionDelta({
+        proposal_revision_before: 1,
+        proposal_revision_after: 2,
+        base_candidate_fingerprint: C,
+        base_preview_fingerprint: D,
+        current_candidate_fingerprint: F,
+        current_preview_fingerprint: ZERO,
+        previous_result_folder_name: "northstar-draft",
+        current_result_folder_name: "northstar-final",
+        entries: [
+          {
+            member_id: B,
+            previous_path: "Delivery/brief.md",
+            current_path: "Client/brief.md",
+          },
+        ],
+      }),
     },
   };
 }
@@ -222,6 +268,21 @@ function revisionFailedSnapshot(): FoldweaveChatGptReviewV1 {
       job_revision: 4,
       authorization_context_fingerprint: B,
       revision_failure: "The proposed replacement did not compile.",
+    },
+  };
+}
+
+function executingSnapshot(): FoldweaveChatGptReviewV1 {
+  return {
+    ...reviewingSnapshot,
+    state_version: 4,
+    preview: reviewingSnapshot.preview,
+    status: {
+      ...reviewingSnapshot.status,
+      lifecycle: "executing",
+      job_revision: 4,
+      revision_available: false,
+      authorization_context_fingerprint: B,
     },
   };
 }
@@ -270,6 +331,16 @@ function durableStatus(
   };
 }
 
+function sameJobRevisingStatus(
+  snapshot: FoldweaveChatGptReviewV1 = reviewingSnapshot,
+): Record<string, unknown> {
+  return {
+    ...durableStatus(snapshot),
+    lifecycle: "revising",
+    job_revision: snapshot.status.job_revision + 1,
+  };
+}
+
 function receiverSnapshot(): FoldweaveChatGptReviewV1 {
   const snapshot = structuredClone(reviewingSnapshot);
   return {
@@ -277,12 +348,15 @@ function receiverSnapshot(): FoldweaveChatGptReviewV1 {
     journey: "apply",
     preview: {
       ...snapshot.preview,
+      proposal_revision: 0,
       proposal_basis: "imported_change_file",
       imported_change_file_fingerprint: B,
       match_report_fingerprint: E,
     },
     status: {
       ...snapshot.status,
+      proposal_revision: 0,
+      latest_proposal_delta: null,
       planning_basis: "none",
       model_transport: "none",
       execution_origin: "capsule_applied",
@@ -320,7 +394,6 @@ function derivativeReview(
       expected_job_revision: 1,
       proposal_revision: 1,
       proposal_basis: "gpt_derivative",
-      match_report_fingerprint: null,
       immediate_parent_candidate_fingerprint:
         parent.preview.compiled_candidate_fingerprint,
       compiled_candidate_fingerprint: F,
@@ -337,8 +410,62 @@ function derivativeReview(
       authorization_context_fingerprint: B,
       planning_basis: "derivative",
       model_transport: "chatgpt_hosted",
-      execution_origin: "none",
+      execution_origin: "gpt_revised_from_change_file",
+      latest_proposal_delta: revisionDelta({
+        job_id: CHILD_JOB_ID,
+        base_candidate_fingerprint: parent.preview.compiled_candidate_fingerprint,
+        base_preview_fingerprint: parent.preview.preview_fingerprint,
+        current_candidate_fingerprint: F,
+        current_preview_fingerprint: ZERO,
+        previous_result_folder_name: "northstar-organized",
+        current_result_folder_name: "northstar-next",
+        entries: [],
+      }),
     },
+  };
+}
+
+function pendingRevisionWidgetState(
+  parent: FoldweaveChatGptReviewV1,
+): Record<string, unknown> {
+  return {
+    schema_version: "foldweave-widget-state.v1",
+    pending_revision: {
+      parent_job_id: parent.status.job_id,
+      parent_job_revision: parent.status.job_revision,
+      parent_candidate_fingerprint:
+        parent.preview.compiled_candidate_fingerprint,
+      parent_preview_fingerprint: parent.preview.preview_fingerprint,
+      source_commitment: parent.preview.source_commitment,
+    },
+  };
+}
+
+function revisionRecovery(
+  parent: FoldweaveChatGptReviewV1,
+  status: Record<string, unknown> | null,
+  instruction: string | null = null,
+): Record<string, unknown> {
+  const revising = status?.lifecycle === "revising";
+  const jobId = typeof status?.job_id === "string" ? status.job_id : null;
+  const jobRevision =
+    typeof status?.job_revision === "number" ? status.job_revision : null;
+  return {
+    schema_version: "foldweave-hosted-revision-recovery.v1",
+    recovery_status: status === null ? "none" : "recovered",
+    parent_job_id: parent.status.job_id,
+    parent_job_revision: parent.status.job_revision,
+    parent_candidate_fingerprint:
+      parent.preview.compiled_candidate_fingerprint,
+    parent_preview_fingerprint: parent.preview.preview_fingerprint,
+    source_commitment: parent.preview.source_commitment,
+    status,
+    revision_instruction: revising ? instruction : null,
+    revision_instruction_fingerprint: revising ? E : null,
+    submit_call_id:
+      revising && jobId !== null && jobRevision !== null
+        ? `revision-submit:${jobId}:${jobRevision}`
+        : null,
   };
 }
 
@@ -350,7 +477,12 @@ function expectNoRawCapability(value: unknown): void {
 
 class FakeBridge implements ChatGptHostBridge {
   readonly calls: Array<{ name: string; argumentsValue: Record<string, unknown> }> = [];
+  readonly modelContexts: Array<{
+    content: string;
+    structuredContent: Record<string, unknown>;
+  }> = [];
   readonly prompts: string[] = [];
+  readonly widgetStates: Record<string, unknown>[] = [];
   private readonly listeners = new Set<(value: unknown) => void>();
   private readonly interruptionListeners = new Set<
     (interruption: HostInterruption) => void
@@ -359,7 +491,10 @@ class FakeBridge implements ChatGptHostBridge {
   callResults: unknown[] = [];
   connectCalls = 0;
 
-  constructor(private readonly initial: unknown = reviewingSnapshot) {}
+  constructor(
+    private readonly initial: unknown = reviewingSnapshot,
+    private widgetState: unknown = null,
+  ) {}
 
   async connect(): Promise<void> {
     this.connectCalls += 1;
@@ -367,6 +502,15 @@ class FakeBridge implements ChatGptHostBridge {
 
   getInitialStructuredContent(): unknown {
     return this.initial;
+  }
+
+  getWidgetState(): unknown {
+    return this.widgetState;
+  }
+
+  async setWidgetState(state: Record<string, unknown>): Promise<void> {
+    this.widgetState = structuredClone(state);
+    this.widgetStates.push(structuredClone(state));
   }
 
   subscribeToolResults(listener: (structuredContent: unknown) => void): () => void {
@@ -386,7 +530,24 @@ class FakeBridge implements ChatGptHostBridge {
     argumentsValue: Record<string, unknown>,
   ): Promise<unknown> {
     this.calls.push({ name, argumentsValue });
-    return this.callResults.length > 0 ? this.callResults.shift() : this.callResult;
+    if (this.callResults.length > 0) {
+      return this.callResults.shift();
+    }
+    if (name === "revise_plan") {
+      return {
+        structuredContent: {
+          ...sameJobRevisingStatus(),
+        },
+      };
+    }
+    return this.callResult;
+  }
+
+  async updateModelContext(
+    content: string,
+    structuredContent: Record<string, unknown>,
+  ): Promise<void> {
+    this.modelContexts.push({ content, structuredContent });
   }
 
   async sendFollowUpMessage(prompt: string): Promise<void> {
@@ -416,13 +577,17 @@ describe("Foldweave ChatGPT review widget", () => {
   it("renders the complete initial structured-content preview", async () => {
     render(<FoldweaveChatGptWidget bridge={new FakeBridge()} />);
 
-    expect(await screen.findByText("Review the weave")).toBeInTheDocument();
+    expect(await screen.findByText("Review structure")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Proposed structure" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
     expect(screen.getByText("Delivery/brief.md", { selector: "h2" })).toBeInTheDocument();
     expect(screen.getByText("No direct API key used")).toBeInTheDocument();
+    const delta = screen.getByRole("status");
+    expect(delta).toHaveTextContent("Changes from previous proposal");
+    expect(delta).toHaveTextContent("Draft/brief.md");
+    expect(delta).toHaveTextContent("Delivery/brief.md");
   });
 
   it("rejects raw per-job capability material at every ChatGPT input boundary", () => {
@@ -464,7 +629,7 @@ describe("Foldweave ChatGPT review widget", () => {
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
 
-    await screen.findByText("Review the weave");
+    await screen.findByText("Review structure");
     expectNoRawCapability(document.documentElement.innerHTML);
     expect(setWidgetState).not.toHaveBeenCalled();
     expect(storageWrite).not.toHaveBeenCalled();
@@ -473,7 +638,7 @@ describe("Foldweave ChatGPT review widget", () => {
     expectNoRawCapability(bridge.calls);
 
     await user.type(
-      screen.getByLabelText("Describe a change to this proposal"),
+      screen.getByLabelText("Change this proposal"),
       "Keep the brief nearby",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
@@ -484,33 +649,424 @@ describe("Foldweave ChatGPT review widget", () => {
     expect(storageWrite).not.toHaveBeenCalled();
   });
 
-  it("sends revisions through the host model loop and keeps execution tools untouched", async () => {
+  it("reserves the exact revision before starting the host model loop", async () => {
     const bridge = new FakeBridge();
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
 
     await user.type(
-      screen.getByLabelText("Describe a change to this proposal"),
+      screen.getByLabelText("Change this proposal"),
       "Keep the brief under Client delivery",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
 
     expect(bridge.prompts).toHaveLength(1);
-    expect(bridge.prompts[0]).toContain("Use the Foldweave host-planning tools");
-    expect(bridge.prompts[0]).toContain(
-      'set every sparse entry evidence_ids exactly to ["initial_inventory"]',
-    );
-    expect(bridge.prompts[0]).toContain(
-      "Do not call evidence tools after revise_plan",
-    );
+    expect(bridge.prompts[0]).toContain("is already reserved");
+    expect(bridge.prompts[0]).toContain("do not call revise_plan again");
+    expect(bridge.prompts[0]).toContain("Call submit_plan_revision once");
+    expect(bridge.prompts[0]).toContain("call_id revision-submit:");
+    expect(bridge.prompts[0]).toContain("folder-host-plan-revision.v1");
+    expect(bridge.prompts[0]).toContain("replacement_target_path");
+    expect(bridge.prompts[0]).toContain("target_path is invalid");
+    expect(bridge.prompts[0]).toContain("replacement_result_folder_name null");
+    expect(bridge.prompts[0]).toContain("revision.entries");
+    expect(bridge.prompts[0]).toContain("Sort revision.entries by file_id");
+    expect(bridge.prompts[0]).toContain("unlisted members remain unchanged");
     expect(bridge.prompts[0]).toContain("Keep the brief under Client delivery");
-    expect(bridge.prompts[0]).toContain(C);
-    expect(bridge.prompts[0]).toContain(D);
-    expect(bridge.calls).toHaveLength(0);
+    expect(bridge.calls).toEqual([
+      {
+        name: "revise_plan",
+        argumentsValue: {
+          job_id: JOB_ID,
+          expected_revision: 3,
+          candidate_fingerprint: C,
+          preview_fingerprint: D,
+          instruction: "Keep the brief under Client delivery",
+          idempotency_key: expect.any(String),
+        },
+      },
+    ]);
+    expect(bridge.modelContexts).toHaveLength(1);
+    expect(bridge.modelContexts[0]?.content).toContain(
+      "already reserved the exact revision job",
+    );
+    expect(bridge.modelContexts[0]?.structuredContent).toMatchObject({
+      schema_version: "foldweave-host-revision-context.v1",
+      revision_job_id: JOB_ID,
+      revision_job_revision: 4,
+      base_candidate_fingerprint: C,
+      base_preview_fingerprint: D,
+      instruction: "Keep the brief under Client delivery",
+      permitted_evidence_ids: ["initial_inventory"],
+      constraints: {
+        submit_tool: "submit_plan_revision",
+        revision_schema_version: "folder-host-plan-revision.v1",
+        base_candidate_fingerprint: C,
+        revision_top_level_fields: [
+          "schema_version",
+          "base_candidate_fingerprint",
+          "replacement_result_folder_name",
+          "entries",
+        ],
+        revision_entry_fields: [
+          "file_id",
+          "replacement_target_path",
+          "rationale",
+          "evidence_ids",
+        ],
+        forbidden_revision_entry_fields: ["target_path"],
+        replacement_result_folder_name_default: null,
+        entries_sorted_by: "file_id",
+        entries_unique_by: "file_id",
+        unlisted_members: "preserved_from_base_candidate",
+        path_only_evidence_ids: ["initial_inventory"],
+        execute: false,
+        accept: false,
+        direct_api: false,
+      },
+    });
+    expect(bridge.modelContexts[0]?.structuredContent.members).toEqual([
+      {
+        file_id: B,
+        member_kind: "regular_file",
+        current_relative_path: "notes/brief.md",
+        proposed_relative_path: "Delivery/brief.md",
+        protected: false,
+      },
+    ]);
     expect(
       screen.getByRole("button", { name: "Accept this structure and create copy" }),
     ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Send changes" })).toBeDisabled();
+  });
+
+  it("clears a stale remount marker only after exact recovery returns no match", async () => {
+    const bridge = new FakeBridge(
+      reviewingSnapshot,
+      pendingRevisionWidgetState(reviewingSnapshot),
+    );
+    bridge.callResults = [
+      { structuredContent: revisionRecovery(reviewingSnapshot, null) },
+    ];
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await waitFor(() => expect(bridge.calls).toHaveLength(1));
+    expect(bridge.calls[0]).toEqual({
+      name: "recover_revision",
+      argumentsValue: {
+        job_id: JOB_ID,
+        parent_job_revision: 3,
+        parent_candidate_fingerprint: C,
+        parent_preview_fingerprint: D,
+        source_commitment: A,
+      },
+    });
+    await waitFor(() =>
+      expect(bridge.widgetStates.at(-1)).toEqual({
+        schema_version: "foldweave-widget-state.v1",
+        pending_revision: null,
+      }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeEnabled();
+    expectNoRawCapability(bridge.calls);
+    expectNoRawCapability(bridge.widgetStates);
+  });
+
+  it("recovers one same-job revision on remount as a manual same-conversation continuation", async () => {
+    const status = sameJobRevisingStatus(reviewingSnapshot);
+    const instruction = "Keep the brief under Client delivery";
+    const recovery = revisionRecovery(reviewingSnapshot, status, instruction);
+    expect(() =>
+      parseHostedRevisionRecovery(recovery, {
+        parent_job_id: JOB_ID,
+        parent_job_revision: 3,
+        parent_candidate_fingerprint: C,
+        parent_preview_fingerprint: D,
+        source_commitment: A,
+      }),
+    ).not.toThrow();
+    const bridge = new FakeBridge(
+      reviewingSnapshot,
+      pendingRevisionWidgetState(reviewingSnapshot),
+    );
+    bridge.callResults = [
+      { structuredContent: recovery },
+      { structuredContent: status },
+    ];
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    expect(
+      await screen.findByRole("button", { name: "Copy continuation" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Check revision status" }),
+    ).toBeEnabled();
+    expect(bridge.calls.map((call) => call.name)).toEqual(["recover_revision"]);
+    expect(bridge.prompts).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+
+    const continuation = screen.getByLabelText("Prepared continuation");
+    const continuationValue = (continuation as HTMLTextAreaElement).value;
+    expect(continuationValue).toContain(`revision-submit:${JOB_ID}:4`);
+    expect(continuationValue).toContain(instruction);
+    expect(continuationValue).toContain("replacement_target_path");
+    expect(continuationValue).toContain("target_path is invalid");
+    await user.click(screen.getByRole("button", { name: "Copy continuation" }));
+    expect(bridge.prompts).toHaveLength(0);
+    await user.click(screen.getByRole("button", { name: "Check revision status" }));
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "recover_revision",
+      "job_status",
+    ]);
+    expect(bridge.prompts).toHaveLength(0);
+    expectNoRawCapability(bridge.calls);
+    expectNoRawCapability(continuationValue);
+  });
+
+  it("recovers one derivative child review and replaces the parent authority on remount", async () => {
+    const parent = receiverSnapshot();
+    const child = derivativeReview(parent);
+    const childStatus = durableStatus(child);
+    const bridge = new FakeBridge(parent, pendingRevisionWidgetState(parent));
+    bridge.callResults = [
+      { structuredContent: revisionRecovery(parent, childStatus) },
+      { structuredContent: child },
+    ];
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await waitFor(() => expect(bridge.calls).toHaveLength(2));
+    expect(bridge.calls[0]?.name).toBe("recover_revision");
+    expect(bridge.calls[1]).toEqual({
+      name: "get_plan_preview",
+      argumentsValue: {
+        job_id: CHILD_JOB_ID,
+        expected_revision: 1,
+        preview_fingerprint: ZERO,
+      },
+    });
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeEnabled();
+    await waitFor(() =>
+      expect(bridge.widgetStates.at(-1)).toEqual({
+        schema_version: "foldweave-widget-state.v1",
+        pending_revision: null,
+      }),
+    );
+    expectNoRawCapability(bridge.calls);
+    expectNoRawCapability(bridge.widgetStates);
+  });
+
+  it.each([
+    ["revision_failed", revisionFailedSnapshot(), "Keep previous proposal"],
+    ["executing", executingSnapshot(), "Creating copy"],
+    ["verified", verifiedSnapshot(), "Your new folder is ready"],
+  ])(
+    "reconciles a recovered %s state from its exact preview on remount",
+    async (_lifecycle, recoveredSnapshot, visibleLabel) => {
+      const bridge = new FakeBridge(
+        reviewingSnapshot,
+        pendingRevisionWidgetState(reviewingSnapshot),
+      );
+      bridge.callResults = [
+        {
+          structuredContent: revisionRecovery(
+            reviewingSnapshot,
+            durableStatus(recoveredSnapshot),
+          ),
+        },
+        { structuredContent: recoveredSnapshot },
+      ];
+      render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+      await waitFor(() => expect(bridge.calls).toHaveLength(2));
+      if (visibleLabel === "Keep previous proposal") {
+        expect(
+          screen.getByRole("button", { name: visibleLabel }),
+        ).toBeInTheDocument();
+      } else {
+        expect(await screen.findByText(visibleLabel)).toBeInTheDocument();
+      }
+      expect(bridge.calls[0]?.name).toBe("recover_revision");
+      expect(bridge.calls[1]?.name).toBe("get_plan_preview");
+      expect(
+        screen.queryByText(/blocked invalid saved revision state/i),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it("blocks an ambiguous remount recovery instead of selecting a child", async () => {
+    const bridge = new FakeBridge(
+      receiverSnapshot(),
+      pendingRevisionWidgetState(receiverSnapshot()),
+    );
+    vi.spyOn(bridge, "callTool").mockRejectedValueOnce(
+      new Error(
+        "Foldweave found more than one explicit revision fork for this review.",
+      ),
+    );
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    expect(
+      await screen.findByText(/more than one explicit revision fork/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+    expect(bridge.prompts).toHaveLength(0);
+  });
+
+  it("preserves the reservation and withholds the host message when context delivery fails", async () => {
+    const bridge = new FakeBridge();
+    bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: sameJobRevisingStatus() },
+    ];
+    vi.spyOn(bridge, "updateModelContext").mockRejectedValueOnce(
+      new Error("model context unavailable"),
+    );
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+
+    expect(bridge.calls.map((call) => call.name)).toEqual(["revise_plan"]);
+    expect(bridge.prompts).toHaveLength(0);
+    expect(
+      await screen.findByRole("button", { name: "Copy continuation" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+
+    const continuationValue = (
+      screen.getByLabelText("Prepared continuation") as HTMLTextAreaElement
+    ).value;
+    expect(continuationValue).toContain(`Foldweave revision job ${JOB_ID}`);
+    expect(continuationValue).toContain("revision-submit:");
+    await user.click(screen.getByRole("button", { name: "Copy continuation" }));
+    expect(bridge.prompts).toHaveLength(0);
+    await user.click(screen.getByRole("button", { name: "Check revision status" }));
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "revise_plan",
+      "job_status",
+    ]);
+    expect(bridge.prompts).toHaveLength(0);
+  });
+
+  it("keeps the in-memory continuation usable when host widget persistence fails", async () => {
+    const bridge = new FakeBridge();
+    bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: sameJobRevisingStatus() },
+    ];
+    vi.spyOn(bridge, "setWidgetState").mockRejectedValueOnce(
+      new Error("widget state unavailable"),
+    );
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Copy continuation" }),
+    ).toBeEnabled();
+    expect(bridge.prompts).toHaveLength(0);
+    await user.click(screen.getByRole("button", { name: "Copy continuation" }));
+    expect(bridge.prompts).toHaveLength(0);
+    await user.click(screen.getByRole("button", { name: "Check revision status" }));
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "revise_plan",
+      "job_status",
+    ]);
+    expect(bridge.prompts).toHaveLength(0);
+  });
+
+  it("does not resend a reserved revision after a host-message failure", async () => {
+    const bridge = new FakeBridge();
+    bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: sameJobRevisingStatus() },
+    ];
+    vi.spyOn(bridge, "sendFollowUpMessage").mockImplementation(
+      async (prompt: string) => {
+        bridge.prompts.push(prompt);
+        if (bridge.prompts.length === 1) {
+          throw new Error("host message unavailable");
+        }
+      },
+    );
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Copy continuation" }),
+    ).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Copy continuation" }));
+    await user.click(screen.getByRole("button", { name: "Check revision status" }));
+
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "revise_plan",
+      "job_status",
+    ]);
+    expect(bridge.prompts).toHaveLength(1);
+    expect(bridge.modelContexts).toHaveLength(1);
+  });
+
+  it("reconciles a completed revision without resending an ambiguous host message", async () => {
+    const bridge = new FakeBridge();
+    const revised = revisedSnapshot();
+    bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: durableStatus(revised) },
+      { structuredContent: revised },
+    ];
+    vi.spyOn(bridge, "sendFollowUpMessage").mockImplementation(
+      async (prompt: string) => {
+        bridge.prompts.push(prompt);
+        throw new Error("ambiguous host timeout");
+      },
+    );
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief with the client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Check revision status" }),
+    );
+
+    expect(
+      await screen.findByText("Client/brief.md", { selector: "h2" }),
+    ).toBeInTheDocument();
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "revise_plan",
+      "job_status",
+      "get_plan_preview",
+    ]);
+    expect(bridge.prompts).toHaveLength(1);
   });
 
   it("dispatches only one host turn for two same-tick revision clicks", async () => {
@@ -529,7 +1085,7 @@ describe("Foldweave ChatGPT review widget", () => {
     render(<FoldweaveChatGptWidget bridge={bridge} />);
 
     await user.type(
-      screen.getByLabelText("Describe a change to this proposal"),
+      screen.getByLabelText("Change this proposal"),
       "Keep the brief under Client delivery",
     );
     const send = screen.getByRole("button", { name: "Send changes" });
@@ -543,6 +1099,91 @@ describe("Foldweave ChatGPT review widget", () => {
     expect(bridge.prompts).toHaveLength(1);
     releaseFollowUp?.();
     await act(async () => pendingFollowUp);
+  });
+
+  it("shows durable same-job hosted revision progress", async () => {
+    const bridge = new FakeBridge();
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={5_000} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+    act(() =>
+      bridge.emitRaw({
+        ...durableStatus(reviewingSnapshot),
+        lifecycle: "revising",
+        job_revision: 4,
+      }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Follow-up accepted. Waiting for ChatGPT to return a revised structure…",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+  });
+
+  it("preserves truthful GPT-planned provenance while reserving a same-job revision", async () => {
+    const plannedSnapshot = structuredClone(reviewingSnapshot);
+    plannedSnapshot.status.execution_origin = "gpt_planned";
+    const bridge = new FakeBridge(plannedSnapshot);
+    bridge.callResults = [
+      {
+        structuredContent: {
+          ...durableStatus(plannedSnapshot),
+          lifecycle: "revising",
+          job_revision: plannedSnapshot.status.job_revision + 1,
+        },
+      },
+    ];
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={5_000} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+
+    expect(
+      await screen.findByText(
+        "Follow-up accepted. Waiting for ChatGPT to return a revised structure…",
+      ),
+    ).toBeInTheDocument();
+    expect(bridge.prompts).toHaveLength(1);
+  });
+
+  it("rejects same-job revision progress that is not bound to the visible preview", async () => {
+    const bridge = new FakeBridge();
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={5_000} />);
+
+    await user.type(
+      screen.getByLabelText("Change this proposal"),
+      "Keep the brief under Client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+    act(() =>
+      bridge.emitRaw({
+        ...durableStatus(reviewingSnapshot),
+        lifecycle: "revising",
+        job_revision: 4,
+        candidate_fingerprint: ZERO,
+      }),
+    );
+
+    expect(
+      await screen.findByText(/invalid hosted revision response/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
   });
 
   it("calls exact acceptance without emitting a local path or credential", async () => {
@@ -585,7 +1226,7 @@ describe("Foldweave ChatGPT review widget", () => {
     expect(JSON.stringify(bridge.calls[0]?.argumentsValue)).not.toMatch(
       /(?:\/Users\/|sk-(?:proj-)?)/,
     );
-    expect(await screen.findByText("Creating the separate copy")).toBeInTheDocument();
+    expect(await screen.findByText("Creating copy")).toBeInTheDocument();
   });
 
   it("keeps the previous proposal without caller-supplied profile metadata", async () => {
@@ -669,11 +1310,68 @@ describe("Foldweave ChatGPT review widget", () => {
     expectNoRawCapability(bridge.calls);
   });
 
+  it("refreshes the same-mounted derivative child instead of recovering its parent", async () => {
+    const parent = receiverSnapshot();
+    const child = derivativeReview(parent);
+    const bridge = new FakeBridge(parent);
+    bridge.callResults = [
+      { structuredContent: derivativePendingStatus(parent) },
+      { structuredContent: durableStatus(child) },
+      { structuredContent: child },
+    ];
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} />);
+
+    await user.type(
+      await screen.findByLabelText("Change this proposal"),
+      "Use this shared structure as the next proposal",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() =>
+      expect(bridge.calls.map((call) => call.name)).toEqual([
+        "revise_plan",
+        "job_status",
+        "get_plan_preview",
+      ]),
+    );
+    expect(bridge.calls).not.toContainEqual(
+      expect.objectContaining({ name: "recover_revision" }),
+    );
+    expect(bridge.calls.filter((call) => call.name === "revise_plan")).toHaveLength(1);
+    expect(bridge.prompts).toHaveLength(1);
+    expect(bridge.calls[1]?.argumentsValue).toEqual({ job_id: CHILD_JOB_ID });
+    expect(bridge.calls[2]?.argumentsValue).toEqual({
+      job_id: CHILD_JOB_ID,
+      expected_revision: 1,
+      preview_fingerprint: ZERO,
+    });
+    expect(
+      await screen.findByRole("button", {
+        name: "Accept this structure and create copy",
+      }),
+    ).toBeEnabled();
+    await waitFor(() =>
+      expect(bridge.widgetStates.at(-1)).toEqual({
+        schema_version: "foldweave-widget-state.v1",
+        pending_revision: null,
+      }),
+    );
+    expectNoRawCapability(bridge.calls);
+    expectNoRawCapability(bridge.widgetStates);
+  });
+
   it("atomically replaces parent job authority with one bound derivative child", async () => {
     const parent = receiverSnapshot();
     const child = derivativeReview(parent);
     expect(() => parseHostedJobStatus(derivativePendingStatus(parent))).not.toThrow();
     expect(() => parseHostedReviewEnvelope(child)).not.toThrow();
+    expect(child.preview).toMatchObject({
+      proposal_basis: "gpt_derivative",
+      imported_change_file_fingerprint: B,
+      match_report_fingerprint: E,
+    });
     const executingChild = {
       ...child,
       state_version: 2,
@@ -685,16 +1383,23 @@ describe("Foldweave ChatGPT review widget", () => {
       },
     };
     const bridge = new FakeBridge(parent);
-    bridge.callResult = { structuredContent: executingChild };
+    bridge.callResults = [
+      { structuredContent: derivativePendingStatus(parent) },
+      { structuredContent: executingChild },
+    ];
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
 
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
       "Use this shared structure as the next proposal",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
-    act(() => bridge.emitRaw(derivativePendingStatus(parent)));
+    expect(
+      await screen.findByText(
+        "Follow-up accepted. Waiting for ChatGPT to return a revised structure…",
+      ),
+    ).toBeInTheDocument();
     act(() => bridge.emitRaw(child));
 
     await user.click(
@@ -703,16 +1408,17 @@ describe("Foldweave ChatGPT review widget", () => {
       }),
     );
 
-    expect(bridge.calls).toHaveLength(1);
-    expect(bridge.calls[0]?.name).toBe("accept_plan_and_create_copy");
-    expect(bridge.calls[0]?.argumentsValue).toMatchObject({
+    expect(bridge.calls).toHaveLength(2);
+    expect(bridge.calls[0]?.name).toBe("revise_plan");
+    expect(bridge.calls[1]?.name).toBe("accept_plan_and_create_copy");
+    expect(bridge.calls[1]?.argumentsValue).toMatchObject({
       job_id: CHILD_JOB_ID,
       expected_revision: 1,
       candidate_fingerprint: F,
       preview_fingerprint: ZERO,
     });
-    expectNoRawCapability(bridge.calls[0]?.argumentsValue);
-    expect(await screen.findByText("Creating the separate copy")).toBeInTheDocument();
+    expectNoRawCapability(bridge.calls[1]?.argumentsValue);
+    expect(await screen.findByText("Creating copy")).toBeInTheDocument();
   });
 
   it("rejects a derivative child that is not bound to the visible parent candidate", async () => {
@@ -720,15 +1426,17 @@ describe("Foldweave ChatGPT review widget", () => {
     const child = derivativeReview(parent);
     child.preview.immediate_parent_candidate_fingerprint = ZERO;
     const bridge = new FakeBridge(parent);
+    bridge.callResults = [
+      { structuredContent: derivativePendingStatus(parent) },
+    ];
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
 
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
       "Try a derivative structure",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
-    act(() => bridge.emitRaw(derivativePendingStatus(parent)));
     act(() => bridge.emitRaw(child));
 
     expect(
@@ -737,7 +1445,8 @@ describe("Foldweave ChatGPT review widget", () => {
     expect(
       screen.getByRole("button", { name: "Accept this structure and create copy" }),
     ).toBeDisabled();
-    expect(bridge.calls).toHaveLength(0);
+    expect(bridge.calls).toHaveLength(1);
+    expect(bridge.calls[0]?.name).toBe("revise_plan");
   });
 
   it("invokes source-free verification from the verified state", async () => {
@@ -840,37 +1549,53 @@ describe("Foldweave ChatGPT review widget", () => {
   it("reconciles a same-version job after a host revision produces no tool call", async () => {
     const bridge = new FakeBridge();
     bridge.callResults = [
-      { structuredContent: durableStatus(reviewingSnapshot) },
-      { structuredContent: reviewingSnapshot },
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: sameJobRevisingStatus() },
     ];
     const user = userEvent.setup();
-    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={10} />);
+    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={25} />);
 
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
       "Keep the brief nearby",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
 
     await waitFor(() =>
       expect(bridge.calls.map((call) => call.name)).toEqual([
+        "revise_plan",
         "job_status",
-        "get_plan_preview",
       ]),
     );
     expect(
-      screen.getByRole("button", { name: "Accept this structure and create copy" }),
-    ).toBeEnabled();
+      await screen.findByText(
+        /revision is safely reserved, but ChatGPT has not submitted/i,
+      ),
+    ).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Describe a change to this proposal"),
+      screen.getByRole("button", { name: "Accept this structure and create copy" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByLabelText("Change this proposal"),
     ).toHaveValue("Keep the brief nearby");
-    expect(screen.getByRole("button", { name: "Send changes" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Send changes" })).toBeDisabled();
+    const firstPrompt = bridge.prompts[0];
+    expect(screen.getByLabelText("Prepared continuation")).toHaveValue(firstPrompt);
+    await user.click(screen.getByRole("button", { name: "Copy continuation" }));
+    expect(bridge.prompts).toHaveLength(1);
+    expect(bridge.prompts[0]).toBe(firstPrompt);
+    await user.click(screen.getByRole("button", { name: "Check revision status" }));
+    expect(bridge.prompts).toHaveLength(1);
+    expect(bridge.calls.filter((call) => call.name === "revise_plan")).toHaveLength(1);
+    expect(bridge.calls.filter((call) => call.name === "job_status")).toHaveLength(2);
   });
 
   it("recovers a newer durable preview when its host notification is missing", async () => {
     const bridge = new FakeBridge();
     const revised = revisedSnapshot();
     bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
       { structuredContent: durableStatus(revised) },
       { structuredContent: revised },
     ];
@@ -878,7 +1603,7 @@ describe("Foldweave ChatGPT review widget", () => {
     render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={10} />);
 
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
       "Keep the brief with the client delivery",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
@@ -886,26 +1611,57 @@ describe("Foldweave ChatGPT review widget", () => {
     expect(
       await screen.findByText("Client/brief.md", { selector: "h2" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/1 mapping changed from the previous proposal/i)).toBeInTheDocument();
+    expect(screen.getByText("1 path changed.")).toBeInTheDocument();
   });
 
-  it("reconciles the durable preview after the host cancels a revision", async () => {
+  it("fetches the exact preview after the host submits a bound revision status", async () => {
     const bridge = new FakeBridge();
+    const revised = revisedSnapshot();
     bridge.callResults = [
-      { structuredContent: durableStatus(reviewingSnapshot) },
-      { structuredContent: reviewingSnapshot },
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: durableStatus(revised) },
+      { structuredContent: revised },
     ];
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={5_000} />);
 
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
+      "Keep the brief with the client delivery",
+    );
+    await user.click(screen.getByRole("button", { name: "Send changes" }));
+    act(() => bridge.emitRaw(durableStatus(revised)));
+
+    expect(
+      await screen.findByText("Client/brief.md", { selector: "h2" }),
+    ).toBeInTheDocument();
+    expect(bridge.calls.map((call) => call.name)).toEqual([
+      "revise_plan",
+      "job_status",
+      "get_plan_preview",
+    ]);
+  });
+
+  it("reconciles the durable preview after the host cancels a revision", async () => {
+    const bridge = new FakeBridge();
+    const revised = revisedSnapshot();
+    bridge.callResults = [
+      { structuredContent: sameJobRevisingStatus() },
+      { structuredContent: durableStatus(revised) },
+      { structuredContent: revised },
+    ];
+    const user = userEvent.setup();
+    render(<FoldweaveChatGptWidget bridge={bridge} hostRecoveryMs={5_000} />);
+
+    await user.type(
+      await screen.findByLabelText("Change this proposal"),
       "Try another grouping",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
     bridge.interrupt("tool_cancelled");
 
     await waitFor(() => expect(bridge.calls.at(-1)?.name).toBe("get_plan_preview"));
+    expect(await screen.findByText("Client/brief.md", { selector: "h2" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Accept this structure and create copy" }),
     ).toBeEnabled();
@@ -915,7 +1671,7 @@ describe("Foldweave ChatGPT review widget", () => {
     const bridge = new FakeBridge();
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
-    await screen.findByText("Review the weave");
+    await screen.findByText("Review structure");
 
     bridge.emitRaw({
       ...reviewingSnapshot,
@@ -942,10 +1698,11 @@ describe("Foldweave ChatGPT review widget", () => {
   it("quarantines a complete snapshot belonging to a different job", async () => {
     const bridge = new FakeBridge();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
-    await screen.findByText("Review the weave");
+    await screen.findByText("Review structure");
     const otherJob = structuredClone(reviewingSnapshot);
     otherJob.preview.job_id = "2".repeat(32);
     otherJob.status.job_id = "2".repeat(32);
+    otherJob.status.latest_proposal_delta!.job_id = "2".repeat(32);
 
     bridge.emitRaw(otherJob);
 
@@ -958,7 +1715,7 @@ describe("Foldweave ChatGPT review widget", () => {
   it("quarantines an invalid newer preview instead of leaving old actions active", async () => {
     const bridge = new FakeBridge();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
-    await screen.findByText("Review the weave");
+    await screen.findByText("Review structure");
     const invalid = structuredClone(reviewingSnapshot);
     invalid.state_version = 4;
     invalid.status.job_revision = 4;
@@ -1009,6 +1766,37 @@ describe("Foldweave ChatGPT review widget", () => {
     delete (incomplete.preview as Record<string, unknown>).blocker_findings;
     expect(() => parseHostedReviewEnvelope(incomplete)).toThrow(
       "incomplete preview contract",
+    );
+  });
+
+  it("rejects a missing, malformed, or mismatched hosted proposal delta", () => {
+    const missing = structuredClone(reviewingSnapshot) as unknown as Record<
+      string,
+      unknown
+    >;
+    delete (missing.status as Record<string, unknown>).latest_proposal_delta;
+    expect(() => parseHostedReviewEnvelope(missing)).toThrow(
+      "invalid proposal delta",
+    );
+
+    const mismatched = structuredClone(reviewingSnapshot);
+    mismatched.status.latest_proposal_delta = revisionDelta({
+      current_candidate_fingerprint: ZERO,
+    });
+    expect(() => parseHostedReviewEnvelope(mismatched)).toThrow(
+      "does not match the durable review",
+    );
+
+    const unexpectedField = structuredClone(reviewingSnapshot) as unknown as Record<
+      string,
+      unknown
+    >;
+    (
+      (unexpectedField.status as Record<string, unknown>)
+        .latest_proposal_delta as Record<string, unknown>
+    ).untrusted_note = "ignore me";
+    expect(() => parseHostedReviewEnvelope(unexpectedField)).toThrow(
+      "does not match the durable review",
     );
   });
 
@@ -1119,7 +1907,7 @@ describe("Foldweave ChatGPT review widget", () => {
       string,
       unknown
     >;
-    unsafeSnapshot.api_key = "sk-proj-not-allowed";
+    unsafeSnapshot.api_key = ["sk", "proj", "not-allowed"].join("-");
     expect(() => parseHostedReviewEnvelope(unsafeSnapshot)).toThrow(
       "credential field",
     );
@@ -1128,7 +1916,7 @@ describe("Foldweave ChatGPT review widget", () => {
     const user = userEvent.setup();
     render(<FoldweaveChatGptWidget bridge={bridge} />);
     await user.type(
-      await screen.findByLabelText("Describe a change to this proposal"),
+      await screen.findByLabelText("Change this proposal"),
       "/Users/example/private should move",
     );
     await user.click(screen.getByRole("button", { name: "Send changes" }));
@@ -1238,7 +2026,7 @@ describe("MCP Apps host bridge", () => {
     expect(screen.queryByText(/valid durable hosted status/i)).not.toBeInTheDocument();
   });
 
-  it("initializes JSON-RPC, calls tools, receives results, and notifies ui/message", async () => {
+  it("initializes JSON-RPC, calls tools, updates model context, and requests ui/message", async () => {
     const postMessage = vi.spyOn(window.parent, "postMessage").mockImplementation(() => undefined);
     const bridge = new McpAppsHostBridge(window, 2_000);
     const received: unknown[] = [];
@@ -1279,8 +2067,36 @@ describe("MCP Apps host bridge", () => {
     });
     expect(received).toEqual([verifiedSnapshot()]);
 
-    await bridge.sendFollowUpMessage("Revise this proposal.");
+    const contextPromise = bridge.updateModelContext(
+      "A Foldweave revision is reserved.",
+      {
+        schema_version: "foldweave-host-revision-context.v1",
+        revision_job_id: JOB_ID,
+      },
+    );
     await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(4));
+    const contextUpdate = postMessage.mock.calls.at(-1)?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(contextUpdate).toMatchObject({
+      method: "ui/update-model-context",
+      params: {
+        content: [
+          { type: "text", text: "A Foldweave revision is reserved." },
+        ],
+        structuredContent: {
+          schema_version: "foldweave-host-revision-context.v1",
+          revision_job_id: JOB_ID,
+        },
+      },
+    });
+    expect(contextUpdate).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: contextUpdate.id, result: {} });
+    await expect(contextPromise).resolves.toBeUndefined();
+
+    const followUpPromise = bridge.sendFollowUpMessage("Revise this proposal.");
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(5));
     const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<string, unknown>;
     expect(followUp).toMatchObject({
       method: "ui/message",
@@ -1289,7 +2105,9 @@ describe("MCP Apps host bridge", () => {
         content: [{ type: "text", text: "Revise this proposal." }],
       },
     });
-    expect(followUp).not.toHaveProperty("id");
+    expect(followUp).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: {} });
+    await expect(followUpPromise).resolves.toBeUndefined();
     bridge.dispose();
   });
 
@@ -1309,7 +2127,7 @@ describe("MCP Apps host bridge", () => {
     });
     await connectPromise;
 
-    await bridge.sendFollowUpMessage("Revise this proposal.");
+    const followUpPromise = bridge.sendFollowUpMessage("Revise this proposal.");
     await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(3));
     const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<string, unknown>;
     expect(followUp).toMatchObject({
@@ -1319,7 +2137,41 @@ describe("MCP Apps host bridge", () => {
         content: [{ type: "text", text: "Revise this proposal." }],
       },
     });
-    expect(followUp).not.toHaveProperty("id");
+    expect(followUp).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: {} });
+    await expect(followUpPromise).resolves.toBeUndefined();
+    bridge.dispose();
+  });
+
+  it("reinitializes the standard bridge after an earlier initialization timeout", async () => {
+    const postMessage = vi
+      .spyOn(window.parent, "postMessage")
+      .mockImplementation(() => undefined);
+    const bridge = new McpAppsHostBridge(window, 100);
+
+    await expect(bridge.connect()).rejects.toThrow(/did not answer/i);
+    expect(postMessage).toHaveBeenCalledTimes(1);
+
+    const contextPromise = bridge.updateModelContext("Reserved revision", {
+      schema_version: "foldweave-host-revision-context.v1",
+      revision_job_id: JOB_ID,
+    });
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(2));
+    const retryInitialize = postMessage.mock.calls[1]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(retryInitialize.method).toBe("ui/initialize");
+    dispatchRpc({ jsonrpc: "2.0", id: retryInitialize.id, result: {} });
+
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(4));
+    const contextUpdate = postMessage.mock.calls[3]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(contextUpdate.method).toBe("ui/update-model-context");
+    dispatchRpc({ jsonrpc: "2.0", id: contextUpdate.id, result: {} });
+    await expect(contextPromise).resolves.toBeUndefined();
     bridge.dispose();
   });
 
@@ -1352,7 +2204,7 @@ describe("MCP Apps host bridge", () => {
     bridge.dispose();
   });
 
-  it("keeps tools/call standard while preferring the ChatGPT follow-up extension", async () => {
+  it("keeps tools and follow-up messages on an initialized standard bridge", async () => {
     const postMessage = vi
       .spyOn(window.parent, "postMessage")
       .mockImplementation(() => undefined);
@@ -1379,25 +2231,36 @@ describe("MCP Apps host bridge", () => {
       structuredContent: reviewingSnapshot,
     });
 
-    await bridge.sendFollowUpMessage("Revise this proposal.");
-    expect(sendFollowUpMessage).toHaveBeenCalledOnce();
-    expect(sendFollowUpMessage).toHaveBeenCalledWith({
-      prompt: "Revise this proposal.",
-      scrollToBottom: true,
-    });
-    expect(postMessage).toHaveBeenCalledTimes(3);
+    const followUpPromise = bridge.sendFollowUpMessage("Revise this proposal.");
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(4));
+    const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(followUp).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: {} });
+    await expect(followUpPromise).resolves.toBeUndefined();
 
     expect(callTool).not.toHaveBeenCalled();
+    expect(sendFollowUpMessage).not.toHaveBeenCalled();
+    expect(postMessage).toHaveBeenCalledTimes(4);
+    expect(postMessage.mock.calls.at(-1)?.[0]).toMatchObject({
+      method: "ui/message",
+      params: {
+        role: "user",
+        content: [{ type: "text", text: "Revise this proposal." }],
+      },
+    });
     bridge.dispose();
   });
 
-  it("uses the ChatGPT follow-up extension without initializing the standard bridge", async () => {
+  it("uses the ChatGPT follow-up extension only when standard initialization is unavailable", async () => {
     const postMessage = vi
       .spyOn(window.parent, "postMessage")
       .mockImplementation(() => undefined);
     const sendFollowUpMessage = vi.fn(async () => undefined);
     window.openai = { sendFollowUpMessage };
-    const bridge = new McpAppsHostBridge(window, 2_000);
+    const bridge = new McpAppsHostBridge(window, 20);
 
     await bridge.sendFollowUpMessage("Revise this proposal.");
 
@@ -1405,11 +2268,14 @@ describe("MCP Apps host bridge", () => {
       prompt: "Revise this proposal.",
       scrollToBottom: true,
     });
-    expect(postMessage).not.toHaveBeenCalled();
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage.mock.calls[0]?.[0]).toMatchObject({
+      method: "ui/initialize",
+    });
     bridge.dispose();
   });
 
-  it("uses a ChatGPT follow-up extension that appears during standard initialization", async () => {
+  it("uses the standard bridge when a ChatGPT extension appears during initialization", async () => {
     const postMessage = vi
       .spyOn(window.parent, "postMessage")
       .mockImplementation(() => undefined);
@@ -1421,23 +2287,84 @@ describe("MCP Apps host bridge", () => {
     const initialize = postMessage.mock.calls[0]?.[0] as Record<string, unknown>;
     window.openai = { sendFollowUpMessage };
     dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: { hostCapabilities: {} } });
-    await followUpPromise;
-
-    expect(sendFollowUpMessage).toHaveBeenCalledOnce();
-    expect(sendFollowUpMessage).toHaveBeenCalledWith({
-      prompt: "Revise this proposal.",
-      scrollToBottom: true,
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(3));
+    const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(followUp).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: {} });
+    await expect(followUpPromise).resolves.toBeUndefined();
+    expect(sendFollowUpMessage).not.toHaveBeenCalled();
+    expect(postMessage).toHaveBeenCalledTimes(3);
+    expect(postMessage.mock.calls.at(-1)?.[0]).toMatchObject({
+      method: "ui/message",
+      params: {
+        role: "user",
+        content: [{ type: "text", text: "Revise this proposal." }],
+      },
     });
-    expect(
-      postMessage.mock.calls.some(
-        ([message]) =>
-          (message as Record<string, unknown>).method === "ui/message",
-      ),
-    ).toBe(false);
     bridge.dispose();
   });
 
-  it("never sends ui/message after the ChatGPT follow-up extension succeeds", async () => {
+  it("sends one acknowledged standard request when the ChatGPT extension is absent", async () => {
+    const postMessage = vi
+      .spyOn(window.parent, "postMessage")
+      .mockImplementation(() => undefined);
+    const bridge = new McpAppsHostBridge(window, 2_000);
+
+    const connectPromise = bridge.connect();
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
+    const initialize = postMessage.mock.calls[0]?.[0] as Record<string, unknown>;
+    dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: { hostCapabilities: {} } });
+    await connectPromise;
+
+    const followUpPromise = bridge.sendFollowUpMessage("Revise this proposal.");
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(3));
+    const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+    expect(followUp).toMatchObject({
+      method: "ui/message",
+      params: {
+        role: "user",
+        content: [{ type: "text", text: "Revise this proposal." }],
+      },
+    });
+    expect(followUp).toHaveProperty("id");
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: {} });
+    await expect(followUpPromise).resolves.toBeUndefined();
+    expect(
+      postMessage.mock.calls.filter(
+        ([message]) =>
+          (message as Record<string, unknown>).method === "ui/message",
+      ),
+    ).toHaveLength(1);
+    bridge.dispose();
+  });
+
+  it("rejects a standard follow-up result marked as an error", async () => {
+    const postMessage = vi
+      .spyOn(window.parent, "postMessage")
+      .mockImplementation(() => undefined);
+    const bridge = new McpAppsHostBridge(window, 2_000);
+
+    const connectPromise = bridge.connect();
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
+    const initialize = postMessage.mock.calls[0]?.[0] as Record<string, unknown>;
+    dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: {} });
+    await connectPromise;
+
+    const followUpPromise = bridge.sendFollowUpMessage("Revise this proposal.");
+    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(3));
+    const followUp = postMessage.mock.calls.at(-1)?.[0] as Record<
+      string,
+      unknown
+    >;
+    dispatchRpc({ jsonrpc: "2.0", id: followUp.id, result: { isError: true } });
+    await expect(followUpPromise).rejects.toThrow(/rejected the follow-up/i);
+    bridge.dispose();
+  });
+
+  it("does not cross-dispatch after a standard follow-up timeout", async () => {
     const postMessage = vi
       .spyOn(window.parent, "postMessage")
       .mockImplementation(() => undefined);
@@ -1448,22 +2375,23 @@ describe("MCP Apps host bridge", () => {
     const connectPromise = bridge.connect();
     await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
     const initialize = postMessage.mock.calls[0]?.[0] as Record<string, unknown>;
-    dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: { hostCapabilities: {} } });
+    dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: {} });
     await connectPromise;
 
-    await bridge.sendFollowUpMessage("Revise this proposal.");
-    expect(sendFollowUpMessage).toHaveBeenCalledOnce();
-    expect(postMessage).toHaveBeenCalledTimes(2);
+    await expect(
+      bridge.sendFollowUpMessage("Revise this proposal."),
+    ).rejects.toThrow(/did not answer/i);
+    expect(sendFollowUpMessage).not.toHaveBeenCalled();
     expect(
-      postMessage.mock.calls.some(
+      postMessage.mock.calls.filter(
         ([message]) =>
           (message as Record<string, unknown>).method === "ui/message",
       ),
-    ).toBe(false);
+    ).toHaveLength(1);
     bridge.dispose();
   });
 
-  it("does not retry through ui/message when the ChatGPT extension rejects", async () => {
+  it("does not cross-dispatch when the fallback ChatGPT extension rejects", async () => {
     const postMessage = vi
       .spyOn(window.parent, "postMessage")
       .mockImplementation(() => undefined);
@@ -1472,19 +2400,16 @@ describe("MCP Apps host bridge", () => {
       throw rejection;
     });
     window.openai = { sendFollowUpMessage };
-    const bridge = new McpAppsHostBridge(window, 2_000);
-
-    const connectPromise = bridge.connect();
-    await waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
-    const initialize = postMessage.mock.calls[0]?.[0] as Record<string, unknown>;
-    dispatchRpc({ jsonrpc: "2.0", id: initialize.id, result: { hostCapabilities: {} } });
-    await connectPromise;
+    const bridge = new McpAppsHostBridge(window, 20);
 
     await expect(
       bridge.sendFollowUpMessage("Revise this proposal."),
     ).rejects.toBe(rejection);
     expect(sendFollowUpMessage).toHaveBeenCalledOnce();
-    expect(postMessage).toHaveBeenCalledTimes(2);
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage.mock.calls[0]?.[0]).toMatchObject({
+      method: "ui/initialize",
+    });
     expect(
       postMessage.mock.calls.some(
         ([message]) =>

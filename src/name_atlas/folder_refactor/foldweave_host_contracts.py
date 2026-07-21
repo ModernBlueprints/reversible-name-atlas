@@ -54,6 +54,21 @@ class FolderHostPlanRevisionEntryV1(StrictFrozenModel):
         return self
 
 
+class FolderHostCompactPlanEntryV1(StrictFrozenModel):
+    """One minimal host-supplied source-path-to-target mapping."""
+
+    relative_path: str = Field(
+        min_length=1,
+        max_length=4_096,
+        description=(
+            "Exact origin-relative_path from the hosted job inventory. Foldweave "
+            "resolves it against the immutable durable inventory and derives the "
+            "authoritative file_id locally."
+        ),
+    )
+    proposed_target: str = Field(min_length=1, max_length=1_024)
+
+
 class FolderHostPlanRevisionV1(StrictFrozenModel):
     """Strict sparse host output bound to one visible candidate."""
 
@@ -792,6 +807,7 @@ def host_contract_freeze_fingerprint() -> str:
                 "read_text_excerpt",
                 "inspect_markdown_links",
                 "submit_plan",
+                "submit_compact_plan",
                 "request_clarification",
                 "answer_clarification",
                 "get_plan_preview",
@@ -803,6 +819,9 @@ def host_contract_freeze_fingerprint() -> str:
                 "verify_result",
             ),
             "schemas": {
+                "compact_plan_entry": (
+                    FolderHostCompactPlanEntryV1.model_json_schema()
+                ),
                 "planning_state": FolderHostPlanningStateV1.model_json_schema(),
                 "initial_ledger": FolderHostEvidenceLedgerV1.model_json_schema(),
                 "pending_revision": FolderHostPendingRevisionV1.model_json_schema(),

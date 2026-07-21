@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
 import fcntl
 import hashlib
 import os
+import re
+import secrets
 import stat
 import uuid
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal, Protocol
 from zoneinfo import ZoneInfo
@@ -63,9 +67,10 @@ from name_atlas.folder_refactor.connected_change.sparse_revision import (
 from name_atlas.folder_refactor.connected_change.verification import (
     ConnectedReceiptVerification,
 )
-from name_atlas.folder_refactor.contracts import FolderPlan
+from name_atlas.folder_refactor.contracts import FolderPlan, FolderPlanEntry
 from name_atlas.folder_refactor.foldweave_host_contracts import (
     FolderHostClarificationEventV1,
+    FolderHostCompactPlanEntryV1,
     FolderHostDerivativePendingRevisionV1,
     FolderHostEvidenceObservationV1,
     FolderHostPlanningStateV1,
@@ -128,11 +133,50 @@ from name_atlas.native_bridge import (
     MacOSNativePathBridge,
     NativePathBridge,
     NativePathRole,
+    NativePathSelection,
     NativeSelectionStatus,
 )
 
 oslo_tz = ZoneInfo("Europe/Oslo")
 HOST_CONTRACT_FREEZE_FINGERPRINT = host_contract_freeze_fingerprint()
+LOCAL_SELECTION_ID_PATTERN = r"^fwsel_[A-Za-z0-9_-]{43}$"
+# A hosted-model turn can consume most of the native picker's two-minute
+# timeout before it polls the completed selection. Keep the path-free
+# selection record long enough for that round trip without extending the
+# separately bounded opaque-handle lifetime.
+LOCAL_SELECTION_LIFETIME = timedelta(minutes=10)
+LOCAL_SELECTION_POLL_SECONDS = 10.0
+MAX_LOCAL_SELECTION_POLL_SECONDS = 15.0
+MAX_LOCAL_SELECTION_RECORDS = 16
+COMPACT_PLAN_DEFAULT_EVIDENCE_ID = "initial_inventory"
+COMPACT_PLAN_DEFAULT_RATIONALE = (
+    "Host selected this target from the bounded Foldweave planning context."
+)
+
+LocalSelectionStatus = Literal[
+    "pending",
+    "selected",
+    "cancelled",
+    "unavailable",
+    "timeout",
+    "failed",
+]
+_LocalSelectionBinding = tuple[str, str, str] | None
+
+
+@dataclass(slots=True)
+class _LocalSelectionRecord:
+    """One path-confined native picker operation with a public opaque identity."""
+
+    selection_id: str
+    role: NativePathRole
+    channel: LocalHandleChannel
+    binding: _LocalSelectionBinding
+    created_at: datetime
+    expires_at: datetime
+    task: asyncio.Task[NativePathSelection]
+    result: NativePathSelection | None = None
+    item: OpaqueLocalItemHandle | None = None
 
 
 def _capability_id_sha256(capability_id: str) -> str:
@@ -162,6 +206,16 @@ class FoldweaveHostServiceError(RuntimeError):
         super().__init__(f"{code}: {message}")
 
 
+@dataclass(frozen=True, slots=True)
+class RecoveredHostedRevision:
+    """One exact path-free continuation derived from durable job authority."""
+
+    job: FolderRefactorJobV3
+    instruction: str | None
+    instruction_fingerprint: str | None
+    submit_call_id: str | None
+
+
 class FoldweaveHostPlanningService:
     """Expose bounded host-model planning without any direct-provider dependency."""
 
@@ -173,33 +227,267 @@ class FoldweaveHostPlanningService:
         native_bridge: NativePathBridge | None = None,
         review_service: FoldweaveReviewService | None = None,
         identity_store: PublicJobCapabilityIdentity | None = None,
+        selection_poll_seconds: float = LOCAL_SELECTION_POLL_SECONDS,
+        selection_token_factory: Callable[[], str] | None = None,
         clock=None,
     ) -> None:
+        if not 0 < selection_poll_seconds <= MAX_LOCAL_SELECTION_POLL_SECONDS:
+            raise ValueError("Local-selection polling must be within 15 seconds.")
         self._paths = paths or foldweave_paths()
         self._handles = handle_store or FoldweaveLocalHandleStore()
         self._native_bridge = native_bridge or MacOSNativePathBridge()
         self._review = review_service or FoldweaveReviewService()
         self._identity_store = identity_store or DeviceIdentityStore()
         self._clock = clock or (lambda: datetime.now(tz=oslo_tz))
+        self._selection_poll_seconds = selection_poll_seconds
+        self._selection_token_factory = selection_token_factory or (
+            lambda: secrets.token_urlsafe(32)
+        )
+        self._selection_lock = asyncio.Lock()
+        self._selection_records: dict[str, _LocalSelectionRecord] = {}
+        self._active_selections: dict[
+            tuple[LocalHandleChannel, _LocalSelectionBinding, NativePathRole], str
+        ] = {}
 
     async def choose_local_item(
         self,
         *,
         role: NativePathRole,
         channel: LocalHandleChannel,
-    ) -> tuple[NativeSelectionStatus, OpaqueLocalItemHandle | None, str | None]:
-        """Select one fixed-role native item and return no local path."""
+        selection_id: str | None = None,
+    ) -> tuple[
+        LocalSelectionStatus,
+        OpaqueLocalItemHandle | None,
+        str | None,
+        str | None,
+    ]:
+        """Start or poll one picker without holding a public request open."""
 
-        selection = await self._native_bridge.choose_path(role)
-        if selection.status is not NativeSelectionStatus.SELECTED:
-            return selection.status, None, selection.reason_code
-        assert selection.path is not None
-        public = self._handles.register(
+        binding = self._current_selection_binding(channel)
+        now = self._selection_now()
+        await self._expire_local_selections(now)
+        if selection_id is None:
+            record = await self._start_or_resume_local_selection(
+                role=role,
+                channel=channel,
+                binding=binding,
+                now=now,
+            )
+            return "pending", None, None, record.selection_id
+
+        record = await self._require_local_selection(
+            selection_id=selection_id,
             role=role,
-            path=selection.path,
             channel=channel,
+            binding=binding,
         )
-        return selection.status, public, None
+        selection = record.result
+        if selection is None:
+            try:
+                selection = await asyncio.wait_for(
+                    asyncio.shield(record.task),
+                    timeout=self._selection_poll_seconds,
+                )
+            except TimeoutError:
+                return "pending", None, None, record.selection_id
+            except asyncio.CancelledError:
+                if record.task.cancelled():
+                    raise FoldweaveHostServiceError(
+                        "local_selection_expired",
+                        "The local picker request expired; choose the item again.",
+                    ) from None
+                raise
+            except Exception:
+                selection = NativePathSelection(
+                    status=NativeSelectionStatus.FAILED,
+                    reason_code="picker_failed",
+                )
+            async with self._selection_lock:
+                if record.result is None:
+                    record.result = selection
+                else:
+                    selection = record.result
+
+        item = record.item
+        if selection.status is NativeSelectionStatus.SELECTED and item is None:
+            assert selection.path is not None
+            item = self._handles.register_or_reuse(
+                role=role,
+                path=selection.path,
+                channel=channel,
+            )
+            async with self._selection_lock:
+                if record.item is None:
+                    record.item = item
+                else:
+                    item = record.item
+
+        async with self._selection_lock:
+            active_key = (channel, binding, role)
+            if self._active_selections.get(active_key) == record.selection_id:
+                del self._active_selections[active_key]
+
+        if selection.status is NativeSelectionStatus.SELECTED:
+            assert item is not None
+            return "selected", item, None, None
+        return selection.status.value, None, selection.reason_code, None
+
+    async def _start_or_resume_local_selection(
+        self,
+        *,
+        role: NativePathRole,
+        channel: LocalHandleChannel,
+        binding: _LocalSelectionBinding,
+        now: datetime,
+    ) -> _LocalSelectionRecord:
+        active_key = (channel, binding, role)
+        async with self._selection_lock:
+            active_id = self._active_selections.get(active_key)
+            if active_id is not None:
+                return self._selection_records[active_id]
+            if any(
+                active_channel == channel and active_binding == binding
+                for active_channel, active_binding, _active_role in (
+                    self._active_selections
+                )
+            ):
+                raise FoldweaveHostServiceError(
+                    "local_selection_busy",
+                    "Finish or cancel the current local picker before opening another.",
+                )
+            self._trim_local_selection_records()
+            if len(self._selection_records) >= MAX_LOCAL_SELECTION_RECORDS:
+                raise FoldweaveHostServiceError(
+                    "local_selection_capacity",
+                    "Too many local picker requests are awaiting completion.",
+                )
+            selection_id = self._new_selection_id()
+            task = asyncio.create_task(
+                self._run_local_selection(role),
+                name=f"foldweave-picker-{role.value}",
+            )
+            record = _LocalSelectionRecord(
+                selection_id=selection_id,
+                role=role,
+                channel=channel,
+                binding=binding,
+                created_at=now,
+                expires_at=now + LOCAL_SELECTION_LIFETIME,
+                task=task,
+            )
+            self._selection_records[selection_id] = record
+            self._active_selections[active_key] = selection_id
+            return record
+
+    async def _run_local_selection(
+        self,
+        role: NativePathRole,
+    ) -> NativePathSelection:
+        try:
+            return await self._native_bridge.choose_path(role)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            return NativePathSelection(
+                status=NativeSelectionStatus.FAILED,
+                reason_code="picker_failed",
+            )
+
+    async def _require_local_selection(
+        self,
+        *,
+        selection_id: str,
+        role: NativePathRole,
+        channel: LocalHandleChannel,
+        binding: _LocalSelectionBinding,
+    ) -> _LocalSelectionRecord:
+        async with self._selection_lock:
+            record = self._selection_records.get(selection_id)
+            if record is None:
+                raise FoldweaveHostServiceError(
+                    "local_selection_unknown",
+                    "The local picker request is unknown or expired.",
+                )
+            if not (
+                record.role is role
+                and record.channel == channel
+                and record.binding == binding
+            ):
+                raise FoldweaveHostServiceError(
+                    "local_selection_binding_mismatch",
+                    "The local picker request belongs to another role or session.",
+                )
+            return record
+
+    async def _expire_local_selections(self, now: datetime) -> None:
+        cancelled: list[asyncio.Task[NativePathSelection]] = []
+        async with self._selection_lock:
+            expired_ids = tuple(
+                selection_id
+                for selection_id, record in self._selection_records.items()
+                if record.expires_at <= now
+            )
+            for expired_id in expired_ids:
+                record = self._selection_records.pop(expired_id)
+                active_key = (record.channel, record.binding, record.role)
+                if self._active_selections.get(active_key) == expired_id:
+                    del self._active_selections[active_key]
+                if not record.task.done():
+                    record.task.cancel()
+                    cancelled.append(record.task)
+        if cancelled:
+            await asyncio.gather(*cancelled, return_exceptions=True)
+
+    def _trim_local_selection_records(self) -> None:
+        while len(self._selection_records) >= MAX_LOCAL_SELECTION_RECORDS:
+            completed = tuple(
+                record
+                for record in self._selection_records.values()
+                if record.result is not None
+                and self._active_selections.get(
+                    (record.channel, record.binding, record.role)
+                )
+                != record.selection_id
+            )
+            if not completed:
+                return
+            oldest = min(completed, key=lambda record: record.created_at)
+            del self._selection_records[oldest.selection_id]
+
+    def _new_selection_id(self) -> str:
+        for _attempt in range(4):
+            candidate = f"fwsel_{self._selection_token_factory()}"
+            if not re.fullmatch(LOCAL_SELECTION_ID_PATTERN, candidate):
+                raise FoldweaveHostServiceError(
+                    "local_selection_identity_invalid",
+                    "The local picker request identity could not be created.",
+                )
+            if candidate not in self._selection_records:
+                return candidate
+        raise FoldweaveHostServiceError(
+            "local_selection_identity_collision",
+            "The local picker request identity could not be created.",
+        )
+
+    def _selection_now(self) -> datetime:
+        value = self._clock()
+        if value.tzinfo is None:
+            raise ValueError("Local-selection clock must be timezone aware.")
+        return value.astimezone(oslo_tz)
+
+    @staticmethod
+    def _current_selection_binding(
+        channel: LocalHandleChannel,
+    ) -> _LocalSelectionBinding:
+        invocation = current_trusted_public_invocation()
+        if invocation is None:
+            return None
+        if channel != "chatgpt_hosted":
+            raise FoldweaveHostServiceError(
+                "local_selection_public_channel_invalid",
+                "A public ChatGPT request cannot select for another channel.",
+            )
+        return invocation.handle_binding()
 
     def create_or_resume_planning_job(
         self,
@@ -822,6 +1110,74 @@ class FoldweaveHostPlanningService:
                 preview=preview,
             )
             return writer.save(successor, expected_current=current)
+
+    def submit_compact_plan(
+        self,
+        *,
+        job_id: str,
+        call_id: str,
+        result_folder_name: str,
+        entries: tuple[FolderHostCompactPlanEntryV1, ...],
+    ) -> FolderRefactorJobV3:
+        """Expand one compact complete mapping through durable job authority."""
+
+        current = FolderRefactorJobV3Store(self._job_path(job_id)).inspect()
+        authority = _require_host_authority(current)
+        inventory = current.source_inventory
+        relative_paths = tuple(entry.relative_path for entry in entries)
+        if len(relative_paths) != len(set(relative_paths)):
+            raise FoldweaveHostServiceError(
+                "compact_plan_duplicate_relative_path",
+                "Compact plan entries must contain unique origin-relative paths.",
+            )
+        inventory_by_path = {item.relative_path: item for item in inventory.files}
+        unknown_paths = set(relative_paths) - inventory_by_path.keys()
+        if unknown_paths:
+            raise FoldweaveHostServiceError(
+                "compact_plan_unknown_relative_path",
+                "Compact plan contains an origin-relative path outside the durable "
+                "inventory.",
+            )
+        protected_paths = {
+            item.relative_path for item in inventory.files if item.protected
+        }
+        if set(relative_paths) & protected_paths:
+            raise FoldweaveHostServiceError(
+                "compact_plan_protected_relative_path_forbidden",
+                "Compact plan cannot control a protected inventory member.",
+            )
+        eligible_paths = inventory_by_path.keys() - protected_paths
+        if set(relative_paths) != eligible_paths:
+            raise FoldweaveHostServiceError(
+                "compact_plan_missing_relative_paths",
+                "Compact plan must map every planner-eligible inventory member.",
+            )
+
+        targets_by_path = {
+            entry.relative_path: entry.proposed_target for entry in entries
+        }
+        plan = FolderPlan(
+            source_commitment=inventory.source_commitment,
+            request_fingerprint=authority.planning_state.request_fingerprint,
+            request_scope="rename_and_move_every_file",
+            evidence_fingerprint=(
+                authority.planning_state.evidence_state.evidence_fingerprint
+            ),
+            result_folder_name=result_folder_name,
+            entries=tuple(
+                FolderPlanEntry(
+                    file_id=item.file_id,
+                    original_path=item.relative_path,
+                    proposed_target=targets_by_path[item.relative_path],
+                    rationale=COMPACT_PLAN_DEFAULT_RATIONALE,
+                    evidence_ids=(COMPACT_PLAN_DEFAULT_EVIDENCE_ID,),
+                )
+                for item in inventory.files
+                if not item.protected
+            ),
+            exclusions=(),
+        )
+        return self.submit_plan(job_id=job_id, call_id=call_id, plan=plan)
 
     def begin_revision(
         self,
@@ -1521,6 +1877,78 @@ class FoldweaveHostPlanningService:
             )
         return job.preview
 
+    def recover_hosted_revision(
+        self,
+        *,
+        parent_job_id: str,
+        parent_job_revision: int,
+        parent_candidate_fingerprint: str,
+        parent_preview_fingerprint: str,
+        source_commitment: str,
+        model_transport: HostModelTransport,
+    ) -> RecoveredHostedRevision | None:
+        """Resolve one exact hosted revision without choosing among forks.
+
+        The four visible parent identities and its durable revision are the only
+        lookup authority.  Directory order, timestamps, filenames, and job
+        recency never participate.  Zero matches returns no continuation; more
+        than one exact match blocks because an explicit fork cannot be guessed.
+        """
+
+        parent = self.status(parent_job_id)
+        if parent.source_inventory.source_commitment != source_commitment:
+            raise FoldweaveHostServiceError(
+                "hosted_revision_parent_mismatch",
+                "Hosted revision recovery targets another source.",
+            )
+        registry = FoldweaveJobLocator(self._paths.jobs).inspect_registry()
+        invocation = current_trusted_public_invocation()
+        matches: list[FolderRefactorJobV3] = []
+        for located in registry.current:
+            candidate = located.job
+            if invocation is not None:
+                try:
+                    self._require_public_binding_identity(candidate, invocation)
+                except FoldweaveHostServiceError:
+                    continue
+            if _matches_hosted_revision_recovery(
+                candidate,
+                parent_job_id=parent_job_id,
+                parent_job_revision=parent_job_revision,
+                parent_candidate_fingerprint=parent_candidate_fingerprint,
+                parent_preview_fingerprint=parent_preview_fingerprint,
+                source_commitment=source_commitment,
+                model_transport=model_transport,
+            ):
+                matches.append(candidate)
+        if not matches:
+            return None
+        if len(matches) != 1:
+            raise FoldweaveHostServiceError(
+                "hosted_revision_recovery_ambiguous",
+                "More than one explicit hosted revision fork matches this review.",
+            )
+        recovered = matches[0]
+        if recovered.lifecycle is not FolderJobLifecycleV3.REVISING:
+            return RecoveredHostedRevision(
+                job=recovered,
+                instruction=None,
+                instruction_fingerprint=None,
+                submit_call_id=None,
+            )
+        instruction = recovered.revision_instruction
+        if instruction is None:
+            raise FoldweaveHostServiceError(
+                "hosted_revision_recovery_invalid",
+                "The durable hosted revision lacks its exact instruction.",
+            )
+        return RecoveredHostedRevision(
+            job=recovered,
+            instruction=instruction.instruction,
+            instruction_fingerprint=instruction.instruction_fingerprint,
+            submit_call_id=(f"revision-submit:{recovered.job_id}:{recovered.revision}"),
+        )
+
     def get_compiler_failures(self, job_id: str):
         job = self.status(job_id)
         if isinstance(job.authority, GptDerivativeJobAuthorityV3):
@@ -1777,20 +2205,31 @@ class FoldweaveHostPlanningService:
 
     def _find_idempotent_job(self, key_sha256: str) -> FolderRefactorJobV3 | None:
         try:
-            discovered = FoldweaveJobLocator(self._paths.jobs).discover()
+            registry = FoldweaveJobLocator(self._paths.jobs).inspect_registry()
         except FoldweaveJobLocatorError as exc:
             raise FoldweaveHostServiceError(
                 "host_job_registry_invalid",
                 "A durable Foldweave job cannot be inspected safely.",
             ) from exc
         matches: list[FolderRefactorJobV3] = []
-        for located in discovered:
+        for located in registry.current:
             job = located.job
             if job.idempotency.key_sha256 == key_sha256:
                 matches.append(job)
-        if len(matches) > 1:
+        unsupported_matches = tuple(
+            located
+            for located in registry.unsupported
+            if located.record.idempotency.key_sha256 == key_sha256
+        )
+        if len(matches) + len(unsupported_matches) > 1:
             raise FolderJobV3IdempotencyConflict(
                 "Hosted idempotency key appears in multiple durable jobs."
+            )
+        if unsupported_matches:
+            raise FoldweaveHostServiceError(
+                "host_job_requires_fresh_start",
+                "This preserved pre-final Foldweave job cannot be resumed. "
+                "Start a fresh job; the existing record remains unchanged.",
             )
         if not matches:
             return None
@@ -1802,7 +2241,7 @@ class FoldweaveHostPlanningService:
         path = self._job_path_unchecked(job_id)
         if os.path.lexists(path):
             job = FolderRefactorJobV3Store(path).inspect()
-            self._require_public_job_access(job)
+            self._require_public_job_access(path, job)
         return path
 
     def _job_path_unchecked(self, job_id: str) -> Path:
@@ -1823,6 +2262,12 @@ class FoldweaveHostPlanningService:
             try:
                 located = FoldweaveJobLocator(self._paths.jobs).resolve(job_id)
             except FoldweaveJobLocatorError as exc:
+                if exc.code == "job_requires_fresh_start":
+                    raise FoldweaveHostServiceError(
+                        "host_job_requires_fresh_start",
+                        "This preserved pre-final Foldweave job cannot be resumed. "
+                        "Start a fresh job; the existing record remains unchanged.",
+                    ) from exc
                 raise FoldweaveHostServiceError(
                     "host_job_registry_invalid",
                     "The durable Foldweave job registry is invalid.",
@@ -1833,6 +2278,12 @@ class FoldweaveHostPlanningService:
         except FoldweaveJobLocatorError as exc:
             if exc.code == "job_not_found":
                 return expected
+            if exc.code == "job_requires_fresh_start":
+                raise FoldweaveHostServiceError(
+                    "host_job_requires_fresh_start",
+                    "This preserved pre-final Foldweave job cannot be resumed. "
+                    "Start a fresh job; the existing record remains unchanged.",
+                ) from exc
             raise FoldweaveHostServiceError(
                 "host_job_registry_invalid",
                 "The durable Foldweave job registry is invalid.",
@@ -1881,9 +2332,16 @@ class FoldweaveHostPlanningService:
                 "Public root creation cannot resume a derivative child.",
             )
         self._require_public_binding_identity(job, invocation)
-        self._require_public_capability_not_expired(job)
+        if self._public_capability_expired(job):
+            self._renew_public_job_capability(job.job_path, job, invocation)
+        else:
+            self._derive_public_job_capability(job)
 
-    def _require_public_job_access(self, job: FolderRefactorJobV3) -> None:
+    def _require_public_job_access(
+        self,
+        path: Path,
+        job: FolderRefactorJobV3,
+    ) -> None:
         invocation = current_trusted_public_invocation()
         if invocation is None:
             return
@@ -1894,8 +2352,10 @@ class FoldweaveHostPlanningService:
                 "This public job operation requires its exact job identity.",
             )
         self._require_public_binding_identity(job, invocation)
-        self._require_public_capability_not_expired(job)
-        self._derive_public_job_capability(job)
+        if self._public_capability_expired(job):
+            self._renew_public_job_capability(path, job, invocation)
+        else:
+            self._derive_public_job_capability(job)
 
     def _require_public_binding_identity(
         self,
@@ -1918,17 +2378,44 @@ class FoldweaveHostPlanningService:
                 "Public job authority belongs to another device or OAuth grant.",
             )
 
-    def _require_public_capability_not_expired(
+    def _public_capability_expired(
         self,
         job: FolderRefactorJobV3,
-    ) -> None:
+    ) -> bool:
         binding = job.public_job_capability
         assert binding is not None
-        if self._now_ms() >= binding.expires_at_ms:
-            raise FoldweaveHostServiceError(
-                "public_job_capability_expired",
-                "Public job capability has expired; start a fresh job.",
+        return self._now_ms() >= binding.expires_at_ms
+
+    def _renew_public_job_capability(
+        self,
+        path: Path,
+        job: FolderRefactorJobV3,
+        invocation: TrustedPublicInvocationContextV1,
+    ) -> FolderRefactorJobV3:
+        """Reauthorize the same durable job under the same live public identity."""
+
+        with FolderRefactorJobV3Store(path).writer() as writer:
+            current = writer.load()
+            self._require_public_binding_identity(current, invocation)
+            self._derive_public_job_capability(current)
+            if not self._public_capability_expired(current):
+                return current
+            replacement = self._build_public_job_capability(current.job_id)
+            if replacement is None:
+                raise FoldweaveHostServiceError(
+                    "public_job_capability_required",
+                    "Public job reauthorization requires a live public invocation.",
+                )
+            successor = evolve_job_v3(
+                current,
+                public_job_capability=replacement,
             )
+            saved = writer.renew_public_job_capability(
+                successor,
+                expected_current=current,
+            )
+            self._derive_public_job_capability(saved)
+            return saved
 
     @staticmethod
     def _require_live_public_invocation(
@@ -2084,6 +2571,79 @@ def _require_failed_derivative_retry_request(
         raise FolderJobV3RevisionError(
             "Hosted derivative retry targets a stale or unseen failed preview."
         )
+
+
+_HOSTED_REVISION_RECOVERY_LIFECYCLES = frozenset(
+    {
+        FolderJobLifecycleV3.REVISING,
+        FolderJobLifecycleV3.REVIEWING,
+        FolderJobLifecycleV3.REVISION_FAILED,
+        FolderJobLifecycleV3.EXECUTING,
+        FolderJobLifecycleV3.VERIFIED,
+    }
+)
+
+
+def _matches_hosted_revision_recovery(
+    job: FolderRefactorJobV3,
+    *,
+    parent_job_id: str,
+    parent_job_revision: int,
+    parent_candidate_fingerprint: str,
+    parent_preview_fingerprint: str,
+    source_commitment: str,
+    model_transport: HostModelTransport,
+) -> bool:
+    """Match only immutable causal bindings for one visible parent review."""
+
+    if (
+        job.lifecycle not in _HOSTED_REVISION_RECOVERY_LIFECYCLES
+        or job.source_inventory.source_commitment != source_commitment
+    ):
+        return False
+    authority = job.authority
+    if isinstance(authority, GptDerivativeJobAuthorityV3):
+        if authority.model_transport != model_transport:
+            return False
+        parent = authority.parent_binding
+        if (
+            job.job_id != parent_job_id
+            and parent.parent_job_id == parent_job_id
+            and parent.parent_job_revision == parent_job_revision
+            and parent.parent_source_commitment == source_commitment
+            and parent.parent_candidate_fingerprint == parent_candidate_fingerprint
+            and parent.parent_preview_fingerprint == parent_preview_fingerprint
+        ):
+            return True
+
+    if job.job_id != parent_job_id:
+        return False
+    if isinstance(authority, GptHostedJobAuthorityV3):
+        if authority.model_transport != model_transport:
+            return False
+        pending = authority.pending_revision
+    elif isinstance(authority, GptDerivativeJobAuthorityV3):
+        pending = authority.pending_host_followup_revision
+    else:
+        return False
+    if job.lifecycle is FolderJobLifecycleV3.REVISING:
+        instruction = job.revision_instruction
+        return bool(
+            pending is not None
+            and instruction is not None
+            and pending.expected_job_revision == parent_job_revision
+            and pending.base_candidate_fingerprint == parent_candidate_fingerprint
+            and pending.base_preview_fingerprint == parent_preview_fingerprint
+            and instruction.base_candidate_fingerprint == parent_candidate_fingerprint
+            and instruction.base_preview_fingerprint == parent_preview_fingerprint
+        )
+    return any(
+        binding.base_job_revision == parent_job_revision
+        and binding.base_candidate_fingerprint == parent_candidate_fingerprint
+        and binding.base_preview_fingerprint == parent_preview_fingerprint
+        and binding.model_transport == model_transport
+        for binding in job.host_revision_mutation_bindings
+    )
 
 
 def _require_host_evidence_state(job: FolderRefactorJobV3) -> PlannerEvidenceState:

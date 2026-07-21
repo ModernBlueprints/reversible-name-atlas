@@ -4,6 +4,23 @@ version = "0.1.0"
 description = "AI-planned, deterministic changes for connected project folders."
 readme = "README.md"
 license = { file = "LICENSE" }
+authors = [{ name = "Modern Blueprints" }]
+keywords = [
+    "connected-folders",
+    "file-organization",
+    "macos",
+    "mcp",
+    "review-before-execution",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: MacOS X",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business",
+]
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "bagit>=1.8,<2",
@@ -28,6 +45,12 @@ dependencies = [
 foldweave = "name_atlas.foldweave_launcher:main"
 name-atlas = "name_atlas.launcher:main"
 
+[project.urls]
+Homepage = "https://github.com/ModernBlueprints/reversible-name-atlas"
+Repository = "https://github.com/ModernBlueprints/reversible-name-atlas"
+Issues = "https://github.com/ModernBlueprints/reversible-name-atlas/issues"
+Documentation = "https://github.com/ModernBlueprints/reversible-name-atlas#readme"
+
 [dependency-groups]
 dev = [
     "pyinstaller>=6.21,<7 ; sys_platform == 'darwin'",
@@ -47,6 +70,21 @@ packages = ["src/name_atlas"]
 "sample_data/connected_change" = "name_atlas/sample_data/connected_change"
 "sample_data/hero" = "name_atlas/sample_data/hero"
 "sample_data/folder_a1" = "name_atlas/sample_data/folder_a1"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.env*",
+    "/.name-atlas/**",
+    "/.venv/**",
+    "/build/**",
+    "/dist/**",
+    "/docs/build/**",
+    "/gateway/.wrangler/**",
+    "/gateway/dist/**",
+    "/gateway/node_modules/**",
+    "/web/dist/**",
+    "/web/node_modules/**",
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

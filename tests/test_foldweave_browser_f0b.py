@@ -180,6 +180,22 @@ async def test_f0b_browser_revision_and_accept_retries_are_exactly_idempotent(
         assert revised.status_code == 200
         revised_status = revised.json()
         assert revised_status["proposal_revision"] == 1
+        delta = revised_status["latest_proposal_delta"]
+        assert delta["schema_version"] == "folder-plan-revision-delta.v1"
+        assert delta["job_id"] == job_id
+        assert delta["proposal_revision_before"] == 0
+        assert delta["proposal_revision_after"] == 1
+        assert (
+            delta["current_candidate_fingerprint"]
+            == (revised_status["candidate_fingerprint"])
+        )
+        assert (
+            delta["current_preview_fingerprint"]
+            == (revised_status["preview_fingerprint"])
+        )
+        assert len(delta["entries"]) == 1
+        refreshed_status = (await client.get(f"/api/jobs/{job_id}/status")).json()
+        assert refreshed_status["latest_proposal_delta"] == delta
         assert tuple(output.iterdir()) == ()
         assert factory.revision_count == 1
 

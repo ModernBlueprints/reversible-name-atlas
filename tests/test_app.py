@@ -38,7 +38,8 @@ async def test_replay_shell_exposes_safe_runtime_status() -> None:
     assert root.status_code == 303
     assert root.headers["location"] == "/atlas"
     assert response.status_code == 200
-    assert "Refactor the collection." in response.text
+    assert "Foldweave" in response.text
+    assert "Legacy compatibility" in response.text
     assert "Replay provider configured" in response.text
     assert "loopback only" in response.text
     assert "No Migration Case is loaded" in response.text

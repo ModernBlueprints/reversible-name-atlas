@@ -22,6 +22,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from name_atlas import __version__
+from name_atlas.folder_refactor.connected_change.preview import (
+    FolderPlanRevisionDeltaV1,
+)
 from name_atlas.folder_refactor.naming import validate_result_folder_name
 from name_atlas.folder_refactor.receipt_contracts import FolderRestoreReport
 from name_atlas.foldweave_pairing_service import (
@@ -173,6 +177,12 @@ class FolderRunPresentation:
         if self.execution_role not in {None, "origin", "receiver", "derivative"}:
             raise ValueError("Result execution role is unsupported.")
 
+    @property
+    def display_folder_name(self) -> str:
+        """Return the user-facing result folder name without local parent paths."""
+
+        return self.result_root.name
+
 
 @dataclass(frozen=True, slots=True)
 class FolderClarificationRequest:
@@ -211,6 +221,7 @@ class FolderReviewHandle:
     output_parent: Path
     result_folder_name: str
     journey: FolderJourney
+    latest_proposal_delta: FolderPlanRevisionDeltaV1 | None = None
     revision_available: bool = False
     revision_attempts_remaining: int = 0
     revision_failure: str | None = None
@@ -231,6 +242,19 @@ class FolderReviewHandle:
             raise ValueError("Review handle local paths must be absolute.")
         if not self.result_folder_name.strip():
             raise ValueError("Review handle requires its result-folder name.")
+        delta = self.latest_proposal_delta
+        if (self.proposal_revision > 0) != (delta is not None):
+            raise ValueError(
+                "Review handle proposal revision and durable delta availability differ."
+            )
+        if delta is not None and not (
+            delta.job_id == self.job_id
+            and delta.proposal_revision_after == self.proposal_revision
+            and delta.current_candidate_fingerprint == self.candidate_fingerprint
+            and delta.current_preview_fingerprint == self.preview_fingerprint
+            and delta.current_result_folder_name == self.result_folder_name
+        ):
+            raise ValueError("Review handle delta targets another visible proposal.")
         if not 0 <= self.revision_attempts_remaining <= 2:
             raise ValueError("Review attempts remaining is outside its bound.")
         if self.revision_available != (self.revision_attempts_remaining > 0):
@@ -682,7 +706,7 @@ def create_folder_app(
             if review_enabled
             else "Describe the change. Keep supported Markdown links. Prove the result."
         ),
-        version="0.4.0-c2",
+        version=__version__,
         docs_url=None,
         redoc_url=None,
         lifespan=lifespan,
@@ -736,7 +760,20 @@ def create_folder_app(
     @app.get("/settings", response_class=HTMLResponse, include_in_schema=False)
     async def settings(request: Request) -> Response:
         if native_settings is None:
-            return HTMLResponse("Native settings are unavailable.", status_code=404)
+            response = TEMPLATES.TemplateResponse(
+                request=request,
+                name="folder/settings.html",
+                context={
+                    **_base_context(
+                        state=state,
+                        planner_label=planner_label,
+                        planner_note=planner_note,
+                    ),
+                    "settings": None,
+                },
+            )
+            response.status_code = 404
+            return response
         view = await asyncio.to_thread(native_settings.view)
         return TEMPLATES.TemplateResponse(
             request=request,
@@ -1105,16 +1142,59 @@ def create_folder_app(
         include_in_schema=False,
     )
     async def review_status(job_id: str) -> JSONResponse:
+        handle = state.review
         if (
             not review_enabled
-            or state.review is None
-            or not hmac.compare_digest(job_id, state.review.job_id)
+            or handle is None
+            or not hmac.compare_digest(job_id, handle.job_id)
         ):
             return _no_store_json(
                 {"error": "review_job_not_found"},
                 status_code=404,
             )
-        return _no_store_json(_review_status_payload(state.review))
+        async with state.submission_gate:
+            if isinstance(service, StartupRehydratingFolderRunService):
+                try:
+                    checkpoint = await asyncio.to_thread(
+                        service.rehydrate_web_checkpoint
+                    )
+                except Exception as exc:  # noqa: BLE001 - exact refresh refusal is visible
+                    return _no_store_json(
+                        {
+                            "error": "review_status_unavailable",
+                            "detail": _safe_error_text(exc),
+                        },
+                        status_code=409,
+                    )
+                if (
+                    checkpoint is not None
+                    and checkpoint.lifecycle is FolderWebLifecycle.BLOCKED
+                ):
+                    detail = checkpoint.blocker or (
+                        "The selected review inputs no longer match this preview."
+                    )
+                    stale_payload = _review_status_payload(
+                        handle,
+                        lifecycle="stale",
+                        action_lock_reason=detail,
+                    )
+                    state.lifecycle = FolderWebLifecycle.BLOCKED
+                    state.blocker = detail
+                    state.result = None
+                    state.notice = None
+                    # Keep only the immutable preview handle so the already-loaded
+                    # review can render the exact stale snapshot and lock its
+                    # actions. Durable v3 state remains the execution authority.
+                    state.review = handle
+                    return _no_store_json(stale_payload)
+                if (
+                    checkpoint is not None
+                    and checkpoint.lifecycle is FolderWebLifecycle.REVIEWING
+                    and checkpoint.review is not None
+                ):
+                    state.review = checkpoint.review
+                    handle = checkpoint.review
+            return _no_store_json(_review_status_payload(handle))
 
     @app.post(
         "/api/jobs/{job_id}/revision",
@@ -2284,19 +2364,36 @@ def _review_job_id(value: str) -> str:
     return value
 
 
-def _review_status_payload(handle: FolderReviewHandle) -> dict[str, object]:
+def _review_status_payload(
+    handle: FolderReviewHandle,
+    *,
+    lifecycle: str = "reviewing",
+    action_lock_reason: str | None = None,
+) -> dict[str, object]:
     return {
         "job_id": handle.job_id,
-        "lifecycle": "reviewing",
+        "lifecycle": lifecycle,
         "job_revision": handle.job_revision,
         "proposal_revision": handle.proposal_revision,
         "candidate_fingerprint": handle.candidate_fingerprint,
         "preview_fingerprint": handle.preview_fingerprint,
         "output_parent": str(handle.output_parent),
         "result_folder_name": handle.result_folder_name,
-        "revision_available": handle.revision_available,
-        "revision_attempts_remaining": handle.revision_attempts_remaining,
-        "revision_failure": handle.revision_failure,
+        "revision_available": (
+            handle.revision_available if lifecycle == "reviewing" else False
+        ),
+        "revision_attempts_remaining": (
+            handle.revision_attempts_remaining if lifecycle == "reviewing" else 0
+        ),
+        "revision_failure": (
+            handle.revision_failure if lifecycle == "reviewing" else None
+        ),
+        "latest_proposal_delta": (
+            None
+            if handle.latest_proposal_delta is None
+            else handle.latest_proposal_delta.model_dump(mode="json")
+        ),
+        "action_lock_reason": action_lock_reason,
         "done_url": None,
     }
 

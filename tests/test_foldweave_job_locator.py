@@ -13,6 +13,7 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
 from name_atlas.folder_refactor.connected_change.review_service import (
     FoldweaveReviewService,
 )
+from name_atlas.folder_refactor.serialization import canonical_json_bytes
 from name_atlas.foldweave_host_service import FoldweaveHostPlanningService
 from name_atlas.foldweave_job_locator import (
     FoldweaveJobLocator,
@@ -31,6 +32,21 @@ def _copy_job(job: FolderRefactorJobV3, destination: Path) -> FolderRefactorJobV
     )
     destination.write_bytes(canonical_job_v3_bytes(copied))
     return copied
+
+
+def _write_pre_final_job(job: FolderRefactorJobV3, destination: Path) -> bytes:
+    copied = FolderRefactorJobV3.model_validate(
+        {
+            **job.model_dump(mode="python"),
+            "job_path": destination.resolve(strict=False),
+        },
+        strict=True,
+    )
+    payload = copied.model_dump(mode="json")
+    payload.pop("operation_idempotency")
+    persisted = canonical_json_bytes(payload) + b"\n"
+    destination.write_bytes(persisted)
+    return persisted
 
 
 def _review_job(tmp_path: Path, *, label: str) -> FolderRefactorJobV3:
@@ -78,6 +94,81 @@ def test_locator_discovers_uuid_and_active_authorities(
     discovered = FoldweaveJobLocator(jobs).discover()
 
     assert {item.job.job_id for item in discovered} == {first.job_id, second.job_id}
+
+
+def test_locator_resolves_current_job_with_unrelated_pre_final_record(
+    tmp_path: Path,
+) -> None:
+    current_job = _review_job(tmp_path, label="current")
+    pre_final_job = _review_job(tmp_path, label="pre-final")
+    jobs = tmp_path / "jobs"
+    jobs.mkdir()
+    current = _copy_job(current_job, jobs / f"{current_job.job_id}.json")
+    preserved = _write_pre_final_job(
+        pre_final_job,
+        jobs / f"{pre_final_job.job_id}.json",
+    )
+
+    located = FoldweaveJobLocator(jobs).resolve(current.job_id)
+
+    assert located.job == current
+    assert (jobs / f"{pre_final_job.job_id}.json").read_bytes() == preserved
+
+
+def test_locator_returns_fresh_start_for_matching_pre_final_record(
+    tmp_path: Path,
+) -> None:
+    pre_final_job = _review_job(tmp_path, label="pre-final")
+    jobs = tmp_path / "jobs"
+    jobs.mkdir()
+    destination = jobs / f"{pre_final_job.job_id}.json"
+    preserved = _write_pre_final_job(pre_final_job, destination)
+
+    with pytest.raises(FoldweaveJobLocatorError) as error:
+        FoldweaveJobLocator(jobs).resolve(pre_final_job.job_id)
+
+    assert error.value.code == "job_requires_fresh_start"
+    assert destination.read_bytes() == preserved
+
+
+def test_locator_rejects_duplicate_id_across_current_and_pre_final_records(
+    tmp_path: Path,
+) -> None:
+    job = _review_job(tmp_path, label="duplicate")
+    jobs = tmp_path / "jobs"
+    jobs.mkdir()
+    _copy_job(job, jobs / "current.json")
+    _write_pre_final_job(job, jobs / "pre-final.json")
+
+    with pytest.raises(FoldweaveJobLocatorError) as error:
+        FoldweaveJobLocator(jobs).inspect_registry()
+
+    assert error.value.code == "duplicate_job_id"
+
+
+def test_locator_rejects_unknown_invalid_v3_shape(
+    tmp_path: Path,
+) -> None:
+    job = _review_job(tmp_path, label="unknown-invalid")
+    jobs = tmp_path / "jobs"
+    jobs.mkdir()
+    destination = jobs / f"{job.job_id}.json"
+    copied = FolderRefactorJobV3.model_validate(
+        {
+            **job.model_dump(mode="python"),
+            "job_path": destination.resolve(strict=False),
+        },
+        strict=True,
+    )
+    payload = copied.model_dump(mode="json")
+    payload.pop("operation_idempotency")
+    payload.pop("user_request")
+    destination.write_bytes(canonical_json_bytes(payload) + b"\n")
+
+    with pytest.raises(FoldweaveJobLocatorError) as error:
+        FoldweaveJobLocator(jobs).inspect_registry()
+
+    assert error.value.code == "job_authority_invalid"
 
 
 def test_locator_rejects_duplicate_embedded_job_ids(

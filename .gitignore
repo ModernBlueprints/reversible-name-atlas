@@ -19,6 +19,10 @@ htmlcov/
 dist/
 *.egg-info/
 
+# JavaScript dependencies and deployment caches
+node_modules/
+.wrangler/
+
 # Product-generated local workspaces
 runs/
 staging/

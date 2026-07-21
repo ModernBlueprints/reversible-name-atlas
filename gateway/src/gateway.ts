@@ -42,6 +42,7 @@ import {
   requireMethod,
   securityHeaders,
 } from "./http";
+import { authorizationCompletionResponse } from "./oauth-return";
 import { generatePairingCode } from "./pairing-code";
 import {
   decodeCompanionRpcResponse,
@@ -54,6 +55,10 @@ import {
   requireInvocationScope,
   type PublicInvocationSeed,
 } from "./public-invocation";
+import {
+  handlePublicMcpDiscovery,
+  PUBLIC_MCP_PATH,
+} from "./public-discovery";
 
 const DIRECTORY_NAME = "foldweave-pairing-directory-v1";
 const MCP_REQUEST_HEADER_ALLOWLIST = new Set([
@@ -63,10 +68,20 @@ const MCP_REQUEST_HEADER_ALLOWLIST = new Set([
   "mcp-protocol-version",
   "mcp-session-id",
 ]);
+const GATEWAY_DISCOVERY_METHODS = new Set([
+  "initialize",
+  "ping",
+  "resources/list",
+  "resources/read",
+  "resources/templates/list",
+  "tools/list",
+]);
 
 interface SessionStatus {
   active: boolean;
   authorized: boolean;
+  clientAccessObserved: boolean;
+  clientAccessObservedAt: number | null;
   codeHash: string;
   deviceId: string;
   exists: true;
@@ -130,18 +145,60 @@ async function requireSessionStatus(
     "https://foldweave.internal/status",
   );
   const value = await responseJson(response);
+  if (!response.ok || value.exists !== true) {
+    throw new HttpError(401, "session_inactive", "Pairing session is not active.");
+  }
+  requireExactKeys(
+    value,
+    [
+      "active",
+      "authorized",
+      "clientAccessObserved",
+      "clientAccessObservedAt",
+      "codeHash",
+      "deviceId",
+      "exists",
+      "expiresAt",
+      "localApproved",
+      "revoked",
+      "scopes",
+      "sessionId",
+    ],
+    "session_status",
+  );
   if (
-    !response.ok ||
-    value.exists !== true ||
     typeof value.active !== "boolean" ||
     typeof value.authorized !== "boolean" ||
+    typeof value.clientAccessObserved !== "boolean" ||
+    (value.clientAccessObservedAt !== null &&
+      (!Number.isSafeInteger(value.clientAccessObservedAt) ||
+        Number(value.clientAccessObservedAt) <= 0)) ||
+    value.clientAccessObserved !== (value.clientAccessObservedAt !== null) ||
+    (value.clientAccessObserved && !value.authorized) ||
     typeof value.localApproved !== "boolean" ||
     typeof value.revoked !== "boolean" ||
-    !Array.isArray(value.scopes)
+    !Number.isSafeInteger(value.expiresAt) ||
+    Number(value.expiresAt) <= 0
   ) {
     throw new HttpError(401, "session_inactive", "Pairing session is not active.");
   }
-  return value as unknown as SessionStatus;
+  return {
+    active: value.active,
+    authorized: value.authorized,
+    clientAccessObserved: value.clientAccessObserved,
+    clientAccessObservedAt:
+      value.clientAccessObservedAt === null
+        ? null
+        : Number(value.clientAccessObservedAt),
+    codeHash: requireSha256(value.codeHash, "code_hash"),
+    deviceId: requireDeviceId(value.deviceId),
+    exists: true,
+    expiresAt: Number(value.expiresAt),
+    localApproved: value.localApproved,
+    revoked: value.revoked,
+    scopes: parseScopeList(value.scopes),
+    sessionId: requireSessionId(value.sessionId),
+  };
 }
 
 function clientDisplayName(client: ClientInfo | null): string {
@@ -149,6 +206,15 @@ function clientDisplayName(client: ClientInfo | null): string {
     return client.clientName;
   }
   return "ChatGPT";
+}
+
+function scopeDisplayName(scope: string): string {
+  const labels: Record<(typeof SUPPORTED_SCOPES)[number], string> = {
+    "foldweave.execute": "Create verified copies and reconstructions",
+    "foldweave.plan": "Plan and revise folder changes",
+    "foldweave.review": "View plans and verification",
+  };
+  return labels[scope as (typeof SUPPORTED_SCOPES)[number]];
 }
 
 function renderAuthorizationPage(
@@ -164,38 +230,44 @@ function renderAuthorizationPage(
     ? `<p class="error" role="alert">${htmlEscape(errorMessage)}</p>`
     : "";
   const scopeItems = scopes
-    .map((scope) => `<li>${htmlEscape(scope)}</li>`)
+    .map((scope) => `<li>${htmlEscape(scopeDisplayName(scope))}</li>`)
     .join("");
   const body = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pair Foldweave</title>
+  <title>Connect Foldweave</title>
   <style>
-    :root{color-scheme:dark;font-family:ui-sans-serif,system-ui,sans-serif;background:#071426;color:#e7f7ff}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px}
-    main{width:min(520px,100%);box-sizing:border-box;border:1px solid #1f6380;border-radius:16px;background:#0b1c31;padding:28px;box-shadow:0 20px 70px #0008}
-    h1{font-size:1.65rem;margin:0 0 8px}p{color:#b8cad8;line-height:1.5}label{display:block;font-weight:700;margin:22px 0 8px}
-    input{width:100%;box-sizing:border-box;border:1px solid #3d7897;border-radius:9px;background:#071426;color:#fff;padding:13px;font:inherit;letter-spacing:.12em;text-transform:uppercase}
-    button{width:100%;margin-top:18px;border:0;border-radius:9px;background:#38c8ff;color:#05101c;padding:13px;font:inherit;font-weight:800;cursor:pointer}
-    ul{color:#b8cad8}.error{border-left:3px solid #ffb454;padding-left:12px;color:#ffd6a4}.muted{font-size:.88rem}
+    :root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,system-ui,"Helvetica Neue",sans-serif;background:#f5f5f7;color:#1d1d1f}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f5f5f7;-webkit-font-smoothing:antialiased}
+    main{width:min(440px,100%);padding:28px;border-radius:14px;background:#fff}
+    h1{font-size:1.45rem;font-weight:650;letter-spacing:-.02em;margin:0 0 6px}p{color:#5f5f64;line-height:1.45}label{display:block;font-weight:600;margin:22px 0 8px}
+    input{width:100%;border:1px solid #7c7c80;border-radius:8px;background:#fff;color:#1d1d1f;padding:11px 12px;font:inherit;letter-spacing:.08em;text-transform:uppercase;outline:0}
+    input:focus-visible{border-color:#005eb8;outline:3px solid #005eb8;outline-offset:2px}
+    .actions{display:flex;justify-content:flex-end}button{min-height:38px;margin-top:18px;border:0;border-radius:8px;background:#0066cc;color:#fff;padding:8px 18px;font:inherit;font-weight:600;cursor:pointer}
+    button:hover{background:#005eb8}button:focus-visible{outline:3px solid #005eb8;outline-offset:2px}
+    .permission-group{margin-top:24px;padding:12px 14px;border-radius:10px;background:#f2f2f7}.permission-group p{margin:0 0 6px}.permission-group ul{margin:0;padding:0;list-style:none;color:#5f5f64}.permission-group li{padding:.18rem 0}.privacy-note{margin:14px 2px 0;font-size:.8rem}.error{border-left:3px solid #b00012;padding-left:12px;color:#b00012}.muted{font-size:.88rem}
+    @media(prefers-color-scheme:dark){:root,body{background:#1c1c1e;color:#f5f5f7}main{background:#2c2c2e}p,.permission-group ul{color:#c7c7cc}.permission-group{background:#3a3a3c}input{background:#3a3a3c;border-color:#8e8e93;color:#f5f5f7}input:focus-visible,button:focus-visible{outline-color:#64b5ff}button{background:#0066cc}button:hover{background:#005eb8}.error{border-left-color:#ff8a80;color:#ff8a80}}
+    @media(max-width:520px){body{padding:12px}main{padding:22px 18px}button,input{min-height:44px}}
   </style>
 </head>
 <body>
   <main>
-    <h1>Pair Foldweave with ${htmlEscape(clientDisplayName(client))}</h1>
-    <p>Enter the ten-character code shown by your local Foldweave companion. Confirm the pairing locally before continuing.</p>
+    <h1>Connect ${htmlEscape(clientDisplayName(client))}</h1>
+    <p>Enter the code shown in Foldweave.</p>
     ${error}
     <form method="post" action="${htmlEscape(url.pathname + url.search)}">
       <input type="hidden" name="csrf" value="${htmlEscape(csrfToken)}">
       <label for="pairing-code">Pairing code</label>
       <input id="pairing-code" name="pairing_code" inputmode="text" autocomplete="one-time-code" minlength="10" maxlength="12" required autofocus>
-      <button type="submit">Authorize Foldweave</button>
+      <div class="actions"><button type="submit">Connect</button></div>
     </form>
-    <p class="muted">Requested permissions:</p>
-    <ul>${scopeItems}</ul>
-    <p class="muted">No local path, project payload, API key, or planning excerpt is sent to this authorization page.</p>
+    <div class="permission-group">
+      <p class="muted">Allow this connection to:</p>
+      <ul>${scopeItems}</ul>
+    </div>
+    <p class="privacy-note">This page receives no files, local paths, API keys, or planning excerpts.</p>
   </main>
 </body>
 </html>`;
@@ -258,6 +330,14 @@ async function handleRegistration(request: Request, env: Env): Promise<Response>
   const registration = envelope.body as unknown as ReturnType<typeof parseRegistrationBody>;
   await verifyDeviceEnvelope(envelope, registration.publicKeyJwk);
   const initialNonceHash = await sha256Hex(envelope.nonce);
+
+  // A device can be re-paired through a newly registered ChatGPT OAuth client.
+  // The OAuth provider automatically replaces grants only for the same
+  // user/client pair, so an older app registration could otherwise retain a
+  // valid token whose encrypted props point at an obsolete DeviceSession.
+  // Starting a new signed pairing is the device owner's explicit replacement
+  // boundary: revoke every prior grant for this device before issuing a code.
+  await revokeOAuthGrants(env, registration.deviceId);
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const now = Date.now();
@@ -342,7 +422,12 @@ async function handleApproval(request: Request, env: Env): Promise<Response> {
   if (!directoryResponse.ok) {
     return directoryResponse;
   }
-  return jsonResponse({ approved: true });
+  return jsonResponse({
+    approved: true,
+    approvedAt,
+    codeHash,
+    sessionId,
+  });
 }
 
 async function revokeOAuthGrants(env: Env, deviceId: string): Promise<void> {
@@ -391,7 +476,13 @@ async function handleRevocation(request: Request, env: Env): Promise<Response> {
     method: "POST",
   });
   await revokeOAuthGrants(env, deviceId);
-  return jsonResponse({ revoked: true });
+  return jsonResponse({
+    codeHash,
+    deviceId,
+    revoked: true,
+    revokedAt,
+    sessionId,
+  });
 }
 
 async function handlePairingStatus(request: Request, env: Env): Promise<Response> {
@@ -512,12 +603,7 @@ async function handleAuthorize(request: Request, env: Env): Promise<Response> {
   if (!authorizedResponse.ok) {
     throw new HttpError(409, "pairing_state_invalid", "Pairing session could not be finalized.");
   }
-  const headers = securityHeaders(new Headers({ location: redirectTo }));
-  headers.append(
-    "set-cookie",
-    "__Host-fw_oauth_csrf=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0",
-  );
-  return new Response(null, { headers, status: 302 });
+  return authorizationCompletionResponse(redirectTo);
 }
 
 function validateOAuthProps(value: unknown): OAuthProps {
@@ -566,7 +652,7 @@ export class McpApiHandler extends WorkerEntrypoint<Env, OAuthProps> {
     try {
       requireSecureRequest(request);
       const url = new URL(request.url);
-      if (url.pathname !== "/mcp") {
+      if (url.pathname !== PUBLIC_MCP_PATH) {
         return jsonResponse({ error: "not_found" }, { status: 404 });
       }
       if (!["GET", "POST", "DELETE"].includes(request.method)) {
@@ -586,9 +672,20 @@ export class McpApiHandler extends WorkerEntrypoint<Env, OAuthProps> {
         const response = mcpError(request, 401, -32001, "Foldweave pairing is inactive or expired.");
         response.headers.set(
           "www-authenticate",
-          `Bearer resource_metadata="${resourceMetadata}", scope="${SUPPORTED_SCOPES.join(" ")}"`,
+          `Bearer resource_metadata="${resourceMetadata}", ` +
+            `scope="${SUPPORTED_SCOPES.join(" ")}", error="invalid_token", ` +
+            'error_description="The Foldweave pairing is inactive or expired"',
         );
         return response;
+      }
+      if (request.method === "GET") {
+        return new Response(null, {
+          headers: {
+            allow: "POST, DELETE",
+            "cache-control": "no-store",
+          },
+          status: 405,
+        });
       }
       const declaredLength = request.headers.get("content-length");
       if (declaredLength !== null && Number(declaredLength) > MAX_MCP_BODY_BYTES) {
@@ -620,6 +717,39 @@ export class McpApiHandler extends WorkerEntrypoint<Env, OAuthProps> {
       const scopes = canonicalScopes(props.scopes);
       const operation = await describeMcpOperation({ body, bodyDigest, headers });
       requireInvocationScope(scopes, operation.requiredScope);
+      const accessObservation = await deviceSessionStub(
+        this.env,
+        props.sessionId,
+      ).fetch("https://foldweave.internal/client-access-observed", {
+        body: JSON.stringify({
+          authorizedAt: props.authorizedAt,
+          deviceId: props.deviceId,
+          scopes,
+          sessionId: props.sessionId,
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      if (!accessObservation.ok) {
+        throw new HttpError(
+          401,
+          "client_access_observation_invalid",
+          "Authenticated client access could not be bound to the active pairing.",
+        );
+      }
+      if (
+        operation.descriptor.rpcMethod !== null &&
+        (GATEWAY_DISCOVERY_METHODS.has(operation.descriptor.rpcMethod) ||
+          operation.descriptor.rpcMethod.startsWith("notifications/"))
+      ) {
+        return await handlePublicMcpDiscovery(
+          new Request(request.url, {
+            body,
+            headers: request.headers,
+            method: request.method,
+          }),
+        );
+      }
       const invocation: PublicInvocationSeed = {
         authorizedAt: props.authorizedAt,
         bodyDigest,
@@ -709,6 +839,10 @@ export const defaultHandler: ExportedHandler<Env> = {
       }
       if (url.pathname === "/companion") {
         return await handleCompanionSocket(request, env);
+      }
+      if (url.pathname === PUBLIC_MCP_PATH) {
+        requireSecureRequest(request);
+        return await handlePublicMcpDiscovery(request);
       }
       return jsonResponse({ error: "not_found" }, { status: 404 });
     } catch (error) {

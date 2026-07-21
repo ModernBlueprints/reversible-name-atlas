@@ -171,6 +171,8 @@ async def test_native_receiver_review_shows_t1_then_t2_delta_before_acceptance(
         parent_status = parent_status_response.json()
         parent_preview = parent_preview_response.json()
 
+        assert parent_status["revision_available"] is True
+        assert parent_status["revision_attempts_remaining"] == 2
         assert parent_preview["proposal_basis"] == "imported_change_file"
         assert parent_preview["imported_change_file_fingerprint"] is not None
         assert parent_preview["match_report_fingerprint"] is not None

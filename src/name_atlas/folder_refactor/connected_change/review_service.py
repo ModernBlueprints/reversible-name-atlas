@@ -51,7 +51,6 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderDestinationReservationV1,
     FolderJobLifecycleV3,
     FolderJobV3IdempotencyConflict,
-    FolderJobV3LoadError,
     FolderJobV3RevisionError,
     FolderJobVerifiedArtifactsV3,
     FolderPublicJobCapabilityV1,
@@ -74,7 +73,6 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     evolve_job_v3,
     expected_final_result_path_v3,
     expected_pending_result_path_v3,
-    load_folder_job_record_v3,
 )
 from name_atlas.folder_refactor.connected_change.preview import (
     FolderPlanPreviewV1,
@@ -169,6 +167,11 @@ from name_atlas.folder_refactor.transaction import (
     FolderTransactionPaths,
     FolderTransactionProgress,
     scan_folder_with_references,
+)
+from name_atlas.foldweave_job_locator import (
+    FoldweaveJobLocator,
+    FoldweaveJobLocatorError,
+    FoldweaveJobRegistrySnapshot,
 )
 
 oslo_tz = ZoneInfo("Europe/Oslo")
@@ -3196,6 +3199,25 @@ def _bounded_durable_lock(
         lock.__exit__(None, None, None)
 
 
+def _job_registry(
+    jobs_directory: Path,
+    *,
+    error_code: str,
+    error_message: str,
+) -> FoldweaveJobRegistrySnapshot:
+    """Return strict current jobs while preserving known pre-final records."""
+
+    try:
+        return FoldweaveJobLocator(
+            jobs_directory.resolve(strict=False)
+        ).inspect_registry()
+    except FoldweaveJobLocatorError as exc:
+        raise FoldweaveReviewServiceError(
+            error_code,
+            error_message,
+        ) from exc
+
+
 def _derivative_child_retry_or_none(
     jobs_directory: Path,
     *,
@@ -3204,24 +3226,20 @@ def _derivative_child_retry_or_none(
     """Return one exact child retry or reject conflicting key reuse."""
 
     matching: FolderRefactorJobV3 | None = None
-    for candidate_path in sorted(
-        jobs_directory.glob("*.json"),
-        key=lambda item: item.name,
-    ):
-        try:
-            record = load_folder_job_record_v3(candidate_path)
-        except FolderJobV3LoadError as exc:
-            raise FoldweaveReviewServiceError(
-                "derivative_job_authority_unreadable",
-                "A durable job in the shared state root cannot be validated.",
-            ) from exc
-        if not isinstance(record, FolderRefactorJobV3) or not isinstance(
-            record.authority, GptDerivativeJobAuthorityV3
-        ):
+    registry = _job_registry(
+        jobs_directory,
+        error_code="derivative_job_authority_unreadable",
+        error_message="A durable job in the shared state root cannot be validated.",
+    )
+    current_key_matches = 0
+    for located in registry.current:
+        record = located.job
+        if not isinstance(record.authority, GptDerivativeJobAuthorityV3):
             continue
         existing = record.authority.creation_binding
         if existing.idempotency_key_sha256 != creation.idempotency_key_sha256:
             continue
+        current_key_matches += 1
         if existing.request_fingerprint != creation.request_fingerprint:
             raise FolderJobV3IdempotencyConflict(
                 "Derivative child retry key is bound to another exact request."
@@ -3231,6 +3249,21 @@ def _derivative_child_retry_or_none(
                 "Derivative child retry key is bound to multiple durable jobs."
             )
         matching = record
+    unsupported_matches = tuple(
+        located
+        for located in registry.unsupported
+        if located.record.idempotency.key_sha256 == creation.idempotency_key_sha256
+    )
+    if current_key_matches + len(unsupported_matches) > 1:
+        raise FolderJobV3IdempotencyConflict(
+            "Derivative child retry key appears in multiple durable jobs."
+        )
+    if unsupported_matches:
+        raise FoldweaveReviewServiceError(
+            "derivative_job_requires_fresh_start",
+            "This preserved pre-final derivative job cannot be resumed. "
+            "Start a fresh job; the existing record remains unchanged.",
+        )
     return matching
 
 
@@ -3249,18 +3282,15 @@ def _derivative_child_retry_by_inputs_or_none(
     matching: FolderRefactorJobV3 | None = None
     parent_path = parent_job_path.resolve(strict=False)
     resolved_output = output_parent.resolve(strict=False)
-    for candidate_path in sorted(
-        jobs_directory.resolve(strict=False).glob("*.json"),
-        key=lambda item: item.name,
-    ):
-        try:
-            record = load_folder_job_record_v3(candidate_path)
-        except FolderJobV3LoadError as exc:
-            raise FoldweaveReviewServiceError(
-                "derivative_job_authority_unreadable",
-                "A durable job in the shared state root cannot be validated.",
-            ) from exc
-        if not isinstance(record, FolderRefactorJobV3) or not isinstance(
+    registry = _job_registry(
+        jobs_directory,
+        error_code="derivative_job_authority_unreadable",
+        error_message="A durable job in the shared state root cannot be validated.",
+    )
+    current_key_matches = 0
+    for located in registry.current:
+        record = located.job
+        if not isinstance(
             record.authority,
             GptDerivativeJobAuthorityV3,
         ):
@@ -3268,6 +3298,7 @@ def _derivative_child_retry_by_inputs_or_none(
         creation = record.authority.creation_binding
         if creation.idempotency_key_sha256 != idempotency_key_sha256:
             continue
+        current_key_matches += 1
         exact = (
             record.authority.parent_binding.parent_job_path == parent_path
             and creation.output_parent == resolved_output
@@ -3286,6 +3317,21 @@ def _derivative_child_retry_by_inputs_or_none(
                 "Derivative child retry key is bound to multiple durable jobs."
             )
         matching = record
+    unsupported_matches = tuple(
+        located
+        for located in registry.unsupported
+        if located.record.idempotency.key_sha256 == idempotency_key_sha256
+    )
+    if current_key_matches + len(unsupported_matches) > 1:
+        raise FolderJobV3IdempotencyConflict(
+            "Derivative child retry key appears in multiple durable jobs."
+        )
+    if unsupported_matches:
+        raise FoldweaveReviewServiceError(
+            "derivative_job_requires_fresh_start",
+            "This preserved pre-final derivative job cannot be resumed. "
+            "Start a fresh job; the existing record remains unchanged.",
+        )
     return matching
 
 
@@ -3474,23 +3520,15 @@ def _require_unique_destination_reservation(
     """Fail closed if another active durable job owns this exact destination."""
 
     jobs_directory = current_job_path.resolve(strict=False).parent
-    for candidate_path in sorted(
-        jobs_directory.glob("*.json"),
-        key=lambda item: item.name,
-    ):
-        if candidate_path.resolve(strict=False) == current_job_path.resolve(
-            strict=False
-        ):
+    registry = _job_registry(
+        jobs_directory,
+        error_code="destination_authority_unreadable",
+        error_message="A durable job in the shared state root cannot be validated.",
+    )
+    for located in registry.current:
+        if located.path == current_job_path.resolve(strict=False):
             continue
-        try:
-            record = load_folder_job_record_v3(candidate_path)
-        except FolderJobV3LoadError as exc:
-            raise FoldweaveReviewServiceError(
-                "destination_authority_unreadable",
-                "A durable job in the shared state root cannot be validated.",
-            ) from exc
-        if not isinstance(record, FolderRefactorJobV3):
-            continue
+        record = located.job
         other = record.destination_reservation
         if (
             other is not None

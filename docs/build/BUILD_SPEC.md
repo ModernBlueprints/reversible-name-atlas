@@ -1,7 +1,7 @@
 # Foldweave — Native Review and Dual-Live-Planning Build Specification
 
-Status: **FOLDWEAVE PRODUCT CONTRACT FROZEN; AMENDED GOAL INACTIVE;
-WAITING_FOR_FOLDWEAVE_GOAL_ACTIVATION**
+Status: **FOLDWEAVE PRODUCT CONTRACT FROZEN; F+0 ACTIVE; IMPLEMENTATION IN
+PROGRESS; SUBMISSION HOLD ACTIVE**
 
 This is the sole authority for what Foldweave is, what the next release must
 support, what it may claim, which completed predecessor behavior remains
@@ -18,10 +18,10 @@ listed predecessor clauses. Historical names, schema identifiers, artifact
 paths, fingerprints, and completed evidence are not globally renamed.
 
 The preceding Connected Change goal completed C0–C7 and is superseded only for
-future execution. This specification, its commit, its push, its reproduction,
-or an activation-readiness verdict does not activate the amended goal. Only the
-user's later explicit activation of the complete `docs/build/GOAL.md` in the
-current primary Codex task creates F+0.
+future execution. The user explicitly activated the complete
+`docs/build/GOAL.md` in the current primary Codex task at F+0. The earlier
+specification commit, push, reproduction, and activation-readiness verdict did
+not create F+0.
 
 ## 1. Controlling sources and fixed boundaries
 
@@ -1996,14 +1996,27 @@ ChatGPT session calls Foldweave's bounded host-planning tools and submits a
 complete proposal or sparse revision. Foldweave makes no hidden Responses API
 call, reads no API key, and reserves or mutates no direct budget. The remote
 widget uses the standard MCP Apps bridge as its portable baseline. Inside
-ChatGPT, **Send changes** feature-detects and prefers the documented
-`window.openai.sendFollowUpMessage` extension so the instruction re-enters the
-host-model loop; when that extension is absent, it emits one standard
-`ui/message` notification. It selects exactly one follow-up transport and never
-retries through the other transport after dispatch or rejection. Deterministic
+ChatGPT, **Send changes** sends one acknowledged standard `ui/message` request
+so the instruction re-enters the host-model loop and the widget can distinguish
+acceptance from rejection or timeout. The documented
+`window.openai.sendFollowUpMessage` extension is used only when standard MCP Apps
+initialization is unavailable. Foldweave selects exactly one follow-up transport
+and never retries through the other transport after dispatch, rejection, or an
+ambiguous timeout. Deterministic
 refresh, exact acceptance, verification, Change File retrieval, and
 reconstruction remain standard-first `tools/call` operations, with
 `window.openai.callTool` only as the compatibility fallback.
+
+An acknowledged `ui/message` response proves only that the host accepted the
+component-authored message. It does not prove that the host model invoked
+`submit_plan_revision` or that a durable revision completed. Foldweave must
+reconcile against the exact bound durable job. If no bound host revision appears
+within the bounded continuation interval, the prior preview remains
+authoritative and no result may exist; the widget exposes an explicit same-
+conversation recovery state. A revision is complete only after the host calls
+`submit_plan_revision` and the replacement preview is durably available. The
+recovery cannot dispatch through a second transport, create a second revision
+reservation, or be described as seamless automatic continuation.
 
 ChatGPT may inspect only bounded job-scoped inventory pages, eligible excerpts,
 and supported-link facts. It cannot access the filesystem, paths, credentials,
@@ -2136,8 +2149,47 @@ proof, verify again, and recreate-original actions.
 
 Do not use Mermaid, beautiful-mermaid, ASCII trees, or static images as the
 operational renderer. Use one purpose-built React 18 + TypeScript + BlueprintJS
-v6 folder-tree component, driven only by `folder-plan-preview.v1`, with a dark
-navy/cyan/violet/amber/green/gray palette and no color-only meaning.
+v6 folder-tree component, driven only by `folder-plan-preview.v1`. Every active
+release-facing surface uses one restrained, recognizable macOS utility visual
+system. Blueprint supplies familiar controls and interaction behavior; custom
+CSS is limited to layout, spacing, responsive behavior, and the shared visual
+tokens below.
+
+The required light appearance uses a neutral `#F5F5F7` canvas, white and
+`#F2F2F7` surfaces, `#1D1D1F` primary text, and native-looking gray text and
+separators that meet the applicable contrast threshold. The system dark
+appearance is the primary release and recording appearance and uses
+`#1C1C1E`, `#2C2C2E`, and `#3A3A3C` surfaces with restrained gray text and
+separators. Use the contrast-safe macOS-blue family only for links, visible
+focus, selection, and the primary action: `#0066CC` for the filled action and
+`#64B5FF` for dark-appearance links and focus. White text on the filled action
+must meet at least 4.5:1; text and focus colors cannot copy Apple palette values
+when that exact combination would fail the rendered contrast requirement.
+Success, warning, and danger colors are reserved for those exact semantic
+states and cannot become decorative accents. Use
+`-apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", sans-serif`,
+sentence-case labels, compact 32–36-pixel desktop controls, at least 44-pixel
+touch targets in the narrow layout, six- to ten-pixel radii, and no shadow
+heavier than `0 1px 2px rgba(0,0,0,.08)`.
+
+Prohibit gradients, glow, neon color, navy/cyan/violet decorative palettes,
+backdrop filters, text shadows, colored shadows, sci-fi grids, glass panels,
+oversized marketing typography, all-caps tracked labels, and generic
+"AI product" dashboard ornament. Do not hard-code Blueprint dark mode. Native
+and browser surfaces follow the macOS system appearance; the ChatGPT widget
+follows the host appearance. The application must look like Finder in macOS
+dark mode: compact, quiet, familiar, and task-focused, not a cyber or developer
+dashboard. The exact acceptance action uses macOS blue rather than success
+green. Keep primary-surface text to the minimum needed to identify the current
+state and next action. Put required technical, evidence, retention, and
+provenance detail in concise secondary disclosure instead of repeated panels,
+badges, pills, or marketing copy.
+
+Use separators sparingly. Prefer whitespace, grouped controls, sidebar or list
+hierarchy, and native split-view structure. Permit only purposeful toolbar or
+split-view boundaries, short Finder-style row separators, and concise grouped
+disclosure or settings boundaries. Do not place repeated full-width horizontal
+rules between routine sections or outline every item as a card.
 
 Required behavior: origin and receiver toggles; stable selection, expansion,
 and scroll across toggles; changed branches initially expanded; changed-only
@@ -2148,6 +2200,15 @@ keyboard-only navigation, visible focus, meaningful screen-reader names,
 correct toggle state, sufficient contrast, and no horizontal failure at
 1280×720, approximately 1440×900, and 390×844. Rendering can never mutate or
 override the candidate.
+
+The 390×844 acceptance capture must use that exact viewport and prove
+`scrollWidth === clientWidth`; a full-page image with a narrow width does not
+substitute for viewport acceptance. The packaged pywebview application must
+also be inspected in its actual macOS window at its minimum supported size.
+The Home, Create, Apply, Working, review, settings, pairing, OAuth, Done, proof,
+ChatGPT widget, and error/empty/loading surfaces are all inside this visual
+acceptance boundary. Release screenshots, app imagery, and video capture cannot
+begin until every active surface passes it.
 
 Acceptance includes one generated maximum-shape fixture with exactly 500 files
 and 1,000 explicit directories. It must prove bounded initial render,
@@ -2176,6 +2237,13 @@ Pairing surfaces show device name, ten-character Crockford Base32 one-time code,
 expiry, local approval, failure/revocation state, and no local path. Native
 Foldweave exposes paired-device status and revocation. Gateway loss is a
 transport state, not proof that a durable local job failed.
+
+The widget distinguishes message rejection, message acceptance while awaiting
+host action, durable revision completion, and an accepted message for which no
+bound host tool call appears. In that last state it preserves the prior preview
+and offers **Continue in ChatGPT** with the exact same-conversation instruction.
+It cannot claim that a product revision was sent or completed merely because
+the host acknowledged the component message.
 
 ### UX-023 — Native/browser routes and accessibility
 
@@ -2258,6 +2326,12 @@ acceptance proving one deterministic reservation winner or a fail-closed
 no-winner result with no partial output. Native checks include port conflict and
 second-launch behavior.
 
+Also require an acknowledged `ui/message` with no subsequent
+`submit_plan_revision`, proving that the prior preview, job authority, output
+directory, execution authorization, and direct ledger remain unchanged and
+that one explicit same-conversation recovery can complete exactly one bound
+durable revision.
+
 ### VER-024 — Clean release and reconstruction matrix
 
 Release proof combines focused and full Python tests, frontend component tests,
@@ -2326,7 +2400,8 @@ and Durable Object WebSocket Hibernation.
 Configure `allowPlainPKCE: false`,
 `clientIdMetadataDocumentEnabled: true`, and Cloudflare's
 `global_fetch_strictly_public` compatibility flag for CIMD fetch protection.
-OAuth token exchange is disabled in the selected profile.
+Plain-PKCE fallback is disabled. Authorization-code token exchange remains
+required and accepts only PKCE `S256`.
 Workers KV stores only OAuth clients, grants, and refresh/access-token records
 or hashes required by the provider. One SQLite Durable Object per paired
 device/session stores only public device identity, public key, scopes,

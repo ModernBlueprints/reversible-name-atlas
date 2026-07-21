@@ -33,6 +33,7 @@ from name_atlas.folder_refactor.planner_provider import (
     DeterministicDevelopmentPlannerProvider,
 )
 from name_atlas.folder_refactor.receipt_contracts import FolderPlannerUsage
+from name_atlas.folder_refactor.serialization import canonical_json_bytes
 
 
 class _ScriptedRevisionProvider:
@@ -57,6 +58,16 @@ class _ScriptedRevisionProvider:
             call_id=f"f1-revision-{len(self.inputs)}",
             revision=self._revision,
         )
+
+
+def _downgrade_to_known_pre_final(job: FolderRefactorJobV3) -> bytes:
+    """Persist the exact recognized pre-final v3 shape without mutation."""
+
+    payload = job.model_dump(mode="json")
+    payload.pop("operation_idempotency")
+    persisted = canonical_json_bytes(payload) + b"\n"
+    job.job_path.write_bytes(persisted)
+    return persisted
 
 
 @pytest.mark.anyio
@@ -288,6 +299,119 @@ def test_destination_reservation_has_one_race_winner_and_releases_on_block(
     )
     assert accepted_after_release.lifecycle is FolderJobLifecycleV3.EXECUTING
     assert accepted_after_release.destination_reservation is not None
+    assert tuple(output.iterdir()) == ()
+
+
+def test_destination_reservation_preserves_and_skips_known_pre_final_v3(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Recognized pre-final evidence cannot block a current exact acceptance."""
+
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    output = tmp_path / "output"
+    output.mkdir()
+    jobs = tmp_path / "jobs"
+    service = FoldweaveReviewService()
+    current = service.prepare_deterministic_origin_review(
+        source_root=fixture.sofia_root,
+        output_parent=output,
+        job_path=jobs / "current.json",
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+        idempotency_key="destination-current",
+    )
+    preserved_job = service.prepare_deterministic_origin_review(
+        source_root=fixture.sofia_root,
+        output_parent=output,
+        job_path=jobs / "preserved-pre-final.json",
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+        idempotency_key="destination-pre-final",
+    )
+    preserved = _downgrade_to_known_pre_final(preserved_job)
+
+    def stop_before_copy(
+        _service: FoldweaveReviewService,
+        _writer,
+        job: FolderRefactorJobV3,
+        *,
+        progress_callback,
+    ) -> FolderRefactorJobV3:
+        del progress_callback
+        return job
+
+    monkeypatch.setattr(FoldweaveReviewService, "_execute_locked", stop_before_copy)
+    assert current.preview is not None
+    assert current.candidate_plan is not None
+    accepted = service.accept(
+        current.job_path,
+        expected_revision=current.revision,
+        preview_fingerprint=current.preview.preview_fingerprint,
+        candidate_fingerprint=current.preview.compiled_candidate_fingerprint,
+        output_parent=output,
+        result_folder_name=current.candidate_plan.result_folder_name,
+        idempotency_key="destination-current-accept",
+        channel="native_app",
+    )
+
+    assert accepted.lifecycle is FolderJobLifecycleV3.EXECUTING
+    assert preserved_job.job_path.read_bytes() == preserved
+    assert tuple(output.iterdir()) == ()
+
+
+def test_destination_reservation_still_rejects_corrupt_registry_authority(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unclassified registry bytes remain a fail-closed acceptance blocker."""
+
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    output = tmp_path / "output"
+    output.mkdir()
+    jobs = tmp_path / "jobs"
+    service = FoldweaveReviewService()
+    current = service.prepare_deterministic_origin_review(
+        source_root=fixture.sofia_root,
+        output_parent=output,
+        job_path=jobs / "current.json",
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+        idempotency_key="destination-corrupt-current",
+    )
+    corrupt_path = jobs / "corrupt.json"
+    corrupt_path.write_text("{}\n", encoding="utf-8")
+
+    def forbidden_execution(*_args: object, **_kwargs: object) -> FolderRefactorJobV3:
+        raise AssertionError(
+            "Corrupt destination authority must block before execution."
+        )
+
+    monkeypatch.setattr(
+        FoldweaveReviewService,
+        "_execute_locked",
+        forbidden_execution,
+    )
+    assert current.preview is not None
+    assert current.candidate_plan is not None
+    with pytest.raises(FoldweaveReviewServiceError) as error:
+        service.accept(
+            current.job_path,
+            expected_revision=current.revision,
+            preview_fingerprint=current.preview.preview_fingerprint,
+            candidate_fingerprint=current.preview.compiled_candidate_fingerprint,
+            output_parent=output,
+            result_folder_name=current.candidate_plan.result_folder_name,
+            idempotency_key="destination-corrupt-accept",
+            channel="native_app",
+        )
+
+    assert error.value.code == "destination_authority_unreadable"
+    assert service.status(current.job_path) == current
+    assert corrupt_path.read_text(encoding="utf-8") == "{}\n"
     assert tuple(output.iterdir()) == ()
 
 

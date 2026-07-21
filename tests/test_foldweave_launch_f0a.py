@@ -20,7 +20,8 @@ def test_foldweave_help_exposes_only_truthful_current_app_surface(capsys) -> Non
 
 
 def test_foldweave_app_parser_accepts_exact_development_browser_contract() -> None:
-    args = foldweave_browser_cli.build_foldweave_app_parser().parse_args(
+    parser = foldweave_browser_cli.build_foldweave_app_parser()
+    args = parser.parse_args(
         [
             "--browser",
             "--mode",
@@ -43,6 +44,11 @@ def test_foldweave_app_parser_accepts_exact_development_browser_contract() -> No
     assert args.job == Path("/tmp/job.json")
     assert args.job_id is None
     assert args.port == 8765
+    help_text = parser.format_help()
+    assert "supported browser fallback" in help_text
+    assert "private loopback URL" in help_text
+    assert "F0a" not in help_text
+    assert "native shell is not live" not in help_text
 
 
 def test_browser_parser_accepts_job_id_selection() -> None:
@@ -147,7 +153,7 @@ def test_f0a_launch_injects_review_service_and_never_starts_provider(
 @pytest.mark.parametrize(
     ("arguments", "message"),
     [
-        (["--mode", "development"], "pass --browser"),
+        (["--mode", "development"], "requires --browser"),
         (
             ["--browser", "--mode", "development", "--port", "0"],
             "port must be between 1 and 65535",

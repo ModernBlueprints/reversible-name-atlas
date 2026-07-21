@@ -18,7 +18,7 @@ from name_atlas.foldweave_companion import (
 )
 from name_atlas.foldweave_companion_client import (
     CompanionGatewayProfileV1,
-    CompanionGatewayStatusV1,
+    CompanionGatewayStatusV2,
     CompanionPairingClient,
     CompanionPairingRegistrationV1,
     CompanionPairingStateStore,
@@ -35,6 +35,7 @@ class PairingPageStatus(StrEnum):
 
     NOT_CONFIGURED = "not_configured"
     AWAITING_LOCAL_APPROVAL = "awaiting_local_approval"
+    AWAITING_CLIENT_ACCESS = "awaiting_client_access"
     LOCAL_ONLY = "local_only"
     CONNECTED = "connected"
     DISCONNECTED = "disconnected"
@@ -56,7 +57,7 @@ class PairingClientOperations(Protocol):
 
     async def approve_locally(self) -> CompanionPairingStateV1: ...
 
-    async def status(self) -> CompanionGatewayStatusV1: ...
+    async def status(self) -> CompanionGatewayStatusV2: ...
 
     async def revoke(self) -> None: ...
 
@@ -113,6 +114,7 @@ class PairingPageView:
     status_label: str
     detail: str
     configured: bool
+    device_name: str | None = None
     gateway_url: str | None = None
     pairing_code: str | None = None
     expires_at: str | None = None
@@ -293,6 +295,7 @@ class FoldweavePairingService:
                     "to create a new one-time code."
                 ),
                 configured=True,
+                device_name=local.device_name,
                 gateway_url=local.gateway.base_url,
                 expires_at=_format_oslo_timestamp(local.pairing_code_expires_at),
                 can_register=True,
@@ -307,6 +310,7 @@ class FoldweavePairingService:
                     "locally, then complete authorization in ChatGPT."
                 ),
                 configured=True,
+                device_name=local.device_name,
                 gateway_url=local.gateway.base_url,
                 pairing_code=registration.pairing_code,
                 expires_at=_format_oslo_timestamp(local.pairing_code_expires_at),
@@ -325,6 +329,7 @@ class FoldweavePairingService:
             status_label="Local pairing only",
             detail=detail,
             configured=True,
+            device_name=local.device_name,
             gateway_url=local.gateway.base_url,
             pairing_code=(None if registration is None else registration.pairing_code),
             expires_at=_format_oslo_timestamp(local.pairing_code_expires_at),
@@ -335,10 +340,11 @@ class FoldweavePairingService:
         self,
         local: CompanionPairingStateV1,
         registration: CompanionPairingRegistrationV1 | None,
-        gateway: CompanionGatewayStatusV1,
+        gateway: CompanionGatewayStatusV2,
     ) -> PairingPageView:
         common = {
             "configured": True,
+            "device_name": local.device_name,
             "gateway_url": local.gateway.base_url,
             "expires_at": _format_oslo_timestamp(gateway.expires_at),
             "can_revoke": True,
@@ -359,7 +365,7 @@ class FoldweavePairingService:
                 can_register=True,
                 **common,
             )
-        if not gateway.authorized:
+        if not gateway.authorization_code_issued:
             if gateway.pairing_state == "pending":
                 if registration is None:
                     return PairingPageView(
@@ -398,13 +404,24 @@ class FoldweavePairingService:
                 ),
                 **common,
             )
+        if not gateway.client_access_observed:
+            return PairingPageView(
+                status=PairingPageStatus.AWAITING_CLIENT_ACCESS,
+                status_label="Finish connecting in ChatGPT",
+                detail=(
+                    "Foldweave issued an OAuth authorization code, but has not "
+                    "yet observed an authenticated scoped MCP request. Return to "
+                    "ChatGPT and finish connecting."
+                ),
+                **common,
+            )
         if gateway.connected:
             return PairingPageView(
                 status=PairingPageStatus.CONNECTED,
                 status_label="Configured and connected",
                 detail=(
-                    "The gateway confirms OAuth authorization and a currently "
-                    "authenticated Foldweave companion connection."
+                    "The gateway confirms authenticated MCP client access and a "
+                    "currently authenticated Foldweave companion connection."
                 ),
                 **common,
             )
@@ -417,7 +434,7 @@ class FoldweavePairingService:
                 status=PairingPageStatus.RECONNECTING,
                 status_label="Configured; reconnecting",
                 detail=(
-                    "OAuth authorization is active. The local companion reports "
+                    "MCP client access is confirmed. The local companion reports "
                     "that it is reconnecting to the gateway."
                 ),
                 **common,
@@ -426,7 +443,7 @@ class FoldweavePairingService:
             status=PairingPageStatus.DISCONNECTED,
             status_label="Configured; companion disconnected",
             detail=(
-                "OAuth authorization is active, but the gateway does not currently "
+                "Client access is confirmed, but the gateway does not currently "
                 "observe an authenticated companion connection."
             ),
             **common,

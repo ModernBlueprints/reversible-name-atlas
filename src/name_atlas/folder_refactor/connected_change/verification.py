@@ -1540,7 +1540,7 @@ def _scan_name_atlas_files(root: Path) -> set[str]:
         except OSError as exc:
             raise _VerificationBlocked(
                 "artifact_set_mismatch",
-                "The portable Name Atlas artifact directory cannot be enumerated.",
+                "The portable artifact directory cannot be enumerated.",
             ) from exc
         for entry in entries:
             try:
@@ -1548,7 +1548,7 @@ def _scan_name_atlas_files(root: Path) -> set[str]:
             except OSError as exc:
                 raise _VerificationBlocked(
                     "artifact_set_mismatch",
-                    "A portable Name Atlas artifact cannot be inspected.",
+                    "A portable artifact cannot be inspected.",
                 ) from exc
             path = Path(entry.path)
             relative_path = path.relative_to(root).as_posix()

@@ -131,6 +131,8 @@ subsystem appeared for the first time in the latest revision.
 | Foldweave F0b `dfa85b4` | One FastAPI control plane, established provider boundary, native picker/Finder bridge, and Blueprint visual system | Packaged pywebview macOS shell, focused React/TypeScript review island, Keychain-backed direct credentials, PyInstaller profile, live direct review/revision/acceptance, and restart/shutdown qualification |
 | Foldweave hosted checkpoint `13fb54e` | F0a preview DTO and the same durable engine | Bounded host-planning services, ChatGPT widget bridge, opaque local handles, truthful hosted provenance, and provider-free hosted surface; this checkpoint did not claim completed consumer pairing or public availability |
 | Foldweave F1 authority `2322076` | Durable v3 review job and exact authorization boundary | Append-only mutation history, exact-request rehydration, destination reservation, bounded revision recovery, and strengthened stale/duplicate/race refusal behavior |
+| Foldweave shared-planning checkpoint `719fc18` | F0a/F0b review and native authority, the Connected Change matcher/proof services, and the same v3 job | Complete v2 derivative/lineage and v3 proof implementation; real macOS ChatGPT developer-mode root review/revision/acceptance through the Secure MCP Tunnel; provider-free hosted provenance; shared local/public MCP authority; bounded gateway/companion implementation; and regression/audit corrections that keep public job capabilities inside the trusted local host. This checkpoint does not claim a deployed consumer gateway, public ChatGPT listing, final live derivative matrix, current Codex installed-copy qualification, or release readiness. |
+| Foldweave post-`719fc18` release worktree | The immutable `719fc18` engine, v3 job/preview authority, native package, shared MCP services, gateway/companion, and thin Foldweave plugin | Completed the direct and actual ChatGPT-hosted derivative evidence, keyless replay qualification, macOS-native visual correction and objective viewport/accessibility checks, 55 MiB native package requalification, Cloudflare Worker deployment version `ece68561-0740-47d3-9052-4e311cabf483`, and installed-copy qualification of Foldweave plugin `0.1.0+codex.20260720144006`. Google Chrome safely bypassed the Codex in-app Browser hostname block; the real consumer connector completed OAuth, paired WSS access, opaque selection, hosted root planning, current v33 widget rendering through bounded v31/v32 template compatibility, durable root and receiver-derivative revisions with verified same-conversation recovery, exact acceptance, two verified 24-file separate results, source-free and source-aware verification, self-contained origin/child Foldweave Change Files, immediate-parent lineage, path-and-byte-identical Sofia/Martin reconstruction, and disconnect/reconnect plus deployed refusal qualification without job, result, or ledger mutation. `CONSUMER_PAIRING_VERIFIED` and the narrow technical `PUBLICATION_READY` state are achieved. Automatic component continuation remains explicitly partial; no ChatGPT review submission, approval, publication, public listing, notarization, release candidate, video, or Devpost submission is claimed. |
 
 The Connected Change matcher, Change File contracts, provenance and receipt
 semantics, receiver application, current browser journeys, shared MCP server,
@@ -145,9 +147,10 @@ through OpenAI's official plugin-creator workflow after its product gate
 returned `GO`. The Foldweave plugin remains a thin successor around the same
 repository engine and relative MCP configuration; it contains no copied product
 implementation. Historical installed-copy qualification proves only the Name
-Atlas predecessor. The current Foldweave plugin requires its own fresh-task,
-installed-copy evidence before that qualification can be claimed for the new
-release.
+Atlas predecessor. The current Foldweave plugin version
+`0.1.0+codex.20260720144006` has separate installed-copy qualification from a
+fresh ephemeral Codex session; that evidence does not automatically transfer to
+a later plugin build.
 
 The archive release, A1–A3 foundation, and Connected Change C0–C7 release remain
 in ordinary Git history as traceable predecessors. The active release-facing

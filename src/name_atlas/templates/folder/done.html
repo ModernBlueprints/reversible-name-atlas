@@ -1,92 +1,96 @@
 {% extends "folder/base.html" %}
-{% block title %}Done · {% if foldweave_active %}Foldweave{% else %}Reversible Name Atlas{% endif %}{% endblock %}
+{% block title %}Done · Foldweave{% if not foldweave_active %} · Legacy compatibility{% endif %}{% endblock %}
 {% block content %}
   <section class="folder-panel folder-panel--done" aria-labelledby="done-title">
-    <div class="folder-verdict">
+    <div class="folder-verdict" role="status">
       <img src="{{ url_for('static', path='/vendor/blueprint/icons/tick-circle.svg') }}" alt="" aria-hidden="true">
-      <span><small>Independent receipt verification</small><strong>VERIFIED</strong></span>
+      <strong>Verified</strong>
     </div>
     <h1 id="done-title">Your new folder is ready</h1>
-    <p class="folder-lede">{% if foldweave_active %}Foldweave{% else %}Name Atlas{% endif %} created a separate copy, preserved supported links, and independently verified the result.</p>
-
+    {% if not foldweave_active %}<p class="folder-lede">Name Atlas created a separate copy and verified the result. <span class="folder-sr-only">Reversible Name Atlas legacy compatibility.</span></p>{% endif %}
     <dl class="folder-proof-grid">
-      <div><dt>Original files present</dt><dd>{{ state.result.source_file_count }} of {{ state.result.source_file_count }}, exactly once</dd></div>
+      <div><dt>Files</dt><dd>{{ state.result.source_file_count }}, exactly once</dd></div>
       <div><dt>Paths changed</dt><dd>{{ state.result.path_change_count }}</dd></div>
-      <div><dt>Supported Markdown links checked</dt><dd>{{ state.result.supported_link_count }}</dd></div>
-      <div><dt>Supported Markdown links updated</dt><dd>{{ state.result.supported_link_update_count }}</dd></div>
+      <div><dt>Links updated</dt><dd>{{ state.result.supported_link_update_count }} of {{ state.result.supported_link_count }}</dd></div>
       <div><dt>Original folder</dt><dd>Unchanged</dd></div>
-      <div><dt>Files removed or overwritten</dt><dd>None</dd></div>
-      <div><dt>Result proof</dt><dd>Deterministic checks passed</dd></div>
-      <div><dt>Independent verification</dt><dd>{% if state.result.independent_verification_passed %}Passed without GPT or an API key{% else %}Not available for this result{% endif %}</dd></div>
+      <div><dt>Verification</dt><dd>{% if state.result.independent_verification_passed %}Passed without GPT or an API key{% else %}Unavailable{% endif %}</dd></div>
       {% if state.result.change_file_fingerprint %}<div><dt>Change File</dt><dd>Ready and bound to this verified result</dd></div>{% endif %}
-      {% if state.result.organized_tree_commitment %}<div><dt>Organized result</dt><dd>Convergence identity recorded and verified</dd></div>{% endif %}
+      {% if state.result.reconstruction_available %}<div><dt>Reconstruction</dt><dd>Available</dd></div>{% endif %}
     </dl>
 
     <section class="folder-result-path" aria-labelledby="result-path-title">
       <h2 id="result-path-title">New folder</h2>
-      <code id="result-data-path">{{ state.result.data_root }}</code>
+      <strong class="folder-result-name">{{ state.result.display_folder_name }}</strong>
+      <span class="folder-sr-only" id="result-data-path">{{ state.result.data_root }}</span>
       <button class="bp6-button" type="button" data-copy-target="result-data-path">
         <img src="{{ url_for('static', path='/vendor/blueprint/icons/clipboard.svg') }}" alt="" aria-hidden="true">
         Copy path
       </button>
     </section>
 
-    <div class="folder-actions" aria-label="Result actions">
+    <div class="folder-toolbar-actions folder-result-actions" aria-label="Result actions">
       {% if state.result.change_file_fingerprint %}
         <form method="post" action="/show-in-finder">
           <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
-          <strong>Show in Finder</strong>
-          <small>Opens only the verified new folder. If Finder is unavailable, copy the path shown above.</small>
           <button class="bp6-button" type="submit">Show in Finder</button>
         </form>
-        <div class="folder-action-card">
-          <strong>Share this change</strong>
-          <small>No project payload bytes are transferred. The Change File does contain project names and structure, file sizes and hashes, supported link relationships, the original instruction, target names, and proof identifiers.</small>
-          <a class="bp6-button" href="/download-change-file" download>Download Change File</a>
-        </div>
+        <a class="bp6-button" href="/download-change-file" download>Download Change File</a>
       {% endif %}
-      <details>
-        <summary>See changes</summary>
-        <p>{{ state.result.path_change_count }} of {{ state.result.source_file_count }} file paths changed in the separate result.</p>
-      </details>
-      <details>
-        <summary>View proof</summary>
-        <p>Every source file has one accepted result path, unchanged payloads match, supported Markdown links keep the same target, protected paths stay fixed, and the source scan remained equal through promotion.</p>
-        {% if state.result.technical_facts %}
-          <dl class="folder-technical-facts">
-            {% for label, value in state.result.technical_facts %}<div><dt>{{ label }}</dt><dd><code>{{ value }}</code></dd></div>{% endfor %}
-          </dl>
-        {% endif %}
-      </details>
       {% if state.result.independent_verification_passed %}
         <form method="post" action="/verify-again">
           <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
-          <strong>Check the result again</strong>
-          <small>Runs the independent verifier without GPT, an API key, or the original folder.</small>
           <button class="bp6-button" type="submit">Verify again</button>
         </form>
       {% else %}
-        <div>
-          <button class="bp6-button" type="button" disabled aria-describedby="verify-unavailable">Verify again</button>
-          <small id="verify-unavailable">Independent verification is unavailable for this result.</small>
-        </div>
+        <button class="bp6-button" type="button" disabled aria-describedby="verify-unavailable">Verify again</button>
+        <small id="verify-unavailable" class="folder-sr-only">Independent verification is unavailable for this result.</small>
       {% endif %}
+    </div>
+
+    <div class="folder-result-details">
+      <details class="folder-disclosure">
+        <summary>See changes</summary>
+        <p>{{ state.result.path_change_count }} of {{ state.result.source_file_count }} file paths changed in the separate result.</p>
+      </details>
+      <details class="folder-disclosure">
+        <summary>View proof<span class="folder-sr-only"> — Proof details</span></summary>
+        <p>Every source file has one accepted result path, unchanged payloads match, supported Markdown links keep the same target, protected paths stay fixed, and the source scan remained equal through promotion.</p>
+        {% if state.result.technical_facts %}
+          <details class="folder-technical-disclosure">
+            <summary>Technical details</summary>
+            <dl class="folder-technical-facts">
+              {% for label, value in state.result.technical_facts %}<div><dt>{{ label }}</dt><dd><code>{{ value }}</code></dd></div>{% endfor %}
+            </dl>
+          </details>
+        {% endif %}
+      </details>
       {% if state.result.reconstruction_available %}
-        <form method="post" action="/recreate-original">
-          <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
-          <label for="restore-destination"><strong>Recreate original layout</strong></label>
-          <small>Creates another folder matching the original paths and bytes. It does not change the original folder or the organized result.</small>
-          <button class="bp6-button folder-picker-button" type="button" data-picker-role="restore_destination" data-picker-target="restore-destination">Choose destination parent…</button>
-          <input class="bp6-input" id="restore-destination" name="restore_destination" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.result.result_root }}-original-layout">
-          <small data-picker-status aria-live="polite">The selected parent will be used to derive an absent reconstruction folder. You can edit the absolute path manually.</small>
-          <button class="bp6-button" type="submit">Recreate original layout</button>
-        </form>
+        <details class="folder-disclosure folder-restore-disclosure">
+          <summary>Recreate original layout</summary>
+          <form class="folder-path-control folder-restore-control" method="post" action="/recreate-original">
+            <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
+            <button class="bp6-button folder-picker-button" type="button" data-picker-role="restore_destination" data-picker-target="restore-destination">Choose destination parent…</button>
+            <small data-picker-status aria-live="polite"></small>
+            <details class="folder-manual-path">
+              <summary aria-description="Or enter the absolute path">Enter path manually…</summary>
+              <label for="restore-destination">Absolute destination path</label>
+              <input class="bp6-input" id="restore-destination" name="restore_destination" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.result.result_root }}-original-layout">
+            </details>
+            <button class="bp6-button" type="submit">Recreate original layout</button>
+          </form>
+        </details>
       {% else %}
-        <div>
+        <div class="folder-unavailable-row">
           <button class="bp6-button" type="button" disabled aria-describedby="restore-unavailable">Recreate original layout</button>
           <small id="restore-unavailable">Exact reconstruction is unavailable for this result.</small>
         </div>
       {% endif %}
     </div>
+    {% if state.result.change_file_fingerprint %}
+      <details class="folder-disclosure">
+        <summary>Change File contents</summary>
+        <p>No project payload bytes are transferred. The Change File contains project names and structure, file sizes and hashes, supported link relationships, the original instruction, target names, and proof identifiers.</p>
+      </details>
+    {% endif %}
   </section>
 {% endblock %}

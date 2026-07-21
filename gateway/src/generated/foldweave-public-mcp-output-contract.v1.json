@@ -1,0 +1,1947 @@
+{
+  "outputSchemaFamilies": {
+    "FoldweaveChangeFileResultV1": {
+      "$defs": {
+        "NativePathRole": {
+          "description": "The only browser-selectable native path roles.",
+          "enum": [
+            "source_folder",
+            "output_parent",
+            "change_file",
+            "restore_destination"
+          ],
+          "title": "NativePathRole",
+          "type": "string"
+        },
+        "OpaqueLocalItemHandle": {
+          "additionalProperties": false,
+          "description": "Public, path-free identity for one locally selected item.",
+          "properties": {
+            "display_name": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Display Name",
+              "type": "string"
+            },
+            "expires_at": {
+              "format": "date-time",
+              "title": "Expires At",
+              "type": "string"
+            },
+            "handle": {
+              "pattern": "^fw_[A-Za-z0-9_-]{43}$",
+              "title": "Handle",
+              "type": "string"
+            },
+            "role": {
+              "$ref": "#/$defs/NativePathRole"
+            },
+            "schema_version": {
+              "const": "foldweave-local-item-handle.v1",
+              "default": "foldweave-local-item-handle.v1",
+              "title": "Schema Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "handle",
+            "role",
+            "display_name",
+            "expires_at"
+          ],
+          "title": "OpaqueLocalItemHandle",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Verified Change File identity and one path-free local item handle.",
+      "properties": {
+        "change_file_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Change File Fingerprint",
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/$defs/OpaqueLocalItemHandle"
+        },
+        "job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "originating_receipt_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Originating Receipt Fingerprint",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "foldweave-change-file-result.v1",
+          "default": "foldweave-change-file-result.v1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "item",
+        "change_file_fingerprint",
+        "originating_receipt_fingerprint"
+      ],
+      "title": "FoldweaveChangeFileResultV1",
+      "type": "object"
+    },
+    "FoldweaveChatGptReviewV1": {
+      "$defs": {
+        "FolderPlanFinding": {
+          "additionalProperties": false,
+          "description": "One deterministic collision or blocker surfaced to the reviewer.",
+          "properties": {
+            "detail": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "title": "Detail",
+              "type": "string"
+            },
+            "finding_id": {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "title": "Finding Id",
+              "type": "string"
+            },
+            "member_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Member Ids",
+              "type": "array"
+            },
+            "severity": {
+              "enum": [
+                "collision",
+                "blocker"
+              ],
+              "title": "Severity",
+              "type": "string"
+            }
+          },
+          "required": [
+            "finding_id",
+            "severity",
+            "detail"
+          ],
+          "title": "FolderPlanFinding",
+          "type": "object"
+        },
+        "FolderPlanLinkEffect": {
+          "additionalProperties": false,
+          "description": "One supported Markdown connection derived for the proposed tree.",
+          "properties": {
+            "current_source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Current Source Path",
+              "type": "string"
+            },
+            "current_target_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Current Target Path",
+              "type": "string"
+            },
+            "original_destination": {
+              "maxLength": 8192,
+              "minLength": 1,
+              "title": "Original Destination",
+              "type": "string"
+            },
+            "proposed_destination": {
+              "maxLength": 8192,
+              "minLength": 1,
+              "title": "Proposed Destination",
+              "type": "string"
+            },
+            "proposed_source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Proposed Source Path",
+              "type": "string"
+            },
+            "proposed_target_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Proposed Target Path",
+              "type": "string"
+            },
+            "reference_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Reference Id",
+              "type": "string"
+            },
+            "source_member_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Source Member Id",
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "unchanged",
+                "rewritten"
+              ],
+              "title": "Status",
+              "type": "string"
+            },
+            "target_member_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Target Member Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "reference_id",
+            "source_member_id",
+            "target_member_id",
+            "current_source_path",
+            "current_target_path",
+            "proposed_source_path",
+            "proposed_target_path",
+            "original_destination",
+            "proposed_destination",
+            "status"
+          ],
+          "title": "FolderPlanLinkEffect",
+          "type": "object"
+        },
+        "FolderPlanMemberChange": {
+          "additionalProperties": false,
+          "description": "The path and authority comparison for one local source member.",
+          "properties": {
+            "authority_source": {
+              "enum": [
+                "gpt_plan",
+                "change_file",
+                "protected"
+              ],
+              "title": "Authority Source",
+              "type": "string"
+            },
+            "change_classification": {
+              "enum": [
+                "unchanged",
+                "renamed",
+                "moved",
+                "moved_and_renamed",
+                "protected",
+                "empty_directory"
+              ],
+              "title": "Change Classification",
+              "type": "string"
+            },
+            "current_relative_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Current Relative Path",
+              "type": "string"
+            },
+            "link_updated": {
+              "default": false,
+              "title": "Link Updated",
+              "type": "boolean"
+            },
+            "member_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Member Id",
+              "type": "string"
+            },
+            "member_kind": {
+              "enum": [
+                "regular_file",
+                "empty_directory"
+              ],
+              "title": "Member Kind",
+              "type": "string"
+            },
+            "proposed_relative_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Proposed Relative Path",
+              "type": "string"
+            },
+            "protected": {
+              "title": "Protected",
+              "type": "boolean"
+            },
+            "rationale": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "title": "Rationale",
+              "type": "string"
+            },
+            "supported_link_effect_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Supported Link Effect Ids",
+              "type": "array"
+            }
+          },
+          "required": [
+            "member_id",
+            "member_kind",
+            "current_relative_path",
+            "proposed_relative_path",
+            "change_classification",
+            "protected",
+            "authority_source",
+            "rationale"
+          ],
+          "title": "FolderPlanMemberChange",
+          "type": "object"
+        },
+        "FolderPlanPreviewCounts": {
+          "additionalProperties": false,
+          "description": "Exact bounded counts shown in every review surface.",
+          "properties": {
+            "blocker_count": {
+              "minimum": 0,
+              "title": "Blocker Count",
+              "type": "integer"
+            },
+            "changed_path_count": {
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Changed Path Count",
+              "type": "integer"
+            },
+            "empty_directory_count": {
+              "maximum": 1000,
+              "minimum": 0,
+              "title": "Empty Directory Count",
+              "type": "integer"
+            },
+            "file_count": {
+              "maximum": 500,
+              "minimum": 1,
+              "title": "File Count",
+              "type": "integer"
+            },
+            "link_count": {
+              "minimum": 0,
+              "title": "Link Count",
+              "type": "integer"
+            },
+            "link_updated_count": {
+              "minimum": 0,
+              "title": "Link Updated Count",
+              "type": "integer"
+            },
+            "moved_count": {
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Moved Count",
+              "type": "integer"
+            },
+            "protected_count": {
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Protected Count",
+              "type": "integer"
+            },
+            "renamed_count": {
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Renamed Count",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "file_count",
+            "empty_directory_count",
+            "changed_path_count",
+            "renamed_count",
+            "moved_count",
+            "link_count",
+            "link_updated_count",
+            "protected_count",
+            "blocker_count"
+          ],
+          "title": "FolderPlanPreviewCounts",
+          "type": "object"
+        },
+        "FolderPlanPreviewV1": {
+          "additionalProperties": false,
+          "description": "The sole complete DTO rendered and accepted by every Foldweave surface.",
+          "properties": {
+            "blocker_findings": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/FolderPlanFinding"
+              },
+              "title": "Blocker Findings",
+              "type": "array"
+            },
+            "collision_findings": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/FolderPlanFinding"
+              },
+              "title": "Collision Findings",
+              "type": "array"
+            },
+            "compiled_candidate_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Compiled Candidate Fingerprint",
+              "type": "string"
+            },
+            "counts": {
+              "$ref": "#/$defs/FolderPlanPreviewCounts"
+            },
+            "current_tree_members": {
+              "items": {
+                "$ref": "#/$defs/FolderPlanTreeMember"
+              },
+              "title": "Current Tree Members",
+              "type": "array"
+            },
+            "expected_job_revision": {
+              "minimum": 0,
+              "title": "Expected Job Revision",
+              "type": "integer"
+            },
+            "immediate_parent_candidate_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Immediate Parent Candidate Fingerprint"
+            },
+            "imported_change_file_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Imported Change File Fingerprint"
+            },
+            "job_id": {
+              "pattern": "^[a-f0-9]{32}$",
+              "title": "Job Id",
+              "type": "string"
+            },
+            "match_report_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Match Report Fingerprint"
+            },
+            "member_changes": {
+              "items": {
+                "$ref": "#/$defs/FolderPlanMemberChange"
+              },
+              "title": "Member Changes",
+              "type": "array"
+            },
+            "preview_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Preview Fingerprint",
+              "type": "string"
+            },
+            "proposal_basis": {
+              "enum": [
+                "fresh_gpt_plan",
+                "imported_change_file",
+                "gpt_derivative"
+              ],
+              "title": "Proposal Basis",
+              "type": "string"
+            },
+            "proposal_revision": {
+              "maximum": 2,
+              "minimum": 0,
+              "title": "Proposal Revision",
+              "type": "integer"
+            },
+            "proposed_tree_members": {
+              "items": {
+                "$ref": "#/$defs/FolderPlanTreeMember"
+              },
+              "title": "Proposed Tree Members",
+              "type": "array"
+            },
+            "schema_version": {
+              "const": "folder-plan-preview.v1",
+              "default": "folder-plan-preview.v1",
+              "title": "Schema Version",
+              "type": "string"
+            },
+            "source_commitment": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Source Commitment",
+              "type": "string"
+            },
+            "supported_link_effects": {
+              "items": {
+                "$ref": "#/$defs/FolderPlanLinkEffect"
+              },
+              "title": "Supported Link Effects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "job_id",
+            "expected_job_revision",
+            "proposal_revision",
+            "proposal_basis",
+            "source_commitment",
+            "current_tree_members",
+            "proposed_tree_members",
+            "member_changes",
+            "supported_link_effects",
+            "counts",
+            "compiled_candidate_fingerprint",
+            "preview_fingerprint"
+          ],
+          "title": "FolderPlanPreviewV1",
+          "type": "object"
+        },
+        "FolderPlanRevisionDeltaEntryV1": {
+          "additionalProperties": false,
+          "description": "One member path changed by the latest accepted proposal revision.",
+          "properties": {
+            "current_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Current Path",
+              "type": "string"
+            },
+            "member_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Member Id",
+              "type": "string"
+            },
+            "previous_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Previous Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "member_id",
+            "previous_path",
+            "current_path"
+          ],
+          "title": "FolderPlanRevisionDeltaEntryV1",
+          "type": "object"
+        },
+        "FolderPlanRevisionDeltaV1": {
+          "additionalProperties": false,
+          "description": "Durable latest accepted proposal delta, outside the preview hash domain.",
+          "properties": {
+            "base_candidate_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Base Candidate Fingerprint",
+              "type": "string"
+            },
+            "base_preview_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Base Preview Fingerprint",
+              "type": "string"
+            },
+            "current_candidate_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Current Candidate Fingerprint",
+              "type": "string"
+            },
+            "current_preview_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Current Preview Fingerprint",
+              "type": "string"
+            },
+            "current_result_folder_name": {
+              "maxLength": 240,
+              "minLength": 1,
+              "title": "Current Result Folder Name",
+              "type": "string"
+            },
+            "delta_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Delta Fingerprint",
+              "type": "string"
+            },
+            "entries": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/FolderPlanRevisionDeltaEntryV1"
+              },
+              "maxItems": 500,
+              "title": "Entries",
+              "type": "array"
+            },
+            "job_id": {
+              "pattern": "^[a-f0-9]{32}$",
+              "title": "Job Id",
+              "type": "string"
+            },
+            "previous_result_folder_name": {
+              "maxLength": 240,
+              "minLength": 1,
+              "title": "Previous Result Folder Name",
+              "type": "string"
+            },
+            "proposal_revision_after": {
+              "maximum": 2,
+              "minimum": 1,
+              "title": "Proposal Revision After",
+              "type": "integer"
+            },
+            "proposal_revision_before": {
+              "exclusiveMaximum": 2,
+              "minimum": 0,
+              "title": "Proposal Revision Before",
+              "type": "integer"
+            },
+            "schema_version": {
+              "const": "folder-plan-revision-delta.v1",
+              "default": "folder-plan-revision-delta.v1",
+              "title": "Schema Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job_id",
+            "proposal_revision_before",
+            "proposal_revision_after",
+            "base_candidate_fingerprint",
+            "base_preview_fingerprint",
+            "current_candidate_fingerprint",
+            "current_preview_fingerprint",
+            "previous_result_folder_name",
+            "current_result_folder_name",
+            "delta_fingerprint"
+          ],
+          "title": "FolderPlanRevisionDeltaV1",
+          "type": "object"
+        },
+        "FolderPlanTreeMember": {
+          "additionalProperties": false,
+          "description": "One member in either complete side of the review tree.",
+          "properties": {
+            "directory_prefixes": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Directory Prefixes",
+              "type": "array"
+            },
+            "member_id": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Member Id",
+              "type": "string"
+            },
+            "member_kind": {
+              "enum": [
+                "regular_file",
+                "empty_directory"
+              ],
+              "title": "Member Kind",
+              "type": "string"
+            },
+            "protected": {
+              "title": "Protected",
+              "type": "boolean"
+            },
+            "relative_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "title": "Relative Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "member_id",
+            "member_kind",
+            "relative_path",
+            "directory_prefixes",
+            "protected"
+          ],
+          "title": "FolderPlanTreeMember",
+          "type": "object"
+        },
+        "FoldweaveHostedReviewStatusV1": {
+          "additionalProperties": false,
+          "description": "Exact renderer-facing review status with truthful hosted provenance.",
+          "properties": {
+            "authorization_context_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Authorization Context Fingerprint",
+              "type": "string"
+            },
+            "candidate_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Candidate Fingerprint",
+              "type": "string"
+            },
+            "direct_api_used": {
+              "const": false,
+              "default": false,
+              "title": "Direct Api Used",
+              "type": "boolean"
+            },
+            "direct_budget_reserved": {
+              "const": false,
+              "default": false,
+              "title": "Direct Budget Reserved",
+              "type": "boolean"
+            },
+            "execution_origin": {
+              "enum": [
+                "gpt_planned",
+                "gpt_revised_from_change_file",
+                "capsule_applied",
+                "none"
+              ],
+              "title": "Execution Origin",
+              "type": "string"
+            },
+            "job_id": {
+              "pattern": "^[a-f0-9]{32}$",
+              "title": "Job Id",
+              "type": "string"
+            },
+            "job_revision": {
+              "minimum": 0,
+              "title": "Job Revision",
+              "type": "integer"
+            },
+            "latest_proposal_delta": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FolderPlanRevisionDeltaV1"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "lifecycle": {
+              "enum": [
+                "reviewing",
+                "revision_failed",
+                "executing",
+                "verified"
+              ],
+              "title": "Lifecycle",
+              "type": "string"
+            },
+            "model_transport": {
+              "enum": [
+                "chatgpt_hosted",
+                "codex_hosted",
+                "none"
+              ],
+              "title": "Model Transport",
+              "type": "string"
+            },
+            "planning_basis": {
+              "enum": [
+                "fresh",
+                "derivative",
+                "none"
+              ],
+              "title": "Planning Basis",
+              "type": "string"
+            },
+            "preview_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Preview Fingerprint",
+              "type": "string"
+            },
+            "proposal_revision": {
+              "maximum": 2,
+              "minimum": 0,
+              "title": "Proposal Revision",
+              "type": "integer"
+            },
+            "revision_attempts_remaining": {
+              "maximum": 2,
+              "minimum": 0,
+              "title": "Revision Attempts Remaining",
+              "type": "integer"
+            },
+            "revision_available": {
+              "title": "Revision Available",
+              "type": "boolean"
+            },
+            "revision_failure": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Revision Failure"
+            }
+          },
+          "required": [
+            "job_id",
+            "lifecycle",
+            "job_revision",
+            "proposal_revision",
+            "candidate_fingerprint",
+            "preview_fingerprint",
+            "authorization_context_fingerprint",
+            "planning_basis",
+            "model_transport",
+            "execution_origin",
+            "revision_available",
+            "revision_attempts_remaining"
+          ],
+          "title": "FoldweaveHostedReviewStatusV1",
+          "type": "object"
+        },
+        "FoldweaveHostedVerifiedResultV1": {
+          "additionalProperties": false,
+          "description": "Minimal independently verified result summary for the widget.",
+          "properties": {
+            "change_file_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Change File Fingerprint"
+            },
+            "changed_path_count": {
+              "maximum": 500,
+              "minimum": 0,
+              "title": "Changed Path Count",
+              "type": "integer"
+            },
+            "complete_file_count": {
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Complete File Count",
+              "type": "integer"
+            },
+            "organized_tree_commitment": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Organized Tree Commitment",
+              "type": "string"
+            },
+            "source_unchanged": {
+              "const": true,
+              "default": true,
+              "title": "Source Unchanged",
+              "type": "boolean"
+            },
+            "verification": {
+              "const": "verified",
+              "default": "verified",
+              "title": "Verification",
+              "type": "string"
+            }
+          },
+          "required": [
+            "complete_file_count",
+            "changed_path_count",
+            "organized_tree_commitment"
+          ],
+          "title": "FoldweaveHostedVerifiedResultV1",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "The sole complete DTO mounted in the ChatGPT Foldweave widget.",
+      "properties": {
+        "journey": {
+          "enum": [
+            "organize",
+            "apply"
+          ],
+          "title": "Journey",
+          "type": "string"
+        },
+        "preview": {
+          "$ref": "#/$defs/FolderPlanPreviewV1"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FoldweaveHostedVerifiedResultV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "foldweave-chatgpt-review.v1",
+          "default": "foldweave-chatgpt-review.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "state_version": {
+          "minimum": 0,
+          "title": "State Version",
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/$defs/FoldweaveHostedReviewStatusV1"
+        }
+      },
+      "required": [
+        "state_version",
+        "journey",
+        "preview",
+        "status"
+      ],
+      "title": "FoldweaveChatGptReviewV1",
+      "type": "object"
+    },
+    "FoldweaveCompilerFailuresV1": {
+      "$defs": {
+        "FoldweaveCompilerFailurePublicV1": {
+          "additionalProperties": false,
+          "description": "One bounded deterministic compiler rejection visible to the host model.",
+          "properties": {
+            "call_id": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Call Id",
+              "type": "string"
+            },
+            "code": {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "title": "Code",
+              "type": "string"
+            },
+            "detail": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "title": "Detail",
+              "type": "string"
+            },
+            "failure_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Failure Fingerprint",
+              "type": "string"
+            },
+            "plan_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Plan Fingerprint",
+              "type": "string"
+            },
+            "submission_index": {
+              "maximum": 3,
+              "minimum": 1,
+              "title": "Submission Index",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "submission_index",
+            "call_id",
+            "plan_fingerprint",
+            "code",
+            "detail",
+            "failure_fingerprint"
+          ],
+          "title": "FoldweaveCompilerFailurePublicV1",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Complete bounded deterministic failures for the current planning job.",
+      "properties": {
+        "failures": {
+          "items": {
+            "$ref": "#/$defs/FoldweaveCompilerFailurePublicV1"
+          },
+          "maxItems": 3,
+          "title": "Failures",
+          "type": "array"
+        },
+        "job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "foldweave-host-compiler-failures.v1",
+          "default": "foldweave-host-compiler-failures.v1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "failures"
+      ],
+      "title": "FoldweaveCompilerFailuresV1",
+      "type": "object"
+    },
+    "FoldweaveEvidenceResultV1": {
+      "$defs": {
+        "JsonValue": {}
+      },
+      "additionalProperties": false,
+      "description": "One bounded host-visible evidence response and its durable checkpoint.",
+      "properties": {
+        "call_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Call Id",
+          "type": "string"
+        },
+        "citation_evidence_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact evidence ID to copy into the current plan entry, or null when the evidence call failed.",
+          "title": "Citation Evidence Id"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "evidence_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Evidence Fingerprint",
+          "type": "string"
+        },
+        "job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "job_revision": {
+          "minimum": 0,
+          "title": "Job Revision",
+          "type": "integer"
+        },
+        "permitted_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Permitted Evidence Ids",
+          "type": "array"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "foldweave-host-evidence-result.v1",
+          "default": "foldweave-host-evidence-result.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "tool_name": {
+          "enum": [
+            "list_inventory_page",
+            "read_text_excerpt",
+            "inspect_markdown_links"
+          ],
+          "title": "Tool Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "job_revision",
+        "evidence_fingerprint",
+        "permitted_evidence_ids",
+        "citation_evidence_id",
+        "tool_name",
+        "call_id"
+      ],
+      "title": "FoldweaveEvidenceResultV1",
+      "type": "object"
+    },
+    "FoldweaveHostedJobStatusV1": {
+      "additionalProperties": false,
+      "description": "Path-free durable status for a ChatGPT-hosted planning job.",
+      "properties": {
+        "blocker_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocker Code"
+        },
+        "candidate_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Fingerprint"
+        },
+        "clarification_question": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clarification Question"
+        },
+        "clarification_question_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clarification Question Fingerprint"
+        },
+        "direct_api_used": {
+          "const": false,
+          "default": false,
+          "title": "Direct Api Used",
+          "type": "boolean"
+        },
+        "direct_budget_reserved": {
+          "const": false,
+          "default": false,
+          "title": "Direct Budget Reserved",
+          "type": "boolean"
+        },
+        "execution_origin": {
+          "enum": [
+            "gpt_planned",
+            "gpt_revised_from_change_file",
+            "capsule_applied",
+            "none"
+          ],
+          "title": "Execution Origin",
+          "type": "string"
+        },
+        "has_preview": {
+          "title": "Has Preview",
+          "type": "boolean"
+        },
+        "job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "job_revision": {
+          "minimum": 0,
+          "title": "Job Revision",
+          "type": "integer"
+        },
+        "lifecycle": {
+          "enum": [
+            "matching",
+            "planning",
+            "awaiting_clarification",
+            "reviewing",
+            "revising",
+            "revision_failed",
+            "executing",
+            "verified",
+            "stale",
+            "blocked"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "model_transport": {
+          "enum": [
+            "chatgpt_hosted",
+            "codex_hosted",
+            "none"
+          ],
+          "title": "Model Transport",
+          "type": "string"
+        },
+        "planning_basis": {
+          "enum": [
+            "fresh",
+            "derivative",
+            "none"
+          ],
+          "title": "Planning Basis",
+          "type": "string"
+        },
+        "preview_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preview Fingerprint"
+        },
+        "proposal_revision": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Proposal Revision",
+          "type": "integer"
+        },
+        "request_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Request Fingerprint",
+          "type": "string"
+        },
+        "revision_attempts_remaining": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Revision Attempts Remaining",
+          "type": "integer"
+        },
+        "revision_failure_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision Failure Code"
+        },
+        "schema_version": {
+          "const": "foldweave-hosted-job-status.v1",
+          "default": "foldweave-hosted-job-status.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_commitment": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Commitment",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "lifecycle",
+        "job_revision",
+        "proposal_revision",
+        "source_commitment",
+        "request_fingerprint",
+        "planning_basis",
+        "model_transport",
+        "execution_origin",
+        "has_preview",
+        "revision_attempts_remaining"
+      ],
+      "title": "FoldweaveHostedJobStatusV1",
+      "type": "object"
+    },
+    "FoldweaveHostedRevisionRecoveryV1": {
+      "$defs": {
+        "FoldweaveHostedJobStatusV1": {
+          "additionalProperties": false,
+          "description": "Path-free durable status for a ChatGPT-hosted planning job.",
+          "properties": {
+            "blocker_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z0-9_:-]{1,128}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Blocker Code"
+            },
+            "candidate_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Candidate Fingerprint"
+            },
+            "clarification_question": {
+              "anyOf": [
+                {
+                  "maxLength": 1000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Clarification Question"
+            },
+            "clarification_question_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Clarification Question Fingerprint"
+            },
+            "direct_api_used": {
+              "const": false,
+              "default": false,
+              "title": "Direct Api Used",
+              "type": "boolean"
+            },
+            "direct_budget_reserved": {
+              "const": false,
+              "default": false,
+              "title": "Direct Budget Reserved",
+              "type": "boolean"
+            },
+            "execution_origin": {
+              "enum": [
+                "gpt_planned",
+                "gpt_revised_from_change_file",
+                "capsule_applied",
+                "none"
+              ],
+              "title": "Execution Origin",
+              "type": "string"
+            },
+            "has_preview": {
+              "title": "Has Preview",
+              "type": "boolean"
+            },
+            "job_id": {
+              "pattern": "^[a-f0-9]{32}$",
+              "title": "Job Id",
+              "type": "string"
+            },
+            "job_revision": {
+              "minimum": 0,
+              "title": "Job Revision",
+              "type": "integer"
+            },
+            "lifecycle": {
+              "enum": [
+                "matching",
+                "planning",
+                "awaiting_clarification",
+                "reviewing",
+                "revising",
+                "revision_failed",
+                "executing",
+                "verified",
+                "stale",
+                "blocked"
+              ],
+              "title": "Lifecycle",
+              "type": "string"
+            },
+            "model_transport": {
+              "enum": [
+                "chatgpt_hosted",
+                "codex_hosted",
+                "none"
+              ],
+              "title": "Model Transport",
+              "type": "string"
+            },
+            "planning_basis": {
+              "enum": [
+                "fresh",
+                "derivative",
+                "none"
+              ],
+              "title": "Planning Basis",
+              "type": "string"
+            },
+            "preview_fingerprint": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Preview Fingerprint"
+            },
+            "proposal_revision": {
+              "maximum": 2,
+              "minimum": 0,
+              "title": "Proposal Revision",
+              "type": "integer"
+            },
+            "request_fingerprint": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Request Fingerprint",
+              "type": "string"
+            },
+            "revision_attempts_remaining": {
+              "maximum": 2,
+              "minimum": 0,
+              "title": "Revision Attempts Remaining",
+              "type": "integer"
+            },
+            "revision_failure_code": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z0-9_:-]{1,128}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Revision Failure Code"
+            },
+            "schema_version": {
+              "const": "foldweave-hosted-job-status.v1",
+              "default": "foldweave-hosted-job-status.v1",
+              "title": "Schema Version",
+              "type": "string"
+            },
+            "source_commitment": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Source Commitment",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job_id",
+            "lifecycle",
+            "job_revision",
+            "proposal_revision",
+            "source_commitment",
+            "request_fingerprint",
+            "planning_basis",
+            "model_transport",
+            "execution_origin",
+            "has_preview",
+            "revision_attempts_remaining"
+          ],
+          "title": "FoldweaveHostedJobStatusV1",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Path-free remount result for one exact visible parent review.",
+      "properties": {
+        "parent_candidate_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Parent Candidate Fingerprint",
+          "type": "string"
+        },
+        "parent_job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Parent Job Id",
+          "type": "string"
+        },
+        "parent_job_revision": {
+          "minimum": 0,
+          "title": "Parent Job Revision",
+          "type": "integer"
+        },
+        "parent_preview_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Parent Preview Fingerprint",
+          "type": "string"
+        },
+        "recovery_status": {
+          "enum": [
+            "none",
+            "recovered"
+          ],
+          "title": "Recovery Status",
+          "type": "string"
+        },
+        "revision_instruction": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision Instruction"
+        },
+        "revision_instruction_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision Instruction Fingerprint"
+        },
+        "schema_version": {
+          "const": "foldweave-hosted-revision-recovery.v1",
+          "default": "foldweave-hosted-revision-recovery.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_commitment": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Commitment",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FoldweaveHostedJobStatusV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "submit_call_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submit Call Id"
+        }
+      },
+      "required": [
+        "recovery_status",
+        "parent_job_id",
+        "parent_job_revision",
+        "parent_candidate_fingerprint",
+        "parent_preview_fingerprint",
+        "source_commitment"
+      ],
+      "title": "FoldweaveHostedRevisionRecoveryV1",
+      "type": "object"
+    },
+    "FoldweaveLocalSelectionResultV1": {
+      "$defs": {
+        "NativePathRole": {
+          "description": "The only browser-selectable native path roles.",
+          "enum": [
+            "source_folder",
+            "output_parent",
+            "change_file",
+            "restore_destination"
+          ],
+          "title": "NativePathRole",
+          "type": "string"
+        },
+        "OpaqueLocalItemHandle": {
+          "additionalProperties": false,
+          "description": "Public, path-free identity for one locally selected item.",
+          "properties": {
+            "display_name": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Display Name",
+              "type": "string"
+            },
+            "expires_at": {
+              "format": "date-time",
+              "title": "Expires At",
+              "type": "string"
+            },
+            "handle": {
+              "pattern": "^fw_[A-Za-z0-9_-]{43}$",
+              "title": "Handle",
+              "type": "string"
+            },
+            "role": {
+              "$ref": "#/$defs/NativePathRole"
+            },
+            "schema_version": {
+              "const": "foldweave-local-item-handle.v1",
+              "default": "foldweave-local-item-handle.v1",
+              "title": "Schema Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "handle",
+            "role",
+            "display_name",
+            "expires_at"
+          ],
+          "title": "OpaqueLocalItemHandle",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "One path-free native selection outcome for the paired local app.",
+      "properties": {
+        "item": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpaqueLocalItemHandle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_:-]{1,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason Code"
+        },
+        "schema_version": {
+          "const": "foldweave-local-selection-result.v1",
+          "default": "foldweave-local-selection-result.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "selection_id": {
+          "anyOf": [
+            {
+              "pattern": "^fwsel_[A-Za-z0-9_-]{43}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selection Id"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "selected",
+            "cancelled",
+            "unavailable",
+            "timeout",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "FoldweaveLocalSelectionResultV1",
+      "type": "object"
+    },
+    "FoldweaveReconstructionResultV1": {
+      "$defs": {
+        "NativePathRole": {
+          "description": "The only browser-selectable native path roles.",
+          "enum": [
+            "source_folder",
+            "output_parent",
+            "change_file",
+            "restore_destination"
+          ],
+          "title": "NativePathRole",
+          "type": "string"
+        },
+        "OpaqueLocalItemHandle": {
+          "additionalProperties": false,
+          "description": "Public, path-free identity for one locally selected item.",
+          "properties": {
+            "display_name": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Display Name",
+              "type": "string"
+            },
+            "expires_at": {
+              "format": "date-time",
+              "title": "Expires At",
+              "type": "string"
+            },
+            "handle": {
+              "pattern": "^fw_[A-Za-z0-9_-]{43}$",
+              "title": "Handle",
+              "type": "string"
+            },
+            "role": {
+              "$ref": "#/$defs/NativePathRole"
+            },
+            "schema_version": {
+              "const": "foldweave-local-item-handle.v1",
+              "default": "foldweave-local-item-handle.v1",
+              "title": "Schema Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "handle",
+            "role",
+            "display_name",
+            "expires_at"
+          ],
+          "title": "OpaqueLocalItemHandle",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Path-free proof for one transaction-specific reconstruction.",
+      "properties": {
+        "item": {
+          "$ref": "#/$defs/OpaqueLocalItemHandle"
+        },
+        "job_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "receipt_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Receipt Fingerprint",
+          "type": "string"
+        },
+        "restored_bytes": {
+          "minimum": 0,
+          "title": "Restored Bytes",
+          "type": "integer"
+        },
+        "restored_empty_directory_count": {
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Restored Empty Directory Count",
+          "type": "integer"
+        },
+        "restored_file_count": {
+          "maximum": 500,
+          "minimum": 1,
+          "title": "Restored File Count",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "foldweave-reconstruction-result.v1",
+          "default": "foldweave-reconstruction-result.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_commitment": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Commitment",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "item",
+        "receipt_fingerprint",
+        "source_commitment",
+        "restored_file_count",
+        "restored_bytes",
+        "restored_empty_directory_count"
+      ],
+      "title": "FoldweaveReconstructionResultV1",
+      "type": "object"
+    },
+    "FoldweaveVerificationResultV1": {
+      "additionalProperties": false,
+      "description": "Path-free independent result-verification evidence.",
+      "properties": {
+        "failed_check_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Failed Check Ids",
+          "type": "array"
+        },
+        "job_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{32}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Job Id"
+        },
+        "organized_tree_commitment": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Organized Tree Commitment"
+        },
+        "receipt_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Receipt Fingerprint"
+        },
+        "schema_version": {
+          "const": "foldweave-verification-result.v1",
+          "default": "foldweave-verification-result.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "verification": {
+          "enum": [
+            "verified",
+            "blocked"
+          ],
+          "title": "Verification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification",
+        "failed_check_ids"
+      ],
+      "title": "FoldweaveVerificationResultV1",
+      "type": "object"
+    }
+  },
+  "schemaVersion": "foldweave-public-mcp-output-contract.v1",
+  "toolOutputFamily": {
+    "accept_plan_and_create_copy": "FoldweaveChatGptReviewV1",
+    "answer_clarification": "FoldweaveHostedJobStatusV1",
+    "choose_local_item": "FoldweaveLocalSelectionResultV1",
+    "create_or_resume_planning_job": "FoldweaveHostedJobStatusV1",
+    "get_change_file": "FoldweaveChangeFileResultV1",
+    "get_compiler_failures": "FoldweaveCompilerFailuresV1",
+    "get_plan_preview": "FoldweaveChatGptReviewV1",
+    "inspect_markdown_links": "FoldweaveEvidenceResultV1",
+    "job_status": "FoldweaveHostedJobStatusV1",
+    "keep_previous_proposal": "FoldweaveChatGptReviewV1",
+    "list_inventory_page": "FoldweaveEvidenceResultV1",
+    "plan_change": "FoldweaveHostedJobStatusV1",
+    "prepare_change_application": "FoldweaveHostedJobStatusV1",
+    "read_text_excerpt": "FoldweaveEvidenceResultV1",
+    "recover_revision": "FoldweaveHostedRevisionRecoveryV1",
+    "recreate_original": "FoldweaveReconstructionResultV1",
+    "request_clarification": "FoldweaveHostedJobStatusV1",
+    "revise_plan": "FoldweaveHostedJobStatusV1",
+    "submit_compact_plan": "FoldweaveHostedJobStatusV1",
+    "submit_plan": "FoldweaveHostedJobStatusV1",
+    "submit_plan_revision": "FoldweaveHostedJobStatusV1",
+    "verify_result": "FoldweaveVerificationResultV1"
+  },
+  "widgetResourceUri": "ui://foldweave/review-v33.html"
+}

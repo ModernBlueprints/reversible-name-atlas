@@ -140,6 +140,29 @@ def test_receiver_verifier_rejects_pathful_portable_authorization(
     assert verified_job.execution_authorization is not None
     normal = verify_connected_result(verified_job.final_result_path)
     assert normal.status is ConnectedReceiptVerificationStatus.VERIFIED
+    bag_info = (verified_job.final_result_path / "bag-info.txt").read_text(
+        encoding="utf-8"
+    )
+    assert "Bag-Software-Agent: Foldweave 0.1.0\n" in bag_info
+    assert "Reversible Name Atlas" not in bag_info
+
+    extra_artifact = (tmp_path / "extra-portable-artifact").resolve()
+    shutil.copytree(verified_job.final_result_path, extra_artifact)
+    (extra_artifact / "name-atlas" / "uncommitted.json").write_bytes(b"{}")
+    BagItWriter().finalize_tagmanifest(extra_artifact)
+    extra_verification = verify_connected_result(extra_artifact)
+    assert extra_verification.status is ConnectedReceiptVerificationStatus.BLOCKED
+    assert extra_verification.failed_check_ids == ("artifact_set_mismatch",)
+    assert any(
+        "Foldweave portable artifact family" in check.detail
+        for check in extra_verification.checks
+        if not check.passed
+    )
+    assert all(
+        "Name Atlas" not in check.detail
+        for check in extra_verification.checks
+        if not check.passed
+    )
 
     authorization_path = (
         verified_job.final_result_path / FOLDWEAVE_EXECUTION_AUTHORIZATION_PATH

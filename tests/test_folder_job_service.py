@@ -1058,9 +1058,8 @@ async def test_real_browser_start_to_done_uses_durable_job_service(
     assert started.status_code == 303
     assert completed.json()["done_url"] == "/done"
     assert done.status_code == 200
-    assert "3 of 3, exactly once" in done.text
-    assert "Supported Markdown links checked</dt><dd>1" in done.text
-    assert "Supported Markdown links updated</dt><dd>0" in done.text
+    assert "Files</dt><dd>3, exactly once" in done.text
+    assert "Links updated</dt><dd>0 of 1" in done.text
     assert job_path.is_file()
     assert (output / "browser-result" / "data" / "organized" / "note.md").is_file()
 

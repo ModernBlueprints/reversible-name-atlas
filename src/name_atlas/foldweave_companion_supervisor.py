@@ -11,6 +11,7 @@ from typing import Protocol, runtime_checkable
 
 from name_atlas.foldweave_companion_client import (
     CompanionPairingStateStore,
+    CompanionRuntimeLock,
     CompanionTransportError,
 )
 
@@ -69,6 +70,11 @@ class FoldweaveCompanionSupervisor:
         init=False,
         repr=False,
     )
+    _ownership: CompanionRuntimeLock | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
     _application_running: bool = field(default=False, init=False, repr=False)
     _generation: int = field(default=0, init=False, repr=False)
     _connection_state: PairingConnectionState = field(
@@ -96,6 +102,11 @@ class FoldweaveCompanionSupervisor:
         async with self._lock:
             self._application_running = True
             if await self._pairing_is_configured():
+                try:
+                    await self._acquire_ownership_locked()
+                except Exception:
+                    self._application_running = False
+                    raise
                 self._ensure_controller_locked()
             else:
                 self._connection_state = PairingConnectionState.DISCONNECTED
@@ -104,32 +115,53 @@ class FoldweaveCompanionSupervisor:
         """Wake or stop the sole runtime after a durable pairing transition."""
 
         controller_to_stop: asyncio.Task[None] | None = None
+        ownership_to_release: CompanionRuntimeLock | None = None
         async with self._lock:
             if not self._application_running:
                 return
             if await self._pairing_is_configured():
+                await self._acquire_ownership_locked()
                 self._ensure_controller_locked()
                 self._wake.set()
                 if isinstance(self.runtime, WakeableCompanionRuntime):
                     self.runtime.wake()
             else:
-                controller_to_stop = self._detach_controller_locked()
-        await _cancel_task(controller_to_stop)
+                (
+                    controller_to_stop,
+                    ownership_to_release,
+                ) = self._detach_controller_locked()
+        try:
+            await _cancel_task(controller_to_stop)
+        finally:
+            _release_ownership(ownership_to_release)
 
     async def stop_companion(self) -> None:
         """Stop the current relay while leaving the app able to pair again."""
 
         async with self._lock:
-            controller = self._detach_controller_locked()
-        await _cancel_task(controller)
+            controller, ownership = self._detach_controller_locked()
+        try:
+            await _cancel_task(controller)
+        finally:
+            _release_ownership(ownership)
 
     async def shutdown(self) -> None:
         """End app ownership and await complete companion cleanup."""
 
         async with self._lock:
             self._application_running = False
-            controller = self._detach_controller_locked()
-        await _cancel_task(controller)
+            controller, ownership = self._detach_controller_locked()
+        try:
+            await _cancel_task(controller)
+        finally:
+            _release_ownership(ownership)
+
+    async def _acquire_ownership_locked(self) -> None:
+        if self._ownership is not None:
+            return
+        ownership = CompanionRuntimeLock(self.state_store.runtime_lock_path)
+        ownership.acquire()
+        self._ownership = ownership
 
     def _ensure_controller_locked(self) -> None:
         controller = self._controller
@@ -144,13 +176,17 @@ class FoldweaveCompanionSupervisor:
             name="foldweave-companion-supervisor",
         )
 
-    def _detach_controller_locked(self) -> asyncio.Task[None] | None:
+    def _detach_controller_locked(
+        self,
+    ) -> tuple[asyncio.Task[None] | None, CompanionRuntimeLock | None]:
         controller = self._controller
         self._controller = None
+        ownership = self._ownership
+        self._ownership = None
         self._generation += 1
         self._wake.set()
         self._connection_state = PairingConnectionState.DISCONNECTED
-        return controller
+        return controller, ownership
 
     async def _pairing_is_configured(self) -> bool:
         try:
@@ -195,3 +231,8 @@ async def _cancel_task(task: asyncio.Task[None] | None) -> None:
         task.cancel()
     with suppress(asyncio.CancelledError):
         await task
+
+
+def _release_ownership(ownership: CompanionRuntimeLock | None) -> None:
+    if ownership is not None:
+        ownership.release()

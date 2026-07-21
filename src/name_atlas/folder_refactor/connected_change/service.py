@@ -1252,7 +1252,9 @@ def execute_prepared_foldweave_derivative(
             request=prepared.request,
             accepted_plan=prepared.accepted_plan,
             reference_graph=prepared.reference_graph,
-            bag_writer=BagItWriter() if bag_writer is None else bag_writer,
+            bag_writer=(
+                BagItWriter.for_foldweave() if bag_writer is None else bag_writer
+            ),
             package_validator=(
                 BagItPackageValidator()
                 if package_validator is None
@@ -1362,13 +1364,20 @@ def execute_prepared_connected_change(
             execution_origin=prepared.execution_origin,
         )
     try:
+        selected_bag_writer = bag_writer
+        if selected_bag_writer is None:
+            selected_bag_writer = (
+                BagItWriter.for_foldweave()
+                if execution_authorization is not None
+                else BagItWriter()
+            )
         run = execute_accepted_folder_plan(
             initial_scan=prepared.initial_scan,
             output_parent=output_parent,
             request=prepared.request,
             accepted_plan=prepared.accepted_plan,
             reference_graph=prepared.reference_graph,
-            bag_writer=BagItWriter() if bag_writer is None else bag_writer,
+            bag_writer=selected_bag_writer,
             package_validator=(
                 BagItPackageValidator()
                 if package_validator is None

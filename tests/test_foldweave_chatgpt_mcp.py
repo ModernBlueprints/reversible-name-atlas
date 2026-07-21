@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -28,6 +29,9 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     GptDerivativeJobAuthorityV3,
     GptHostedJobAuthorityV3,
 )
+from name_atlas.folder_refactor.connected_change.review_service import (
+    FoldweaveReviewServiceError,
+)
 from name_atlas.folder_refactor.contracts import FolderPlan, FolderPlanEntry
 from name_atlas.folder_refactor.foldweave_host_contracts import (
     FolderHostPlanRevisionEntryV1,
@@ -41,11 +45,19 @@ from name_atlas.foldweave_chatgpt_mcp import (
     WIDGET_MIME_TYPE,
     WIDGET_RESOURCE_URI,
     _assert_safe_boundary,
+    _failure,
     build_foldweave_chatgpt_server,
     build_foldweave_mcp_parser,
     run_foldweave_mcp_server,
 )
-from name_atlas.foldweave_host_service import FoldweaveHostPlanningService
+from name_atlas.foldweave_companion import (
+    TrustedPublicInvocationContextV1,
+    trusted_public_invocation,
+)
+from name_atlas.foldweave_host_service import (
+    FoldweaveHostPlanningService,
+    FoldweaveHostServiceError,
+)
 from name_atlas.foldweave_launcher import run as run_foldweave
 from name_atlas.foldweave_local_handles import FoldweaveLocalHandleStore
 from name_atlas.foldweave_native_cli import compose_foldweave_native_app
@@ -71,8 +83,10 @@ EXPECTED_TOOLS = {
     "request_clarification",
     "answer_clarification",
     "submit_plan",
+    "submit_compact_plan",
     "get_compiler_failures",
     "revise_plan",
+    "recover_revision",
     "submit_plan_revision",
     "get_plan_preview",
     "job_status",
@@ -87,6 +101,7 @@ READ_ONLY_TOOLS = {
     "get_change_file",
     "get_plan_preview",
     "job_status",
+    "recover_revision",
     "verify_result",
 }
 WIDGET_CALLABLE_TOOLS = {
@@ -94,6 +109,8 @@ WIDGET_CALLABLE_TOOLS = {
     "get_plan_preview",
     "job_status",
     "keep_previous_proposal",
+    "recover_revision",
+    "revise_plan",
     "accept_plan_and_create_copy",
     "verify_result",
     "recreate_original",
@@ -109,19 +126,21 @@ MODEL_ONLY_TOOLS = {
     "request_clarification",
     "answer_clarification",
     "submit_plan",
+    "submit_compact_plan",
     "get_compiler_failures",
-    "revise_plan",
     "submit_plan_revision",
 }
 MODEL_AND_APP_TOOLS = {
     "get_plan_preview",
     "job_status",
     "keep_previous_proposal",
+    "revise_plan",
     "verify_result",
 }
 APP_ONLY_TOOLS = {
     "accept_plan_and_create_copy",
     "get_change_file",
+    "recover_revision",
     "recreate_original",
 }
 
@@ -138,6 +157,44 @@ def test_host_boundary_allows_relative_members_named_tmp() -> None:
             "original_destination": "../drafts/tmp/layout.bin",
         }
     )
+
+
+def test_pre_final_job_failure_is_sanitized_fresh_start_guidance() -> None:
+    with pytest.raises(ToolError) as error:
+        _failure(
+            FoldweaveHostServiceError(
+                "host_job_requires_fresh_start",
+                "Internal detail must not cross the hosted boundary.",
+            ),
+            "foldweave_tool_failed",
+        )
+
+    rendered = str(error.value)
+    assert "host_job_requires_fresh_start" in rendered
+    assert "Start a fresh job" in rendered
+    assert "existing record remains unchanged" in rendered
+    assert "Internal detail" not in rendered
+    assert "/" not in rendered
+    assert ".json" not in rendered
+
+
+def test_pre_final_derivative_failure_is_sanitized_fresh_start_guidance() -> None:
+    with pytest.raises(ToolError) as error:
+        _failure(
+            FoldweaveReviewServiceError(
+                "derivative_job_requires_fresh_start",
+                "Internal /private/path/job.json must not cross the boundary.",
+            ),
+            "foldweave_tool_failed",
+        )
+
+    rendered = str(error.value)
+    assert "derivative_job_requires_fresh_start" in rendered
+    assert "Start a fresh job" in rendered
+    assert "existing record remains unchanged" in rendered
+    assert "Internal" not in rendered
+    assert "/" not in rendered
+    assert ".json" not in rendered
 
 
 @dataclass(frozen=True, slots=True)
@@ -326,6 +383,11 @@ async def test_server_metadata_widget_resource_and_tool_bounds() -> None:
         if tool.name == "recreate_original":
             assert set(input_properties) == {"job_id"}
             assert tool.inputSchema.get("required") == ["job_id"]
+        if tool.name == "choose_local_item":
+            assert set(input_properties) == {"role", "selection_id"}
+            assert tool.inputSchema.get("required") == ["role"]
+            assert "poll" in tool.description.casefold()
+            assert "pending" in tool.outputSchema["properties"]["status"]["enum"]
         if tool.name == "get_plan_preview":
             assert tool.meta is not None
             assert tool.meta["openai/outputTemplate"] == WIDGET_RESOURCE_URI
@@ -391,6 +453,8 @@ async def test_server_metadata_widget_resource_and_tool_bounds() -> None:
     assert "Never use a call ID, file ID" in SERVER_INSTRUCTIONS
     assert "cite exactly initial_inventory" in SERVER_INSTRUCTIONS
     assert "unavailable after revise_plan" in SERVER_INSTRUCTIONS
+    assert "relative_path/proposed_target" in SERVER_INSTRUCTIONS
+    assert "Copy relative_path verbatim" in SERVER_INSTRUCTIONS
     inventory_tool = next(tool for tool in tools if tool.name == "list_inventory_page")
     assert inventory_tool.outputSchema is not None
     assert "citation_evidence_id" in inventory_tool.outputSchema["required"]
@@ -407,6 +471,16 @@ async def test_server_metadata_widget_resource_and_tool_bounds() -> None:
     assert "Omit protected files" in submit_plan_tool.description
     assert "get_compiler_failures" in submit_plan_tool.description
     assert "fresh call_id" in submit_plan_tool.description
+    compact_plan_tool = next(
+        tool for tool in tools if tool.name == "submit_compact_plan"
+    )
+    assert compact_plan_tool.description is not None
+    assert "relative_path copied verbatim" in compact_plan_tool.description
+    compact_entry_schema = compact_plan_tool.inputSchema["$defs"][
+        "FolderHostCompactPlanEntryV1"
+    ]
+    assert compact_entry_schema["required"] == ["relative_path", "proposed_target"]
+    assert "file_id" not in compact_entry_schema["properties"]
     revision_tool = next(tool for tool in tools if tool.name == "submit_plan_revision")
     assert revision_tool.description is not None
     assert "citation_evidence_id" in revision_tool.description
@@ -419,12 +493,43 @@ async def test_server_metadata_widget_resource_and_tool_bounds() -> None:
     )
     assert 'use exactly [\\"initial_inventory\\"]' in revision_schema
     assert "never copy file_id or call_id" in revision_schema
+    revision_entry_schema = revision_tool.inputSchema["$defs"][
+        "FolderHostPlanRevisionEntryV1"
+    ]
+    assert revision_entry_schema["additionalProperties"] is False
+    assert revision_entry_schema["required"] == [
+        "file_id",
+        "replacement_target_path",
+        "rationale",
+        "evidence_ids",
+    ]
+    assert set(revision_entry_schema["properties"]) == set(
+        revision_entry_schema["required"]
+    )
+    assert "target_path" not in revision_entry_schema["properties"]
+    assert "target_path is invalid" in revision_tool.description
     reserve_revision_tool = next(tool for tool in tools if tool.name == "revise_plan")
     assert reserve_revision_tool.description is not None
     assert '["initial_inventory"]' in reserve_revision_tool.description
     assert "Evidence tools become intentionally unavailable" in (
         reserve_revision_tool.description
     )
+
+
+@pytest.mark.anyio
+async def test_codex_server_exposes_reviewed_actions_to_model() -> None:
+    server = build_foldweave_chatgpt_server(surface="codex_hosted")
+    tools = {tool.name: tool for tool in await server.list_tools()}
+
+    for tool_name in (
+        "accept_plan_and_create_copy",
+        "get_change_file",
+        "recreate_original",
+    ):
+        tool = tools[tool_name]
+        assert tool.meta is not None
+        assert tool.meta["ui"] == {"visibility": ["model", "app"]}
+        assert tool.meta["openai/widgetAccessible"] is True
 
 
 @pytest.mark.anyio
@@ -755,6 +860,29 @@ async def test_complete_hosted_origin_review_revision_accept_and_verify(
     assert review["status"]["direct_budget_reserved"] is False
     assert not tuple(harness.output_root.iterdir())
 
+    recovery_arguments = {
+        "job_id": job_id,
+        "parent_job_revision": review["status"]["job_revision"],
+        "parent_candidate_fingerprint": review["status"]["candidate_fingerprint"],
+        "parent_preview_fingerprint": review["status"]["preview_fingerprint"],
+        "source_commitment": review["preview"]["source_commitment"],
+    }
+    before_revision_recovery = harness.service.status(job_id).job_path.read_bytes()
+    no_recovery = await _call(
+        harness.server,
+        "recover_revision",
+        recovery_arguments,
+    )
+    assert no_recovery["schema_version"] == "foldweave-hosted-revision-recovery.v1"
+    assert no_recovery["recovery_status"] == "none"
+    assert no_recovery["status"] is None
+    assert no_recovery["revision_instruction"] is None
+    assert no_recovery["revision_instruction_fingerprint"] is None
+    assert no_recovery["submit_call_id"] is None
+    assert harness.service.status(job_id).job_path.read_bytes() == (
+        before_revision_recovery
+    )
+
     reviewed_job = harness.service.status(job_id)
     assert reviewed_job.candidate_plan is not None
     first = next(
@@ -773,6 +901,24 @@ async def test_complete_hosted_origin_review_revision_accept_and_verify(
         },
     )
     assert revision_reserved["lifecycle"] == "revising"
+    pending_bytes = harness.service.status(job_id).job_path.read_bytes()
+    recovered_pending = await _call(
+        harness.server,
+        "recover_revision",
+        recovery_arguments,
+    )
+    assert recovered_pending["recovery_status"] == "recovered"
+    assert recovered_pending["status"] == revision_reserved
+    assert recovered_pending["revision_instruction"] == (
+        "Place the first reviewed file in a revised folder."
+    )
+    assert recovered_pending["revision_instruction_fingerprint"] == (
+        harness.service.status(job_id).revision_instruction.instruction_fingerprint
+    )
+    assert recovered_pending["submit_call_id"] == (
+        f"revision-submit:{job_id}:{revision_reserved['job_revision']}"
+    )
+    assert harness.service.status(job_id).job_path.read_bytes() == pending_bytes
     sparse = FolderHostPlanRevisionV1(
         base_candidate_fingerprint=canonical_sha256(reviewed_job.candidate_plan),
         entries=(
@@ -795,6 +941,20 @@ async def test_complete_hosted_origin_review_revision_accept_and_verify(
     )
     assert revised["lifecycle"] == "reviewing"
     assert revised["proposal_revision"] == 1
+    reviewed_revision_bytes = harness.service.status(job_id).job_path.read_bytes()
+    recovered_review = await _call(
+        harness.server,
+        "recover_revision",
+        recovery_arguments,
+    )
+    assert recovered_review["recovery_status"] == "recovered"
+    assert recovered_review["status"] == revised
+    assert recovered_review["revision_instruction"] is None
+    assert recovered_review["revision_instruction_fingerprint"] is None
+    assert recovered_review["submit_call_id"] is None
+    assert harness.service.status(job_id).job_path.read_bytes() == (
+        reviewed_revision_bytes
+    )
     revised_review = await _call(
         harness.server,
         "get_plan_preview",
@@ -805,6 +965,19 @@ async def test_complete_hosted_origin_review_revision_accept_and_verify(
         },
     )
     assert revised_review["preview"]["proposal_revision"] == 1
+    root_delta = revised_review["status"]["latest_proposal_delta"]
+    assert root_delta["schema_version"] == "folder-plan-revision-delta.v1"
+    assert root_delta["job_id"] == job_id
+    assert root_delta["proposal_revision_before"] == 0
+    assert root_delta["proposal_revision_after"] == 1
+    assert (
+        root_delta["current_candidate_fingerprint"]
+        == (revised_review["status"]["candidate_fingerprint"])
+    )
+    assert (
+        root_delta["current_preview_fingerprint"]
+        == (revised_review["status"]["preview_fingerprint"])
+    )
 
     exact = revised_review["status"]
     preview = revised_review["preview"]
@@ -1131,6 +1304,33 @@ async def test_mcp_receiver_hosted_derivative_rehydrates_and_verifies(
     assert child_pending["direct_budget_reserved"] is False
     assert parent.job_path.read_bytes() == parent_bytes
 
+    recovery_arguments = {
+        "job_id": receiver["job_id"],
+        "parent_job_revision": receiver["job_revision"],
+        "parent_candidate_fingerprint": receiver["candidate_fingerprint"],
+        "parent_preview_fingerprint": receiver["preview_fingerprint"],
+        "source_commitment": parent.source_inventory.source_commitment,
+    }
+    child_pending_bytes = harness.service.status(
+        child_pending["job_id"]
+    ).job_path.read_bytes()
+    recovered_pending = await _call(
+        harness.server,
+        "recover_revision",
+        recovery_arguments,
+    )
+    assert recovered_pending["recovery_status"] == "recovered"
+    assert recovered_pending["status"] == child_pending
+    assert recovered_pending["revision_instruction"] == (
+        "Move one matched file into Martin's hosted review folder."
+    )
+    assert recovered_pending["submit_call_id"] == (
+        f"revision-submit:{child_pending['job_id']}:{child_pending['job_revision']}"
+    )
+    assert harness.service.status(child_pending["job_id"]).job_path.read_bytes() == (
+        child_pending_bytes
+    )
+
     pending_job = harness.service.status(child_pending["job_id"])
     assert isinstance(pending_job.authority, GptDerivativeJobAuthorityV3)
     editable = next(
@@ -1180,6 +1380,21 @@ async def test_mcp_receiver_hosted_derivative_rehydrates_and_verifies(
     assert parent.job_path.read_bytes() == parent_bytes
     assert not tuple(receiver_output.iterdir())
 
+    revised_bytes = harness.service.status(revised["job_id"]).job_path.read_bytes()
+    recovered_review = await _call(
+        harness.server,
+        "recover_revision",
+        recovery_arguments,
+    )
+    assert recovered_review["recovery_status"] == "recovered"
+    assert recovered_review["status"] == revised
+    assert recovered_review["revision_instruction"] is None
+    assert recovered_review["revision_instruction_fingerprint"] is None
+    assert recovered_review["submit_call_id"] is None
+    assert harness.service.status(revised["job_id"]).job_path.read_bytes() == (
+        revised_bytes
+    )
+
     revised_job = harness.service.status(revised["job_id"])
     assert isinstance(revised_job.authority, GptDerivativeJobAuthorityV3)
     assert revised_job.authority.execution_origin is not None
@@ -1206,6 +1421,22 @@ async def test_mcp_receiver_hosted_derivative_rehydrates_and_verifies(
     assert (
         review["preview"]["imported_change_file_fingerprint"]
         == (origin_change["change_file_fingerprint"])
+    )
+    derivative_delta = review["status"]["latest_proposal_delta"]
+    assert derivative_delta["schema_version"] == "folder-plan-revision-delta.v1"
+    assert derivative_delta["job_id"] == revised["job_id"]
+    assert derivative_delta["proposal_revision_before"] == 0
+    assert derivative_delta["proposal_revision_after"] == 1
+    assert derivative_delta["base_candidate_fingerprint"] == (
+        revised_job.authority.parent_binding.parent_candidate_fingerprint
+    )
+    assert (
+        derivative_delta["current_candidate_fingerprint"]
+        == (revised["candidate_fingerprint"])
+    )
+    assert (
+        derivative_delta["current_preview_fingerprint"]
+        == (revised["preview_fingerprint"])
     )
 
     child_bytes_before_native = revised_job.job_path.read_bytes()
@@ -1360,6 +1591,25 @@ async def test_mcp_receiver_hosted_derivative_rehydrates_and_verifies(
     assert budget_ledger.read_bytes() == budget_before
     assert tree_state(harness.fixture.sofia_root) == sofia_before
     assert tree_state(harness.fixture.martin_root) == martin_before
+
+    second_child = await _call(
+        harness.server,
+        "revise_plan",
+        {
+            **revision_arguments,
+            "instruction": "Create a separate explicit hosted fork.",
+            "idempotency_key": "derivative-mcp-hosted-second-child",
+        },
+    )
+    assert second_child["job_id"] != revised["job_id"]
+    assert second_child["lifecycle"] == "revising"
+    with pytest.raises(ToolError) as ambiguous_recovery:
+        await harness.server.call_tool(
+            "recover_revision",
+            recovery_arguments,
+        )
+    assert "hosted_revision_recovery_ambiguous" in str(ambiguous_recovery.value)
+    assert parent.job_path.read_bytes() == parent_bytes
 
     encoded = json.dumps(
         {
@@ -1778,10 +2028,378 @@ async def test_local_selection_returns_only_an_opaque_handle(tmp_path: Path) -> 
         "choose_local_item",
         {"role": "source_folder"},
     )
+    assert result["status"] == "pending"
+    assert result["selection_id"].startswith("fwsel_")
+    assert str(selected) not in json.dumps(result, default=str)
+    result = await _call(
+        build_foldweave_chatgpt_server(service),
+        "choose_local_item",
+        {
+            "role": "source_folder",
+            "selection_id": result["selection_id"],
+        },
+    )
     assert result["status"] == "selected"
     assert result["item"]["handle"] == f"fw_{'Z' * 43}"
     assert result["item"]["display_name"] == selected.name
     assert str(selected) not in json.dumps(result, default=str)
+
+
+class _DelayedNativeBridge:
+    def __init__(self, selected: Path) -> None:
+        self._selected = selected
+        self.started = asyncio.Event()
+        self.release = asyncio.Event()
+        self.calls = 0
+
+    async def choose_path(self, role: NativePathRole) -> NativePathSelection:
+        assert role is NativePathRole.SOURCE_FOLDER
+        self.calls += 1
+        self.started.set()
+        await self.release.wait()
+        return NativePathSelection(
+            status=NativeSelectionStatus.SELECTED,
+            path=self._selected,
+        )
+
+    async def show_in_finder(self, path: Path) -> NativeOpenResult:
+        del path
+        return NativeOpenResult(status=NativeOpenStatus.OPENED)
+
+
+class _TerminalNativeBridge:
+    def __init__(
+        self,
+        status: NativeSelectionStatus,
+        reason_code: str,
+    ) -> None:
+        self._status = status
+        self._reason_code = reason_code
+        self.calls = 0
+
+    async def choose_path(self, role: NativePathRole) -> NativePathSelection:
+        del role
+        self.calls += 1
+        return NativePathSelection(
+            status=self._status,
+            reason_code=self._reason_code,
+        )
+
+    async def show_in_finder(self, path: Path) -> NativeOpenResult:
+        del path
+        return NativeOpenResult(status=NativeOpenStatus.OPENED)
+
+
+class _CancelledNativeBridge:
+    def __init__(self) -> None:
+        self.started = asyncio.Event()
+        self.cancelled_and_reaped = asyncio.Event()
+        self.calls = 0
+
+    async def choose_path(self, role: NativePathRole) -> NativePathSelection:
+        del role
+        self.calls += 1
+        self.started.set()
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            self.cancelled_and_reaped.set()
+            raise
+
+    async def show_in_finder(self, path: Path) -> NativeOpenResult:
+        del path
+        return NativeOpenResult(status=NativeOpenStatus.OPENED)
+
+
+def _selection_invocation(*, session: str) -> TrustedPublicInvocationContextV1:
+    return TrustedPublicInvocationContextV1(
+        device_id="fwd_" + "a" * 32,
+        session_id=session,
+        oauth_grant_fingerprint="b" * 64,
+        scopes=("foldweave.plan",),
+        request_id="selection_request_" + "r" * 20,
+        issued_at=1_000_000,
+        expires_at=1_010_000,
+        sequence=1,
+        nonce="selection_nonce_" + "n" * 20,
+        body_sha256="c" * 64,
+        operation_sha256="d" * 64,
+    )
+
+
+@pytest.mark.anyio
+async def test_local_selection_returns_promptly_and_polls_idempotently(
+    tmp_path: Path,
+) -> None:
+    selected = tmp_path / "slow-private-project"
+    selected.mkdir()
+    bridge = _DelayedNativeBridge(selected)
+    handles = FoldweaveLocalHandleStore(
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+        token_factory=lambda: "Y" * 43,
+    )
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        handle_store=handles,
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "S" * 43,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    server = build_foldweave_chatgpt_server(service)
+
+    started = await asyncio.wait_for(
+        _call(server, "choose_local_item", {"role": "source_folder"}),
+        timeout=0.5,
+    )
+    assert started == {
+        "schema_version": "foldweave-local-selection-result.v1",
+        "status": "pending",
+        "item": None,
+        "selection_id": f"fwsel_{'S' * 43}",
+        "reason_code": None,
+    }
+    await bridge.started.wait()
+    resumed = await _call(server, "choose_local_item", {"role": "source_folder"})
+    assert resumed == started
+    assert bridge.calls == 1
+
+    pending = await _call(
+        server,
+        "choose_local_item",
+        {
+            "role": "source_folder",
+            "selection_id": started["selection_id"],
+        },
+    )
+    assert pending == started
+    bridge.release.set()
+    selected_result = await _call(
+        server,
+        "choose_local_item",
+        {
+            "role": "source_folder",
+            "selection_id": started["selection_id"],
+        },
+    )
+    assert selected_result["status"] == "selected"
+    assert selected_result["selection_id"] is None
+    assert selected_result["item"]["handle"] == f"fw_{'Y' * 43}"
+    assert str(selected) not in json.dumps(selected_result, default=str)
+    assert (
+        await _call(
+            server,
+            "choose_local_item",
+            {
+                "role": "source_folder",
+                "selection_id": started["selection_id"],
+            },
+        )
+        == selected_result
+    )
+    assert bridge.calls == 1
+
+
+@pytest.mark.anyio
+async def test_local_selection_rejects_role_and_session_rebinding(
+    tmp_path: Path,
+) -> None:
+    selected = tmp_path / "bound-private-project"
+    selected.mkdir()
+    bridge = _DelayedNativeBridge(selected)
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "B" * 43,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    first = _selection_invocation(session="session_" + "a" * 32)
+    other = _selection_invocation(session="session_" + "b" * 32)
+
+    with trusted_public_invocation(first):
+        status, _item, _reason, selection_id = await service.choose_local_item(
+            role=NativePathRole.SOURCE_FOLDER,
+            channel="chatgpt_hosted",
+        )
+        assert status == "pending"
+        assert selection_id is not None
+        with pytest.raises(
+            FoldweaveHostServiceError,
+            match="local_selection_binding_mismatch",
+        ):
+            await service.choose_local_item(
+                role=NativePathRole.OUTPUT_PARENT,
+                channel="chatgpt_hosted",
+                selection_id=selection_id,
+            )
+    with (
+        trusted_public_invocation(other),
+        pytest.raises(
+            FoldweaveHostServiceError,
+            match="local_selection_binding_mismatch",
+        ),
+    ):
+        await service.choose_local_item(
+            role=NativePathRole.SOURCE_FOLDER,
+            channel="chatgpt_hosted",
+            selection_id=selection_id,
+        )
+
+    bridge.release.set()
+    with trusted_public_invocation(first):
+        selected_status, item, _reason, _selection_id = await service.choose_local_item(
+            role=NativePathRole.SOURCE_FOLDER,
+            channel="chatgpt_hosted",
+            selection_id=selection_id,
+        )
+    assert selected_status == "selected"
+    assert item is not None
+    assert bridge.calls == 1
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("terminal_status", "reason_code"),
+    (
+        (NativeSelectionStatus.CANCELLED, "picker_cancelled"),
+        (NativeSelectionStatus.FAILED, "picker_failed"),
+    ),
+)
+async def test_local_selection_terminal_outcome_replays_without_reopening(
+    tmp_path: Path,
+    terminal_status: NativeSelectionStatus,
+    reason_code: str,
+) -> None:
+    bridge = _TerminalNativeBridge(terminal_status, reason_code)
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "T" * 43,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    server = build_foldweave_chatgpt_server(service)
+    started = await _call(server, "choose_local_item", {"role": "source_folder"})
+    arguments = {
+        "role": "source_folder",
+        "selection_id": started["selection_id"],
+    }
+    terminal = await _call(server, "choose_local_item", arguments)
+    replayed = await _call(server, "choose_local_item", arguments)
+
+    assert terminal == replayed
+    assert terminal["status"] == terminal_status.value
+    assert terminal["reason_code"] == reason_code
+    assert terminal["item"] is None
+    assert terminal["selection_id"] is None
+    assert bridge.calls == 1
+
+
+@pytest.mark.anyio
+async def test_completed_local_selection_survives_hosted_turn_latency(
+    tmp_path: Path,
+) -> None:
+    now = [datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz)]
+    selected = tmp_path / "patient-private-project"
+    selected.mkdir()
+    bridge = _DelayedNativeBridge(selected)
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "L" * 43,
+        clock=lambda: now[0],
+    )
+    server = build_foldweave_chatgpt_server(service)
+    started = await _call(server, "choose_local_item", {"role": "source_folder"})
+    await bridge.started.wait()
+    bridge.release.set()
+    await asyncio.sleep(0)
+
+    now[0] += timedelta(minutes=4)
+    selected_result = await _call(
+        server,
+        "choose_local_item",
+        {
+            "role": "source_folder",
+            "selection_id": started["selection_id"],
+        },
+    )
+
+    assert selected_result["status"] == "selected"
+    assert selected_result["selection_id"] is None
+    assert selected_result["item"] is not None
+    assert str(selected) not in json.dumps(selected_result, default=str)
+    assert bridge.calls == 1
+
+
+@pytest.mark.anyio
+async def test_local_selection_expiry_cancels_picker_and_returns_stable_guidance(
+    tmp_path: Path,
+) -> None:
+    now = [datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz)]
+    bridge = _CancelledNativeBridge()
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "E" * 43,
+        clock=lambda: now[0],
+    )
+    server = build_foldweave_chatgpt_server(service)
+    started = await _call(server, "choose_local_item", {"role": "source_folder"})
+    await bridge.started.wait()
+    now[0] += timedelta(minutes=11)
+
+    with pytest.raises(ToolError) as error:
+        await server.call_tool(
+            "choose_local_item",
+            {
+                "role": "source_folder",
+                "selection_id": started["selection_id"],
+            },
+        )
+
+    assert bridge.cancelled_and_reaped.is_set()
+    assert bridge.calls == 1
+    assert "local_selection_unknown" in str(error.value)
+    assert "Start selection again" in str(error.value)
+
+
+@pytest.mark.anyio
+async def test_local_selection_second_role_never_starts_another_picker(
+    tmp_path: Path,
+) -> None:
+    selected = tmp_path / "single-picker-project"
+    selected.mkdir()
+    bridge = _DelayedNativeBridge(selected)
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "state"),
+        native_bridge=bridge,
+        selection_poll_seconds=0.01,
+        selection_token_factory=lambda: "P" * 43,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    server = build_foldweave_chatgpt_server(service)
+    started = await _call(server, "choose_local_item", {"role": "source_folder"})
+    await bridge.started.wait()
+
+    with pytest.raises(ToolError) as error:
+        await server.call_tool("choose_local_item", {"role": "output_parent"})
+
+    assert "local_selection_busy" in str(error.value)
+    assert bridge.calls == 1
+    bridge.release.set()
+    await _call(
+        server,
+        "choose_local_item",
+        {
+            "role": "source_folder",
+            "selection_id": started["selection_id"],
+        },
+    )
+    assert bridge.calls == 1
 
 
 @pytest.mark.anyio
@@ -1793,7 +2411,7 @@ async def test_sensitive_excerpt_is_persisted_locally_but_not_returned(
     source.mkdir()
     output.mkdir()
     fake_local_path = "/".join(("", "Users", "alice", "private.txt"))
-    fake_project_key = "sk-proj-" + ("X" * 32)
+    fake_project_key = "sk" + "-proj-" + ("X" * 32)
     sensitive = f"Local {fake_local_path} and {fake_project_key}"
     (source / "note.md").write_text(sensitive, encoding="utf-8")
     tokens = iter(("X" * 43, "Y" * 43))

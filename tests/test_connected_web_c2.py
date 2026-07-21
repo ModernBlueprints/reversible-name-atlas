@@ -397,8 +397,10 @@ async def test_connected_home_consent_manual_paths_and_no_legacy_routes(
     assert "Choose your project folder…" in apply.text
     assert "Apply change and create copy" in apply.text
     assert stylesheet.status_code == 200
-    assert "border: 1px solid #66717d;" in stylesheet.text
-    assert ".folder-alert > span" in stylesheet.text
+    assert "--folder-border-strong:" in stylesheet.text
+    assert "border: 1px solid var(--folder-border-strong);" in stylesheet.text
+    assert ".folder-alert {" in stylesheet.text
+    assert "color: var(--folder-red);" in stylesheet.text
     assert "overflow-wrap: anywhere;" in stylesheet.text
     assert no_consent.status_code == 422
     assert "Exactly the displayed Start fields are required" in no_consent.text

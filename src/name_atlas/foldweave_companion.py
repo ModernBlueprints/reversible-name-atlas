@@ -88,6 +88,7 @@ _PUBLIC_TOOL_SCOPES = {
     "request_clarification": "foldweave.plan",
     "revise_plan": "foldweave.plan",
     "submit_plan": "foldweave.plan",
+    "submit_compact_plan": "foldweave.plan",
     "submit_plan_revision": "foldweave.plan",
 }
 _PUBLIC_JOBLESS_TOOLS = frozenset(

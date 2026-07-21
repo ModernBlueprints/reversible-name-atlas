@@ -1,7 +1,7 @@
 {
   "name": "foldweave",
-  "version": "0.1.0+codex.20260720050522",
-  "description": "Review, revise, apply, verify, and reconstruct connected-folder changes with Foldweave.",
+  "version": "0.1.0+codex.20260721091729",
+  "description": "Plan and review connected-folder changes with Foldweave.",
   "author": {
     "name": "Modern Blueprints",
     "url": "https://github.com/ModernBlueprints"
@@ -17,7 +17,7 @@
   "interface": {
     "displayName": "Foldweave",
     "shortDescription": "Change the structure. Keep the connections.",
-    "longDescription": "Plan a bounded connected-folder change with Codex host inference, review or revise the exact proposal before execution, apply a shared Foldweave Change File deterministically, and verify or reconstruct the result. The plugin uses Foldweave's existing local job, compiler, receipt, verifier, and reconstruction services rather than copying product logic.",
+    "longDescription": "Use Codex to plan a connected-folder change, review it before creating a separate verified copy, apply a Foldweave Change File, or recreate the selected original layout.",
     "developerName": "Modern Blueprints",
     "category": "Productivity",
     "capabilities": [
@@ -25,9 +25,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Plan a connected-folder change with Foldweave and show me the exact proposal before execution.",
-      "Prepare a shared Foldweave Change File for review, then help me revise or accept it.",
-      "Verify a Foldweave result and recreate the source layout for this transaction."
+      "Plan a folder change and show me the proposal.",
+      "Review this Foldweave Change File before applying it.",
+      "Verify this result or recreate its original layout."
     ]
   }
 }

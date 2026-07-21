@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def build_foldweave_app_parser() -> argparse.ArgumentParser:
-    """Build the F0a app parser without provider or budget initialization."""
+    """Build the browser-fallback parser without provider initialization."""
 
     parser = argparse.ArgumentParser(
         prog="foldweave app",
@@ -49,10 +49,7 @@ def build_foldweave_app_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--browser",
         action="store_true",
-        help=(
-            "Run the supported F0a browser fallback and print its loopback URL "
-            "(the native shell is not live yet)."
-        ),
+        help=("Run the supported browser fallback and print its private loopback URL."),
     )
     parser.add_argument(
         "--mode",
@@ -125,8 +122,7 @@ def _run_foldweave_browser(
 
     if not browser:
         print(
-            "Startup blocked: the native Foldweave shell is not available in "
-            "the F0a gate; pass --browser.",
+            "Startup blocked: the browser fallback requires --browser.",
             file=sys.stderr,
         )
         return 2

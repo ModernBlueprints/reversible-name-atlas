@@ -11,11 +11,17 @@ from datetime import date, datetime
 from pathlib import Path, PurePosixPath
 from zoneinfo import ZoneInfo
 
+from name_atlas import __version__
+
 oslo_tz = ZoneInfo("Europe/Oslo")
 
 _BAGIT_VERSION = "1.0"
 _TAG_FILE_ENCODING = "UTF-8"
-_SOFTWARE_AGENT = "Reversible Name Atlas 0.1.0"
+_LEGACY_SOFTWARE_AGENT = "Reversible Name Atlas 0.1.0"
+_FOLDWEAVE_SOFTWARE_AGENT = f"Foldweave {__version__}"
+_SUPPORTED_SOFTWARE_AGENTS = frozenset(
+    {_LEGACY_SOFTWARE_AGENT, _FOLDWEAVE_SOFTWARE_AGENT}
+)
 _HASH_CHUNK_SIZE = 1024 * 1024
 _PAYLOAD_DIRECTORY = "data"
 _PROOF_DIRECTORY = "name-atlas"
@@ -53,6 +59,17 @@ class BagItWriteResult:
 class BagItWriter:
     """Write BagIt metadata inside a fresh, product-owned pending stage."""
 
+    def __init__(self, *, software_agent: str = _LEGACY_SOFTWARE_AGENT) -> None:
+        if software_agent not in _SUPPORTED_SOFTWARE_AGENTS:
+            raise BagItWriterError("Bag software agent is not product-owned.")
+        self._software_agent = software_agent
+
+    @classmethod
+    def for_foldweave(cls) -> BagItWriter:
+        """Create the writer for new Foldweave v3 result artifacts."""
+
+        return cls(software_agent=_FOLDWEAVE_SOFTWARE_AGENT)
+
     def write(
         self,
         pending_root: Path,
@@ -84,7 +101,7 @@ class BagItWriter:
         )
         bag_info = (
             f"Bagging-Date: {selected_date.isoformat()}\n"
-            f"Bag-Software-Agent: {_SOFTWARE_AGENT}\n"
+            f"Bag-Software-Agent: {self._software_agent}\n"
             f"Payload-Oxum: {payload_bytes}.{len(payload_files)}\n"
         )
 
@@ -348,13 +365,15 @@ def _require_writer_owned_metadata(root: Path, payload_files: tuple[Path, ...]) 
             "Existing bag-info.txt was not produced by this writer."
         ) from exc
     payload_bytes = sum(path.stat().st_size for path in payload_files)
-    expected_lines = (
-        f"Bag-Software-Agent: {_SOFTWARE_AGENT}",
-        f"Payload-Oxum: {payload_bytes}.{len(payload_files)}",
-    )
+    software_agent_line = lines[1]
+    expected_software_agent_lines = {
+        f"Bag-Software-Agent: {agent}" for agent in _SUPPORTED_SOFTWARE_AGENTS
+    }
+    expected_payload_oxum = f"Payload-Oxum: {payload_bytes}.{len(payload_files)}"
     if (
         not lines[0].startswith("Bagging-Date: ")
-        or tuple(lines[1:]) != expected_lines
+        or software_agent_line not in expected_software_agent_lines
+        or lines[2] != expected_payload_oxum
         or not bag_info.endswith("\n")
     ):
         raise BagItWriterError("Existing bag-info.txt was not produced by this writer.")

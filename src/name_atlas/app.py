@@ -76,7 +76,7 @@ def create_app(
                 workflow.close()
 
     app = FastAPI(
-        title="Reversible Name Atlas",
+        title="Foldweave — legacy compatibility",
         description="Refactor the collection. Hand over the proof.",
         version="0.1.0",
         docs_url=None,

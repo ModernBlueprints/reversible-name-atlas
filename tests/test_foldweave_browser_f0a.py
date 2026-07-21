@@ -192,6 +192,11 @@ async def test_f0a_browser_origin_receiver_review_restart_accept_and_receipts(
         assert review.status_code == 200
         assert 'id="foldweave-review-root"' in review.text
         assert "Nothing has been copied yet" in review.text
+        assert (
+            '<h1 id="review-title" class="folder-sr-only">Review structure</h1>'
+            in review.text
+        )
+        assert 'class="foldweave-review-heading"' not in review.text
         assert f"/static/folder.css?v={FOLDER_ASSET_VERSION}" in review.text
         assert f"/static/review/review.css?v={REVIEW_ASSET_VERSION}" in review.text
         assert f"/static/review/review.js?v={REVIEW_ASSET_VERSION}" in review.text
@@ -253,7 +258,8 @@ async def test_f0a_browser_origin_receiver_review_restart_accept_and_receipts(
         assert accepted.json() == {"lifecycle": "verified", "done_url": "/done"}
         assert done.status_code == 200
         assert "Your new folder is ready" in done.text
-        assert "Foldweave created a separate copy" in done.text
+        assert "Files</dt><dd>" in done.text
+        assert "exactly once" in done.text
         assert "Reversible Name Atlas" not in done.text
         assert "Name Atlas created" not in done.text
         assert "Original folder</dt><dd>Unchanged" in done.text
@@ -344,13 +350,24 @@ async def test_f0a_browser_origin_receiver_review_restart_accept_and_receipts(
         assert receiver_accepted.json()["lifecycle"] == "verified"
         assert receiver_done.status_code == 200
         assert "Your new folder is ready" in receiver_done.text
-        assert "Foldweave created a separate copy" in receiver_done.text
+        assert "Files</dt><dd>" in receiver_done.text
+        assert "exactly once" in receiver_done.text
+        assert "Receipt fingerprint" in receiver_done.text
+        assert "Organized-tree commitment" in receiver_done.text
         assert "Reversible Name Atlas" not in receiver_done.text
         assert "Name Atlas created" not in receiver_done.text
         receiver_checkpoint = receiver_service.web_checkpoint()
         assert receiver_checkpoint is not None
         assert receiver_checkpoint.result is not None
         receiver_result = receiver_checkpoint.result
+        assert (
+            "Receipt fingerprint",
+            receiver_result.receipt_fingerprint,
+        ) in receiver_result.technical_facts
+        assert (
+            "Organized-tree commitment",
+            receiver_result.organized_tree_commitment,
+        ) in receiver_result.technical_facts
 
     assert tree_state(fixture.martin_root) == martin_before
     assert origin_result.organized_tree_commitment == (
@@ -431,6 +448,66 @@ async def test_f0a_browser_changed_source_acceptance_becomes_durable_blocker(
     assert checkpoint is not None
     assert checkpoint.lifecycle.value == "blocked"
     assert checkpoint.review is None
+    assert checkpoint.blocker is not None
+
+
+@pytest.mark.anyio
+async def test_review_status_refresh_persists_staleness_and_locks_visible_actions(
+    tmp_path: Path,
+) -> None:
+    """Refreshing review status must not keep claiming a changed source is current."""
+
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    output = tmp_path / "output"
+    output.mkdir()
+    service = FoldweaveBrowserReviewService(
+        job_path=tmp_path / "jobs" / "source-stale-refresh.json",
+        target_map_factory=_target_map_factory(
+            fixture.result_name,
+            fixture.target_paths,
+        ),
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=create_folder_app(service)),
+        base_url="http://testserver",
+    ) as client:
+        start = await client.get("/start")
+        await client.post(
+            "/start",
+            data={
+                "source_root": str(fixture.sofia_root),
+                "user_request": fixture.request,
+                "output_parent": str(output),
+                "evidence_disclosure_acknowledged": "true",
+                "csrf_token": _csrf(start),
+            },
+        )
+        await _wait_for_lifecycle(client, "reviewing")
+        job_id, _acceptance = _acceptance_payload(
+            service,
+            idempotency_key="browser-source-stale-refresh",
+        )
+        changed_file = fixture.sofia_root / "media" / "cover.png"
+        changed_file.write_bytes(changed_file.read_bytes() + b"changed after preview")
+
+        refreshed = await client.get(f"/api/jobs/{job_id}/status")
+        persisted_preview = await client.get(f"/api/jobs/{job_id}/preview")
+        general_status = await client.get("/status")
+
+    assert refreshed.status_code == 200
+    assert refreshed.json()["lifecycle"] == "stale"
+    assert refreshed.json()["revision_available"] is False
+    assert refreshed.json()["revision_attempts_remaining"] == 0
+    assert "selected source differs from the immutable review snapshot" in (
+        refreshed.json()["action_lock_reason"].casefold()
+    )
+    assert persisted_preview.status_code == 200
+    assert persisted_preview.json()["job_id"] == job_id
+    assert general_status.json()["lifecycle"] == "blocked"
+    assert tuple(output.iterdir()) == ()
+    checkpoint = service.web_checkpoint()
+    assert checkpoint is not None
+    assert checkpoint.lifecycle.value == "blocked"
     assert checkpoint.blocker is not None
 
 

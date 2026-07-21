@@ -6,6 +6,7 @@ import { verifyDeviceEnvelope } from "../src/device-crypto";
 import {
   authorizedSessionExpiresAt,
   PendingRelayRegistry,
+  responseMatchesKnownRelay,
   sessionIsActiveAt,
 } from "../src/device-session";
 import {
@@ -165,6 +166,54 @@ describe("concurrent relay retries", () => {
     registry.cancel("request_abcdef012345", new Error("test cleanup"));
     void first.promise.catch(() => undefined);
   });
+
+  it("retains persisted authority to discard valid late and duplicate responses", async () => {
+    vi.useFakeTimers();
+    try {
+      const registry = new PendingRelayRegistry();
+      const pending = registry.begin(
+        "request_timeout_012345",
+        "a".repeat(64),
+        25_000,
+      );
+      const response = {
+        body: "H4sIAAAAAAACAwMAAAAAAAAAAAA",
+        bodyDigest: "b".repeat(64),
+        bodyEncoding: "gzip+base64url" as const,
+        compressedSize: 20,
+        decodedSize: 0,
+        headers: { "content-type": "application/json" },
+        requestId: "request_timeout_012345",
+        schemaVersion: "foldweave-mcp-response-envelope.v1" as const,
+        status: 200,
+        type: "mcp_response" as const,
+      };
+
+      const timeoutExpectation = expect(pending.promise).rejects.toThrow(
+        /did not respond in time/u,
+      );
+      await vi.advanceTimersByTimeAsync(25_000);
+      await timeoutExpectation;
+      expect(registry.resolve(response.requestId, response)).toBe(false);
+      const persistedRecord = {
+        recentRelays: [
+          {
+            expiresAt: Date.now() + 30_000,
+            fingerprint: "a".repeat(64),
+            requestId: response.requestId,
+          },
+        ],
+      };
+      expect(responseMatchesKnownRelay(persistedRecord, response.requestId)).toBe(
+        true,
+      );
+      expect(
+        responseMatchesKnownRelay(persistedRecord, "unknown_request_012345"),
+      ).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("trusted public invocation authority", () => {
@@ -264,6 +313,16 @@ describe("trusted public invocation authority", () => {
       }),
     ).resolves.toMatchObject({
       descriptor: { jobId: "a".repeat(32) },
+    });
+    await expect(
+      describeMcpOperation({
+        body: bodyFor("recover_revision", { job_id: "a".repeat(32) }),
+        bodyDigest: "a".repeat(64),
+        headers: {},
+      }),
+    ).resolves.toMatchObject({
+      descriptor: { jobId: "a".repeat(32), toolName: "recover_revision" },
+      requiredScope: "foldweave.review",
     });
     await expect(
       describeMcpOperation({

@@ -10,6 +10,7 @@ import pytest
 
 from name_atlas.decision_cards import (
     C3_LIVE_CALL_CAP,
+    FOLDWEAVE_FINAL_LIVE_CALL_CAP,
     FOLDWEAVE_PROJECT_COST_MICRO_USD,
     HISTORICAL_LIVE_CALL_CAP,
     BudgetLedgerError,
@@ -18,6 +19,7 @@ from name_atlas.decision_cards import (
     PersistentBudgetLedger,
     microusd_to_usd,
     migrate_foldweave_cost_cap,
+    migrate_foldweave_final_call_cap,
     migrate_live_call_cap,
 )
 
@@ -100,6 +102,20 @@ def _historical_ledger(path: Path) -> PersistentBudgetLedger:
     return ledger
 
 
+def _pre_final_foldweave_ledger(path: Path) -> BudgetSnapshot:
+    snapshot = BudgetSnapshot(
+        configured_live_call_cap=C3_LIVE_CALL_CAP,
+        configured_cost_cap_microusd=FOLDWEAVE_PROJECT_COST_MICRO_USD,
+        live_requests_reserved=13,
+        provider_attempts_reserved=13,
+        committed_cost_microusd=12_734_470,
+        reported_estimated_cost_microusd=874_860,
+        updated_at=datetime.now(tz=ZoneInfo("Europe/Oslo")),
+    )
+    path.write_text(f"{snapshot.model_dump_json(indent=2)}\n", encoding="utf-8")
+    return snapshot
+
+
 def test_c3_migration_is_atomic_idempotent_and_preserves_history(
     tmp_path: Path,
 ) -> None:
@@ -144,8 +160,53 @@ def test_foldweave_cost_migration_is_atomic_idempotent_and_preserves_history(
     assert path.read_bytes() == migrated_bytes
     assert not tuple(tmp_path.glob(".api_budget.json.*.tmp"))
 
+    with pytest.raises(BudgetLedgerError, match="does not match"):
+        PersistentBudgetLedger.open_existing_foldweave_planner(path=path)
+
+
+def test_foldweave_final_call_cap_migration_is_atomic_idempotent_and_preserves_history(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "api_budget.json"
+    before = _pre_final_foldweave_ledger(path)
+    before_values = before.model_dump(mode="python")
+
+    migrated = migrate_foldweave_final_call_cap(path=path)
+    migrated_bytes = path.read_bytes()
+    repeated = migrate_foldweave_final_call_cap(path=path)
+
+    assert migrated.configured_live_call_cap == FOLDWEAVE_FINAL_LIVE_CALL_CAP
+    assert migrated.model_dump(mode="python") == {
+        **before_values,
+        "configured_live_call_cap": FOLDWEAVE_FINAL_LIVE_CALL_CAP,
+    }
+    assert repeated == migrated
+    assert path.read_bytes() == migrated_bytes
+    assert not tuple(tmp_path.glob(".api_budget.json.*.tmp"))
+
     reopened = PersistentBudgetLedger.open_existing_foldweave_planner(path=path)
     assert reopened.snapshot == migrated
+
+
+def test_foldweave_final_call_cap_migration_admits_one_reserved_call(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "api_budget.json"
+    _pre_final_foldweave_ledger(path)
+
+    with pytest.raises(BudgetLedgerError, match="does not match"):
+        PersistentBudgetLedger.open_existing_foldweave_planner(path=path)
+
+    migrate_foldweave_final_call_cap(path=path)
+    ledger = PersistentBudgetLedger.open_existing_foldweave_planner(path=path)
+    reserved = ledger.reserve_microusd(
+        reservation_microusd=1,
+        provider_attempts=1,
+    )
+
+    assert reserved.live_requests_reserved == 14
+    assert reserved.provider_attempts_reserved == 14
+    assert reserved.configured_live_call_cap == FOLDWEAVE_FINAL_LIVE_CALL_CAP
 
 
 def test_foldweave_installation_ledger_is_lazy_and_persists_first_reservation(
@@ -157,7 +218,7 @@ def test_foldweave_installation_ledger_is_lazy_and_persists_first_reservation(
 
     assert not path.parent.exists()
     assert ledger.snapshot.live_requests_reserved == 0
-    assert ledger.snapshot.configured_live_call_cap == C3_LIVE_CALL_CAP
+    assert ledger.snapshot.configured_live_call_cap == FOLDWEAVE_FINAL_LIVE_CALL_CAP
     assert (
         ledger.snapshot.configured_cost_cap_microusd == FOLDWEAVE_PROJECT_COST_MICRO_USD
     )
@@ -195,6 +256,50 @@ def test_foldweave_cost_migration_write_failure_preserves_original(
 
     assert path.read_bytes() == original
     assert not tuple(tmp_path.glob(".api_budget.json.*.tmp"))
+
+
+def test_foldweave_final_call_cap_migration_write_failure_preserves_original(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "api_budget.json"
+    _pre_final_foldweave_ledger(path)
+    original = path.read_bytes()
+
+    def fail_replace(source: object, destination: object) -> None:
+        del source, destination
+        raise OSError("injected atomic promotion failure")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    with pytest.raises(BudgetLedgerError, match="written atomically"):
+        migrate_foldweave_final_call_cap(path=path)
+
+    assert path.read_bytes() == original
+    assert not tuple(tmp_path.glob(".api_budget.json.*.tmp"))
+
+
+@pytest.mark.parametrize(
+    ("snapshot_update", "message"),
+    (
+        ({"configured_live_call_cap": 14}, "not eligible"),
+        ({"configured_cost_cap_microusd": 20_000_000}, "cost authority"),
+        ({"live_requests_reserved": 12}, "history does not match"),
+        ({"provider_attempts_reserved": 14}, "history does not match"),
+        ({"committed_cost_microusd": 12_734_471}, "history does not match"),
+        ({"reported_estimated_cost_microusd": 874_861}, "history does not match"),
+    ),
+)
+def test_foldweave_final_call_cap_migration_rejects_unexpected_authority(
+    tmp_path: Path,
+    snapshot_update: dict[str, int],
+    message: str,
+) -> None:
+    path = tmp_path / "api_budget.json"
+    snapshot = _pre_final_foldweave_ledger(path).model_copy(update=snapshot_update)
+    path.write_text(snapshot.model_dump_json(), encoding="utf-8")
+
+    with pytest.raises(BudgetLedgerError, match=message):
+        migrate_foldweave_final_call_cap(path=path)
 
 
 @pytest.mark.parametrize(
@@ -360,6 +465,22 @@ def test_c3_migration_and_strict_live_planner_fail_on_lock_contention(
                 reservation_microusd=1,
                 provider_attempts=1,
             )
+
+
+def test_foldweave_final_call_cap_migration_fails_on_lock_contention(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "api_budget.json"
+    _pre_final_foldweave_ledger(path)
+    lock_path = path.with_suffix(".json.lock")
+
+    with lock_path.open("a+b") as lock_stream:
+        fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with pytest.raises(BudgetLedgerError, match="locked by another process"):
+            migrate_foldweave_final_call_cap(path=path)
+
+    migrated = migrate_foldweave_final_call_cap(path=path)
+    assert migrated.configured_live_call_cap == FOLDWEAVE_FINAL_LIVE_CALL_CAP
 
 
 @pytest.mark.parametrize(

@@ -14,6 +14,29 @@ This document describes the current supported contract and the limits on public
 claims. A checked-in implementation, passing unit test, or visible UI is not by
 itself evidence that an external distribution surface is publicly available.
 
+## Qualification status at the current checkpoint
+
+Pushed checkpoint `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` is a verified
+implementation checkpoint, not the final Foldweave release. The following
+distinctions are part of the claim boundary:
+
+| Surface | Current evidence-backed state |
+|---|---|
+| Review-before-execution authority | Qualified for origin and receiver jobs, including exact preview acceptance and fail-closed stale/duplicate/substituted authority |
+| Native direct mode | Qualified in the packaged Apple-Silicon app: Keychain configure/read/remove and a separately scoped bounded live transaction with revision, exact acceptance, verification, reconstruction, restart, and clean shutdown; the development credential was removed |
+| Native visual system | Objective conformance passed for the restrained macOS dark utility language across native, browser, review, settings, pairing, Done/proof, and widget surfaces, including large/narrow fixtures, keyboard behavior, focus, overflow, and measured contrast; this is not a claim of every user's subjective preference |
+| ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` in the actual macOS ChatGPT app through the Secure MCP Tunnel; this is not consumer distribution |
+| Consumer gateway and pairing | `CONSUMER_PAIRING_VERIFIED` through the user-authorized Google Chrome route: ChatGPT connector OAuth, device pairing, outbound companion WSS, opaque local selection, consumer origin and receiver-derivative transactions, reconnect, refusal checks, verification, and reconstruction passed. Deployment `d14d051d-8920-44ea-b336-f3bbea2f6936` serves Worker version `9ac88da8-9f85-4685-8a07-073d44b909b9`; technical `PUBLICATION_READY` is achieved for review submission |
+| Codex | Foldweave plugin `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery pass against the same local MCP server |
+| Integrated regression | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; the sole direct ledger remained byte-identical at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9` |
+| Public ChatGPT availability | Not submitted for review, approved, published, publicly listed, or claimed |
+| Foldweave release / recording readiness | Not claimed; predecessor release evidence remains historical |
+
+The operational checkpoint in `docs/build/STATE.md` changes as qualification
+continues. This document intentionally states only the minimum durable boundary
+needed to prevent an implementation surface from being described as an
+available consumer product before its full transaction is observed.
+
 ## Review before execution
 
 Every new Foldweave transaction stops in review before it can create a result.
@@ -189,11 +212,25 @@ receiver matching, preview construction, acceptance, execution, verification,
 and reconstruction are deterministic. Martin's current tree can therefore be
 rendered against a shared proposal without a GPT call.
 
-The checked-in gateway and companion implementation is not itself proof of a
-public deployment, consumer pairing, directory approval, or public listing.
-Those claims require separate observed qualification. Until that evidence is
-recorded, Foldweave must not be described as publicly listed or universally
-available inside ChatGPT.
+The checked-in gateway and companion implementation is now deployed at
+<https://foldweave-gateway.skybert-ghostline.workers.dev>, version
+`9ac88da8-9f85-4685-8a07-073d44b909b9` in deployment
+`d14d051d-8920-44ea-b336-f3bbea2f6936`. The earlier
+`ERR_BLOCKED_BY_CLIENT` occurred at the Codex in-app Browser policy layer. The
+user-authorized Google Chrome route completed ChatGPT connector OAuth, device
+pairing, outbound companion WSS, opaque local selection, complete consumer
+origin and receiver-derivative transactions, disconnect/reconnect, deployed
+refusal checks, verification, and reconstruction. This evidence establishes
+`CONSUMER_PAIRING_VERIFIED` and narrow technical `PUBLICATION_READY` for review
+submission.
+
+Those states do not establish review submission, approval, publication,
+directory availability, or public listing. Foldweave must not be described as
+publicly listed or universally available inside ChatGPT. The standard
+component-authored `ui/message` revision request was acknowledged and displayed
+but did not automatically cause a host tool call; one explicit
+same-conversation continuation was required and verified for each consumer
+revision.
 
 ## Change File and collaboration boundary
 
@@ -275,7 +312,12 @@ widget; they do not own durable product state or require Node.js at runtime.
 The packaged app has been qualified as an unsigned/ad-hoc judge build. No Apple
 Developer ID identity is available, so Foldweave does not claim notarization,
 Developer ID signing, Mac App Store distribution, or warning-free Gatekeeper
-launch on every machine. The browser and CLI remain supported fallback paths.
+launch on every machine. The current 55 MiB arm64 bundle has identifier
+`com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, and
+executable SHA-256
+`c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`;
+strict deep ad-hoc validation passes. The browser and CLI remain supported
+fallback paths.
 
 Foldweave does not claim a native Windows or Linux application, mobile access,
 or remote phone file access. Only macOS Apple Silicon is included in the native
@@ -294,11 +336,12 @@ idempotency, source and Change File commitments, and trusted channel. Status
 polling and preview retrieval cannot trigger a provider call.
 
 The Foldweave Codex plugin is a thin package around that same MCP server; it does
-not contain a copied planner or product engine. Public claims about a fresh-task
-installed-copy transaction require observed clean-clone installation,
-discovery, invocation, and cache/version evidence for the current Foldweave
-build. Historical Name Atlas plugin qualification does not automatically prove
-the renamed plugin.
+not contain a copied planner or product engine. Version
+`0.1.0+codex.20260721091729` is installed and enabled from the repository
+marketplace; installed cache inspection and stdio MCP initialization/tool
+discovery pass against the same local MCP server. Earlier installed-copy
+workflow evidence remains version-specific. Historical Name Atlas plugin
+qualification does not automatically qualify another Foldweave plugin build.
 
 Similarly, developer-mode ChatGPT qualification, consumer pairing, publication
 readiness, submission for review, approval, and public listing are separate

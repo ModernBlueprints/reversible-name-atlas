@@ -1,18 +1,18 @@
 # Foldweave — Sole Native-Review Implementation Plan
 
-Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0C AND F1 COMPLETE; F0D PUBLIC
-DEPLOYMENT AND F2 LIVE-TRANSPORT QUALIFICATION IN PROGRESS; CONNECTED-CHANGE
-C0–C7 BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
+Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F4 COMPLETE; F3 FINAL
+POLISH AND F5–F6 RELEASE QUALIFICATION IN PROGRESS; CONNECTED-CHANGE C0–C7
+BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **F0D CONSUMER GATEWAY QUALIFICATION AND F2 LIVE-TRANSPORT CLOSURE**
+Phase: **F3 FINAL VISUAL POLISH AND F5–F6 RELEASE QUALIFICATION**
 
 Submission hold: **ACTIVE**
 
 This remains the only implementation plan. `BUILD_SPEC.md` defines product
 truth; this file controls dependency order, targets, evidence, scope cuts,
 status, and the next vertical outcome. It does not authorize execution.
-Sections 1–9 preserve completed predecessor evidence. Section 10 controls the
-future Foldweave cycle after explicit F+0 activation.
+Sections 1–9 preserve completed predecessor evidence. Sections 10–19 control
+the active Foldweave cycle after explicit F+0 activation.
 
 ## 1. Completed foundation and supersession
 
@@ -208,7 +208,12 @@ Verification belongs in normal tests, the actual job/result/receipt/verifier/
 reconstruction, clean-run commands, and browser inspection. Do not build a
 tournament, generic evidence platform, benchmark harness, or validation system.
 
-## 4. Scope control
+## 4. Historical Connected Change scope control
+
+The exclusions below controlled the completed Connected Change cycle. They do
+not override the later Foldweave contracts in Sections 10–19, which expressly
+admit the packaged native shell, public gateway, focused React review island,
+and Vite build while preserving one deterministic engine and authority.
 
 Excluded: native desktop wrapper; hosted service; cloud synchronization;
 accounts/collaboration database; arbitrary filesystem MCP; semantic/general
@@ -1158,6 +1163,12 @@ SHA-256 `479351e01ca385a05fa306b229af32ba3ea695d3f8d4623731b302d5f91905a6`.
 The 44-hour envelope began with the user's earlier decision and was not reset or
 extended by activation.
 
+Latest stable published Foldweave checkpoint:
+`719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` —
+`feat: deliver Foldweave native review and shared planning`. Current F2–F4
+qualification and correction evidence remains uncommitted until the next
+coherent checkpoint.
+
 At F+0 calculate, using `oslo_tz = ZoneInfo("Europe/Oslo")`:
 
 - `available_to_recording = max(0, Tuesday 21 July 2026 10:00 CEST - F+0)`;
@@ -1333,13 +1344,18 @@ completed Foldweave.
   passed; Ruff lint passed; Ruff format covered 164 files; staged and unstaged
   diff checks passed. Actual browser QA covered automatic Working-to-Review,
   exact acceptance through Done, 1280 x 720 review/decision surfaces, and a
-  390-pixel responsive surface without horizontal overflow. Evidence captures:
-  `docs/screenshots/08-foldweave-review.png`,
-  `docs/screenshots/09-foldweave-review-narrow.png`, and
-  `docs/screenshots/10-foldweave-review-decision.png`. The bounded independent
-  audits exposed the durable transition and receiver portable-binding defects;
-  two bounded correction rounds closed both, and final independent reproduction
-  returned F0a `GO`.
+  390-pixel responsive surface without horizontal overflow. The immutable F0a
+  evidence captures are:
+
+  | Immutable `COMMIT:path` locator | Dimensions | SHA-256 |
+  |---|---:|---|
+  | `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87:docs/screenshots/08-foldweave-review.png` | 1280×720 | `6bb56b084152515fe6f3eaedb0cb0c2ec14bcfc2d895c07e5da0097c24cf8fb7` |
+  | `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87:docs/screenshots/09-foldweave-review-narrow.png` | 390×2142 | `d809847f9dbbaa2e57be2659c38080db2577e344ad49498d1cf939f413d9b3d3` |
+  | `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87:docs/screenshots/10-foldweave-review-decision.png` | 1280×720 | `168e095718f62c95839724e8721c454471ab1b8ad23a22b0efc5b8cf9b336e81` |
+
+  The bounded independent audits exposed the durable transition and receiver
+  portable-binding defects; two bounded correction rounds closed both, and
+  final independent reproduction returned F0a `GO`.
 
 ### F0b — Native application gate
 
@@ -1552,13 +1568,15 @@ completed Foldweave.
   reviewers.
 - **Allowed cut:** custom domain and public directory approval; no gateway,
   pairing, companion, or ChatGPT-hosted-product cut.
-- **Actual status:** `IN PROGRESS — LOCAL PUBLIC AUTHORITY IMPLEMENTED AND
-  REGRESSION-GREEN; LIVE CLOUDFLARE/OAUTH/WSS QUALIFICATION PENDING`. F0c is
-  complete, so the dependency gate is open. Worker, OAuth, pairing, Durable
-  Object relay, outbound companion, native supervisor, pairing UI, bounded MCP
-  tools, and the complete device/grant/scope/per-job-capability chain are now
-  implemented locally. No consumer claim is active before the real topology
-  passes.
+- **Actual status:** `VERIFIED COMPLETE — CONSUMER_PAIRING_VERIFIED`. F0c is
+  complete, so the dependency gate is open. Worker, OAuth,
+  pairing, Durable Object relay, outbound companion, native supervisor,
+  pairing UI, bounded MCP tools, and the complete device/grant/scope/per-job-
+  capability chain are implemented. Wrangler is authenticated and the Worker,
+  production/preview KV namespaces, and SQLite Durable Object bindings are
+  provisioned. The complete positive, reconnect, and refusal evidence recorded
+  below establishes `CONSUMER_PAIRING_VERIFIED`; the separate review,
+  approval, listing, and publication states are not inferred from this gate.
 - **Actual verification:** the Worker propagates one signed public-invocation
   context bound to the exact device, session, OAuth grant, scope set, request,
   sequence, nonce, body digest, and operation digest. The companion revalidates
@@ -1571,16 +1589,123 @@ completed Foldweave.
   Revoked, expired, missing, wrong-grant, wrong-device, wrong-job, guessed, and
   duplicate authority paths fail closed. The raw capability never enters an MCP
   input or result, `structuredContent`, `_meta`, model/widget state, gateway
-  state, browser storage, logs, or rendered content. Gateway strict TypeScript,
-  31 Worker tests, the primary integrator's 110-test authority/derivative subset,
-  the independent reviewer's 83-test public-authority subset, 54 widget tests,
-  both production builds, and the complete 1,102-test Python regression pass.
-  The bounded re-audit found no HIGH or MEDIUM issue and returned code-level
-  public-deployment readiness `GO`. No authenticated public `/mcp` transaction
-  or live Cloudflare deployment exists yet; Wrangler remains unauthenticated and
-  `wrangler.jsonc` still has placeholder KV IDs. F0d therefore remains in
-  progress until real OAuth, pairing, outbound WSS, reconnect, origin, receiver
-  derivative, and no-ledger-mutation evidence passes.
+  state, browser storage, logs, or rendered content. Current checks pass strict
+  TypeScript, 50/50 Worker tests, a Wrangler production dry build, both frontend
+  production builds, 76/76 frontend tests, and the complete 1,121-test Python
+  regression. The bounded re-audit found no HIGH or MEDIUM issue and returned
+  code-level public-deployment readiness `GO`. Wrangler authenticated through
+  the user-approved Cloudflare flow, production and preview `OAUTH_KV`
+  namespaces were bound, and deployment version
+  `fb97746a-8d6c-497c-aa48-29ecd798dff3` was created on Monday 20 July 2026 at
+  13:46:59 CEST with both SQLite Durable Object classes and the production KV
+  binding. The latest deployed version is
+  `ece68561-0740-47d3-9052-4e311cabf483` at the stable endpoint
+  `https://foldweave-gateway.skybert-ghostline.workers.dev`. Google Chrome
+  safely bypassed the Codex in-app Browser's pre-navigation hostname policy
+  block without changing the Foldweave OAuth or gateway contract. The real
+  ChatGPT connector completed OAuth, reached the paired outbound companion,
+  selected source and output parent through opaque handles, and created hosted
+  root job `976daca126a648a8bee4a5a4d62b6f8c`. ChatGPT inspected the complete
+  24-file source through bounded tools and reached `reviewing` with no result.
+  A stale ChatGPT descriptor still referenced
+  `ui://foldweave/review-v31.html`; the gateway now advertises canonical v33
+  while serving only explicit v31/v32 compatibility aliases with current v33
+  assets. Live retry rendered the widget, and authenticated plus unauthenticated
+  gateway regressions cover both aliases while unknown URIs remain blocked.
+
+  The widget reserved and submitted one bounded revision instruction. Its
+  acknowledged standard `ui/message` request became visible in the ChatGPT
+  transcript, but this observed consumer surface did not autonomously invoke
+  `submit_plan_revision`. The exact self-contained continuation was therefore
+  sent once in the same ChatGPT conversation; the host then called the revision
+  tool exactly once and produced replacement preview
+  `b637ce35087b97fa60dd407351a6d0ddf28a4f6fc1a50be777bf6af4efe8dbca`
+  over candidate
+  `70dc934a8f2b60089b24284712e7b6c22dc6e331c89ef52aa094a1b0148c3bef`.
+  The widget's exact acceptance action then bound that candidate and preview to
+  `chatgpt_hosted` authorization and advanced the job to revision 11
+  `verified`. The separate result at
+  `/private/tmp/foldweave-v33-root-output-parent/apollo-client-handoff`
+  contains all 24 files and 23 changed paths. Its Change File fingerprint is
+  `84b7931453b1b6fb37796f9ccd6a0a7796a4554580e567b528e0cf3a19c1ab97`,
+  organized-tree commitment is
+  `2deba61e0aae9004f68e7b5ca185d5efc72f34e9dfa47407744766e4df7810ba`,
+  receipt fingerprint is
+  `9a0d4d0b67c7afbc6dcfc2837188263253e5979edbba946a241412b597d82d68`,
+  and verification fingerprint is
+  `0e5f5e519ce58a1a5f25d4f447372a8e108505ce5c21de4da4afaab6fd7fdfc6`.
+  Source-free and source-aware CLI verification both returned `VERIFIED` for
+  that receipt. Reconstruction produced 24 files and `diff -qr` proved exact
+  path-and-byte equality with the selected source. Execution provenance records
+  model transport `chatgpt_hosted` and provider call count zero. The sole direct
+  ledger remained byte-identical at SHA-256
+  `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`.
+  The same consumer session then selected the verified Change File, Martin's
+  differently arranged 24-file source, and an empty output parent through three
+  opaque handles; no absolute path crossed the gateway. Deterministic receiver
+  job `c7ead78db18a4c84b6043006445050b0` matched all members and rendered the
+  required **Your current folder / Shared proposal** review with source
+  commitment
+  `a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`,
+  match report
+  `8e91d21779d8d773ff42f7ad6fd755effc0143f8e62c873f23ccbcddddd51ac2`,
+  24 files, one protected file, one empty directory, 23 changed paths, and 23
+  supported-link updates. No result existed in review.
+
+  The widget reserved immutable derivative child
+  `90a548520b3e4672825de9ffcff0636a` from that parent. The same explicit
+  same-conversation continuation caused exactly one hosted revision submission,
+  moving `Apollo-project-notes.md` into `01_project-brief` while retaining the
+  other mappings. The child returned to `reviewing` with candidate
+  `ad1c86aa7044a4a4279b860d85b2a219b7ec0103c4b2750d5904f1b2df0073d3`
+  and preview
+  `e69bb1992a214352c0e0958bd830cc0ad8e7fb15124327771e7f23f6bcba3c5d`.
+  Exact widget acceptance advanced it to revision 3 `verified`. The child
+  Change File fingerprint is
+  `ab28b4440ec976e337e567c5746e9d07ebe59faff270b8822421118f52e8ce2c`,
+  organized-tree commitment is
+  `20a71d110bcdedce603eacd1b69f517f88bac18d37fb702f1790c77430323b6e`,
+  receipt is
+  `6447e9d1a5a1afa49126dd6e8e673f3b757c37245638a4b444606022be5b484a`,
+  and verification is
+  `40b23f6fa6470acdfc886e6cc63f558302bed1d2152e6fcf752e1c2a6d09e1d5`.
+  Both source-free and source-aware verification returned `VERIFIED`; the
+  24-file reconstruction was path-and-byte identical to Martin's selected
+  source. Provenance is `gpt_revised_from_change_file` with transport
+  `chatgpt_hosted`, provider call count zero, and generation-one immediate-parent
+  lineage to the origin Change File. The direct ledger again remained
+  byte-identical.
+
+  The standalone outbound companion was then stopped at a quiescent boundary
+  without revoking or re-pairing. One actual ChatGPT `job_status` call while it
+  was offline failed with a bounded upstream `502`; both durable consumer job
+  files, the 23-job inventory, the 49-file verified result, and the direct
+  ledger remained unchanged. Restarting the exact same companion established
+  one authenticated outbound TLS connection with the existing pairing. The
+  same ChatGPT conversation re-read derivative job
+  `90a548520b3e4672825de9ffcff0636a` as revision 3/proposal revision 1
+  `verified` with model transport `chatgpt_hosted`; a post-reconnect
+  `verify_result` returned receipt
+  `6447e9d1a5a1afa49126dd6e8e673f3b757c37245638a4b444606022be5b484a`
+  and organized-tree commitment
+  `20a71d110bcdedce603eacd1b69f517f88bac18d37fb702f1790c77430323b6e`.
+  Local source-free verification returned `VERIFIED` for the same receipt.
+  Root-job SHA-256
+  `f2699251540b8fb0afefd53b19a582ff174f4b3219998ef4513bfd975465efcd`,
+  derivative-job SHA-256
+  `62f860e36ca1e3b2bae176de039cb38f1f7eaf80f171806c22ae1c6ab23ef848`,
+  and direct-ledger SHA-256
+  `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`
+  remained byte-identical. A deployed unauthenticated `tools/call` returned a
+  bounded MCP `isError` result with `insufficient_scope`, and one authenticated
+  nonexistent-job request returned sanitized `job_status_unavailable`. The
+  automated 50/50 gateway and 107/107 companion/hosted matrices cover the
+  destructive lockout, expiry, replay, wrong-device, revocation, rate-limit,
+  and duplicate-request cases that were intentionally not induced against the
+  sole live pairing. F0d and `CONSUMER_PAIRING_VERIFIED` therefore pass. The
+  acknowledged `ui/message` behavior remains truthfully partial, with the
+  already verified same-conversation recovery required by AI-016 and VER-023;
+  it is not described as seamless automatic continuation.
 
 ## 12. F1 — Complete review and revision engine
 
@@ -1636,8 +1761,9 @@ completed Foldweave.
   visible at dispatch. The audit's second high-severity finding—the first
   design's raw capability exposure through MCP results—was also removed and the
   independent re-audit found no remaining HIGH or MEDIUM issue. The complete
-  current Python regression passes 1,102/1,102 tests in 130.81 seconds. Ruff
-  lint, Ruff format over 220 files, lock, and Git diff checks pass.
+  current Python regression passes 1,121 tests with one upstream warning. Ruff
+  lint, Ruff format
+  over 224 files, lock, and Git diff checks pass.
 
 ## 13. F2 — Proof-carrying serial collaboration
 
@@ -1685,15 +1811,11 @@ completed Foldweave.
   reviewers.
 - **Allowed cut:** supplementary lineage visualization only; no lineage,
   compatibility, convergence, or reconstruction cut.
-- **Actual status:** `IN PROGRESS — DETERMINISTIC DOMAIN, PORTABILITY, RACE, AND
-  PRODUCT-NATIVE REVIEW MATRICES COMPLETE; LIVE TRANSPORT MATRIX REMAINS` —
-  Change File v2, receipt/verifier v3,
+- **Actual status:** `COMPLETE` — Change File v2, receipt/verifier v3,
   immediate-parent derivative lineage, self-contained child finalization,
-  receiver-specific reconstruction, raw/prior-result application, and the
-  Sofia → Martin → Sofia domain transaction are implemented. F2 is no longer
-  gated by F1 or a deterministic matrix gap; it remains gated by the required
-  real direct-GPT derivative and real ChatGPT-hosted receiver derivative
-  transactions and their packaged/runtime evidence.
+  receiver-specific reconstruction, raw/prior-result application, the
+  Sofia → Martin → Sofia domain transaction, and both mandatory live derivative
+  transports are implemented and verified.
 - **Actual verification:** one portable legacy v1 CF1 → reviewed/accepted v2
   CF2 transaction proves source-free copied-result verification, Martin-specific
   reconstruction, CF2 application without CF1 to unrelated copied raw Sofia and
@@ -1706,9 +1828,33 @@ completed Foldweave.
   proposal delta, creates no output during review, and verifies only after exact
   acceptance. The simultaneous parent/child collision proof described under F1
   also passes. The focused F2 closure matrix passes 67 tests, the adjacent
-  product/race matrix passes 25 tests, and all are included in the complete
-  1,102-test regression. The remaining F2 evidence is live-transport evidence,
-  not missing deterministic product behavior.
+  product/race matrix passes 25 tests. Direct derivative job
+  `9ac2c69a75d44ba1b0a7f21a873dd342` produced verified receipt
+  `a5f5eb43ae6889d56aaecef5a4464c7a1ed23a8db66d7b711899f954f77dc2e2`
+  and self-contained child Change File
+  `dcc3cc4d746564edc56cce28689e6e006541e2779dabf1166a9ffb83386e3b06`.
+  Actual macOS ChatGPT-hosted derivative job
+  `6af720f18400471098cb52e3e4af52e7` used the v17 widget, preserved its
+  immutable parent in `reviewing`, and executed only after exact acceptance of
+  preview
+  `668d613e6701b35d821a4a6dbde4da5d26cc6beb05ec9d41346d81865a43cb38`.
+  It records `gpt_revised_from_change_file`, planning basis `derivative`, model
+  transport `chatgpt_hosted`, provider-call count `0`, and direct API use
+  `false`; receipt
+  `56468fd0d0a4c5dd715c5102f3b7d7fedae8e3a70077d3a0fd81f040e3fee0d3`
+  and child Change File
+  `c54c20cd77d9386e9b52327fa88e84e2da87433fb437b520d02062c6098c06c6`
+  strictly verify. Both live transports compiled candidate
+  `f4e79b7c377a73e3206049a8dccd40ce5334a201478d2d2be7067a23f24f793b`
+  and converged to organized-tree commitment
+  `0ea8201ec6123615f9ab9028cb89a64027d63288f88041b4de209612623cc830`.
+  Direct and hosted receiver-specific reconstructions are path-and-byte
+  identical to Martin's selected source. An independent read-only audit
+  revalidated source immutability, BagIt manifests, all 21 receipt artifact
+  commitments, the acyclic proof DAG, complete immediate-parent lineage,
+  self-contained CF2, and absence of payload bytes, absolute paths, and secrets
+  in the transferable artifact. The current complete regression passes
+  1,121 tests with one upstream warning.
 
 ## 14. F3 — Complete native, browser, and ChatGPT experience
 
@@ -1733,10 +1879,14 @@ completed Foldweave.
   absolute-path exposure; and the exact 500-file/1,000-directory maximum-shape
   fixture across toggle, changed-only, search/filter, stable state, keyboard,
   screen-reader identity, and overflow behavior.
-- **Visual checks:** one navy/cyan/violet/amber/green/gray system; 1280 x 720,
-  approximately 1440 x 900, and 390 x 844; stable selection/expansion/scroll;
-  changed branches; search/filters; keyboard, focus, screen-reader names,
-  contrast, non-color signals, trust strip, errors, and empty/loading states.
+- **Visual checks:** a restrained, minimal, immediately recognizable macOS-like
+  system using native/Blueprint interaction patterns; no gradients, neon glow,
+  cyber styling, decorative visual noise, or repeated full-width horizontal
+  rules; hierarchy comes from whitespace, compact grouped controls,
+  Finder-style rows, and native split views; 1280 x 720, approximately 1440 x
+  900, and 390 x 844; stable selection/expansion/scroll; changed branches;
+  search/filters; keyboard, focus, screen-reader names, contrast, non-color
+  signals, trust strip, errors, and empty/loading states.
 - **Packaged/runtime checks:** clean packaged launch; picker, settings, Finder,
   restart, unrelated working directory; browser fallback; actual ChatGPT widget
   and companion reconnect; no runtime Node and no orphan process.
@@ -1749,8 +1899,44 @@ completed Foldweave.
   visual reviewers.
 - **Allowed cut:** Sections 10 items 1–7 only; never the required tree,
   revision, native, ChatGPT, or accessibility semantics.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS — FUNCTIONAL, OBJECTIVE MACOS, CONSUMER
+  ORIGIN, RECEIVER-DERIVATIVE, SAFE REVISION-RECOVERY, AND RECONNECT EXPERIENCES
+  PASS; FINAL USER VISUAL POLISH REMAINS`.
+- **Actual verification:** the active native, browser, review, settings,
+  pairing, Done/proof, and ChatGPT widget surfaces now use the restrained
+  system-aware macOS utility language. Authored surfaces contain no gradients,
+  glow, text shadows, cyber palette, decorative full-width rules, or card-grid
+  ornament. Remaining separators are limited to purposeful toolbar/split-view
+  boundaries, short Finder-style rows, and concise grouped disclosure/settings
+  boundaries. Independent packaged inspection covered Home, Create, Settings,
+  Pairing, and keyboard focus. The 500-file/1,000-directory fixture passed
+  changed-only default, search, selection, scroll retention, structure toggle,
+  arrow-key movement, empty-directory filtering, and narrow acceptance. Measured
+  contrast was 15.63:1 for primary text, 8.28–10.10:1 for muted text, and 5.57:1
+  for white text on the action blue. Visual/native checks passed 27 tests;
+  frontend passed 76/76; strict TypeScript, both production builds, generated
+  asset parity, and Git diff checks passed. This is objective conformance, not a
+  claim of the user's personal final-pixel acceptance. The polished 55 MiB
+  arm64 `dist/Foldweave.app` has bundle ID `com.modernblueprints.foldweave` and
+  executable SHA-256
+  `863119e51aa2c4e6e1287f9bafcdac9dc9faa65304bc1890978b5e5a159f85f6`.
+  Strict deep ad-hoc signature verification, 30 focused native/package tests,
+  unrelated-directory launch, ephemeral-loopback health, picker cancellation
+  and selection, temporary Keychain roundtrip and removal, durable review
+  rehydration, exact acceptance, Done, Verify Again, CLI verification, no
+  runtime Node, and no-orphan-process checks passed. Gatekeeper rejection is
+  expected because no Developer ID or notarization is claimed. The live public
+  consumer origin journey now also renders the shared widget, revises the plan,
+  accepts the exact immutable preview, verifies the separate result, and
+  reconstructs its selected source. The receiver journey deterministically
+  renders Martin's own tree against the shared proposal, creates an immutable
+  derivative child, reviews and accepts its revised preview, verifies the
+  separate result, and reconstructs Martin's selected source. The live host
+  acknowledged but did not autonomously act on standard `ui/message`; the
+  required same-conversation recovery preserved the prior preview and completed
+  exactly one revision without a second transport or reservation. A real
+  companion outage and reconnect then preserved and rehydrated the verified
+  derivative. F3 remains open only for final user-requested visual polish.
 
 ## 15. F4 — MCP, Codex, direct/live/replay qualification
 
@@ -1794,17 +1980,84 @@ completed Foldweave.
   and installed-plugin reviewers.
 - **Allowed cut:** secondary clients and examples only; no required transport,
   tool layer, Codex transaction, replay, or unchanged-apply cut.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `VERIFIED COMPLETE — DEVELOPER_MODE_VERIFIED /
+  CONSUMER_PAIRING_VERIFIED / PUBLICATION_READY`.
+- **Actual verification:** the direct and actual ChatGPT-hosted derivative
+  chains recorded under F2 pass with truthful, distinct provenance and identical
+  organized-tree commitment. A fresh keyless replay job
+  `daeea1fc54c6472c8b74a0b027f04259` reached review, accepted exact preview
+  `5e8729f9da5ae923fbc28d10d26d5604933dfa4329e62e02e9c89d97aa05d074`,
+  verified receipt
+  `c8020a10ef72fd4c5590fb09246427c69897cb6603448a6b850525b315548e10`,
+  correctly refused a relative reconstruction with
+  `destination_must_be_absolute`, and then recreated the selected source at a
+  valid absolute destination. The sole direct ledger remains schema
+  `gpt-budget.v1`, exact model `gpt-5.6`, USD 40 monetary cap, call cap 16, 14
+  requests/attempts reserved, USD 13.057830 conservative exposure, USD
+  0.895450 reported estimated cost, and SHA-256
+  `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`;
+  the hosted derivative left it byte-identical. Current preflight passes
+  1,176 Python tests with one upstream warning, 80/80 frontend tests, 50/50
+  gateway tests,
+  `uv lock --check` with 63 packages, Ruff lint/format over 224 files, strict
+  TypeScript, both frontend production builds with exact generated-asset
+  parity, the Wrangler production dry build, and Git diff checks. The official
+  plugin cachebuster, validator, and reinstall flow installed
+  `foldweave@0.1.0+codex.20260721091729` from the personal marketplace. The
+  installed cache copy exists, and its declared stdio MCP command initialized as
+  `Foldweave` and returned 22 bounded tools through `tools/list`. Earlier
+  installed-copy evidence used the previous cachebuster to invoke status,
+  inventory, plan, preview, revision, exact acceptance, verification, Change
+  File retrieval, reconstruction, and identical duplicate acceptance. That
+  result verified with four files, three changed paths, one rewritten link,
+  exactly one result, and a path-and-byte identical reconstruction; provenance
+  records `codex_hosted`, no direct API use, and no budget reservation. Focused
+  plugin checks passed 21 tests plus Ruff and diff checks, and the sole ledger
+  remained byte-identical. The final release candidate still requires unrelated
+  clean-clone plugin reproduction from the selected release commit. At the
+  installed-copy checkpoint, F4 remained open pending F0d's live public
+  reconnect/refusal evidence. The later consumer evidence below closed that
+  dependency and completed F4.
+
+  The public consumer connector now additionally proves a real hosted root
+  planning job, shared widget render, deterministic preview rehydration, and one
+  durable host revision through the same engine. The exact widget acceptance
+  then produced a verified 24-file result with receipt
+  `9a0d4d0b67c7afbc6dcfc2837188263253e5979edbba946a241412b597d82d68`,
+  Change File
+  `84b7931453b1b6fb37796f9ccd6a0a7796a4554580e567b528e0cf3a19c1ab97`,
+  matching organized-tree commitment
+  `2deba61e0aae9004f68e7b5ca185d5efc72f34e9dfa47407744766e4df7810ba`,
+  independent source-free and source-aware verification, and a 24-file
+  path-and-byte-identical reconstruction. Automatic `ui/message`
+  continuation remains `PARTIAL`: the host acknowledged and displayed the
+  component message but did not invoke the revision tool until one explicit
+  same-conversation continuation. The direct ledger remained byte-identical.
+  A real consumer receiver transaction now also proves opaque-handle selection,
+  deterministic matching, Martin-current/shared review, an immutable hosted
+  derivative child, exact acceptance, verified v2 Change File/v3 receipt,
+  immediate-parent lineage, and Martin-specific reconstruction. The child
+  records zero direct provider calls and left the direct ledger byte-identical.
+  An intentional companion outage produced a bounded failure without mutating
+  the 23-job inventory, 49-file derivative result, either consumer job, or the
+  direct ledger. The same pairing reconnected without reauthorization;
+  ChatGPT returned the same verified revision and then source-free verified
+  receipt
+  `6447e9d1a5a1afa49126dd6e8e673f3b757c37245638a4b444606022be5b484a`.
+  Deployed unauthenticated and authenticated nonexistent-job calls failed with
+  `insufficient_scope` and sanitized `job_status_unavailable`, respectively.
+  This completes the public reconnect/refusal boundary and establishes the
+  narrow technical `PUBLICATION_READY` state. It does not claim review
+  submission, approval, publication, or public listing.
 
 ChatGPT distribution states are recorded independently and never inferred:
 
-- `DEVELOPER_MODE_VERIFIED`;
-- `CONSUMER_PAIRING_VERIFIED`;
-- `PUBLICATION_READY`;
-- `SUBMITTED_FOR_REVIEW`;
-- `APPROVED`;
-- `PUBLISHED`.
+- `DEVELOPER_MODE_VERIFIED` — achieved;
+- `CONSUMER_PAIRING_VERIFIED` — achieved;
+- `PUBLICATION_READY` — achieved for technical review/submission;
+- `SUBMITTED_FOR_REVIEW` — not reached;
+- `APPROVED` — not reached;
+- `PUBLISHED` — not reached.
 
 F4 requires the first three. Attempt `SUBMITTED_FOR_REVIEW` only when the
 current official process permits it. Approval and publication require direct
@@ -1841,8 +2094,12 @@ external evidence, and only `PUBLISHED` supports a public-listing claim.
 - **Downstream consumer:** F6 release candidate.
 - **Owner:** primary integrator; independent adversarial reviewers by surface.
 - **Allowed cut:** only the ordered optional list in Section 10.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS — ABSOLUTE FEATURE-FREEZE BOUNDARY PASSED;
+  RELEASE-SAFE HARDENING ONLY`. Remaining F3 visual polish and F5 hardening are
+  confined to the release-safe categories below.
+- **Actual verification:** `PARTIAL` — the absolute freeze restriction is active,
+  but the zero-open-defect evidence, final visual/accessibility record, selected
+  cuts, and coherent feature-freeze checkpoint have not yet been recorded.
 
 At the absolute freeze boundary, stop feature development. Thereafter only
 defect correction, proof-integrity correction, accessibility, visual QA, clean
@@ -1887,8 +2144,11 @@ release work are permitted.
 - **Allowed cut:** no release-critical cut; public approval may remain accurately
   pending, but developer and consumer pairing plus publication readiness must
   pass.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `IN PROGRESS — ABSOLUTE TARGET PASSED; RELEASE-CANDIDATE
+  ACCEPTANCE NOT YET ESTABLISHED`.
+- **Actual verification:** `PARTIAL` — documentation, media, packaging, and clean-
+  release qualification are underway; no accepted release-candidate commit or
+  complete exact-commit clean-clone evidence has yet been recorded.
 
 After complete release acceptance, fast-forward `main` to the selected
 Foldweave release commit and push without force. Safely update repository
@@ -1927,8 +2187,10 @@ held.
   reserve.
 - **Owner:** primary integrator; user owns voice recording and the final gates.
 - **Allowed cut:** none from the recording-ready definition.
-- **Actual status:** `NOT STARTED`.
-- **Actual verification:** `NOT RUN`.
+- **Actual status:** `NOT STARTED — ABSOLUTE TARGET PASSED; DEPENDENCY F6 NOT YET
+  ACCEPTED`.
+- **Actual verification:** `NOT RUN` — elapsed target time is not completion
+  evidence, and F7 cannot begin before an accepted F6 release candidate.
 
 ## 19. Protected final 16-hour reserve and submission hold
 

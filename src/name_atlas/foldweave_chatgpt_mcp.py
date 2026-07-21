@@ -26,13 +26,20 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     GptHostedJobAuthorityV3,
     build_keep_previous_action,
 )
-from name_atlas.folder_refactor.connected_change.preview import FolderPlanPreviewV1
+from name_atlas.folder_refactor.connected_change.preview import (
+    FolderPlanPreviewV1,
+    FolderPlanRevisionDeltaV1,
+)
+from name_atlas.folder_refactor.connected_change.proposal_delta import (
+    project_latest_accepted_proposal_delta,
+)
 from name_atlas.folder_refactor.contracts import (
     SHA256_PATTERN,
     FolderPlan,
     StrictFrozenModel,
 )
 from name_atlas.folder_refactor.foldweave_host_contracts import (
+    FolderHostCompactPlanEntryV1,
     FolderHostPlanRevisionV1,
     HostModelTransport,
 )
@@ -41,35 +48,40 @@ from name_atlas.folder_refactor.serialization import (
     canonical_sha256,
 )
 from name_atlas.foldweave_host_service import (
+    LOCAL_SELECTION_ID_PATTERN,
     FoldweaveHostPlanningService,
     FoldweaveHostServiceError,
+    RecoveredHostedRevision,
 )
 from name_atlas.foldweave_local_handles import (
     LocalHandleChannel,
     OpaqueLocalItemHandle,
 )
-from name_atlas.native_bridge import NativePathRole, NativeSelectionStatus
+from name_atlas.native_bridge import NativePathRole
 
-WIDGET_RESOURCE_URI = "ui://foldweave/review-v16.html"
+LOGGER = logging.getLogger(__name__)
+
+WIDGET_RESOURCE_URI = "ui://foldweave/review-v33.html"
 WIDGET_MIME_TYPE = "text/html;profile=mcp-app"
 WIDGET_JS_NAME = "foldweave-chatgpt-widget.js"
 WIDGET_CSS_NAME = "foldweave-chatgpt-widget.css"
 
 _CHATGPT_FIRST_INSTRUCTION_BLOCK = (
-    "Foldweave never changes a selected source. Origin workflow: choose source "
-    "and output handles, call plan_change, inspect only bounded evidence, submit "
-    "one complete plan, then call get_plan_preview. The user may revise through "
-    "revise_plan and submit_plan_revision or accept the exact preview. Poll "
-    "job_status and verify_result. ChatGPT supplies model inference; this server "
-    "never calls the Foldweave Responses API or its direct budget ledger."
+    "Foldweave never changes a selected source. For each local item, call "
+    "choose_local_item once to open the picker, then poll with its selection_id. "
+    "Origin: call plan_change with those handles, inspect bounded evidence, submit "
+    "one complete compact plan, and call get_plan_preview. Revise or accept the exact "
+    "preview, then poll and verify. ChatGPT supplies model inference; this server "
+    "never calls the Foldweave Responses API or direct budget ledger."
 )
 _CODEX_FIRST_INSTRUCTION_BLOCK = (
-    "Foldweave never changes a selected source. Codex workflow: choose source "
-    "and output handles, call plan_change, inspect only bounded evidence, submit "
-    "one complete plan, then call get_plan_preview. Revise through revise_plan "
-    "and submit_plan_revision or accept the exact preview. Poll job_status, then "
-    "retrieve, verify, or reconstruct through the bounded tools. Codex supplies "
-    "model inference; this server never calls the Foldweave Responses API."
+    "Foldweave never changes a selected source. For each local item, call "
+    "choose_local_item once to open the picker, then poll with its selection_id. "
+    "Call plan_change with those handles, inspect bounded evidence, submit one "
+    "complete compact plan, and call get_plan_preview. Revise or accept the exact "
+    "preview, "
+    "then poll, retrieve, verify, or reconstruct. Codex supplies model inference; "
+    "this server never calls the Foldweave Responses API."
 )
 if (
     max(
@@ -94,7 +106,7 @@ _COMMON_INSTRUCTIONS = (
     "bounded-evidence result returns "
     "the authoritative current evidence_fingerprint, permitted_evidence_ids, "
     "and one citation_evidence_id. Use citation_evidence_id verbatim in the "
-    "relevant submit_plan or submit_plan_revision entries; it can be "
+    "relevant full submit_plan or submit_plan_revision entries; it can be "
     "initial_inventory or an evidence-record fingerprint. Never use a call ID, "
     "file ID, or any value absent from permitted_evidence_ids as an evidence ID, "
     "and never submit an empty or placeholder probe plan. For a path-only sparse "
@@ -102,7 +114,13 @@ _COMMON_INSTRUCTIONS = (
     "exact permitted evidence ID was already returned before revise_plan. Evidence "
     "tools are intentionally unavailable after revise_plan reserves the revision; "
     "do not call them while the job is revising."
-    " Submit exactly one plan entry for every inventory file whose protected "
+    " Prefer submit_compact_plan for an initial proposal: supply only the result "
+    "folder name and exactly one relative_path/proposed_target mapping for every "
+    "inventory file whose protected flag is false. Copy relative_path verbatim from "
+    "the inventory; Foldweave resolves it against the immutable durable inventory, "
+    "derives the authoritative file_id and other job-owned fields, and adds the "
+    "default inventory citation. For full submit_plan compatibility, "
+    "submit exactly one plan entry for every inventory file whose protected "
     "flag is false, even when evidence_eligible is false. Omit protected files "
     "and explicit empty directories because deterministic Foldweave code "
     "injects them. If submit_plan rejects the candidate, call "
@@ -197,6 +215,7 @@ Sha256 = Annotated[str, Field(pattern=SHA256_PATTERN)]
 CallId = Annotated[str, Field(min_length=1, max_length=128)]
 IdempotencyKey = Annotated[str, Field(min_length=1, max_length=200)]
 OpaqueHandle = Annotated[str, Field(pattern=r"^fw_[A-Za-z0-9_-]{43}$")]
+LocalSelectionId = Annotated[str, Field(pattern=LOCAL_SELECTION_ID_PATTERN)]
 
 
 def _parse_folder_plan(value: Any) -> FolderPlan:
@@ -215,6 +234,10 @@ def _parse_host_revision(value: Any) -> FolderHostPlanRevisionV1:
 
 
 McpFolderPlan = Annotated[FolderPlan, BeforeValidator(_parse_folder_plan)]
+McpCompactPlanEntries = Annotated[
+    tuple[FolderHostCompactPlanEntryV1, ...],
+    Field(max_length=500),
+]
 McpHostPlanRevision = Annotated[
     FolderHostPlanRevisionV1,
     BeforeValidator(_parse_host_revision),
@@ -286,6 +309,71 @@ class FoldweaveHostedJobStatusV1(StrictFrozenModel):
             self.clarification_question_fingerprint is None
         ):
             raise ValueError("Hosted clarification fields disagree.")
+        return self
+
+
+class FoldweaveHostedRevisionRecoveryV1(StrictFrozenModel):
+    """Path-free remount result for one exact visible parent review."""
+
+    schema_version: Literal["foldweave-hosted-revision-recovery.v1"] = (
+        "foldweave-hosted-revision-recovery.v1"
+    )
+    recovery_status: Literal["none", "recovered"]
+    parent_job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    parent_job_revision: int = Field(ge=0)
+    parent_candidate_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    parent_preview_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    source_commitment: str = Field(pattern=SHA256_PATTERN)
+    status: FoldweaveHostedJobStatusV1 | None = None
+    revision_instruction: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=2_000,
+    )
+    revision_instruction_fingerprint: str | None = Field(
+        default=None,
+        pattern=SHA256_PATTERN,
+    )
+    submit_call_id: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @model_validator(mode="after")
+    def require_exact_recovery_shape(self):
+        continuation = (
+            self.revision_instruction,
+            self.revision_instruction_fingerprint,
+            self.submit_call_id,
+        )
+        if self.recovery_status == "none":
+            if self.status is not None or any(
+                item is not None for item in continuation
+            ):
+                raise ValueError("An empty hosted recovery cannot expose a job.")
+            return self
+        status = self.status
+        if status is None:
+            raise ValueError("A recovered hosted revision requires durable status.")
+        if (
+            status.source_commitment != self.source_commitment
+            or status.model_transport not in {"chatgpt_hosted", "codex_hosted"}
+            or status.lifecycle
+            not in {
+                "revising",
+                "reviewing",
+                "revision_failed",
+                "executing",
+                "verified",
+            }
+        ):
+            raise ValueError("Recovered hosted status differs from its parent binding.")
+        if status.lifecycle == "revising":
+            if any(item is None for item in continuation):
+                raise ValueError(
+                    "A pending hosted revision requires continuation data."
+                )
+        elif any(item is not None for item in continuation):
+            raise ValueError(
+                "A completed hosted revision cannot expose a continuation."
+            )
         return self
 
 
@@ -378,6 +466,23 @@ class FoldweaveHostedReviewStatusV1(StrictFrozenModel):
     revision_available: bool
     revision_attempts_remaining: int = Field(ge=0, le=2)
     revision_failure: str | None = Field(default=None, min_length=1, max_length=200)
+    latest_proposal_delta: FolderPlanRevisionDeltaV1 | None = None
+
+    @model_validator(mode="after")
+    def require_durable_delta_binding(self):
+        delta = self.latest_proposal_delta
+        if (self.proposal_revision > 0) != (delta is not None):
+            raise ValueError(
+                "Hosted proposal revision and durable delta availability differ."
+            )
+        if delta is not None and not (
+            delta.job_id == self.job_id
+            and delta.proposal_revision_after == self.proposal_revision
+            and delta.current_candidate_fingerprint == self.candidate_fingerprint
+            and delta.current_preview_fingerprint == self.preview_fingerprint
+        ):
+            raise ValueError("Hosted proposal delta targets another review.")
+        return self
 
 
 class FoldweaveHostedVerifiedResultV1(StrictFrozenModel):
@@ -433,8 +538,19 @@ class FoldweaveLocalSelectionResultV1(StrictFrozenModel):
     schema_version: Literal["foldweave-local-selection-result.v1"] = (
         "foldweave-local-selection-result.v1"
     )
-    status: Literal["selected", "cancelled", "unavailable", "timeout", "failed"]
+    status: Literal[
+        "pending",
+        "selected",
+        "cancelled",
+        "unavailable",
+        "timeout",
+        "failed",
+    ]
     item: OpaqueLocalItemHandle | None = None
+    selection_id: str | None = Field(
+        default=None,
+        pattern=LOCAL_SELECTION_ID_PATTERN,
+    )
     reason_code: str | None = Field(
         default=None,
         pattern=r"^[a-z0-9_:-]{1,128}$",
@@ -442,10 +558,23 @@ class FoldweaveLocalSelectionResultV1(StrictFrozenModel):
 
     @model_validator(mode="after")
     def require_selection_shape(self):
-        if self.status == "selected":
-            if self.item is None or self.reason_code is not None:
+        if self.status == "pending":
+            if (
+                self.selection_id is None
+                or self.item is not None
+                or self.reason_code is not None
+            ):
+                raise ValueError(
+                    "A pending selection requires only its opaque request identity."
+                )
+        elif self.status == "selected":
+            if (
+                self.item is None
+                or self.selection_id is not None
+                or self.reason_code is not None
+            ):
                 raise ValueError("A selected item requires only its opaque handle.")
-        elif self.item is not None:
+        elif self.item is not None or self.selection_id is not None:
             raise ValueError("A failed or cancelled selection cannot expose an item.")
         return self
 
@@ -500,6 +629,7 @@ def build_foldweave_chatgpt_server(
     asset_root: Path | None = None,
     host: str = "127.0.0.1",
     port: int = 8000,
+    stateless_http: bool = False,
 ) -> FastMCP[None]:
     """Build one MCP Apps server over the shared durable host-planning service."""
 
@@ -512,13 +642,18 @@ def build_foldweave_chatgpt_server(
         host=host,
         port=port,
         streamable_http_path="/mcp",
-        stateless_http=False,
+        stateless_http=stateless_http,
+    )
+    reviewed_action_meta = (
+        _WIDGET_CALLABLE_META
+        if profile.surface == "chatgpt_hosted"
+        else _MODEL_AND_WIDGET_CALLABLE_META
     )
 
     @server.resource(
         WIDGET_RESOURCE_URI,
         name="foldweave_review",
-        title="Foldweave structure review",
+        title="Structure review",
         description=(
             "Render one exact current-versus-proposed Foldweave plan before "
             "the user authorizes a separate copy."
@@ -531,10 +666,11 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="choose_local_item",
-        title="Choose a local Foldweave item",
+        title="Choose an item",
         description=(
-            "Ask the paired local app to select one fixed-role item and return "
-            "only a short-lived opaque handle, never a local path."
+            "Call without selection_id to open one fixed-role picker in the paired "
+            "local app. Then poll this tool with the returned selection_id until "
+            "the status is terminal. Returns only an opaque handle, never a path."
         ),
         annotations=_annotations(read_only=False, idempotent=False),
         meta=_MODEL_ONLY_TOOL_META,
@@ -542,18 +678,28 @@ def build_foldweave_chatgpt_server(
     )
     async def choose_local_item(
         role: NativePathRole,
+        selection_id: LocalSelectionId | None = None,
     ) -> FoldweaveLocalSelectionResultV1:
         try:
-            status, item, reason_code = await coordinator.choose_local_item(
+            status, item, reason_code, pending_id = await coordinator.choose_local_item(
                 role=role,
                 channel=profile.handle_channel,
+                selection_id=selection_id,
             )
             output = FoldweaveLocalSelectionResultV1(
-                status=cast(NativeSelectionStatus, status).value,
+                status=status,
                 item=item,
+                selection_id=pending_id,
                 reason_code=reason_code,
             )
-            return _success(output, "Foldweave returned a path-free selection.")
+            if output.status == "pending":
+                summary = (
+                    "The local picker is open. Poll choose_local_item with the "
+                    "returned selection_id until selection finishes."
+                )
+            else:
+                summary = "Foldweave returned a path-free selection outcome."
+            return _success(output, summary)
         except Exception as exc:  # pragma: no branch - stable public conversion
             return _failure(exc, "local_selection_failed")
 
@@ -583,7 +729,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="create_or_resume_planning_job",
-        title="Create or resume hosted Foldweave planning",
+        title="Start or resume planning",
         description=(
             "Create one consented durable ChatGPT-hosted planning job from "
             "opaque local handles without calling the direct Responses API."
@@ -609,7 +755,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="plan_change",
-        title="Start a hosted Foldweave origin review",
+        title="Plan a folder change",
         description=(
             "High-level alias that starts the same durable hosted planning "
             "workflow; the host must still inspect evidence and submit a plan."
@@ -635,7 +781,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="prepare_change_application",
-        title="Prepare a shared Foldweave change for review",
+        title="Review a shared change",
         description=(
             "Verify one Change File, deterministically match the selected local "
             "project, and stop at an exact receiver review without model, API, "
@@ -668,7 +814,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="list_inventory_page",
-        title="List bounded Foldweave inventory evidence",
+        title="View folder contents",
         description=(
             "Read one deterministic page of path-relative file metadata from "
             "the exact durable hosted job. The result includes the authoritative "
@@ -701,7 +847,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="read_text_excerpt",
-        title="Read a bounded Foldweave text excerpt",
+        title="Read text excerpt",
         description=(
             "Read only a counted UTF-8 excerpt for one eligible stable file ID "
             "in the exact hosted job. Cite the returned citation_evidence_id "
@@ -730,7 +876,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="inspect_markdown_links",
-        title="Inspect bounded supported-link evidence",
+        title="Inspect links",
         description=(
             "Read one deterministic page of supported relative Markdown-link "
             "relationships for an eligible file ID. Cite the returned "
@@ -763,7 +909,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="request_clarification",
-        title="Request the sole Foldweave clarification",
+        title="Ask a question",
         description=(
             "Persist the one model-originated question for a missing user intent; "
             "mechanical compiler failures are not clarifications."
@@ -794,7 +940,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="answer_clarification",
-        title="Answer the waiting Foldweave clarification",
+        title="Answer question",
         description=(
             "Persist the user's exact answer only when the expected revision and "
             "question fingerprint still match."
@@ -827,7 +973,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="submit_plan",
-        title="Submit a complete Foldweave plan",
+        title="Submit plan",
         description=(
             "Compile one complete host-model plan deterministically and stop at "
             "review without creating any output. Include exactly one entry for "
@@ -856,8 +1002,46 @@ def build_foldweave_chatgpt_server(
             return _failure(exc, "plan_submission_failed")
 
     @server.tool(
+        name="submit_compact_plan",
+        title="Submit compact plan",
+        description=(
+            "Submit one complete initial mapping without redundant job-owned "
+            "fields. Include exactly one relative_path copied verbatim from the "
+            "inventory and one proposed_target for every nonprotected inventory "
+            "file; omit protected files and empty directories. Foldweave resolves "
+            "each path against the immutable durable job inventory, derives the "
+            "authoritative file_id, source/request/evidence fingerprints, a bounded "
+            "rationale, and the default inventory evidence ID, then invokes the same "
+            "deterministic compiler as submit_plan and stops at review without "
+            "creating output."
+        ),
+        annotations=_annotations(read_only=False, idempotent=True),
+        meta=_MODEL_ONLY_TOOL_META,
+        structured_output=True,
+    )
+    def submit_compact_plan(
+        job_id: JobId,
+        call_id: CallId,
+        result_folder_name: Annotated[str, Field(min_length=1, max_length=240)],
+        entries: McpCompactPlanEntries,
+    ) -> FoldweaveHostedJobStatusV1:
+        try:
+            job = coordinator.submit_compact_plan(
+                job_id=job_id,
+                call_id=call_id,
+                result_folder_name=result_folder_name,
+                entries=entries,
+            )
+            return _success(
+                _project_job_status(job),
+                "Foldweave expanded and checked the complete compact plan.",
+            )
+        except Exception as exc:
+            return _failure(exc, "compact_plan_submission_failed")
+
+    @server.tool(
         name="get_compiler_failures",
-        title="Get deterministic Foldweave compiler failures",
+        title="View plan issues",
         description=(
             "Read all bounded deterministic plan-submission failures for the "
             "exact hosted job without changing it."
@@ -888,17 +1072,18 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="revise_plan",
-        title="Reserve a Foldweave proposal revision",
+        title="Start a revision",
         description=(
-            "Bind the user's exact revision instruction to the visible candidate "
-            "before the ChatGPT host model submits one sparse replacement. "
+            "Use this when the user requests changes to the visible Foldweave "
+            "preview. Reserve the exact revision first; the returned job ID is "
+            "the only job ID valid for revision submission. "
             "Evidence tools become intentionally unavailable after this reservation. "
             'For a path-only revision, use evidence_ids ["initial_inventory"] in '
             "every sparse entry unless an exact permitted evidence ID was already "
             "returned before calling revise_plan; never use a file ID."
         ),
         annotations=_annotations(read_only=False, idempotent=True),
-        meta=_MODEL_ONLY_TOOL_META,
+        meta=_MODEL_AND_WIDGET_CALLABLE_META,
         structured_output=True,
     )
     def revise_plan(
@@ -927,13 +1112,63 @@ def build_foldweave_chatgpt_server(
             return _failure(exc, "revision_reservation_failed")
 
     @server.tool(
-        name="submit_plan_revision",
-        title="Submit a sparse Foldweave plan revision",
+        name="recover_revision",
+        title="Recover pending revision",
         description=(
-            "Compile a strict sparse hosted revision into one complete immutable "
-            "replacement preview while preserving the prior valid proposal. Each "
+            "Read one exact hosted revision after the review widget remounts. "
+            "Bind recovery to the visible parent job revision, candidate, preview, "
+            "and source. Return no continuation for zero matches and block rather "
+            "than choose when explicit forks are ambiguous."
+        ),
+        annotations=_annotations(read_only=True, idempotent=True),
+        meta=_WIDGET_CALLABLE_META,
+        structured_output=True,
+    )
+    def recover_revision(
+        job_id: JobId,
+        parent_job_revision: Annotated[int, Field(ge=0)],
+        parent_candidate_fingerprint: Sha256,
+        parent_preview_fingerprint: Sha256,
+        source_commitment: Sha256,
+    ) -> FoldweaveHostedRevisionRecoveryV1:
+        try:
+            recovered = coordinator.recover_hosted_revision(
+                parent_job_id=job_id,
+                parent_job_revision=parent_job_revision,
+                parent_candidate_fingerprint=parent_candidate_fingerprint,
+                parent_preview_fingerprint=parent_preview_fingerprint,
+                source_commitment=source_commitment,
+                model_transport=profile.model_transport,
+            )
+            output = _project_revision_recovery(
+                recovered,
+                parent_job_id=job_id,
+                parent_job_revision=parent_job_revision,
+                parent_candidate_fingerprint=parent_candidate_fingerprint,
+                parent_preview_fingerprint=parent_preview_fingerprint,
+                source_commitment=source_commitment,
+            )
+            narration = (
+                "Foldweave found no hosted revision for this exact review."
+                if recovered is None
+                else "Foldweave recovered the exact durable hosted revision."
+            )
+            return _success(output, narration)
+        except Exception as exc:
+            return _failure(exc, "hosted_revision_recovery_failed")
+
+    @server.tool(
+        name="submit_plan_revision",
+        title="Submit revision",
+        description=(
+            "Use this after a Foldweave revision has already been reserved. Submit "
+            "one strict sparse replacement for the reserved job; never execute or "
+            "accept it. Compile it into one complete immutable replacement preview "
+            "while preserving the prior valid proposal. Each "
             "entry contains exactly file_id, replacement_target_path, rationale, "
-            "and evidence_ids. Every evidence_ids value must come verbatim from a "
+            "and evidence_ids. The legacy revision-entry field target_path is "
+            "invalid; use replacement_target_path. Every evidence_ids value must "
+            "come verbatim from a "
             "successful evidence result's citation_evidence_id or "
             "permitted_evidence_ids; never substitute a file ID or call ID. For a "
             "path-only sparse revision, set every entry's evidence_ids exactly to "
@@ -966,10 +1201,12 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="get_plan_preview",
-        title="Render the exact Foldweave plan preview",
+        title="Show structure preview",
         description=(
-            "Return the sole complete current-versus-proposed preview DTO and "
-            "mount the Foldweave review widget."
+            "Use this when durable status contains a preview fingerprint. Pass the "
+            "returned job ID, job revision, and preview fingerprint to return the "
+            "sole complete current-versus-proposed preview DTO and mount the "
+            "Foldweave review widget."
         ),
         annotations=_annotations(read_only=True, idempotent=True),
         meta=_WIDGET_TOOL_META,
@@ -1003,10 +1240,11 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="job_status",
-        title="Read durable Foldweave hosted status",
+        title="Check status",
         description=(
-            "Read one path-free durable job checkpoint without resuming work, "
-            "calling a model, or creating output."
+            "Use this after revision submission or while polling durable work. "
+            "Read one path-free checkpoint without resuming work, calling a "
+            "model, or creating output."
         ),
         annotations=_annotations(read_only=True, idempotent=True),
         meta=_MODEL_AND_WIDGET_CALLABLE_META,
@@ -1023,7 +1261,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="keep_previous_proposal",
-        title="Keep the previous valid Foldweave proposal",
+        title="Keep previous proposal",
         description=(
             "Dismiss one failed revision and rebind the preserved complete "
             "proposal to a fresh exact review checkpoint."
@@ -1109,13 +1347,13 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="accept_plan_and_create_copy",
-        title="Accept the exact Foldweave preview and create a copy",
+        title="Accept and create copy",
         description=(
             "Persist exact fingerprint-bound user authorization, create a "
             "separate copy, and independently verify it without direct API use."
         ),
         annotations=_annotations(read_only=False, idempotent=True),
-        meta=_WIDGET_CALLABLE_META,
+        meta=reviewed_action_meta,
         structured_output=True,
     )
     def accept_plan_and_create_copy(
@@ -1162,7 +1400,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="verify_result",
-        title="Independently verify the Foldweave result",
+        title="Verify result",
         description=(
             "Run the source-free deterministic receipt verifier for the exact "
             "durable result without model or direct-budget use."
@@ -1195,13 +1433,13 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="get_change_file",
-        title="Get the verified Foldweave Change File",
+        title="Get Change File",
         description=(
             "Return one expiring opaque local item handle plus the exact verified "
             "Change File and originating-receipt identities, never a local path."
         ),
         annotations=_annotations(read_only=True, idempotent=True),
-        meta=_WIDGET_CALLABLE_META,
+        meta=reviewed_action_meta,
         structured_output=True,
     )
     def get_change_file(job_id: JobId) -> FoldweaveChangeFileResultV1:
@@ -1226,7 +1464,7 @@ def build_foldweave_chatgpt_server(
 
     @server.tool(
         name="recreate_original",
-        title="Recreate the selected original layout",
+        title="Recreate original",
         description=(
             "Create or reverify the transaction's fixed absent sibling "
             "reconstruction destination without overwriting any item or exposing "
@@ -1234,7 +1472,7 @@ def build_foldweave_chatgpt_server(
             "makes retries idempotent."
         ),
         annotations=_annotations(read_only=False, idempotent=True),
-        meta=_WIDGET_CALLABLE_META,
+        meta=reviewed_action_meta,
         structured_output=True,
     )
     def recreate_original(job_id: JobId) -> FoldweaveReconstructionResultV1:
@@ -1437,6 +1675,37 @@ def _project_job_status(job: FolderRefactorJobV3) -> FoldweaveHostedJobStatusV1:
     return output
 
 
+def _project_revision_recovery(
+    recovered: RecoveredHostedRevision | None,
+    *,
+    parent_job_id: str,
+    parent_job_revision: int,
+    parent_candidate_fingerprint: str,
+    parent_preview_fingerprint: str,
+    source_commitment: str,
+) -> FoldweaveHostedRevisionRecoveryV1:
+    values = {
+        "parent_job_id": parent_job_id,
+        "parent_job_revision": parent_job_revision,
+        "parent_candidate_fingerprint": parent_candidate_fingerprint,
+        "parent_preview_fingerprint": parent_preview_fingerprint,
+        "source_commitment": source_commitment,
+    }
+    if recovered is None:
+        return FoldweaveHostedRevisionRecoveryV1(
+            recovery_status="none",
+            **values,
+        )
+    return FoldweaveHostedRevisionRecoveryV1(
+        recovery_status="recovered",
+        status=_project_job_status(recovered.job),
+        revision_instruction=recovered.instruction,
+        revision_instruction_fingerprint=recovered.instruction_fingerprint,
+        submit_call_id=recovered.submit_call_id,
+        **values,
+    )
+
+
 def _project_review(job: FolderRefactorJobV3) -> FoldweaveChatGptReviewV1:
     planning_basis, model_transport, execution_origin = _public_provenance(job)
     preview = job.preview
@@ -1501,6 +1770,7 @@ def _project_review(job: FolderRefactorJobV3) -> FoldweaveChatGptReviewV1:
                 if job.revision_failure is not None
                 else None
             ),
+            latest_proposal_delta=project_latest_accepted_proposal_delta(job),
         ),
         result=result,
     )
@@ -1733,8 +2003,12 @@ def _success(model: StrictFrozenModel, narration: str) -> Any:
 
 def _failure(exc: Exception, fallback_code: str) -> NoReturn:
     code = fallback_code
-    if isinstance(exc, FoldweaveHostServiceError):
-        code = exc.code
+    exception_code = getattr(exc, "code", None)
+    if isinstance(exception_code, str) and re.fullmatch(
+        r"[a-z0-9_:-]{1,128}",
+        exception_code,
+    ):
+        code = exception_code
     elif isinstance(exc, RuntimeError) and re.fullmatch(
         r"[a-z0-9_:-]{1,128}",
         str(exc),
@@ -1742,6 +2016,12 @@ def _failure(exc: Exception, fallback_code: str) -> NoReturn:
         code = str(exc)
     if not re.fullmatch(r"[a-z0-9_:-]{1,128}", code):
         code = "foldweave_tool_failed"
+    if code == fallback_code:
+        LOGGER.warning(
+            "Foldweave MCP tool failed (%s; %s).",
+            code,
+            type(exc).__name__,
+        )
     message = _PUBLIC_ERROR_MESSAGES.get(
         code,
         "Foldweave could not complete this hosted action.",
@@ -1774,6 +2054,41 @@ _PUBLIC_ERROR_MESSAGES: Mapping[str, str] = {
     ),
     "review_binding_mismatch": (
         "The action targets a stale, changed, or unseen Foldweave preview."
+    ),
+    "hosted_revision_parent_mismatch": (
+        "Foldweave found saved revision state for a different source."
+    ),
+    "hosted_revision_recovery_ambiguous": (
+        "Foldweave found more than one explicit revision fork for this review. "
+        "Open the intended revision directly; Foldweave will not guess."
+    ),
+    "hosted_revision_recovery_invalid": (
+        "Foldweave found incomplete saved revision state and cannot resume it."
+    ),
+    "host_job_requires_fresh_start": (
+        "This job uses an earlier Foldweave development contract and cannot be "
+        "resumed. Start a fresh job; the existing record remains unchanged."
+    ),
+    "derivative_job_requires_fresh_start": (
+        "This derivative job uses an earlier Foldweave development contract and "
+        "cannot be resumed. Start a fresh job; the existing record remains "
+        "unchanged."
+    ),
+    "local_selection_unknown": (
+        "The local picker request is unknown or expired. Start selection again."
+    ),
+    "local_selection_expired": (
+        "The local picker request expired. Start selection again."
+    ),
+    "local_selection_binding_mismatch": (
+        "The local picker request belongs to another role or paired session."
+    ),
+    "local_selection_capacity": (
+        "Too many local picker requests are awaiting completion. Finish or cancel "
+        "the current picker before starting another."
+    ),
+    "local_selection_busy": (
+        "Finish or cancel the current local picker before opening another."
     ),
     "verification_commitment_mismatch": (
         "Independent verification returned a different organized-tree identity."
@@ -1870,7 +2185,7 @@ def _load_widget_html(asset_root: Path | None) -> str:
         '<!doctype html><html lang="en"><head>'
         '<meta charset="utf-8"><meta name="viewport" '
         'content="width=device-width,initial-scale=1">'
-        "<title>Foldweave structure review</title>"
+        "<title>Structure review</title>"
         f"<style>{safe_stylesheet}</style></head><body>"
         '<div id="foldweave-chatgpt-widget-root"></div>'
         f'<script type="module">{safe_javascript}</script>'

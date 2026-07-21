@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Foldweave application icon</title>
+  <desc id="description">A neutral macOS folder with a single blue woven path.</desc>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="#f5f5f7" stroke="#d1d1d6" stroke-width="12"/>
+  <path d="M224 364c0-31 25-56 56-56h177c17 0 33 8 43 21l48 59h196c31 0 56 25 56 56v274c0 31-25 56-56 56H280c-31 0-56-25-56-56V364Z" fill="#ffffff" stroke="#636366" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M264 464h496" fill="none" stroke="#d1d1d6" stroke-width="16" stroke-linecap="round"/>
+  <path d="M292 650 404 542l108 108 108-108 112 108" fill="none" stroke="#007aff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M458 596 512 650l54-54" fill="none" stroke="#ffffff" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M458 596 512 650l54-54" fill="none" stroke="#007aff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

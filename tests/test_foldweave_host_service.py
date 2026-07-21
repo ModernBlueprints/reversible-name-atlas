@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Barrier
 from zoneinfo import ZoneInfo
@@ -21,8 +21,12 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderJobLifecycleV3,
     FolderJobV3IdempotencyConflict,
     FolderRefactorJobV3,
+    FolderRefactorJobV3Store,
     GptDerivativeJobAuthorityV3,
     GptHostedJobAuthorityV3,
+)
+from name_atlas.folder_refactor.connected_change.proposal_delta import (
+    project_latest_accepted_proposal_delta,
 )
 from name_atlas.folder_refactor.connected_change.review_service import (
     FoldweaveReviewService,
@@ -34,11 +38,20 @@ from name_atlas.folder_refactor.contracts import (
     FolderPlan,
     FolderPlanEntry,
 )
+from name_atlas.folder_refactor.demo_fixtures import (
+    hero_target_paths,
+    materialize_hero_fixture,
+)
 from name_atlas.folder_refactor.foldweave_host_contracts import (
+    FolderHostCompactPlanEntryV1,
     FolderHostPlanRevisionEntryV1,
     FolderHostPlanRevisionV1,
+    FolderHostPlanSubmissionV1,
 )
-from name_atlas.folder_refactor.serialization import canonical_sha256
+from name_atlas.folder_refactor.serialization import (
+    canonical_json_bytes,
+    canonical_sha256,
+)
 from name_atlas.foldweave_host_service import (
     FoldweaveHostPlanningService,
     FoldweaveHostServiceError,
@@ -180,6 +193,28 @@ def test_chatgpt_hosted_plan_revision_accept_and_verify(tmp_path: Path) -> None:
     assert revised.preview is not None
     assert revised.preview.preview_fingerprint != reviewing.preview.preview_fingerprint
     assert not tuple(output.iterdir())
+
+    persisted_bytes = revised.job_path.read_bytes()
+    persisted = FolderRefactorJobV3Store(revised.job_path).load()
+    delta = project_latest_accepted_proposal_delta(persisted)
+    assert delta is not None
+    assert delta.proposal_revision_before == 0
+    assert delta.proposal_revision_after == 1
+    assert delta.base_candidate_fingerprint == canonical_sha256(
+        reviewing.candidate_plan
+    )
+    assert delta.base_preview_fingerprint == reviewing.preview.preview_fingerprint
+    assert delta.current_candidate_fingerprint == canonical_sha256(
+        revised.candidate_plan
+    )
+    assert delta.current_preview_fingerprint == revised.preview.preview_fingerprint
+    assert len(delta.entries) == 1
+    assert (
+        delta.entries[0].member_id,
+        delta.entries[0].previous_path,
+        delta.entries[0].current_path,
+    ) == (first_mapping.file_id, first_mapping.target_path, revised_target)
+    assert revised.job_path.read_bytes() == persisted_bytes
 
     verified = service.accept_plan_and_create_copy(
         job_id=revised.job_id,
@@ -628,7 +663,7 @@ def test_failed_host_derivative_can_fork_again_and_use_second_revision(
     parent_bytes = parent.job_path.read_bytes()
     host = FoldweaveHostPlanningService(
         paths=paths,
-        clock=lambda: datetime(2026, 7, 20, 23, 0, tzinfo=oslo_tz),
+        clock=lambda: parent.created_at + timedelta(minutes=1),
     )
 
     first = host.begin_revision(
@@ -728,6 +763,21 @@ def test_failed_host_derivative_can_fork_again_and_use_second_revision(
     assert second.lifecycle is FolderJobLifecycleV3.REVIEWING
     assert second.proposal_revision == 2
     assert second.revision_attempt_count == 2
+    delta = project_latest_accepted_proposal_delta(second)
+    assert delta is not None
+    assert delta.proposal_revision_before == 1
+    assert delta.proposal_revision_after == 2
+    assert delta.base_candidate_fingerprint == canonical_sha256(
+        first_valid.candidate_plan
+    )
+    assert delta.base_preview_fingerprint == first_valid.preview.preview_fingerprint
+    assert delta.current_candidate_fingerprint == canonical_sha256(
+        second.candidate_plan
+    )
+    assert delta.current_preview_fingerprint == second.preview.preview_fingerprint
+    assert len(delta.entries) == 1
+    assert delta.entries[0].previous_path.startswith("host-review/")
+    assert delta.entries[0].current_path.startswith("host-second-review/")
     assert parent.job_path.read_bytes() == parent_bytes
 
 
@@ -894,6 +944,87 @@ def test_host_polling_is_byte_read_only_and_mutation_persists_staleness(
     assert stale.staleness.code == "source_changed"
 
 
+def test_pre_final_host_job_isolated_with_actionable_fresh_start(
+    tmp_path: Path,
+) -> None:
+    fixture = make_connected_change_fixture(tmp_path / "projects")
+    output = tmp_path / "output"
+    output.mkdir()
+    tokens = iter(("P" * 43, "Q" * 43))
+    handles = FoldweaveLocalHandleStore(
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+        token_factory=lambda: next(tokens),
+    )
+    source_handle = handles.register(
+        role=NativePathRole.SOURCE_FOLDER,
+        path=fixture.sofia_root,
+        channel="chatgpt_hosted",
+    )
+    output_handle = handles.register(
+        role=NativePathRole.OUTPUT_PARENT,
+        path=output,
+        channel="chatgpt_hosted",
+    )
+    paths = FoldweavePaths(state_root=tmp_path / "state")
+    service = FoldweaveHostPlanningService(
+        paths=paths,
+        handle_store=handles,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    old = service.create_or_resume_planning_job(
+        source_handle=source_handle.handle,
+        output_handle=output_handle.handle,
+        request=fixture.request,
+        disclosure_acknowledged=True,
+        idempotency_key="pre-final-host-create",
+        model_transport="chatgpt_hosted",
+    )
+    payload = old.model_dump(mode="json")
+    payload.pop("operation_idempotency")
+    preserved = canonical_json_bytes(payload) + b"\n"
+    old.job_path.write_bytes(preserved)
+
+    with pytest.raises(FoldweaveHostServiceError) as status_error:
+        service.status(old.job_id)
+    assert status_error.value.code == "host_job_requires_fresh_start"
+
+    with pytest.raises(FoldweaveHostServiceError) as retry_error:
+        service.create_or_resume_planning_job(
+            source_handle=source_handle.handle,
+            output_handle=output_handle.handle,
+            request=fixture.request,
+            disclosure_acknowledged=True,
+            idempotency_key="pre-final-host-create",
+            model_transport="chatgpt_hosted",
+        )
+    assert retry_error.value.code == "host_job_requires_fresh_start"
+
+    fresh = service.create_or_resume_planning_job(
+        source_handle=source_handle.handle,
+        output_handle=output_handle.handle,
+        request=fixture.request,
+        disclosure_acknowledged=True,
+        idempotency_key="fresh-host-create",
+        model_transport="chatgpt_hosted",
+    )
+
+    assert fresh.job_id != old.job_id
+    assert old.job_path.read_bytes() == preserved
+    assert len(tuple(paths.jobs.glob("*.json"))) == 2
+
+    (paths.jobs / "unknown.json").write_text("{}\n", encoding="utf-8")
+    with pytest.raises(FoldweaveHostServiceError) as corrupt_error:
+        service.create_or_resume_planning_job(
+            source_handle=source_handle.handle,
+            output_handle=output_handle.handle,
+            request=fixture.request,
+            disclosure_acknowledged=True,
+            idempotency_key="corrupt-registry-create",
+            model_transport="chatgpt_hosted",
+        )
+    assert corrupt_error.value.code == "host_job_registry_invalid"
+
+
 def test_importing_host_service_does_not_load_direct_api_or_budget_modules() -> None:
     """The keyless hosted entry point remains dependency-isolated at import time."""
 
@@ -918,6 +1049,141 @@ if blocked:
         text=True,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_compact_host_plan_expands_23_entry_hero_through_existing_compiler(
+    tmp_path: Path,
+) -> None:
+    fixture, output, service, planning = _start_hero_host_job(tmp_path)
+    targets = hero_target_paths()
+    entries = tuple(
+        reversed(
+            tuple(
+                FolderHostCompactPlanEntryV1(
+                    relative_path=item.relative_path,
+                    proposed_target=targets[item.relative_path],
+                )
+                for item in planning.source_inventory.files
+                if not item.protected
+            )
+        )
+    )
+    assert len(entries) == 23
+    compact_payload = {
+        "job_id": planning.job_id,
+        "call_id": "compact-hero",
+        "result_folder_name": fixture.result_folder_name,
+        "entries": [entry.model_dump(mode="json") for entry in entries],
+    }
+    full_payload = {
+        "job_id": planning.job_id,
+        "call_id": "compact-hero",
+        "plan": _complete_plan_from_targets(
+            result_folder_name=fixture.result_folder_name,
+            targets=targets,
+            planning=planning,
+        ).model_dump(mode="json"),
+    }
+    assert len(canonical_json_bytes(compact_payload)) < 8_192
+    assert len(canonical_json_bytes(compact_payload)) < len(
+        canonical_json_bytes(full_payload)
+    )
+
+    reviewing = service.submit_compact_plan(
+        job_id=planning.job_id,
+        call_id="compact-hero",
+        result_folder_name=fixture.result_folder_name,
+        entries=entries,
+    )
+    assert reviewing.lifecycle is FolderJobLifecycleV3.REVIEWING
+    assert reviewing.preview is not None
+    assert reviewing.candidate_plan is not None
+    assert not tuple(output.iterdir())
+    authority = reviewing.authority
+    assert isinstance(authority, GptHostedJobAuthorityV3)
+    submission = next(
+        event
+        for event in authority.planning_state.events
+        if isinstance(event, FolderHostPlanSubmissionV1)
+    )
+    assert (
+        submission.plan.source_commitment == planning.source_inventory.source_commitment
+    )
+    assert submission.plan.request_fingerprint == (
+        planning.authority.planning_state.request_fingerprint
+    )
+    assert submission.plan.evidence_fingerprint == (
+        planning.authority.planning_state.evidence_state.evidence_fingerprint
+    )
+    assert tuple(entry.original_path for entry in submission.plan.entries) == tuple(
+        item.relative_path
+        for item in planning.source_inventory.files
+        if not item.protected
+    )
+    assert tuple(entry.file_id for entry in submission.plan.entries) == tuple(
+        item.file_id for item in planning.source_inventory.files if not item.protected
+    )
+    assert {entry.rationale for entry in submission.plan.entries} == {
+        "Host selected this target from the bounded Foldweave planning context."
+    }
+    assert {entry.evidence_ids for entry in submission.plan.entries} == {
+        ("initial_inventory",)
+    }
+    assert (
+        service.submit_compact_plan(
+            job_id=planning.job_id,
+            call_id="compact-hero",
+            result_folder_name=fixture.result_folder_name,
+            entries=entries,
+        )
+        == reviewing
+    )
+
+
+def test_invalid_compact_coverage_blocks_without_mutating_job_bytes(
+    tmp_path: Path,
+) -> None:
+    fixture, _, service, planning = _start_host_job(tmp_path)
+    entries = _compact_host_entries(fixture, planning)
+    protected = next(item for item in planning.source_inventory.files if item.protected)
+    invalid_cases = (
+        (
+            "compact_plan_duplicate_relative_path",
+            (*entries, entries[0]),
+        ),
+        ("compact_plan_missing_relative_paths", entries[:-1]),
+        (
+            "compact_plan_unknown_relative_path",
+            (
+                FolderHostCompactPlanEntryV1(
+                    relative_path="unknown/member.txt",
+                    proposed_target=entries[0].proposed_target,
+                ),
+                *entries[1:],
+            ),
+        ),
+        (
+            "compact_plan_protected_relative_path_forbidden",
+            (
+                FolderHostCompactPlanEntryV1(
+                    relative_path=protected.relative_path,
+                    proposed_target=protected.relative_path,
+                ),
+                *entries[1:],
+            ),
+        ),
+    )
+    original_bytes = planning.job_path.read_bytes()
+    for index, (expected_code, invalid_entries) in enumerate(invalid_cases):
+        with pytest.raises(FoldweaveHostServiceError) as error:
+            service.submit_compact_plan(
+                job_id=planning.job_id,
+                call_id=f"invalid-compact-{index}",
+                result_folder_name=fixture.result_name,
+                entries=invalid_entries,
+            )
+        assert error.value.code == expected_code
+        assert planning.job_path.read_bytes() == original_bytes
 
 
 def _start_host_job(
@@ -962,8 +1228,45 @@ def _start_host_job(
     return fixture, output, service, planning
 
 
-def _complete_host_plan(
-    fixture: ConnectedChangeFixture,
+def _start_hero_host_job(tmp_path: Path):
+    fixture = materialize_hero_fixture(tmp_path / "hero-projects")
+    output = tmp_path / "hero-output"
+    output.mkdir()
+    tokens = iter(("H" * 43, "P" * 43))
+    handles = FoldweaveLocalHandleStore(
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+        token_factory=lambda: next(tokens),
+    )
+    source_handle = handles.register(
+        role=NativePathRole.SOURCE_FOLDER,
+        path=fixture.sofia_root,
+        channel="chatgpt_hosted",
+    )
+    output_handle = handles.register(
+        role=NativePathRole.OUTPUT_PARENT,
+        path=output,
+        channel="chatgpt_hosted",
+    )
+    service = FoldweaveHostPlanningService(
+        paths=FoldweavePaths(state_root=tmp_path / "hero-state"),
+        handle_store=handles,
+        clock=lambda: datetime(2026, 7, 19, 20, 0, tzinfo=oslo_tz),
+    )
+    planning = service.create_or_resume_planning_job(
+        source_handle=source_handle.handle,
+        output_handle=output_handle.handle,
+        request=fixture.request,
+        disclosure_acknowledged=True,
+        idempotency_key="compact-hero-create",
+        model_transport="chatgpt_hosted",
+    )
+    return fixture, output, service, planning
+
+
+def _complete_plan_from_targets(
+    *,
+    result_folder_name: str,
+    targets: dict[str, str],
     planning: FolderRefactorJobV3,
 ) -> FolderPlan:
     authority = planning.authority
@@ -975,12 +1278,12 @@ def _complete_host_plan(
         evidence_fingerprint=(
             authority.planning_state.evidence_state.evidence_fingerprint
         ),
-        result_folder_name=fixture.result_name,
+        result_folder_name=result_folder_name,
         entries=tuple(
             FolderPlanEntry(
                 file_id=item.file_id,
                 original_path=item.relative_path,
-                proposed_target=fixture.target_paths[item.relative_path],
+                proposed_target=targets[item.relative_path],
                 rationale="Organize the connected project for handoff.",
                 evidence_ids=("initial_inventory",),
             )
@@ -988,6 +1291,31 @@ def _complete_host_plan(
             if not item.protected
         ),
         exclusions=(),
+    )
+
+
+def _complete_host_plan(
+    fixture: ConnectedChangeFixture,
+    planning: FolderRefactorJobV3,
+) -> FolderPlan:
+    return _complete_plan_from_targets(
+        result_folder_name=fixture.result_name,
+        targets=fixture.target_paths,
+        planning=planning,
+    )
+
+
+def _compact_host_entries(
+    fixture: ConnectedChangeFixture,
+    planning: FolderRefactorJobV3,
+) -> tuple[FolderHostCompactPlanEntryV1, ...]:
+    return tuple(
+        FolderHostCompactPlanEntryV1(
+            relative_path=item.relative_path,
+            proposed_target=fixture.target_paths[item.relative_path],
+        )
+        for item in planning.source_inventory.files
+        if not item.protected
     )
 
 

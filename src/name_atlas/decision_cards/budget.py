@@ -32,10 +32,15 @@ FOLDWEAVE_PROJECT_COST_MICRO_USD = 40 * MICRO_USD
 MAX_PROJECT_COST_MICRO_USD = FOLDWEAVE_PROJECT_COST_MICRO_USD
 HISTORICAL_LIVE_CALL_CAP = 8
 C3_LIVE_CALL_CAP = 13
+FOLDWEAVE_FINAL_LIVE_CALL_CAP = 16
 HISTORICAL_LIVE_REQUESTS = 1
 HISTORICAL_PROVIDER_ATTEMPTS = 1
 HISTORICAL_COMMITTED_COST_MICRO_USD = 679_000
 HISTORICAL_REPORTED_COST_MICRO_USD = 38_200
+FOLDWEAVE_PRE_FINAL_LIVE_REQUESTS = 13
+FOLDWEAVE_PRE_FINAL_PROVIDER_ATTEMPTS = 13
+FOLDWEAVE_PRE_FINAL_COMMITTED_COST_MICRO_USD = 12_734_470
+FOLDWEAVE_PRE_FINAL_REPORTED_COST_MICRO_USD = 874_860
 
 
 class BudgetSnapshot(BaseModel):
@@ -156,7 +161,7 @@ class PersistentBudgetLedger:
 
         return cls(
             path=path,
-            live_call_cap=C3_LIVE_CALL_CAP,
+            live_call_cap=FOLDWEAVE_FINAL_LIVE_CALL_CAP,
             cost_cap_usd=40.0,
             require_existing=True,
             nonblocking_lock=True,
@@ -173,7 +178,7 @@ class PersistentBudgetLedger:
 
         return cls(
             path=path,
-            live_call_cap=C3_LIVE_CALL_CAP,
+            live_call_cap=FOLDWEAVE_FINAL_LIVE_CALL_CAP,
             cost_cap_usd=40.0,
             require_existing=False,
             nonblocking_lock=True,
@@ -525,6 +530,50 @@ def migrate_foldweave_cost_cap(
         return updated
 
 
+def migrate_foldweave_final_call_cap(
+    *,
+    path: Path,
+) -> BudgetSnapshot:
+    """Atomically admit the final direct derivative and two contingencies."""
+
+    if not path.is_file():
+        raise BudgetLedgerError(
+            "The existing persistent GPT budget record is required for migration."
+        )
+    lock_path = path.with_suffix(f"{path.suffix}.lock")
+    with _exclusive_budget_lock(lock_path, nonblocking=True):
+        if not path.is_file():
+            raise BudgetLedgerError(
+                "The existing persistent GPT budget record is required for migration."
+            )
+        current = PersistentBudgetLedger._read_path(path)
+        if current.configured_cost_cap_microusd != FOLDWEAVE_PROJECT_COST_MICRO_USD:
+            raise BudgetLedgerError(
+                "Persistent GPT budget cost authority does not match migration."
+            )
+        if current.configured_live_call_cap == FOLDWEAVE_FINAL_LIVE_CALL_CAP:
+            if not _has_foldweave_final_migration_floor(current):
+                raise BudgetLedgerError(
+                    "Persistent GPT budget migration does not preserve the required "
+                    "Foldweave provider history."
+                )
+            return current
+        if current.configured_live_call_cap != C3_LIVE_CALL_CAP:
+            raise BudgetLedgerError(
+                "Persistent GPT budget call cap is not eligible for migration."
+            )
+        if not _has_exact_foldweave_pre_final_state(current):
+            raise BudgetLedgerError(
+                "Persistent GPT budget history does not match the required "
+                "pre-final Foldweave authority."
+            )
+        updated = current.model_copy(
+            update={"configured_live_call_cap": FOLDWEAVE_FINAL_LIVE_CALL_CAP}
+        )
+        PersistentBudgetLedger._write_path(path, updated)
+        return updated
+
+
 def _has_c3_historical_floor(snapshot: BudgetSnapshot) -> bool:
     return (
         snapshot.live_requests_reserved >= HISTORICAL_LIVE_REQUESTS
@@ -542,6 +591,28 @@ def _has_exact_c3_historical_state(snapshot: BudgetSnapshot) -> bool:
         and snapshot.committed_cost_microusd == HISTORICAL_COMMITTED_COST_MICRO_USD
         and snapshot.reported_estimated_cost_microusd
         == HISTORICAL_REPORTED_COST_MICRO_USD
+    )
+
+
+def _has_foldweave_final_migration_floor(snapshot: BudgetSnapshot) -> bool:
+    return (
+        snapshot.live_requests_reserved >= FOLDWEAVE_PRE_FINAL_LIVE_REQUESTS
+        and snapshot.provider_attempts_reserved >= FOLDWEAVE_PRE_FINAL_PROVIDER_ATTEMPTS
+        and snapshot.committed_cost_microusd
+        >= FOLDWEAVE_PRE_FINAL_COMMITTED_COST_MICRO_USD
+        and snapshot.reported_estimated_cost_microusd
+        >= FOLDWEAVE_PRE_FINAL_REPORTED_COST_MICRO_USD
+    )
+
+
+def _has_exact_foldweave_pre_final_state(snapshot: BudgetSnapshot) -> bool:
+    return (
+        snapshot.live_requests_reserved == FOLDWEAVE_PRE_FINAL_LIVE_REQUESTS
+        and snapshot.provider_attempts_reserved == FOLDWEAVE_PRE_FINAL_PROVIDER_ATTEMPTS
+        and snapshot.committed_cost_microusd
+        == FOLDWEAVE_PRE_FINAL_COMMITTED_COST_MICRO_USD
+        and snapshot.reported_estimated_cost_microusd
+        == FOLDWEAVE_PRE_FINAL_REPORTED_COST_MICRO_USD
     )
 
 

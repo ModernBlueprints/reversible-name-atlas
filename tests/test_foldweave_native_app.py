@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from name_atlas import foldweave_browser_cli, foldweave_native_cli
+from name_atlas import __version__, foldweave_browser_cli, foldweave_native_cli
 from name_atlas.foldweave_companion_cli import EmbeddedCompanionRuntime
 from name_atlas.foldweave_companion_supervisor import FoldweaveCompanionSupervisor
 from name_atlas.foldweave_pairing_service import FoldweavePairingService
@@ -155,10 +155,9 @@ def test_native_qualification_uses_environment_without_keychain_persistence(
         response = client.get("/settings")
 
     assert response.status_code == 200
-    assert "Configured in qualification environment" in response.text
-    assert "never enters this web view or the product-user Keychain item" in (
-        response.text
-    )
+    assert "Configured in process environment" in response.text
+    assert "never enters this web view or macOS Keychain" in response.text
+    assert "qualification" not in response.text.casefold()
     assert "Configure key" not in response.text
     assert "Remove key" not in response.text
 
@@ -188,6 +187,7 @@ def test_real_composition_exposes_health_settings_and_review_routes(
 
     paths = {route.path for route in composition.app.routes}
     assert composition.app.title == "Foldweave"
+    assert composition.app.version == __version__ == "0.1.0"
     assert {"/healthz", "/settings", "/review"} <= paths
     assert isinstance(
         composition.app.state.native_settings,

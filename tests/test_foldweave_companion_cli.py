@@ -28,6 +28,7 @@ from name_atlas.foldweave_companion_client import (
     CompanionPairingRegistrationV1,
     CompanionPairingStateStore,
     CompanionPairingStateV1,
+    CompanionRuntimeLock,
     CompanionTransportError,
     InProcessMcpProxy,
 )
@@ -202,6 +203,33 @@ def test_revoke_reports_success_only_after_confirmed_gateway_response(
     assert json.loads(output.getvalue())["revoked"] is True
 
 
+def test_standalone_runtime_reports_stable_existing_owner_blocker(
+    tmp_path: Path,
+) -> None:
+    store = CompanionPairingStateStore(path=tmp_path / "companion-pairing.json")
+    asyncio.run(store.write(_pairing_state()))
+    owner = CompanionRuntimeLock(store.runtime_lock_path)
+    owner.acquire()
+    output = io.StringIO()
+    errors = io.StringIO()
+    try:
+        exit_code = foldweave_companion_cli.run_foldweave_companion(
+            ["run"],
+            state_store=store,
+            stdout=output,
+            stderr=errors,
+        )
+    finally:
+        owner.release()
+
+    assert exit_code == 2
+    assert output.getvalue() == ""
+    assert json.loads(errors.getvalue()) == {
+        "error": "companion_already_running",
+        "schema_version": "foldweave-companion-error.v1",
+    }
+
+
 @dataclass(slots=True)
 class _FakeServer:
     url: str = "http://127.0.0.1:49152"
@@ -306,10 +334,19 @@ async def test_embedded_runtime_uses_in_process_mcp_lifespan_and_cleans_up(
 
     service = cast(FoldweaveHostPlanningService, object())
     identity = cast(DeviceIdentityStore, object())
+
+    def build_server(
+        selected: FoldweaveHostPlanningService,
+        *,
+        stateless_http: bool,
+    ) -> _Server | None:
+        observed["stateless_http"] = stateless_http
+        return _Server() if selected is service else None
+
     monkeypatch.setattr(
         foldweave_companion_cli,
         "build_foldweave_chatgpt_server",
-        lambda selected: _Server() if selected is service else None,
+        build_server,
     )
     monkeypatch.setattr(
         foldweave_companion_cli,
@@ -333,6 +370,7 @@ async def test_embedded_runtime_uses_in_process_mcp_lifespan_and_cleans_up(
     assert isinstance(observed["mcp_proxy"], InProcessMcpProxy)
     assert observed["stop"].is_set()
     assert observed["retry_wake"] is runtime._retry_wake
+    assert observed["stateless_http"] is True
 
 
 @pytest.mark.anyio

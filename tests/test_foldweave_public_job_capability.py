@@ -182,7 +182,9 @@ def test_public_root_job_persists_only_hashed_capability_and_requires_exact_acce
     assert captured.value.code == "public_job_capability_required"
 
 
-def test_public_job_rejects_other_grant_revocation_and_expiry(tmp_path: Path) -> None:
+def test_public_job_rejects_other_grant_and_revocation_then_renews_expiry(
+    tmp_path: Path,
+) -> None:
     (
         _fixture,
         _output,
@@ -223,6 +225,20 @@ def test_public_job_rejects_other_grant_revocation_and_expiry(tmp_path: Path) ->
         identity_store=DeviceIdentityStore(adapter=keychain),
         clock=lambda: NOW + timedelta(minutes=31),
     )
+    before_expired_rebind_attempt = job.job_path.read_bytes()
+    expired_other_grant = _invocation(
+        device_id=identity.device_id,
+        grant="e" * 64,
+        job_id=job.job_id,
+    )
+    with (
+        trusted_public_invocation(expired_other_grant),
+        pytest.raises(FoldweaveHostServiceError) as captured,
+    ):
+        expired_service.status(job.job_id)
+    assert captured.value.code == "public_job_capability_mismatch"
+    assert job.job_path.read_bytes() == before_expired_rebind_attempt
+
     with trusted_public_invocation(
         authorized := _invocation(
             device_id=identity.device_id,
@@ -230,9 +246,28 @@ def test_public_job_rejects_other_grant_revocation_and_expiry(tmp_path: Path) ->
         )
     ):
         assert authorized.job_id == job.job_id
-        with pytest.raises(FoldweaveHostServiceError) as captured:
-            expired_service.status(job.job_id)
-    assert captured.value.code == "public_job_capability_expired"
+        renewed = expired_service.status(job.job_id)
+    assert renewed.revision == job.revision
+    assert renewed.updated_at == job.updated_at
+    assert renewed.preview == job.preview
+    assert renewed.lifecycle == job.lifecycle
+    assert renewed.public_job_capability is not None
+    assert job.public_job_capability is not None
+    assert (
+        renewed.public_job_capability.device_id == job.public_job_capability.device_id
+    )
+    assert (
+        renewed.public_job_capability.oauth_grant_fingerprint
+        == job.public_job_capability.oauth_grant_fingerprint
+    )
+    assert renewed.public_job_capability.scopes == job.public_job_capability.scopes
+    assert renewed.public_job_capability.expires_at_ms == int(
+        (NOW + timedelta(minutes=61)).timestamp() * 1_000
+    )
+    assert (
+        renewed.public_job_capability.capability_id_sha256
+        != job.public_job_capability.capability_id_sha256
+    )
 
 
 def test_public_receiver_derivative_gets_distinct_child_capability(

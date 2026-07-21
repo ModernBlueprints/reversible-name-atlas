@@ -26,6 +26,9 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     GptDerivativeJobAuthorityV3,
     GptPlannedJobAuthorityV3,
 )
+from name_atlas.folder_refactor.connected_change.proposal_delta import (
+    project_latest_accepted_proposal_delta,
+)
 from name_atlas.folder_refactor.connected_change.review_service import (
     FoldweaveReviewService,
     FoldweaveReviewServiceError,
@@ -350,7 +353,7 @@ class FoldweaveBrowserReviewService:
         }:
             detail = job.blocker_message or f"Job ended in {job.lifecycle.value}."
             raise ValueError(detail)
-        return _review_handle(job)
+        return self._review_handle(job)
 
     async def keep_previous_review(
         self,
@@ -374,7 +377,7 @@ class FoldweaveBrowserReviewService:
             idempotency_key=idempotency_key,
         )
         self._job_path = job.job_path
-        return _review_handle(job)
+        return self._review_handle(job)
 
     def web_checkpoint(self) -> FolderWebCheckpoint | None:
         """Project the current job without provider, budget, copy, or mutation."""
@@ -425,7 +428,7 @@ class FoldweaveBrowserReviewService:
             FolderJobLifecycleV3.REVIEWING,
             FolderJobLifecycleV3.REVISION_FAILED,
         }:
-            return _review_handle(job)
+            return self._review_handle(job)
         if job.lifecycle is FolderJobLifecycleV3.VERIFIED:
             return self._terminal_presentation(job)
         detail = (
@@ -486,6 +489,14 @@ class FoldweaveBrowserReviewService:
                     "Authorization fingerprint",
                     job.execution_authorization.authorization_fingerprint,
                 ),
+                (
+                    "Receipt fingerprint",
+                    job.verified_artifacts.receipt_fingerprint,
+                ),
+                (
+                    "Organized-tree commitment",
+                    job.verified_artifacts.organized_tree_commitment,
+                ),
             ),
         )
 
@@ -523,7 +534,7 @@ class FoldweaveBrowserReviewService:
             FolderJobLifecycleV3.REVIEWING,
             FolderJobLifecycleV3.REVISION_FAILED,
         }:
-            handle = _review_handle(job)
+            handle = self._review_handle(job)
             return FolderWebCheckpoint(
                 lifecycle=FolderWebLifecycle.REVIEWING,
                 source_root=job.source_root,
@@ -577,6 +588,14 @@ class FoldweaveBrowserReviewService:
             raise ValueError("Requested review job is not active in this application.")
         return job
 
+    def _review_handle(self, job: FolderRefactorJobV3) -> FolderReviewHandle:
+        """Project one review using the live-planning capability of this surface."""
+
+        return _review_handle(
+            job,
+            live_revision_available=self._provider_factory is not None,
+        )
+
 
 def _clarification_request(job: FolderRefactorJobV3) -> FolderClarificationRequest:
     authority = job.authority
@@ -619,7 +638,11 @@ def _require_exact_revision_surface(
         )
 
 
-def _review_handle(job: FolderRefactorJobV3) -> FolderReviewHandle:
+def _review_handle(
+    job: FolderRefactorJobV3,
+    *,
+    live_revision_available: bool,
+) -> FolderReviewHandle:
     if job.preview is None or job.candidate_plan is None:
         raise ValueError("Reviewing Foldweave job lacks its complete preview.")
     return FolderReviewHandle(
@@ -639,10 +662,16 @@ def _review_handle(job: FolderRefactorJobV3) -> FolderReviewHandle:
             )
             else FolderJourney.ORGANIZE
         ),
+        latest_proposal_delta=project_latest_accepted_proposal_delta(job),
         revision_available=(
-            isinstance(
+            live_revision_available
+            and isinstance(
                 job.authority,
-                (GptPlannedJobAuthorityV3, GptDerivativeJobAuthorityV3),
+                (
+                    CapsuleAppliedJobAuthorityV2,
+                    GptPlannedJobAuthorityV3,
+                    GptDerivativeJobAuthorityV3,
+                ),
             )
             and (
                 not isinstance(job.authority, GptDerivativeJobAuthorityV3)
@@ -658,9 +687,14 @@ def _review_handle(job: FolderRefactorJobV3) -> FolderReviewHandle:
         revision_attempts_remaining=(
             max(0, 2 - job.revision_attempt_count)
             if (
-                isinstance(
+                live_revision_available
+                and isinstance(
                     job.authority,
-                    (GptPlannedJobAuthorityV3, GptDerivativeJobAuthorityV3),
+                    (
+                        CapsuleAppliedJobAuthorityV2,
+                        GptPlannedJobAuthorityV3,
+                        GptDerivativeJobAuthorityV3,
+                    ),
                 )
                 and (
                     not isinstance(job.authority, GptPlannedJobAuthorityV3)

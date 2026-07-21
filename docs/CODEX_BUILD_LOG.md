@@ -1,4 +1,4 @@
-# Codex and GPT-5.6 build log
+# Foldweave — Codex and GPT-5.6 build log
 
 This is the factual development record for **Foldweave**, previously released
 during Build Week as Reversible Name Atlas/Name Atlas. Codex with GPT-5.6 is the
@@ -212,10 +212,11 @@ a commit cannot contain its own hash.
 R6 regenerated one coherent seven-frame release set from the synthetic hero
 transaction at 1440×900. Each final file was converted to genuine PNG bytes and
 checked with file-type, pixel-dimension, metadata, personal-path, and secret
-inspection. The authoritative paths and SHA-256 values are recorded in
-`docs/SUBMISSION_PACKAGE.md`. Final responsive QA at 390×844 traversed all five
-routes with zero horizontal document overflow; the Handoff page retained
-readable receipt identity, verifier command, and restore action.
+inspection. The authoritative paths and SHA-256 values are recorded at
+`6591d57e254a21944fb0c4bdfb2f7a4eec18eda4:docs/SUBMISSION_PACKAGE.md`.
+Final responsive QA at 390×844 traversed all five routes with zero horizontal
+document overflow; the Handoff page retained readable receipt identity,
+verifier command, and restore action.
 
 The following five first-cycle captures were then removed from the release
 directory because they depict the superseded interface and overlap the revised
@@ -484,20 +485,25 @@ The same candidate plugin was installed from another public clone, matched its
 source manifest/config/README byte-for-byte, discovered exactly seven tools,
 and passed keyless replay, verification, reconstruction, missing-key behavior,
 and uninstall. Fresh Codex task `019f7976-0b6d-7461-ad63-c3519052b06b`
-invoked installed `verify_result` successfully. The final seven screenshots,
-PNG/SVG thumbnail, and then-current 346-word C6 narration draft passed independent media,
-metadata, path, secret, and claim review.
+invoked installed `verify_result` successfully. The then-current seven-image
+Connected Change gallery, PNG/SVG thumbnail, and 346-word C6 narration draft
+passed independent media, metadata, path, secret, and claim review. That gallery
+is preserved at immutable predecessor
+`1023999f2acc7b806775b407dc01a15af3447e90`; its paths, dimensions, and hashes
+are recorded at
+`1023999f2acc7b806775b407dc01a15af3447e90:docs/SUBMISSION_PACKAGE.md`.
 
 The release-media replacement removed seven superseded second-cycle PNGs from
-the current gallery because they showed the archive workflow rather than the
-selected Connected Change product: `01-atlas.png` (345,430 bytes),
+the then-current gallery because they showed the archive workflow rather than
+the selected Connected Change product: `01-atlas.png` (345,430 bytes),
 `02-decide.png` (422,841), `03-stage.png` (200,943), `04-verify.png` (348,416),
 `05-handoff.png` (341,384), `06-offline-receipt.png` (334,009), and
 `07-negative-block.png` (365,283), for 2,358,306 bytes total. They remain
-byte-for-byte recoverable from feature-freeze commit `0dc4776`; the current
-release replaces them with the visually audited seven-frame Connected Change
-gallery and Sofia→Change File→Martin thumbnail recorded in the submission
-package.
+byte-for-byte recoverable from feature-freeze commit `0dc4776`; the then-current
+release at immutable predecessor
+`1023999f2acc7b806775b407dc01a15af3447e90` replaced them with the visually
+audited seven-frame Connected Change gallery and Sofia→Change File→Martin
+thumbnail recorded in that commit's submission package.
 
 ## C7 recording-readiness status — 19 July 2026
 
@@ -528,9 +534,8 @@ jobs, browser origin/receiver completion, and managed-directory strictness.
 The corrected local checkout passed 55 focused tests, 822 complete tests, the
 249-test selected-release matrix, lock validation, Ruff lint, Ruff format over
 154 files, and Git whitespace checks. An independent fresh HTTPS clone of exact
-`e10b09a` at
-`/Users/Shared/NameAtlas-C7-Fix-Clone-e10b09a.opfllx/repo` reproduced 822/822
-and 249/249 tests. Its 563,894-byte, 205-member wheel has SHA-256
+`e10b09a` in an unrelated temporary directory reproduced 822/822 and 249/249
+tests. Its 563,894-byte, 205-member wheel has SHA-256
 `ab055dfeab03b26856b7acb1fcc79baf8da6a328c318640d6aa821b3877112b7`.
 An isolated installation ran the keyless replay, verified source-free and
 source-aware with receipt
@@ -558,12 +563,16 @@ copy required for the selected release: final product name and tagline, the
 4,568-character Connected Change description, final technology list, and the
 public GitHub repository link. Devpost returned project version `3`.
 
-The audited `docs/submission-thumbnail.png` was then streamed through Devpost's
-direct file-upload path. The processed public thumbnail returned HTTP 200 as a
-51,109-byte PNG. A first non-mutating upload command retained the connector's
-literal `<FILE_PATH>` placeholder and exited 26 before reading or uploading any
-file; the corrected command used the fixed audited local path and succeeded
-once. No duplicate project or thumbnail mutation was created.
+The audited predecessor thumbnail at
+`1023999f2acc7b806775b407dc01a15af3447e90:docs/submission-thumbnail.png`
+(1500×1000; SHA-256
+`0382fd0c9c15a89688b821496b7baad20633bb427cec74383735848327085515`)
+was then streamed through Devpost's direct file-upload path. The processed
+public thumbnail returned HTTP 200 as a 51,109-byte PNG. A first non-mutating
+upload command retained the connector's literal `<FILE_PATH>` placeholder and
+exited 26 before reading or uploading any file; the corrected command used the
+fixed audited local path and succeeded once. No duplicate project or thumbnail
+mutation was created.
 
 A fresh project read confirmed the final tagline, a 4,568-character
 description, public state `published`, `video_url: null`, and no hackathon
@@ -625,29 +634,56 @@ provenance category.
 | `dfa85b4` | Qualified the packaged native direct transaction. | PyInstaller `onedir --windowed` Apple-Silicon app, one FastAPI control plane, focused React review island, native picker, Keychain configure/read/remove, exact live direct planning, one bounded revision, exact acceptance, receipt verification, reconstruction, restart, and clean shutdown. The app is unsigned/ad-hoc, not Developer-ID-signed or notarized. |
 | `13fb54e` | Preserved the hosted-review implementation checkpoint. | Bounded host planning, shared ChatGPT widget contract, opaque local handles, truthful `chatgpt_hosted` provenance, provider-free hosted tools, and generated production widget assets. This checkpoint did not claim a completed consumer gateway or public listing. |
 | `2322076` | Hardened the Foldweave review authority. | Append-only v3 mutation history, exact-request rehydration, destination reservation, bounded revision recovery, and additional stale, conflicting, retry, and race refusals. |
+| `719fc18` | Delivered the integrated native-review and shared-planning checkpoint. | F0a review authority, F0b packaged native direct transaction, F0c actual macOS ChatGPT developer-mode transaction, complete F1 authority, deterministic F2 domain/portability/race matrices, shared MCP/companion/gateway code, and bounded independent authority corrections. The full checkpoint passed 1,102 Python tests, 54 frontend tests, 31 gateway tests, strict TypeScript and production builds; it did not claim live consumer deployment, final live derivative qualification, current Foldweave Codex installed-copy acceptance, or release readiness. |
 
-### Current implementation after `2322076`
+### Verified implementation at `719fc182`
 
-The active working branch continues to integrate the proof-carrying derivative
-transaction and shared host surfaces. Current source and tests cover:
+The checkpoint integrates one deterministic engine across the native app,
+browser fallback, CLI, local STDIO MCP, ChatGPT-hosted MCP/widget, and paired
+companion boundaries. It includes:
 
-- complete `connected-change-file.v2` children with immediate-parent lineage;
-- receipt/verifier v3 and transaction-specific reconstruction authority;
-- immutable receiver parent jobs and explicit derivative children;
-- direct, ChatGPT-hosted, Codex-hosted, replay, and model-free provenance;
-- a local STDIO MCP profile for Codex and a ChatGPT Streamable HTTP profile;
-- a purpose-built current/proposed React tree shared by the native review island
-  and ChatGPT widget;
-- an outbound-only paired companion and a checked-in Cloudflare gateway profile;
-  and
+- strict `folder-refactor-job.v3` persistence, immutable
+  `folder-plan-preview.v1`, no-output review, bounded sparse revision, exact
+  fingerprint-bound acceptance, destination reservation, restart, and strict
+  legacy dispatch;
+- complete `connected-change-file.v2` derivative children with immediate-parent
+  lineage, receipt/verifier v3, organized-tree convergence, and
+  transaction-specific reconstruction authority;
+- immutable receiver parent jobs and explicit derivative children, including
+  deterministic Sofia → Martin → Sofia domain, portability, collision, race,
+  compatibility, and reconstruction matrices;
+- direct, ChatGPT-hosted, Codex-hosted, replay, and model-free provenance
+  contracts that do not collapse planning transport into execution origin;
+- one shared purpose-built current/proposed React tree for native/browser review
+  and the ChatGPT widget;
+- a local STDIO MCP profile for Codex, a loopback Streamable HTTP profile for
+  ChatGPT developer qualification, an outbound-only paired companion, and a
+  checked-in Cloudflare gateway implementation; and
 - a renamed thin Foldweave Codex plugin around the same MCP and deterministic
   engine.
 
-Those source surfaces are not release evidence by themselves. At this
-documentation checkpoint, public Cloudflare deployment, consumer pairing,
-ChatGPT directory approval/public listing, a final ChatGPT origin-revision
-transaction, and a final fresh-task Foldweave Codex installed-copy transaction
-must not be claimed unless separately observed and recorded.
+The public-authority implementation received an independent adversarial audit.
+That audit reproduced a standalone companion context-loss defect and a raw
+capability exposure through MCP results before deployment. The production
+companion was changed to use the same in-process ASGI dispatch boundary as the
+packaged app, and the raw bearer design was removed: public MCP and widget
+surfaces carry only an opaque job ID while the trusted local host rederives and
+validates the 30-minute job authority from the immutable device, grant, scope,
+and job binding. The re-audit found no remaining HIGH or MEDIUM issue.
+
+Checkpoint verification passed 1,102 Python tests, the 110-test integrated
+public-authority subset, 54 frontend tests, 31 gateway tests, strict TypeScript,
+the review/widget and gateway production builds, `uv lock --check`, Ruff lint,
+Ruff format, and Git diff checks. These checks qualify the integrated code and
+tested transactions; they do not substitute for a live consumer deployment.
+
+At publication, the following were outside checkpoint `719fc182`'s claims:
+live Cloudflare deployment and consumer OAuth pairing, public ChatGPT
+approval/listing, the final real direct and ChatGPT-hosted derivative matrix,
+current Foldweave clean-clone installed-copy Codex qualification,
+release-candidate acceptance, recording readiness, video, `/feedback`, and
+submission. Later evidence is recorded separately below and does not rewrite
+what that immutable checkpoint proved.
 
 ### Native and browser boundary
 
@@ -667,11 +703,112 @@ the direct API. Recorded replay and unchanged Change File application remain
 model-free. A ChatGPT widget or tool invocation may use gateway networking even
 when the underlying unchanged application is model-free.
 
-The ChatGPT developer qualification has demonstrated real tool discovery,
-opaque local selection, deterministic receiver matching, and a rendered
-receiver-local current/shared preview without loading a direct API key. The
-consumer gateway and complete final host qualification remain separate gates;
-developer-mode evidence is not a public-distribution claim.
+The actual macOS ChatGPT developer qualification used the official Secure MCP
+Tunnel, bounded hosted-planning tools, opaque local handles, and the visible
+Foldweave widget. Hosted job `d8392e05e1e841c7850c28c7a6e4ce82` produced a
+complete 24-file root proposal, accepted a path-only host revision, rendered
+candidate
+`5f96104f0c37825e21a389b0024cacd5af84908a9be8b443c1f801cf1319b83f`
+and preview
+`f9504c0e062cb7ab05b88fe9959f10b878d977e4a5df5b71f5f99f71f835c384`,
+and stopped with no output. The visible widget action then persisted exact
+`chatgpt_hosted` acceptance and produced a verified separate result with receipt
+`e8acaa4b74db7722ff8d39de8bc7a28d8c1a34b9e16dc2eddef6c33d5c778fa7`,
+Change File fingerprint
+`0bf3caf6bdbbac5657db00af2eee8b7769dbf9d980feb4e3725f19b9abf5538b`,
+and organized-tree commitment
+`c234aabe97f7cccfaf6b8c025a2b34c2d4b50a4c350ba52245b8941ac8d6158e`.
+Widget verification, Change File retrieval, reconstruction, independent CLI
+verification, and exact source/reconstruction comparison passed. The sole
+direct ledger remained byte-identical; no direct request, budget reservation,
+hidden fallback, or fabricated direct metadata occurred.
+
+This establishes `DEVELOPER_MODE_VERIFIED`, not consumer distribution. The
+public gateway, consumer pairing, publication readiness, review submission,
+approval, and public listing remain separate evidence gates.
+
+### Post-checkpoint derivative, replay, and preflight evidence
+
+After `719fc182`, the mandatory live derivative matrix completed without
+changing the deterministic engine. Direct derivative job
+`9ac2c69a75d44ba1b0a7f21a873dd342` and actual ChatGPT-hosted derivative job
+`6af720f18400471098cb52e3e4af52e7` compiled the same candidate
+`f4e79b7c377a73e3206049a8dccd40ce5334a201478d2d2be7067a23f24f793b`.
+The direct job produced receipt
+`a5f5eb43ae6889d56aaecef5a4464c7a1ed23a8db66d7b711899f954f77dc2e2`
+and self-contained child Change File
+`dcc3cc4d746564edc56cce28689e6e006541e2779dabf1166a9ffb83386e3b06`.
+Its exact preview fingerprint was
+`77d91a7e3fb28807bc9ea251fccd4baf593adc53f632e416b2bd15c6f19da628`,
+and its receiver-specific reconstruction was path-and-byte identical to
+Martin's selected source.
+
+The actual macOS ChatGPT v17 widget rendered Martin's complete current tree
+against the shared derivative proposal and executed only after the visible
+**Accept this structure and create copy** action authorized preview
+`668d613e6701b35d821a4a6dbde4da5d26cc6beb05ec9d41346d81865a43cb38`.
+The immutable parent remained in `reviewing` without authorization or result.
+The verified child records `gpt_revised_from_change_file`, planning basis
+`derivative`, model transport `chatgpt_hosted`, provider-call count `0`, and
+direct API use `false`. Its receipt is
+`56468fd0d0a4c5dd715c5102f3b7d7fedae8e3a70077d3a0fd81f040e3fee0d3`;
+its self-contained child Change File fingerprint is
+`c54c20cd77d9386e9b52327fa88e84e2da87433fb437b520d02062c6098c06c6`.
+Widget verification, opaque-handle Change File retrieval, and receiver-specific
+reconstruction passed.
+
+Both live transports converged to organized-tree commitment
+`0ea8201ec6123615f9ab9028cb89a64027d63288f88041b4de209612623cc830`.
+The hosted reconstruction is path-and-byte identical to Martin's selected
+source. An independent read-only audit revalidated source immutability, BagIt
+manifests, all 21 receipt artifact commitments, the acyclic
+parent/Core/receipt/envelope proof graph, immediate-parent lineage,
+self-contained CF2, and absence of payload bytes, absolute paths, and secrets in
+the transferable artifact. No material defect remained.
+
+A fresh keyless replay job `daeea1fc54c6472c8b74a0b027f04259` reached review,
+accepted exact preview
+`5e8729f9da5ae923fbc28d10d26d5604933dfa4329e62e02e9c89d97aa05d074`,
+verified receipt
+`c8020a10ef72fd4c5590fb09246427c69897cb6603448a6b850525b315548e10`,
+correctly refused a relative reconstruction with
+`destination_must_be_absolute`, and then recreated its selected source at a
+valid absolute destination.
+
+The sole direct ledger is schema `gpt-budget.v1`, model `gpt-5.6`, monetary cap
+USD 40, call cap 16, 14 requests/attempts reserved, USD 13.057830 conservative
+exposure, USD 0.895450 reported estimated cost, and SHA-256
+`d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`.
+The ChatGPT-hosted derivative left those bytes unchanged.
+
+The current integrated preflight passes 1,176/1,176 Python tests, 80/80
+frontend tests, 50/50 gateway tests, `uv lock --check` with 63 packages, Ruff
+lint and formatting over 224 files, strict TypeScript, both frontend production
+builds, exact generated review/widget asset parity, the Wrangler production dry
+build, and Git diff checks.
+
+Wrangler subsequently authenticated through the user-approved Cloudflare flow,
+production and preview `OAUTH_KV` namespaces were bound, and public Worker
+deployment version `fb97746a-8d6c-497c-aa48-29ecd798dff3` was created on Monday
+20 July 2026 at 13:46:59 CEST with both SQLite Durable Object bindings and the
+production KV binding. This proves deployment existence only. It does not yet
+prove consumer OAuth, one-time pairing, outbound WSS, reconnect, complete
+origin/receiver derivative transactions, `CONSUMER_PAIRING_VERIFIED`,
+`PUBLICATION_READY`, approval, or public listing.
+
+### Binding visual-acceptance correction
+
+The user explicitly rejected the current gradient-heavy, cyber-like Foldweave
+presentation as unacceptable. Functional UI implementation and automated
+component checks are not visual acceptance. Before F3 can complete, every
+active native, browser, review, settings, pairing, Done/proof, and ChatGPT
+widget surface must use one restrained, minimal, recognizable macOS-native
+visual system with native/Blueprint interaction patterns and no gradients,
+neon glow, cyber styling, or decorative visual noise. The transformed surfaces
+must then pass real 1280 x 720, approximately 1440 x 900, and 390 x 844
+viewport inspection plus keyboard, focus, overflow, contrast, and accessibility
+checks. No current screenshot or generated bundle is recorded as visually
+accepted.
 
 ### Current primary commands
 
@@ -712,7 +849,277 @@ or tamper-proofing claim.
 
 The Connected Change predecessor remains the last complete public release. The
 Foldweave branch has not yet been declared a release candidate in this build
-log. No Cloudflare public deployment, ChatGPT directory approval, signed or
-notarized app, final Foldweave video, `/feedback`, eligibility/ownership
-attestation, final submission-hold release, or Devpost submission is asserted
-here. The submission hold remains active.
+log. The public Cloudflare Worker and paired companion have passed live consumer
+OAuth/pairing/WSS, origin and receiver-derivative, reconnect, verification,
+reconstruction, and bounded refusal qualification in Google Chrome. This
+establishes `CONSUMER_PAIRING_VERIFIED` and narrow technical
+`PUBLICATION_READY`; it does not establish ChatGPT review submission, approval,
+publication, or public listing. No Developer-ID-signed or notarized app, final
+release commit, final clean-clone acceptance, final screenshot set, Foldweave video,
+`/feedback`,
+eligibility/ownership attestation, final submission-hold release, or Devpost
+submission is asserted here. The submission hold remains active.
+
+### Post-checkpoint visual, native, gateway, and Codex qualification
+
+The binding visual correction completed after the earlier rejection. Active
+native, browser, review, settings, pairing, Done/proof, and ChatGPT widget
+surfaces now use one restrained macOS dark utility language. Authored surfaces
+contain no gradients, glow, text shadows, cyber palette, decorative full-width
+rules, or card-grid ornament. Remaining separators are limited to functional
+toolbar, split-view, Finder-row, disclosure, and settings-group boundaries. The
+500-file/1,000-directory review fixture passed changed-only default, search,
+selection, scroll retention, structure toggle, arrow-key navigation,
+empty-directory filtering, and narrow acceptance. Measured contrast was 15.63:1
+for primary text, 8.28–10.10:1 for muted text, and 5.57:1 for white action text
+on system blue. Visual/native checks passed 27 tests and the frontend passed
+57/57. This is objective visual conformance, not a claim of any one person's
+subjective final-pixel preference.
+
+The current rebuilt 55 MiB Apple-Silicon `Foldweave.app` has bundle ID
+`com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, and
+executable SHA-256
+`c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`.
+Strict deep ad-hoc signature verification, 30 focused native/package tests,
+launch from an unrelated directory, ephemeral-loopback health, native picker
+cancellation and selection, temporary Keychain roundtrip and removal, durable
+review rehydration, exact acceptance, Done, Verify Again, CLI receipt
+verification, no runtime Node, and no-orphan-process checks passed. Gatekeeper
+rejection is expected because no Developer ID or notarization is claimed.
+
+The latest full integrated Python regression passed 1,176 tests with one
+upstream warning. The frontend passed 80/80 and the gateway passed 50/50 tests;
+strict TypeScript, production builds, lock validation, Ruff lint and format,
+generated asset parity, and Git diff checks passed. The sole direct ledger remained
+byte-identical at SHA-256
+`d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`:
+USD 40 ceiling, 14 requests/provider attempts, USD 13.057830 conservative
+exposure, and USD 0.895450 reported estimated cost.
+
+The latest deployed public Worker is deployment
+`d14d051d-8920-44ea-b336-f3bbea2f6936`, version
+`9ac88da8-9f85-4685-8a07-073d44b909b9`, at
+<https://foldweave-gateway.skybert-ghostline.workers.dev>. Its health endpoint
+reports ready with device-session, pairing-directory, and OAuth KV bindings.
+It serves `review-v35`; the exact deployed/local widget asset identities are
+CSS SHA-256
+`666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`
+and JavaScript SHA-256
+`3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`.
+The Codex in-app Browser remains blocked at its client policy layer, but the
+user-requested Google Chrome route completed the live consumer qualification
+without weakening OAuth or changing the gateway.
+
+Foldweave Codex plugin `0.1.0+codex.20260721091729` is installed and enabled
+from the repository marketplace. The installed cache copy was inspected, and
+the declared stdio MCP command initialized as `Foldweave` and returned 22
+bounded tools through `tools/list`. This qualifies the current plugin bundle and
+local MCP contract; a final unrelated clean-clone acceptance remains required
+before release-candidate selection.
+
+The Foldweave branch remains pre-release. No ChatGPT review submission,
+approval, publication, or public listing; Developer-ID/notarized distribution;
+final release candidate; final clean-clone acceptance; final video;
+`/feedback`; eligibility or ownership attestation;
+submission-hold release; or Devpost submission is claimed. The submission hold
+remains active.
+
+### Live Google Chrome consumer qualification and widget compatibility
+
+The Codex in-app Browser continued to reject the public `workers.dev` hostname
+with `ERR_BLOCKED_BY_CLIENT` before Foldweave or ChatGPT could handle the
+navigation. Google Chrome was therefore used as the user-requested supported
+browser workaround; no browser-policy bypass, DevTools injection, alternate
+gateway, or weakened OAuth control was introduced.
+
+The existing ChatGPT consumer connector completed OAuth and reached the paired
+outbound Foldweave companion. Native selection returned only opaque handles for
+the 24-file Sofia source and an empty output parent. ChatGPT then used bounded
+host-planning tools to create durable hosted root job
+`976daca126a648a8bee4a5a4d62b6f8c`, inspect the complete eligible inventory and
+supported links, and stop in `reviewing` before any output.
+
+The first preview render exposed a separate product defect. ChatGPT had cached
+`ui://foldweave/review-v31.html`, while the current gateway accepted only
+canonical `ui://foldweave/review-v33.html`. The gateway now keeps v33 as the
+sole advertised template and admits only the explicit known v31 and v32 aliases
+for `resources/read`, echoing the requested URI while serving current v33
+assets. Unknown resource URIs remain fail-closed. Deployment
+`ece68561-0740-47d3-9052-4e311cabf483` is live at the stable `workers.dev`
+endpoint. Live ChatGPT retry rendered the Foldweave widget successfully.
+Unauthenticated and authenticated OAuth-MCP regressions cover both aliases.
+Gateway TypeScript, all 50 Worker tests, and the Wrangler production dry build
+passed. Frontend TypeScript, all 76 component tests, and both production builds
+also passed; the deployed v33 JavaScript and CSS bytes match the current local
+production assets exactly.
+
+The widget submitted one revision instruction and the standard `ui/message`
+request was acknowledged and visibly inserted into the ChatGPT transcript. The
+observed host did not autonomously call `submit_plan_revision`, so Foldweave
+does not claim seamless component-authored continuation. The exact continuation
+was sent once through the same ChatGPT conversation; the host then called the
+revision tool once. Job revision 9/proposal revision 1 returned to `reviewing`
+with candidate
+`70dc934a8f2b60089b24284712e7b6c22dc6e331c89ef52aa094a1b0148c3bef`
+and preview
+`b637ce35087b97fa60dd407351a6d0ddf28a4f6fc1a50be777bf6af4efe8dbca`.
+The requested delivery-notes move is present and the complete candidate still
+contains 24 mappings.
+
+The live widget's **Accept this structure and create copy** action then persisted
+exact `chatgpt_hosted` authorization for that candidate and preview. Job revision
+11 is `verified`; the separate result contains all 24 source files and 23
+changed paths. Its Change File fingerprint is
+`84b7931453b1b6fb37796f9ccd6a0a7796a4554580e567b528e0cf3a19c1ab97`,
+organized-tree commitment is
+`2deba61e0aae9004f68e7b5ca185d5efc72f34e9dfa47407744766e4df7810ba`,
+receipt fingerprint is
+`9a0d4d0b67c7afbc6dcfc2837188263253e5979edbba946a241412b597d82d68`,
+and verification fingerprint is
+`0e5f5e519ce58a1a5f25d4f447372a8e108505ce5c21de4da4afaab6fd7fdfc6`.
+Both source-free and source-aware CLI verification returned `VERIFIED`.
+Reconstruction produced 24 files and `diff -qr` proved exact path-and-byte
+equality with the selected source. Provenance records zero provider calls. The
+sole direct ledger remained byte-identical at SHA-256
+`d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`.
+This qualifies Chrome recovery, consumer OAuth/paired planning, widget
+rendering, durable hosted revision, exact consumer-origin acceptance, verified
+output, and reconstruction. It does not yet qualify automatic component-authored
+continuation, receiver derivative, reconnect/refusal behavior,
+`CONSUMER_PAIRING_VERIFIED`, or
+`PUBLICATION_READY`.
+
+### Live consumer receiver review and derivative acceptance
+
+The verified consumer-origin Change File, Martin's differently arranged source,
+and a new empty receiver output parent were selected through native pickers and
+resolved to three opaque companion handles. The public gateway and ChatGPT saw
+no absolute path. Deterministic receiver job
+`c7ead78db18a4c84b6043006445050b0` matched all 24 files plus the protected
+empty directory, stopped in `reviewing`, and rendered the required **Your current
+folder / Shared proposal** widget. The trust strip reported source unchanged,
+24 files, one protected file, one empty directory, 23 changed paths, 23 supported
+links, 23 link updates, and output not created. Source commitment
+`a1968bf0dc63b8e14fee98c4d041faed385edefa2960b6b217cf48cec064fc3f`
+differs from Sofia's origin commitment, while match-report fingerprint
+`8e91d21779d8d773ff42f7ad6fd755effc0143f8e62c873f23ccbcddddd51ac2`
+binds the receiver-local bijection.
+
+Martin requested that `Apollo-project-notes.md` move into
+`01_project-brief`. The widget preserved the parent review and reserved immutable
+child `90a548520b3e4672825de9ffcff0636a`. As in the consumer-origin case, the
+component-authored `ui/message` was acknowledged but needed one explicit
+same-conversation continuation. ChatGPT then called the derivative revision tool
+exactly once. The complete replacement proposal returned to review with candidate
+`ad1c86aa7044a4a4279b860d85b2a219b7ec0103c4b2750d5904f1b2df0073d3`
+and preview
+`e69bb1992a214352c0e0958bd830cc0ad8e7fb15124327771e7f23f6bcba3c5d`;
+no output existed before acceptance.
+
+The live widget's **Accept this structure and create copy** action persisted
+exact `chatgpt_hosted` authorization and advanced the child to revision 3
+`verified`. The separate result contains 24 files and 23 changed paths. Its
+generation-one Change File fingerprint is
+`ab28b4440ec976e337e567c5746e9d07ebe59faff270b8822421118f52e8ce2c`,
+organized-tree commitment is
+`20a71d110bcdedce603eacd1b69f517f88bac18d37fb702f1790c77430323b6e`,
+receipt is
+`6447e9d1a5a1afa49126dd6e8e673f3b757c37245638a4b444606022be5b484a`,
+and verification is
+`40b23f6fa6470acdfc886e6cc63f558302bed1d2152e6fcf752e1c2a6d09e1d5`.
+Source-free and source-aware verification both returned `VERIFIED`; receiver
+reconstruction produced 24 files and was path-and-byte identical to Martin's
+selected source. The execution origin is `gpt_revised_from_change_file`, model
+transport is `chatgpt_hosted`, provider call count is zero, and the direct ledger
+remained byte-identical. The child Change File is self-contained and records
+immediate-parent lineage to Sofia's origin Change File without embedding the
+ancestor envelope.
+
+This completed the positive live consumer origin and receiver-derivative
+transactions. At this intermediate checkpoint, reconnect and live refusal
+checks still gated `CONSUMER_PAIRING_VERIFIED` and `PUBLICATION_READY`; the
+immediately following qualification closed those gates.
+
+### Live consumer disconnect, reconnect, and refusal qualification
+
+The standalone outbound companion was stopped at a quiescent boundary without
+revoking the grant, changing the deployed Worker, or re-pairing the device. One
+actual ChatGPT `job_status` call for verified derivative job
+`90a548520b3e4672825de9ffcff0636a` while the companion was offline returned a
+bounded upstream `502`. The consumer-root job, derivative job, 23-job inventory,
+49-file result, and direct budget ledger remained unchanged.
+
+Restarting the exact same companion established one authenticated outbound TLS
+connection using the existing pairing. The same ChatGPT conversation re-read
+the derivative as revision 3/proposal revision 1 `verified` with model transport
+`chatgpt_hosted`. A post-reconnect `verify_result` returned `verified`, receipt
+`6447e9d1a5a1afa49126dd6e8e673f3b757c37245638a4b444606022be5b484a`,
+and organized-tree commitment
+`20a71d110bcdedce603eacd1b69f517f88bac18d37fb702f1790c77430323b6e`;
+local source-free verification returned `VERIFIED` for the same receipt.
+Consumer-root SHA-256
+`f2699251540b8fb0afefd53b19a582ff174f4b3219998ef4513bfd975465efcd`,
+derivative-job SHA-256
+`62f860e36ca1e3b2bae176de039cb38f1f7eaf80f171806c22ae1c6ab23ef848`,
+and direct-ledger SHA-256
+`d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`
+were byte-identical before, during, and after reconnect.
+
+A deployed unauthenticated `tools/call` returned a bounded 471-byte MCP
+`isError` result carrying the correct protected-resource challenge,
+`foldweave.review` scope, and `insufficient_scope`. One authenticated
+nonexistent-job request returned sanitized `job_status_unavailable`. The 50/50
+gateway and 107/107 companion/hosted suites cover the destructive lockout,
+rate-limit, expiry, replay, wrong-device, revocation, and duplicate-request
+cases that were deliberately not induced against the sole live pairing.
+
+This completes F0d and establishes `CONSUMER_PAIRING_VERIFIED` plus the narrow
+`PUBLICATION_READY` technical state. It does not claim review submission,
+approval, publication, public listing, or seamless automatic component-authored
+revision continuation. The live `ui/message` acknowledgement still required
+the explicitly documented same-conversation recovery, which completed one and
+only one durable revision.
+
+### Current post-qualification release evidence
+
+After the Chrome consumer transaction and reconnect/refusal qualification, the
+gateway was rebuilt and redeployed as deployment
+`d14d051d-8920-44ea-b336-f3bbea2f6936`, version
+`9ac88da8-9f85-4685-8a07-073d44b909b9`. The stable health endpoint reports
+ready with all three required bindings. The deployed `review-v35` widget assets
+match the local production bytes exactly: CSS SHA-256
+`666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`
+and JavaScript SHA-256
+`3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`.
+
+The current regression floor is 1,176/1,176 Python tests with one upstream
+warning, 80/80 frontend tests, and 50/50 gateway tests. A focused post-template
+native/pairing/visual/package matrix passed 35/35; Ruff lint, Ruff format, and
+Git diff checks also passed. The rebuilt arm64 `Foldweave.app` remains an
+unsigned/ad-hoc local qualification artifact with executable SHA-256
+`c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`.
+
+Current Foldweave screenshot and thumbnail evidence is captured and
+hash-recorded:
+
+| Asset | Pixels or kind | Bytes | SHA-256 |
+|---|---:|---:|---|
+| `docs/screenshots/01-home.png` | 1229×768 | 49,102 | `dd1d3aedce87630f05ac7ea11662ab78ff8f3c4cf473221c490b946de5788d78` |
+| `docs/screenshots/02-create.png` | 1440×900 | 96,013 | `31b43b0f55c08da4a883614b0a8bc612bd7efdd5c79de8c027024cdcd1fce842` |
+| `docs/screenshots/03-origin-review.png` | 1728×940 | 106,861 | `291b174ea71c139464779f9a93305b0dac002fdcfeb9b41cc4c53ba3a57cc9ae` |
+| `docs/screenshots/04-origin-revision.png` | 1440×900 | 172,864 | `aabb9b11534d6caa96fdaadd102f31f72828c4f735dd0f2084730ccba5ba2e30` |
+| `docs/screenshots/05-origin-done.png` | 3456×1880 | 136,825 | `30deed3a7618e42dd2a7589763fcfe7ac6d93cded51e3f6d2db740dc14e0fa25` |
+| `docs/screenshots/06-receiver-review.png` | 1440×900 | 199,274 | `4511b7f22171d50d8bc4c89ad4cd5f09e0d834bca20d8d44c68b772de8964bc9` |
+| `docs/screenshots/07-derivative-review.png` | 1440×900 | 207,760 | `f5a3a01f4beb241578a10db9cfe268e7b4c06b12467bd3e51ccd7b700a9ecc37` |
+| `docs/screenshots/08-chatgpt-widget.png` | 1536×800 | 114,880 | `18b15bb3a86c7be46760e675b2d29ede4318e9bcd4cff017468b2fcb241b35bc` |
+| `docs/screenshots/09-codex-plugin.png` | 1280×720 | 100,281 | `78a18e7f568787e2a78fca62a70e4f1d4de75665ada2c70034adf82e0be7ea70` |
+| `docs/screenshots/10-proof.png` | 3456×1880 | 174,124 | `1cbab91b471abb5d65b2a8f9b07ea1f5d889dcbae6253fb8d1fd6c829c5c2f3f` |
+| `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
+| `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
+
+These are current working-tree and deployed-service identities, not final
+release identities. Release-candidate commit selection, an unrelated
+clean-clone reproduction, public-`main` promotion, release media, video,
+`/feedback`,
+and submission remain pending. No ChatGPT review submission, approval,
+publication, or public listing is claimed. The submission hold remains active.

@@ -26,6 +26,29 @@ The gateway is intentionally a transport and authorization boundary:
   memory while being relayed. They are not written to KV or Durable Object
   storage.
 
+The current public deployment is:
+
+- origin: <https://foldweave-gateway.skybert-ghostline.workers.dev>;
+- deployment: `d14d051d-8920-44ea-b336-f3bbea2f6936`;
+- Worker version: `9ac88da8-9f85-4685-8a07-073d44b909b9`;
+- widget asset cache: `review-v35`;
+- JavaScript SHA-256:
+  `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`;
+- CSS SHA-256:
+  `666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`;
+  and
+- local qualification: 50/50 gateway tests, strict TypeScript, and the Wrangler
+  production dry-run bundle.
+
+The earlier `ERR_BLOCKED_BY_CLIENT` occurred in the Codex in-app Browser policy
+layer. The user-authorized Google Chrome route completed ChatGPT connector
+OAuth, device pairing, outbound companion WSS, opaque local selection, consumer
+origin and receiver-derivative transactions, reconnect, duplicate/refusal
+checks, verification, and reconstruction. `CONSUMER_PAIRING_VERIFIED` and
+narrow technical `PUBLICATION_READY` for review submission are achieved.
+Foldweave has not been submitted for ChatGPT review, approved, published, or
+publicly listed.
+
 ## Public endpoints
 
 | Endpoint | Purpose |
@@ -78,7 +101,8 @@ Run:
     npm run check
 
 `npm run check` performs strict TypeScript checking, Worker-runtime Vitest
-tests, and a Wrangler dry-run bundle. The tests include:
+tests, and a Wrangler dry-run bundle. The current suite passes 50/50 tests and
+includes:
 
 - current OAuth metadata and unauthenticated MCP challenge behavior;
 - code expiry/consumption, five-failure lockout, and source-bucket limiting;
@@ -87,16 +111,26 @@ tests, and a Wrangler dry-run bundle. The tests include:
 - ten-minute pairing versus 30-day authorized-session fake-time behavior; and
 - identical concurrent retry coalescing versus conflicting reuse.
 
-## Provisioning boundary
+## Deployment and qualification boundary
 
 No Cloudflare account mutation or deployment is performed by this package's
-tests or build. `wrangler.jsonc` intentionally contains a zero development KV
-namespace identifier so local Miniflare tests and dry-run bundling are
-deterministic. Before the first real deployment, create one Workers KV
-namespace, replace both zero `OAUTH_KV` identifiers with the provisioned IDs,
-and deploy to the selected `workers.dev` hostname through the authorized
+tests or dry-run build. `wrangler.jsonc` contains the provisioned production and
+preview `OAUTH_KV` namespace bindings plus the SQLite Durable Object bindings;
+those binding identifiers are configuration, not bearer credentials. A real
+`wrangler deploy` is a separate external mutation and must use the authorized
 Cloudflare account.
 
-The deployment must then be qualified end to end in the actual macOS ChatGPT
-application. Passing local tests does not establish `CONSUMER_PAIRING_VERIFIED`,
-`PUBLICATION_READY`, approval, or public listing.
+The public Worker above is deployed and responds on its stable `workers.dev`
+hostname. End-to-end Chrome qualification covered ChatGPT connector OAuth,
+pairing, the paired outbound companion, origin and receiver-derivative
+transactions, disconnect/reconnect, duplicate handling, refusal paths,
+verification, and reconstruction. This establishes `CONSUMER_PAIRING_VERIFIED`
+and narrow technical `PUBLICATION_READY`; it does not establish review
+submission, approval, publication, or public listing.
+
+The ChatGPT widget's standard `ui/message` revision request was acknowledged
+and displayed but did not automatically trigger the host's revision tool call.
+One explicit same-conversation continuation was required and verified for each
+consumer revision. This limitation remains part of the qualified transport
+profile rather than being relabelled as automatic component-authored
+continuation.

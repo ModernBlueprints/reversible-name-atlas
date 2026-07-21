@@ -332,19 +332,25 @@ def run_accept(
 
 
 def run_legacy_verify(argv: Sequence[str] | None = None) -> int:
-    """Reuse the existing provider-free receipt verifier."""
+    """Reuse the provider-free verifier under the active command name."""
 
     from name_atlas.cli import run as run_legacy_cli
 
-    return run_legacy_cli(["verify-receipt", *(argv or ())])
+    return run_legacy_cli(
+        ["verify-receipt", *(argv or ())],
+        prog="foldweave",
+    )
 
 
 def run_legacy_restore(argv: Sequence[str] | None = None) -> int:
-    """Reuse the existing provider-free reconstruction engine."""
+    """Reuse the provider-free reconstruction engine under the active name."""
 
     from name_atlas.cli import run as run_legacy_cli
 
-    return run_legacy_cli(["restore-receipt", *(argv or ())])
+    return run_legacy_cli(
+        ["restore-receipt", *(argv or ())],
+        prog="foldweave",
+    )
 
 
 def _initial_provider(

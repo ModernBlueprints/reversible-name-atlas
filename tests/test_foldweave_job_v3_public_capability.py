@@ -187,3 +187,78 @@ def test_public_job_capability_is_immutable_across_job_transitions(
 
     assert saved.public_job_capability == capability
     assert store.inspect() == saved
+
+
+def test_public_job_capability_lease_renews_without_semantic_revision(
+    tmp_path: Path,
+) -> None:
+    capability = _capability()
+    job = _planning_job(tmp_path, capability=capability)
+    store = FolderRefactorJobV3Store(job.job_path)
+    renewed_capability = _capability(
+        capability_id_sha256=hashlib.sha256(b"renewed-capability").hexdigest(),
+        expires_at_ms=capability.expires_at_ms + 1_800_000,
+    )
+
+    with store.writer() as writer:
+        current = writer.save_new(job)
+        successor = evolve_job_v3(
+            current,
+            public_job_capability=renewed_capability,
+        )
+        renewed = writer.renew_public_job_capability(
+            successor,
+            expected_current=current,
+        )
+
+    assert renewed.revision == current.revision
+    assert renewed.updated_at == current.updated_at
+    assert renewed.lifecycle == current.lifecycle
+    assert renewed.preview == current.preview
+    assert renewed.public_job_capability == renewed_capability
+
+
+def test_public_job_capability_renewal_rejects_identity_or_state_change(
+    tmp_path: Path,
+) -> None:
+    capability = _capability()
+    job = _planning_job(tmp_path, capability=capability)
+    store = FolderRefactorJobV3Store(job.job_path)
+
+    with store.writer() as writer:
+        current = writer.save_new(job)
+        wrong_identity = evolve_job_v3(
+            current,
+            public_job_capability=_capability(
+                capability_id_sha256=hashlib.sha256(b"wrong-device").hexdigest(),
+                device_id="fwd_" + "e" * 32,
+                expires_at_ms=capability.expires_at_ms + 1_800_000,
+            ),
+        )
+        with pytest.raises(
+            FolderJobV3RevisionError,
+            match="changed its identity or lease order",
+        ):
+            writer.renew_public_job_capability(
+                wrong_identity,
+                expected_current=current,
+            )
+
+        changed_state = evolve_job_v3(
+            current,
+            revision=current.revision + 1,
+            public_job_capability=_capability(
+                capability_id_sha256=hashlib.sha256(b"changed-state").hexdigest(),
+                expires_at_ms=capability.expires_at_ms + 1_800_000,
+            ),
+        )
+        with pytest.raises(
+            FolderJobV3RevisionError,
+            match="changed durable product state",
+        ):
+            writer.renew_public_job_capability(
+                changed_state,
+                expected_current=current,
+            )
+
+    assert store.inspect() == job

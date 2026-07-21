@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import uuid
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
@@ -12,7 +13,7 @@ from types import TracebackType
 from typing import Any, Literal, Self
 from zoneinfo import ZoneInfo
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 
 from name_atlas.folder_refactor.connected_change.accepted_plan import (
     FolderAcceptedPlanV2,
@@ -151,7 +152,7 @@ class FolderJobLifecycleV3(StrEnum):
 
 
 class FolderPublicJobCapabilityV1(StrictFrozenModel):
-    """Hashed public authority bound immutably to one durable v3 job."""
+    """Hashed public authority lease bound to one durable v3 job identity."""
 
     schema_version: Literal["folder-public-job-capability.v1"] = (
         FOLDER_PUBLIC_JOB_CAPABILITY_SCHEMA_VERSION
@@ -1972,6 +1973,34 @@ FolderJobRecordV3 = (
 )
 
 
+@dataclass(frozen=True, slots=True)
+class UnsupportedPreFinalFolderJobV3:
+    """Minimal routing evidence for one preserved pre-final v3 authority."""
+
+    job_id: str
+    job_path: Path
+    lifecycle: FolderJobLifecycleV3
+    idempotency: FolderIdempotencyBindingV2
+
+
+FolderJobRoutingRecordV3 = FolderRefactorJobV3 | UnsupportedPreFinalFolderJobV3
+
+_KNOWN_PRE_FINAL_V3_FAILURE_SHAPES = frozenset(
+    {
+        frozenset({(("operation_idempotency",), "missing")}),
+        frozenset(
+            {
+                (("operation_idempotency",), "missing"),
+                (
+                    ("execution_authorization", "output_parent_fingerprint"),
+                    "missing",
+                ),
+            }
+        ),
+    }
+)
+
+
 def evolve_job_v3(job: FolderRefactorJobV3, **updates: Any) -> FolderRefactorJobV3:
     """Build one fully validated v3 successor candidate."""
 
@@ -2000,6 +2029,83 @@ def parse_job_v3_bytes(data: bytes, *, expected_path: Path) -> FolderRefactorJob
     if job.job_path != expected_path.resolve(strict=False):
         raise FolderJobV3LoadError("FolderRefactorJobV3 points to another path.")
     return job
+
+
+def parse_job_v3_routing_bytes(
+    data: bytes,
+    *,
+    expected_path: Path,
+) -> FolderJobRoutingRecordV3:
+    """Parse current v3 or classify one exact preserved pre-final shape."""
+
+    try:
+        raw = strict_json_object(data)
+    except (FolderPortableArtifactError, ValueError) as exc:
+        raise FolderJobV3LoadError("FolderRefactorJobV3 is corrupt.") from exc
+    if canonical_json_bytes(raw) + b"\n" != data:
+        raise FolderJobV3LoadError("FolderRefactorJobV3 is not canonical JSON.")
+    if raw.get("schema_version") != FOLDER_REFACTOR_JOB_V3_SCHEMA_VERSION:
+        raise FolderJobV3LoadError("Unsupported durable job schema.")
+
+    try:
+        job = FolderRefactorJobV3.model_validate_json(data, strict=True)
+    except ValidationError as exc:
+        failure_shape = frozenset(
+            (tuple(error["loc"]), error["type"])
+            for error in exc.errors(
+                include_url=False,
+                include_context=False,
+                include_input=False,
+            )
+        )
+        if failure_shape not in _KNOWN_PRE_FINAL_V3_FAILURE_SHAPES:
+            raise FolderJobV3LoadError("FolderRefactorJobV3 is corrupt.") from exc
+        try:
+            job_id = raw["job_id"]
+            if not isinstance(job_id, str):
+                raise ValueError("Pre-final Foldweave job ID must be text.")
+            parsed_id = uuid.UUID(hex=job_id)
+            if parsed_id.version != 4 or parsed_id.hex != job_id:
+                raise ValueError("Pre-final Foldweave job ID is invalid.")
+            raw_job_path = raw["job_path"]
+            if not isinstance(raw_job_path, str):
+                raise ValueError("Pre-final Foldweave job path must be text.")
+            job_path = Path(raw_job_path)
+            resolved_expected = expected_path.resolve(strict=False)
+            if job_path != resolved_expected:
+                raise ValueError("Pre-final Foldweave job points to another path.")
+            lifecycle = FolderJobLifecycleV3(raw["lifecycle"])
+            idempotency = FolderIdempotencyBindingV2.model_validate(
+                raw["idempotency"],
+                strict=True,
+            )
+        except (KeyError, TypeError, ValueError) as routing_exc:
+            raise FolderJobV3LoadError(
+                "Pre-final FolderRefactorJobV3 routing metadata is invalid."
+            ) from routing_exc
+        return UnsupportedPreFinalFolderJobV3(
+            job_id=job_id,
+            job_path=job_path,
+            lifecycle=lifecycle,
+            idempotency=idempotency,
+        )
+
+    if job.job_path != expected_path.resolve(strict=False):
+        raise FolderJobV3LoadError("FolderRefactorJobV3 points to another path.")
+    return job
+
+
+def load_folder_job_routing_record_v3(path: Path) -> FolderJobRoutingRecordV3:
+    """Read current v3 or exact pre-final routing evidence without mutation."""
+
+    try:
+        observed = read_stable_regular_file(path, max_bytes=MAX_DURABLE_JOB_BYTES)
+    except DurableJobLoadError as exc:
+        raise FolderJobV3LoadError("Durable job is unreadable or invalid.") from exc
+    return parse_job_v3_routing_bytes(
+        observed.payload,
+        expected_path=observed.path,
+    )
 
 
 def load_folder_job_record_v3(path: Path) -> FolderJobRecordV3:
@@ -2157,6 +2263,21 @@ class FolderRefactorJobV3Writer:
         )
         if not promoted_execution and _detect_input_staleness(current) is not None:
             return self.rehydrate()
+        _write_job_v3(self.path, successor)
+        return successor
+
+    def renew_public_job_capability(
+        self,
+        successor: FolderRefactorJobV3,
+        *,
+        expected_current: FolderRefactorJobV3,
+    ) -> FolderRefactorJobV3:
+        """Rotate only an expired public lease without changing review authority."""
+
+        self._require_lock()
+        current = self.load()
+        _require_exact_checkpoint(current, expected_current)
+        _require_public_job_capability_renewal(current, successor)
         _write_job_v3(self.path, successor)
         return successor
 
@@ -2757,6 +2878,41 @@ def _require_immutable_identity(
         successor.reference_graph != current.reference_graph
     ):
         raise FolderJobV3RevisionError("V3 mutation changed its reference graph.")
+
+
+def _require_public_job_capability_renewal(
+    current: FolderRefactorJobV3,
+    successor: FolderRefactorJobV3,
+) -> None:
+    """Permit only a later lease for the exact same public job identity."""
+
+    current_binding = current.public_job_capability
+    successor_binding = successor.public_job_capability
+    if current_binding is None or successor_binding is None:
+        raise FolderJobV3RevisionError(
+            "Public job capability renewal requires an existing public binding."
+        )
+    current_payload = current.model_dump(mode="python")
+    successor_payload = successor.model_dump(mode="python")
+    current_payload.pop("public_job_capability")
+    successor_payload.pop("public_job_capability")
+    if current_payload != successor_payload:
+        raise FolderJobV3RevisionError(
+            "Public job capability renewal changed durable product state."
+        )
+    if not (
+        current_binding.schema_version == successor_binding.schema_version
+        and current_binding.device_id == successor_binding.device_id
+        and current_binding.oauth_grant_fingerprint
+        == successor_binding.oauth_grant_fingerprint
+        and current_binding.scopes == successor_binding.scopes
+        and successor_binding.expires_at_ms > current_binding.expires_at_ms
+        and successor_binding.capability_id_sha256
+        != current_binding.capability_id_sha256
+    ):
+        raise FolderJobV3RevisionError(
+            "Public job capability renewal changed its identity or lease order."
+        )
 
 
 def _require_lifecycle_transition(

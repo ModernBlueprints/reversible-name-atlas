@@ -181,6 +181,11 @@ def test_derivative_finalizer_emits_self_contained_v2_v3_and_reconstructs(
     assert verification.status is ConnectedReceiptVerificationStatus.VERIFIED
     assert verification.schema_version == "folder-receipt-verification.v3"
     assert verification.receipt_fingerprint == receipt.receipt_fingerprint
+    bag_info = (result.folder_run.result_root / "bag-info.txt").read_text(
+        encoding="utf-8"
+    )
+    assert "Bag-Software-Agent: Foldweave 0.1.0\n" in bag_info
+    assert "Reversible Name Atlas" not in bag_info
     proof = (
         result.folder_run.result_root / "name-atlas" / "proof_and_restore.html"
     ).read_bytes()
@@ -238,6 +243,11 @@ def test_historical_v2_receipt_dispatch_remains_v2(tmp_path: Path) -> None:
 
     assert verification.status is ConnectedReceiptVerificationStatus.VERIFIED
     assert verification.schema_version == "folder-receipt-verification.v2"
+    bag_info = (legacy.folder_run.result_root / "bag-info.txt").read_text(
+        encoding="utf-8"
+    )
+    assert "Bag-Software-Agent: Reversible Name Atlas 0.1.0\n" in bag_info
+    assert "Bag-Software-Agent: Foldweave" not in bag_info
 
 
 def test_v3_receiver_verifies_exact_imported_v1_change_file(tmp_path: Path) -> None:

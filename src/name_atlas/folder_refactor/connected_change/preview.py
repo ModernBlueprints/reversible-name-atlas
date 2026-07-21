@@ -20,6 +20,70 @@ from name_atlas.folder_refactor.markdown_links import derive_reference_rewrites
 from name_atlas.folder_refactor.serialization import canonical_sha256
 
 FOLDER_PLAN_PREVIEW_SCHEMA_VERSION = "folder-plan-preview.v1"
+FOLDER_PLAN_REVISION_DELTA_SCHEMA_VERSION = "folder-plan-revision-delta.v1"
+
+
+class FolderPlanRevisionDeltaEntryV1(StrictFrozenModel):
+    """One member path changed by the latest accepted proposal revision."""
+
+    member_id: str = Field(pattern=SHA256_PATTERN)
+    previous_path: str = Field(min_length=1, max_length=4_096)
+    current_path: str = Field(min_length=1, max_length=4_096)
+
+    @model_validator(mode="after")
+    def require_changed_path(self) -> Self:
+        if self.previous_path == self.current_path:
+            raise ValueError("Proposal-delta entries must describe a changed path.")
+        return self
+
+
+class FolderPlanRevisionDeltaV1(StrictFrozenModel):
+    """Durable latest accepted proposal delta, outside the preview hash domain."""
+
+    schema_version: Literal["folder-plan-revision-delta.v1"] = (
+        FOLDER_PLAN_REVISION_DELTA_SCHEMA_VERSION
+    )
+    job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    proposal_revision_before: int = Field(ge=0, lt=2)
+    proposal_revision_after: int = Field(ge=1, le=2)
+    base_candidate_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    base_preview_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    current_candidate_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    current_preview_fingerprint: str = Field(pattern=SHA256_PATTERN)
+    previous_result_folder_name: str = Field(min_length=1, max_length=240)
+    current_result_folder_name: str = Field(min_length=1, max_length=240)
+    entries: tuple[FolderPlanRevisionDeltaEntryV1, ...] = Field(
+        default=(),
+        max_length=500,
+    )
+    delta_fingerprint: str = Field(pattern=SHA256_PATTERN)
+
+    @model_validator(mode="after")
+    def require_exact_delta(self) -> Self:
+        if self.proposal_revision_after != self.proposal_revision_before + 1:
+            raise ValueError("Proposal delta must advance exactly one revision.")
+        member_ids = tuple(entry.member_id for entry in self.entries)
+        if member_ids != tuple(sorted(member_ids)) or len(member_ids) != len(
+            set(member_ids)
+        ):
+            raise ValueError(
+                "Proposal-delta entries must be member-ID sorted and unique."
+            )
+        if (
+            not self.entries
+            and self.previous_result_folder_name == self.current_result_folder_name
+        ):
+            raise ValueError("Proposal delta must change a member path or result name.")
+        if self.base_candidate_fingerprint == self.current_candidate_fingerprint:
+            raise ValueError("Proposal delta must identify two distinct candidates.")
+        if self.base_preview_fingerprint == self.current_preview_fingerprint:
+            raise ValueError("Proposal delta must identify two distinct previews.")
+        expected = canonical_sha256(
+            self.model_dump(mode="json", exclude={"delta_fingerprint"})
+        )
+        if self.delta_fingerprint != expected:
+            raise ValueError("Proposal-delta fingerprint is invalid.")
+        return self
 
 
 class FolderPlanTreeMember(StrictFrozenModel):

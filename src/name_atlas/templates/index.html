@@ -3,28 +3,39 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111418">
-    <title>{{ active_page|title }} · Reversible Name Atlas</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23111418%22/><path d=%22M18 43V21h5l18 22h5V21%22 fill=%22none%22 stroke=%22%2348aff0%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+    <title>{{ active_page|title }} · Foldweave · Legacy compatibility</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23007aff%22/><path d=%22M16 22h16l5 6h11v20H16zM23 37h8l5-7 5 11h7%22 fill=%22none%22 stroke=%22white%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
     <link rel="stylesheet" href="{{ url_for('static', path='/vendor/blueprint/blueprint.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v=20260718-r4">
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}?v=20260720-neutral">
+    <script>
+      (function () {
+        "use strict";
+        const appearance = window.matchMedia("(prefers-color-scheme: dark)");
+        function applyAppearance(event) {
+          document.documentElement.dataset.bpColorScheme = event.matches ? "dark" : "light";
+        }
+        applyAppearance(appearance);
+        appearance.addEventListener("change", applyAppearance);
+      }());
+    </script>
   </head>
-  <body class="bp6-dark">
+  <body>
     <a class="skip-link" href="#workbench-content">Skip to current step</a>
 
     <header class="app-bar">
-      <a class="wordmark" href="/" aria-label="Reversible Name Atlas next step">
-        <span class="mark" aria-hidden="true">NA</span>
+      <a class="wordmark" href="/" aria-label="Foldweave next step">
+        <img class="app-icon" src="{{ url_for('static', path='/vendor/blueprint/icons/diagram-tree.svg') }}" alt="" aria-hidden="true">
         <span class="wordmark__copy">
-          <strong>Reversible Name Atlas</strong>
-          <small>Refactor the collection. Hand over the proof.</small>
+          <strong>Foldweave</strong>
+          <small>Legacy compatibility</small>
         </span>
       </a>
 
       <div class="case-identity" aria-label="Current Migration Case">
-        <span class="case-identity__label">Migration Case</span>
+        <span class="visually-hidden">Migration Case</span>
         <strong>{{ shell.case_name }}</strong>
-        <span class="mono">{{ shell.case_id_short }}</span>
       </div>
 
       <div class="app-bar__status">
@@ -45,7 +56,6 @@
         <nav class="product-nav" aria-label="Migration Case steps">
           {% for step in steps %}
             <a class="product-nav__item{% if step.key == active_page %} product-nav__item--active{% endif %}" href="{{ step.path }}"{% if step.key == active_page %} aria-current="page"{% endif %}>
-              <span class="product-nav__number">{{ step.number }}</span>
               {% if step.key == 'atlas' %}
                 <img src="{{ url_for('static', path='/vendor/blueprint/icons/diagram-tree.svg') }}" alt="" aria-hidden="true">
               {% elif step.key == 'decide' %}
@@ -58,29 +68,24 @@
                 <img src="{{ url_for('static', path='/vendor/blueprint/icons/export.svg') }}" alt="" aria-hidden="true">
               {% endif %}
               <span>{{ step.label }}</span>
-              <img class="product-nav__chevron" src="{{ url_for('static', path='/vendor/blueprint/icons/chevron-right.svg') }}" alt="" aria-hidden="true">
             </a>
           {% endfor %}
         </nav>
 
         <section class="case-pulse" aria-labelledby="case-pulse-title">
           <div class="case-pulse__heading">
-            <span id="case-pulse-title">Case status</span>
+            <span id="case-pulse-title">Progress</span>
             <span>{{ shell.resolved_count }}/{{ shell.resolved_count + shell.unresolved_count }}</span>
           </div>
           <div class="progress-track" aria-label="{{ shell.resolved_count }} resolved and {{ shell.unresolved_count }} unresolved">
             <span style="--resolved: {% if shell.resolved_count + shell.unresolved_count %}{{ (shell.resolved_count * 100 / (shell.resolved_count + shell.unresolved_count))|round }}{% else %}0{% endif %}%"></span>
           </div>
-          <p><strong>{{ shell.resolved_count }} resolved</strong><span>{{ shell.unresolved_count }} remaining</span></p>
-          <dl class="rail-facts">
-            <div><dt>Source</dt><dd class="mono">{{ shell.source_commitment_short }}</dd></div>
-            <div><dt>Lifecycle</dt><dd>{{ shell.lifecycle or 'not started' }}</dd></div>
-          </dl>
           <details class="runtime-details">
-            <summary>Runtime details</summary>
+            <summary>Case details</summary>
+            <p>Source <span class="mono">{{ shell.source_commitment_short }}</span></p>
+            <p>{{ shell.lifecycle or 'Not started' }}</p>
             <p>{{ diagnostics.provider_status }}</p>
             <p><span class="mono">{{ diagnostics.host }}</span> · loopback only</p>
-            <p>Local workflow · source untouched</p>
           </details>
         </section>
       </aside>

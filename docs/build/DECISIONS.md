@@ -1133,3 +1133,69 @@ overrides those artifacts.
   the model and conversation transcript, contradicting UX-022's strict secret
   boundary. Server-side derivation preserves the thirty-minute per-job
   authority without exposing a secret to an untrusted presentation surface.
+
+## D-119 — Replace the rejected cyber visual language with one macOS utility system
+
+- Date: 20 July 2026
+- Decision: Treat the user's rejection of the gradient-heavy, neon/cyber
+  presentation as a binding failed F3 acceptance gate. Replace every active
+  native, browser, review, settings, pairing, OAuth, Done/proof, ChatGPT widget,
+  icon, screenshot, and release surface with the neutral, system-aware macOS
+  utility language frozen in UX-021. Preserve Blueprint-native interaction
+  behavior and the shared preview contract while prohibiting gradients, glow,
+  sci-fi ornament, forced dark mode, and oversized marketing presentation.
+- Rationale: Functional correctness does not make an unacceptable interface
+  release-ready. A single restrained visual system improves trust,
+  recognizability, accessibility, and cross-surface coherence without changing
+  the deterministic engine or creating a second frontend architecture.
+
+## D-120 — Use Finder in macOS dark mode as the release visual reference
+
+- Date: 20 July 2026
+- Decision: Treat Finder and compact native macOS utilities in dark appearance
+  as the visual reference for every Foldweave surface. Respect the host system
+  appearance, use a contrast-tested macOS-blue family only for interaction,
+  keep primary-surface text to the minimum needed for state and action, and
+  move required evidence and technical detail into secondary disclosure.
+- Rationale: The user explicitly rejected branded AI-dashboard presentation and
+  requested a familiar, minimal native-macOS experience. This rule is simpler,
+  more accessible, and easier to apply consistently across the native app,
+  browser fallback, ChatGPT widget, MCP authorization, proof, and release media.
+
+## D-121 — Use sparse native grouping instead of repeated dividers
+
+- Date: 20 July 2026
+- Decision: Structure every active Foldweave surface with whitespace, compact
+  grouped controls, Finder-style rows, and native split views. Keep separators
+  only where they communicate a toolbar edge, split boundary, short list-row
+  boundary, or concise disclosure/settings group; prohibit repeated full-width
+  rules and routine card outlines.
+- Rationale: The user identified divider density as the remaining source of
+  visual clutter after the macOS restyle. Sparse grouping matches Finder,
+  MacWhisper, and Codex more closely while preserving clear hierarchy.
+
+## D-122 — Separate host-message acknowledgement from durable revision completion
+
+- Date: 21 July 2026
+- Decision: Treat an acknowledged ChatGPT `ui/message` as transport acceptance
+  only. Complete a hosted revision only after the exact bound
+  `submit_plan_revision` tool call persists a replacement preview. If the tool
+  call does not appear within the bounded interval, preserve the prior preview
+  and expose one explicit same-conversation continuation without cross-
+  transport retry or a second revision reservation.
+- Rationale: The live consumer host acknowledged and displayed the widget's
+  component message but did not autonomously invoke the revision tool.
+  Conflating those events would falsely claim completion and could create
+  duplicate work during recovery.
+
+## D-123 — Preserve explicit widget-template compatibility aliases
+
+- Date: 21 July 2026
+- Decision: Keep the latest widget URI as the sole advertised cache key while
+  allowing only the explicitly known v31 and v32 resource URIs to read the
+  current v33 template and assets. Continue rejecting every unknown resource
+  URI.
+- Rationale: ChatGPT retained a valid older tool descriptor and failed to load
+  the widget when the gateway removed that resource immediately. A bounded
+  compatibility allowlist supports connected clients without weakening the
+  fail-closed resource boundary or abandoning versioned cache keys.

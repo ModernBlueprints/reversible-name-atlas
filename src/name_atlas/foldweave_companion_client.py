@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import asyncio
+import errno
+import fcntl
 import json
+import logging
 import os
+import re
 import secrets
+import stat
 import time
-from contextlib import suppress
+from collections.abc import Iterator
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, Protocol
@@ -17,6 +23,7 @@ import httpx
 from pydantic import Field, model_validator
 from starlette.types import ASGIApp
 from websockets.asyncio.client import connect
+from websockets.exceptions import ConnectionClosed
 
 from name_atlas.folder_refactor.contracts import StrictFrozenModel
 from name_atlas.folder_refactor.serialization import canonical_json_bytes
@@ -46,7 +53,10 @@ DEFAULT_PAIRING_STATE_PATH = (
     / "Foldweave"
     / "companion-pairing.json"
 )
+COMPANION_RUNTIME_LOCK_NAME = "companion-runtime.lock"
 _RESPONSE_HEADERS = frozenset({"content-type", "mcp-session-id", "retry-after"})
+_EMBEDDED_MCP_BASE_URL = "http://127.0.0.1:8000"
+LOGGER = logging.getLogger(__name__)
 
 
 class CompanionTransportError(RuntimeError):
@@ -56,6 +66,80 @@ class CompanionTransportError(RuntimeError):
         self.code = code
         self.message = message
         super().__init__(f"{code}: {message}")
+
+
+def _open_private_lock_file(
+    path: Path,
+    *,
+    error_code: str,
+    error_message: str,
+) -> int:
+    """Open one regular owner-only sidecar without following symlinks."""
+
+    parent = path.parent
+    try:
+        parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        if parent.is_symlink() or not parent.is_dir():
+            raise OSError("Lock directory is not a regular directory.")
+        flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_CLOEXEC", 0)
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags, 0o600)
+    except OSError as exc:
+        raise CompanionTransportError(error_code, error_message) from exc
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise OSError("Lock sidecar is not a regular file.")
+        os.fchmod(descriptor, 0o600)
+    except OSError as exc:
+        os.close(descriptor)
+        raise CompanionTransportError(error_code, error_message) from exc
+    return descriptor
+
+
+@dataclass(slots=True)
+class CompanionRuntimeLock:
+    """Hold exclusive ownership of the outbound companion for its full runtime."""
+
+    path: Path
+    _descriptor: int | None = field(default=None, init=False, repr=False)
+
+    def acquire(self) -> None:
+        """Acquire immediately or fail with one stable ownership blocker."""
+
+        if self._descriptor is not None:
+            return
+        descriptor = _open_private_lock_file(
+            self.path,
+            error_code="companion_runtime_lock_invalid",
+            error_message="The Foldweave companion runtime lock is invalid.",
+        )
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            os.close(descriptor)
+            if exc.errno in {errno.EACCES, errno.EAGAIN}:
+                raise CompanionTransportError(
+                    "companion_already_running",
+                    "Another Foldweave companion runtime already owns this "
+                    "installation.",
+                ) from exc
+            raise CompanionTransportError(
+                "companion_runtime_lock_invalid",
+                "The Foldweave companion runtime lock is invalid.",
+            ) from exc
+        self._descriptor = descriptor
+
+    def release(self) -> None:
+        """Release this process's runtime ownership idempotently."""
+
+        descriptor = self._descriptor
+        self._descriptor = None
+        if descriptor is None:
+            return
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
 
 
 class CompanionGatewayProfileV1(StrictFrozenModel):
@@ -103,11 +187,44 @@ class CompanionPairingStateV1(StrictFrozenModel):
 
     schema_version: Literal["foldweave-companion-pairing.v1"] = PAIRING_STATE_SCHEMA
     gateway: CompanionGatewayProfileV1
+    device_name: str | None = Field(default=None, min_length=1, max_length=80)
     device_id: str = Field(pattern=r"^fwd_[a-f0-9]{32}$")
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{32,128}$")
     pairing_code_expires_at: int = Field(ge=0)
+    # The historical name is retained for persisted-state compatibility. It is
+    # now the device-control HTTP sequence domain only.
     next_device_sequence: int = Field(ge=2)
+    next_companion_sequence: int = Field(ge=2)
     last_gateway_sequence: int = Field(default=0, ge=0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_companion_sequence_domain(cls, value: object) -> object:
+        """Seed the new WebSocket-response domain from a legacy high-water mark."""
+
+        if isinstance(value, dict) and "next_companion_sequence" not in value:
+            next_device_sequence = value.get("next_device_sequence")
+            if isinstance(next_device_sequence, int) and not isinstance(
+                next_device_sequence, bool
+            ):
+                return {
+                    **value,
+                    "next_companion_sequence": next_device_sequence,
+                }
+        return value
+
+    @model_validator(mode="after")
+    def require_canonical_device_name(self) -> CompanionPairingStateV1:
+        """Allow legacy unnamed checkpoints but reject unsanitized new labels."""
+
+        if self.device_name is None:
+            return self
+        if self.device_name != self.device_name.strip() or any(
+            ord(character) < 32 or ord(character) == 127
+            for character in self.device_name
+        ):
+            raise ValueError("Foldweave device name is not canonical.")
+        return self
 
 
 class CompanionPairingRegistrationV1(StrictFrozenModel):
@@ -117,34 +234,59 @@ class CompanionPairingRegistrationV1(StrictFrozenModel):
     pairing_code: str = Field(pattern=r"^[0-9A-HJKMNP-TV-Z]{10}$")
 
 
-class CompanionGatewayStatusV1(StrictFrozenModel):
+class CompanionGatewayStatusV2(StrictFrozenModel):
     """Authoritative, path-free pairing state returned by the public gateway."""
 
-    schema_version: Literal["foldweave-pairing-status.v1"]
+    schema_version: Literal["foldweave-pairing-status.v2"]
     request_id: str = Field(pattern=r"^[A-Za-z0-9_-]{16,128}$")
     device_id: str = Field(pattern=r"^fwd_[a-f0-9]{32}$")
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{32,128}$")
     pairing_state: Literal[
         "pending",
         "local_approved",
-        "authorized",
+        "authorization_code_issued",
+        "client_access_observed",
         "revoked",
         "expired",
     ]
-    authorized: bool
+    authorization_code_issued: bool
+    client_access_observed: bool
+    client_access_observed_at: int | None = Field(default=None, gt=0)
     connected: bool
     revoked: bool
     expires_at: int = Field(gt=0)
     last_seen_at: int | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
-    def require_consistent_authority(self) -> CompanionGatewayStatusV1:
-        if self.pairing_state == "pending" and (self.authorized or self.revoked):
+    def require_consistent_authority(self) -> CompanionGatewayStatusV2:
+        if self.pairing_state == "pending" and (
+            self.authorization_code_issued
+            or self.client_access_observed
+            or self.revoked
+        ):
             raise ValueError("Pending pairing status is inconsistent.")
-        if self.pairing_state == "local_approved" and (self.authorized or self.revoked):
+        if self.pairing_state == "local_approved" and (
+            self.authorization_code_issued
+            or self.client_access_observed
+            or self.revoked
+        ):
             raise ValueError("Locally approved pairing status is inconsistent.")
-        if self.pairing_state == "authorized" and (not self.authorized or self.revoked):
-            raise ValueError("Authorized pairing status is inconsistent.")
+        if self.pairing_state == "authorization_code_issued" and (
+            not self.authorization_code_issued
+            or self.client_access_observed
+            or self.revoked
+        ):
+            raise ValueError("Authorization-code pairing status is inconsistent.")
+        if self.pairing_state == "client_access_observed" and (
+            not self.authorization_code_issued
+            or not self.client_access_observed
+            or self.revoked
+        ):
+            raise ValueError("Client-access pairing status is inconsistent.")
+        if self.client_access_observed and not self.authorization_code_issued:
+            raise ValueError("Client access requires an issued authorization code.")
+        if self.client_access_observed != (self.client_access_observed_at is not None):
+            raise ValueError("Client-access evidence timestamp is inconsistent.")
         if self.pairing_state == "revoked" and not self.revoked:
             raise ValueError("Revoked pairing status is inconsistent.")
         if self.revoked and self.pairing_state != "revoked":
@@ -156,10 +298,22 @@ class CompanionGatewayStatusV1(StrictFrozenModel):
 
 @dataclass(slots=True)
 class CompanionPairingStateStore:
-    """Atomically persist non-secret session identity and outbound sequence."""
+    """Serialize and atomically persist pairing state across local processes."""
 
     path: Path = DEFAULT_PAIRING_STATE_PATH
     _lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
+
+    @property
+    def lock_path(self) -> Path:
+        """Return the stable state-specific advisory-lock sidecar."""
+
+        return self.path.with_name(f"{self.path.stem}.lock")
+
+    @property
+    def runtime_lock_path(self) -> Path:
+        """Return the installation-wide outbound-companion ownership lock."""
+
+        return self.path.with_name(COMPANION_RUNTIME_LOCK_NAME)
 
     async def write(self, state: CompanionPairingStateV1) -> None:
         async with self._lock:
@@ -170,33 +324,41 @@ class CompanionPairingStateStore:
             return await asyncio.to_thread(self._read_sync)
 
     async def allocate_sequence(self) -> tuple[CompanionPairingStateV1, int]:
-        """Persist sequence consumption before a signed request can leave."""
+        """Allocate the legacy device-control sequence domain."""
+
+        return await self.allocate_control_sequence()
+
+    async def allocate_control_sequence(
+        self,
+    ) -> tuple[CompanionPairingStateV1, int]:
+        """Persist HTTP control-sequence consumption before a request leaves."""
 
         async with self._lock:
-            state = await asyncio.to_thread(self._read_sync)
-            sequence = state.next_device_sequence
-            advanced = state.model_copy(update={"next_device_sequence": sequence + 1})
-            await asyncio.to_thread(self._write_sync, advanced)
-            return advanced, sequence
+            return await asyncio.to_thread(self._allocate_control_sequence_sync)
+
+    async def allocate_companion_sequence(
+        self,
+    ) -> tuple[CompanionPairingStateV1, int]:
+        """Persist WebSocket response-sequence consumption before a send."""
+
+        async with self._lock:
+            return await asyncio.to_thread(self._allocate_companion_sequence_sync)
 
     async def record_gateway_sequence(self, sequence: int) -> None:
         """Persist an inbound relay sequence before dispatching local work."""
 
         async with self._lock:
-            state = await asyncio.to_thread(self._read_sync)
-            if sequence <= state.last_gateway_sequence:
-                raise CompanionTransportError(
-                    "gateway_request_replayed",
-                    "The gateway relay sequence was already used.",
-                )
-            advanced = state.model_copy(update={"last_gateway_sequence": sequence})
-            await asyncio.to_thread(self._write_sync, advanced)
+            await asyncio.to_thread(self._record_gateway_sequence_sync, sequence)
 
     async def remove(self) -> bool:
         async with self._lock:
             return await asyncio.to_thread(self._remove_sync)
 
     def _read_sync(self) -> CompanionPairingStateV1:
+        with self._state_lock_sync():
+            return self._read_unlocked()
+
+    def _read_unlocked(self) -> CompanionPairingStateV1:
         try:
             raw = self.path.read_bytes()
             payload = json.loads(raw.decode("utf-8", errors="strict"))
@@ -213,6 +375,10 @@ class CompanionPairingStateStore:
             ) from exc
 
     def _write_sync(self, state: CompanionPairingStateV1) -> None:
+        with self._state_lock_sync():
+            self._write_unlocked(state)
+
+    def _write_unlocked(self, state: CompanionPairingStateV1) -> None:
         parent = self.path.parent
         parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         if parent.is_symlink() or not parent.is_dir():
@@ -238,11 +404,67 @@ class CompanionPairingStateStore:
         os.chmod(self.path, 0o600)
 
     def _remove_sync(self) -> bool:
+        with self._state_lock_sync():
+            try:
+                self.path.unlink()
+                return True
+            except FileNotFoundError:
+                return False
+
+    def _allocate_control_sequence_sync(
+        self,
+    ) -> tuple[CompanionPairingStateV1, int]:
+        with self._state_lock_sync():
+            state = self._read_unlocked()
+            sequence = state.next_device_sequence
+            advanced = state.model_copy(update={"next_device_sequence": sequence + 1})
+            self._write_unlocked(advanced)
+            return advanced, sequence
+
+    def _allocate_companion_sequence_sync(
+        self,
+    ) -> tuple[CompanionPairingStateV1, int]:
+        with self._state_lock_sync():
+            state = self._read_unlocked()
+            sequence = state.next_companion_sequence
+            advanced = state.model_copy(
+                update={"next_companion_sequence": sequence + 1}
+            )
+            self._write_unlocked(advanced)
+            return advanced, sequence
+
+    def _record_gateway_sequence_sync(self, sequence: int) -> None:
+        with self._state_lock_sync():
+            state = self._read_unlocked()
+            if sequence <= state.last_gateway_sequence:
+                raise CompanionTransportError(
+                    "gateway_request_replayed",
+                    "The gateway relay sequence was already used.",
+                )
+            advanced = state.model_copy(update={"last_gateway_sequence": sequence})
+            self._write_unlocked(advanced)
+
+    @contextmanager
+    def _state_lock_sync(self) -> Iterator[None]:
+        descriptor = _open_private_lock_file(
+            self.lock_path,
+            error_code="pairing_state_lock_invalid",
+            error_message="The Foldweave pairing-state lock is invalid.",
+        )
         try:
-            self.path.unlink()
-            return True
-        except FileNotFoundError:
-            return False
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX)
+            except OSError as exc:
+                raise CompanionTransportError(
+                    "pairing_state_lock_invalid",
+                    "The Foldweave pairing-state lock is invalid.",
+                ) from exc
+            yield
+        finally:
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+            finally:
+                os.close(descriptor)
 
 
 @dataclass(slots=True)
@@ -260,11 +482,15 @@ class CompanionPairingClient:
         device_name: str,
     ) -> CompanionPairingRegistrationV1:
         identity = self.identity_store.load_or_create()
+        normalized_device_name = device_name.strip()
+        registration_body = identity.registration_body(
+            device_name=normalized_device_name
+        )
         request_id = secrets.token_urlsafe(24)
         envelope = self.identity_store.sign_envelope(
             request_id=request_id,
             sequence=1,
-            body=identity.registration_body(device_name=device_name),
+            body=registration_body,
             lifetime_ms=10 * 60 * 1_000,
         )
         payload = await self._post_json(
@@ -278,6 +504,7 @@ class CompanionPairingClient:
         )
         session = CompanionPairingStateV1(
             gateway=gateway,
+            device_name=normalized_device_name,
             device_id=identity.device_id,
             session_id=payload["sessionId"],
             pairing_code_expires_at=payload["expiresAt"],
@@ -291,7 +518,7 @@ class CompanionPairingClient:
         return registration
 
     async def approve_locally(self) -> CompanionPairingStateV1:
-        advanced, sequence = await self.state_store.allocate_sequence()
+        advanced, sequence = await self.state_store.allocate_control_sequence()
         envelope = self.identity_store.sign_envelope(
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
@@ -326,7 +553,7 @@ class CompanionPairingClient:
         return advanced
 
     async def revoke(self) -> None:
-        advanced, sequence = await self.state_store.allocate_sequence()
+        advanced, sequence = await self.state_store.allocate_control_sequence()
         envelope = self.identity_store.sign_envelope(
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
@@ -361,10 +588,10 @@ class CompanionPairingClient:
             )
         await self.state_store.remove()
 
-    async def status(self) -> CompanionGatewayStatusV1:
+    async def status(self) -> CompanionGatewayStatusV2:
         """Read signed-request, device-bound status from gateway authority."""
 
-        advanced, sequence = await self.state_store.allocate_sequence()
+        advanced, sequence = await self.state_store.allocate_control_sequence()
         request_id = secrets.token_urlsafe(24)
         envelope = self.identity_store.sign_envelope(
             request_id=request_id,
@@ -386,7 +613,9 @@ class CompanionPairingClient:
         _require_exact_response_keys(
             payload,
             {
-                "authorized",
+                "authorizationCodeIssued",
+                "clientAccessObserved",
+                "clientAccessObservedAt",
                 "connected",
                 "deviceId",
                 "expiresAt",
@@ -399,9 +628,11 @@ class CompanionPairingClient:
             },
         )
         try:
-            status = CompanionGatewayStatusV1.model_validate(
+            status = CompanionGatewayStatusV2.model_validate(
                 {
-                    "authorized": payload["authorized"],
+                    "authorization_code_issued": payload["authorizationCodeIssued"],
+                    "client_access_observed": payload["clientAccessObserved"],
+                    "client_access_observed_at": payload["clientAccessObservedAt"],
                     "connected": payload["connected"],
                     "device_id": payload["deviceId"],
                     "expires_at": payload["expiresAt"],
@@ -554,7 +785,7 @@ class InProcessMcpProxy:
         try:
             async with httpx.AsyncClient(
                 transport=transport,
-                base_url="http://foldweave.internal",
+                base_url=_EMBEDDED_MCP_BASE_URL,
                 follow_redirects=False,
                 timeout=self.timeout_seconds,
                 trust_env=False,
@@ -597,6 +828,22 @@ async def _relay_mcp_request(
             "local_mcp_response_invalid",
             "The local Foldweave MCP response is not UTF-8.",
         ) from exc
+    diagnostic = _classify_mcp_error_body(body)
+    operation = _classify_mcp_operation(request.body)
+    if response.status_code >= 400:
+        LOGGER.warning(
+            "Embedded Foldweave MCP returned HTTP %d (%s; %s).",
+            response.status_code,
+            diagnostic,
+            operation,
+        )
+    elif diagnostic.startswith(("jsonrpc_", "mcp_tool_")):
+        LOGGER.warning(
+            "Embedded Foldweave MCP returned HTTP %d with %s (%s).",
+            response.status_code,
+            diagnostic,
+            operation,
+        )
     response_headers = {
         name.casefold(): value
         for name, value in response.headers.items()
@@ -608,6 +855,82 @@ async def _relay_mcp_request(
         request_id=request.request_id,
         status=response.status_code,
     )
+
+
+def _classify_mcp_error_body(body: str) -> str:
+    """Return one bounded diagnostic label without logging response content."""
+
+    if "Invalid Host header" in body:
+        return "host_header_invalid"
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        for line in body.splitlines():
+            if not line.startswith("data:"):
+                continue
+            try:
+                event_payload = json.loads(line.removeprefix("data:").strip())
+            except json.JSONDecodeError:
+                continue
+            label = _classify_jsonrpc_payload(event_payload)
+            if label.startswith(("jsonrpc_", "mcp_tool_")):
+                return label
+        return "non_json_error"
+    return _classify_jsonrpc_payload(payload)
+
+
+def _classify_jsonrpc_payload(payload: object) -> str:
+    """Classify one decoded JSON-RPC payload without retaining its content."""
+
+    if not isinstance(payload, dict):
+        return "json_error"
+    error = payload.get("error")
+    if isinstance(error, dict):
+        code = error.get("code")
+        return f"jsonrpc_{code}" if isinstance(code, int) else "jsonrpc_error"
+    result = payload.get("result")
+    if isinstance(result, dict) and result.get("isError") is True:
+        content = result.get("content")
+        if isinstance(content, list):
+            for item in content:
+                if not isinstance(item, dict) or item.get("type") != "text":
+                    continue
+                text = item.get("text")
+                if not isinstance(text, str):
+                    continue
+                matches = tuple(
+                    re.finditer(
+                        r"(?:^|\s)([a-z][a-z0-9]*(?:_[a-z0-9]+)+):",
+                        text,
+                    )
+                )
+                if matches:
+                    return f"mcp_tool_error:{matches[-1].group(1)}"
+        return "mcp_tool_result_error"
+    return "json_error"
+
+
+def _classify_mcp_operation(body: str) -> str:
+    """Return only the public RPC method or registered tool name."""
+
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return "rpc_invalid"
+    if not isinstance(payload, dict):
+        return "rpc_invalid"
+    method = payload.get("method")
+    if method != "tools/call":
+        if isinstance(method, str) and len(method) <= 128:
+            return method
+        return "rpc_unknown"
+    params = payload.get("params")
+    if not isinstance(params, dict):
+        return "tools/call"
+    tool_name = params.get("name")
+    if not isinstance(tool_name, str) or len(tool_name) > 128:
+        return "tools/call"
+    return f"tools/call:{tool_name}"
 
 
 class CompanionSocket(Protocol):
@@ -649,7 +972,7 @@ class FoldweaveCompanionSession:
                 "companion_challenge_expired",
                 "The gateway challenge has expired.",
             )
-        advanced, sequence = await self.state_store.allocate_sequence()
+        advanced, sequence = await self.state_store.allocate_companion_sequence()
         challenge_response = self.identity_store.sign_envelope(
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
@@ -688,7 +1011,10 @@ class FoldweaveCompanionSession:
             with trusted_public_invocation(request.invocation):
                 response = await self._relay_or_error(request)
             transport_response = CompanionRpcResponseEnvelopeV1.from_response(response)
-            _advanced, response_sequence = await self.state_store.allocate_sequence()
+            (
+                _advanced,
+                response_sequence,
+            ) = await self.state_store.allocate_companion_sequence()
             envelope = self.identity_store.sign_envelope(
                 request_id=request.request_id,
                 sequence=response_sequence,
@@ -753,7 +1079,11 @@ class FoldweaveCompanionSession:
                     await self.run_connection(socket)
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 - bounded reconnect boundary
+            except Exception as exc:  # noqa: BLE001 - bounded reconnect boundary
+                LOGGER.warning(
+                    "Foldweave companion connection ended (%s); retrying.",
+                    _companion_failure_code(exc),
+                )
                 jitter = secrets.randbelow(251) / 1_000
                 woke = await _wait_for_reconnect(
                     stop,
@@ -765,6 +1095,19 @@ class FoldweaveCompanionSession:
                     if woke
                     else min(maximum_delay_seconds, delay * 2)
                 )
+
+
+def _companion_failure_code(exc: Exception) -> str:
+    """Return one payload-free transport diagnostic, including close code only."""
+
+    if isinstance(exc, CompanionTransportError):
+        return exc.code
+    if isinstance(exc, ConnectionClosed):
+        close_frame = exc.rcvd if exc.rcvd is not None else exc.sent
+        if close_frame is None:
+            return "websocket_closed_unframed"
+        return f"websocket_closed_{int(close_frame.code)}"
+    return type(exc).__name__
 
 
 async def _wait_for_reconnect(

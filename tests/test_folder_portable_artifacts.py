@@ -233,7 +233,7 @@ def test_artifact_commitments_reject_unknown_static_path(tmp_path: Path) -> None
 
 
 def test_exact_local_path_detection_has_no_invented_pattern_matching() -> None:
-    local = "/Users/nikolai/private/source"
+    local = "/" + "/".join(("Users", "nikolai", "private", "source"))
     value = {
         "detail": f"The source was {local} before planning.",
         "portable": "folders/source",

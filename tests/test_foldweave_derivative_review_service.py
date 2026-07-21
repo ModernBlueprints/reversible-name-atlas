@@ -25,8 +25,12 @@ from name_atlas.folder_refactor.connected_change.job_v3 import (
     FolderRefactorJobV3,
     GptDerivativeJobAuthorityV3,
 )
+from name_atlas.folder_refactor.connected_change.proposal_delta import (
+    project_latest_accepted_proposal_delta,
+)
 from name_atlas.folder_refactor.connected_change.review_service import (
     FoldweaveReviewService,
+    FoldweaveReviewServiceError,
 )
 from name_atlas.folder_refactor.connected_change.service import (
     execute_prepared_foldweave_derivative,
@@ -46,6 +50,10 @@ from name_atlas.folder_refactor.live_planner_provider import (
     _revision_responses_request,
 )
 from name_atlas.folder_refactor.receipt_contracts import FolderPlannerUsage
+from name_atlas.folder_refactor.serialization import (
+    canonical_json_bytes,
+    canonical_sha256,
+)
 from name_atlas.folder_refactor.transaction import FolderTransactionPaths
 from name_atlas.foldweave_web_service import FoldweaveBrowserReviewService
 
@@ -175,6 +183,16 @@ class _ReceiverParentContext:
     change_file_path: Path
 
 
+def _downgrade_to_known_pre_final(job: FolderRefactorJobV3) -> bytes:
+    """Persist the exact recognized pre-final v3 shape without mutation."""
+
+    payload = job.model_dump(mode="json")
+    payload.pop("operation_idempotency")
+    persisted = canonical_json_bytes(payload) + b"\n"
+    job.job_path.write_bytes(persisted)
+    return persisted
+
+
 def test_create_or_resume_derivative_child_is_parent_immutable_and_concurrent(
     tmp_path: Path,
 ) -> None:
@@ -232,6 +250,99 @@ def test_create_or_resume_derivative_child_is_parent_immutable_and_concurrent(
     assert context.parent.job_path.read_bytes() == parent_before
 
 
+def test_derivative_registry_preserves_and_skips_known_pre_final_v3(
+    tmp_path: Path,
+) -> None:
+    """Known pre-final evidence cannot block child creation or exact retry."""
+
+    context = _build_receiver_parent(tmp_path)
+    fixture = make_connected_change_fixture(tmp_path / "pre-final-projects")
+    output = tmp_path / "pre-final-output"
+    output.mkdir()
+    preserved_job = context.service.prepare_deterministic_origin_review(
+        source_root=fixture.sofia_root,
+        output_parent=output,
+        job_path=context.parent.job_path.parent / "preserved-pre-final.json",
+        request=fixture.request,
+        result_folder_name=fixture.result_name,
+        target_by_original_path=fixture.target_paths,
+        idempotency_key="derivative-pre-final-authority",
+    )
+    preserved = _downgrade_to_known_pre_final(preserved_job)
+
+    request = {
+        "output_parent": context.child_output,
+        "instruction": "Build a derivative while preserving older job evidence.",
+        "idempotency_key": "derivative-pre-final-create",
+        "provider_kind": "deterministic",
+        "channel": "native_app",
+    }
+    child = context.service.create_or_resume_derivative_child(
+        context.parent.job_path,
+        **request,
+    )
+    retried = context.service.create_or_resume_derivative_child(
+        context.parent.job_path,
+        **request,
+    )
+
+    assert child.lifecycle is FolderJobLifecycleV3.REVISING
+    assert retried == child
+    assert preserved_job.job_path.read_bytes() == preserved
+
+
+def test_matching_pre_final_derivative_retry_requires_fresh_start(
+    tmp_path: Path,
+) -> None:
+    """A pre-final child with the same key cannot create duplicate authority."""
+
+    context = _build_receiver_parent(tmp_path)
+    request = {
+        "output_parent": context.child_output,
+        "instruction": "Build one derivative whose retry authority is preserved.",
+        "idempotency_key": "derivative-matching-pre-final",
+        "provider_kind": "deterministic",
+        "channel": "native_app",
+    }
+    child = context.service.create_or_resume_derivative_child(
+        context.parent.job_path,
+        **request,
+    )
+    preserved = _downgrade_to_known_pre_final(child)
+    before_paths = tuple(sorted(context.parent.job_path.parent.glob("*.json")))
+
+    with pytest.raises(FoldweaveReviewServiceError) as error:
+        context.service.create_or_resume_derivative_child(
+            context.parent.job_path,
+            **request,
+        )
+
+    assert error.value.code == "derivative_job_requires_fresh_start"
+    assert child.job_path.read_bytes() == preserved
+    assert tuple(sorted(context.parent.job_path.parent.glob("*.json"))) == before_paths
+
+
+def test_derivative_registry_still_rejects_corrupt_authority(tmp_path: Path) -> None:
+    """Unclassified registry bytes remain a fail-closed child-creation blocker."""
+
+    context = _build_receiver_parent(tmp_path)
+    corrupt_path = context.parent.job_path.parent / "corrupt.json"
+    corrupt_path.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(FoldweaveReviewServiceError) as error:
+        context.service.create_or_resume_derivative_child(
+            context.parent.job_path,
+            output_parent=context.child_output,
+            instruction="This request must not cross corrupt shared authority.",
+            idempotency_key="derivative-corrupt-authority",
+            provider_kind="deterministic",
+            channel="native_app",
+        )
+
+    assert error.value.code == "derivative_job_authority_unreadable"
+    assert corrupt_path.read_text(encoding="utf-8") == "{}\n"
+
+
 @pytest.mark.anyio
 async def test_direct_derivative_turn_executes_only_after_exact_acceptance(
     tmp_path: Path,
@@ -260,6 +371,25 @@ async def test_direct_derivative_turn_executes_only_after_exact_acceptance(
     assert reviewed.authority.execution_origin is not None
     assert reviewed.authority.execution_origin.kind == "gpt_revised_from_change_file"
     assert context.parent.job_path.read_bytes() == parent_before
+
+    child_bytes = reviewed.job_path.read_bytes()
+    delta = project_latest_accepted_proposal_delta(
+        context.service.status(reviewed.job_path)
+    )
+    assert delta is not None
+    assert delta.proposal_revision_before == 0
+    assert delta.proposal_revision_after == 1
+    assert delta.base_candidate_fingerprint == (
+        reviewed.authority.parent_binding.parent_candidate_fingerprint
+    )
+    assert delta.base_preview_fingerprint == (
+        reviewed.authority.parent_binding.parent_preview_fingerprint
+    )
+    assert delta.current_candidate_fingerprint == canonical_sha256(
+        reviewed.candidate_plan
+    )
+    assert delta.current_preview_fingerprint == reviewed.preview.preview_fingerprint
+    assert reviewed.job_path.read_bytes() == child_bytes
 
     forbidden_retry = _ScriptedDerivativeProvider(
         None,

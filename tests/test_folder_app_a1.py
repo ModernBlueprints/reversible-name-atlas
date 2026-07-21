@@ -99,7 +99,9 @@ async def test_start_is_plain_exact_and_truthful(tmp_path: Path) -> None:
     assert root.status_code == 303
     assert root.headers["location"] == "/start"
     assert response.status_code == 200
-    assert '<body class="bp6-dark folder-app">' in response.text
+    assert '<body class="folder-app">' in response.text
+    assert "document.documentElement.dataset.bpColorScheme" in response.text
+    assert "bp6-dark" not in response.text
     assert response.text.count("<form") == 1
     assert 'name="source_root"' in response.text
     assert 'name="user_request"' in response.text
@@ -181,13 +183,12 @@ async def test_server_owned_start_working_done_transaction(tmp_path: Path) -> No
     assert done_root.headers["location"] == "/done"
     assert done.status_code == 200
     assert "Your new folder is ready" in done.text
-    assert "4 of 4, exactly once" in done.text
+    assert "Files</dt><dd>4, exactly once" in done.text
     assert "Paths changed" in done.text and ">3<" in done.text
-    assert "Original folder" in done.text and "Unchanged" in done.text
-    assert "Files removed or overwritten" in done.text and "None" in done.text
+    assert "Original folder</dt><dd>Unchanged" in done.text
     assert str(tmp_path / "results" / "organized-project" / "data") in done.text
     assert "See changes" in done.text
-    assert "View proof" in done.text
+    assert "Proof details" in done.text
     assert "Verify again" in done.text
     assert "Recreate original layout" in done.text
     assert all(response.status_code == 404 for response in legacy.values())
@@ -240,7 +241,7 @@ async def test_invalid_form_and_service_blocker_fail_closed(tmp_path: Path) -> N
     assert gated.calls == 0
     assert status.json()["lifecycle"] == "blocked"
     assert "protected_member_request: .env cannot be moved" in blocked.text
-    assert "The original folder remains unchanged." in blocked.text
+    assert "The source is unchanged." in blocked.text
 
 
 @pytest.mark.anyio
@@ -358,7 +359,7 @@ async def test_real_service_runs_start_to_bagit_backed_done(tmp_path: Path) -> N
 
     assert status.json()["lifecycle"] == "verified"
     assert done.status_code == 200
-    assert "3 of 3, exactly once" in done.text
+    assert "Files</dt><dd>3, exactly once" in done.text
     assert "BagIt validation passed" in done.text
     result_root = output_parent / "actual-result"
     assert (result_root / "bagit.txt").is_file()

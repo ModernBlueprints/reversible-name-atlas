@@ -17,7 +17,7 @@ from name_atlas.folder_app import (
 )
 from name_atlas.foldweave_companion_client import (
     CompanionGatewayProfileV1,
-    CompanionGatewayStatusV1,
+    CompanionGatewayStatusV2,
     CompanionPairingRegistrationV1,
     CompanionPairingStateStore,
     CompanionPairingStateV1,
@@ -45,7 +45,7 @@ def anyio_backend() -> str:
 @dataclass(slots=True)
 class _FakePairingClient:
     store: CompanionPairingStateStore
-    gateway_evidence: CompanionGatewayStatusV1 | Exception
+    gateway_evidence: CompanionGatewayStatusV2 | Exception
     registrations: int = 0
     approvals: int = 0
     revocations: int = 0
@@ -72,7 +72,7 @@ class _FakePairingClient:
         self.gateway_evidence = _gateway_evidence(pairing_state="local_approved")
         return state
 
-    async def status(self) -> CompanionGatewayStatusV1:
+    async def status(self) -> CompanionGatewayStatusV2:
         if isinstance(self.gateway_evidence, Exception):
             raise self.gateway_evidence
         return self.gateway_evidence
@@ -93,10 +93,12 @@ class _RuntimeStatus:
 def _pairing_state(
     *,
     gateway: CompanionGatewayProfileV1 | None = None,
+    device_name: str | None = "Nikolai's Mac",
 ) -> CompanionPairingStateV1:
     return CompanionPairingStateV1(
         gateway=gateway
         or CompanionGatewayProfileV1(base_url="https://foldweave.example.workers.dev"),
+        device_name=device_name,
         device_id=DEVICE_ID,
         session_id=SESSION_ID,
         pairing_code_expires_at=EXPIRES_MS,
@@ -107,18 +109,21 @@ def _pairing_state(
 def _gateway_evidence(
     *,
     pairing_state: str,
-    authorized: bool = False,
+    authorization_code_issued: bool = False,
+    client_access_observed: bool = False,
     connected: bool = False,
     revoked: bool = False,
     expires_at: int = EXPIRES_MS,
-) -> CompanionGatewayStatusV1:
-    return CompanionGatewayStatusV1(
-        schema_version="foldweave-pairing-status.v1",
+) -> CompanionGatewayStatusV2:
+    return CompanionGatewayStatusV2(
+        schema_version="foldweave-pairing-status.v2",
         request_id="request_id_for_pairing_status",
         device_id=DEVICE_ID,
         session_id=SESSION_ID,
         pairing_state=pairing_state,
-        authorized=authorized,
+        authorization_code_issued=authorization_code_issued,
+        client_access_observed=client_access_observed,
+        client_access_observed_at=(NOW_MS - 1 if client_access_observed else None),
         connected=connected,
         revoked=revoked,
         expires_at=expires_at,
@@ -150,14 +155,17 @@ async def test_pairing_service_keeps_local_approval_distinct_from_oauth(
         device_name="Nikolai's Mac",
     )
     assert registered.status is PairingPageStatus.AWAITING_LOCAL_APPROVAL
+    assert registered.device_name == "Nikolai's Mac"
     assert registered.pairing_code == PAIRING_CODE
     assert registered.expires_at is not None
     assert registered.expires_at.endswith("CEST")
 
     approved = await service.approve_locally()
     assert approved.status is PairingPageStatus.LOCAL_ONLY
+    assert approved.device_name == "Nikolai's Mac"
     assert "OAuth authorization has not completed" in approved.detail
     assert client.approvals == 1
+    assert (await store.read()).device_name == "Nikolai's Mac"
 
 
 @pytest.mark.anyio
@@ -166,22 +174,40 @@ async def test_pairing_service_keeps_local_approval_distinct_from_oauth(
     (
         (
             _gateway_evidence(
-                pairing_state="authorized",
-                authorized=True,
+                pairing_state="client_access_observed",
+                authorization_code_issued=True,
+                client_access_observed=True,
                 connected=True,
             ),
             None,
             PairingPageStatus.CONNECTED,
         ),
         (
-            _gateway_evidence(pairing_state="authorized", authorized=True),
+            _gateway_evidence(
+                pairing_state="client_access_observed",
+                authorization_code_issued=True,
+                client_access_observed=True,
+            ),
             None,
             PairingPageStatus.DISCONNECTED,
         ),
         (
-            _gateway_evidence(pairing_state="authorized", authorized=True),
+            _gateway_evidence(
+                pairing_state="client_access_observed",
+                authorization_code_issued=True,
+                client_access_observed=True,
+            ),
             _RuntimeStatus(PairingConnectionState.RECONNECTING),
             PairingPageStatus.RECONNECTING,
+        ),
+        (
+            _gateway_evidence(
+                pairing_state="authorization_code_issued",
+                authorization_code_issued=True,
+                connected=True,
+            ),
+            None,
+            PairingPageStatus.AWAITING_CLIENT_ACCESS,
         ),
         (
             _gateway_evidence(pairing_state="revoked", revoked=True),
@@ -200,7 +226,7 @@ async def test_pairing_service_keeps_local_approval_distinct_from_oauth(
 )
 async def test_pairing_service_uses_only_authoritative_gateway_and_runtime_status(
     tmp_path: Path,
-    gateway: CompanionGatewayStatusV1,
+    gateway: CompanionGatewayStatusV2,
     runtime: _RuntimeStatus | None,
     expected: PairingPageStatus,
 ) -> None:
@@ -216,6 +242,8 @@ async def test_pairing_service_uses_only_authoritative_gateway_and_runtime_statu
     view = await service.view()
 
     assert view.status is expected
+    assert view.device_name == "Nikolai's Mac"
+    assert view.can_revoke is True
     if expected in {
         PairingPageStatus.CONNECTED,
         PairingPageStatus.DISCONNECTED,
@@ -244,6 +272,7 @@ async def test_restart_preserves_local_state_without_inventing_authorization(
     view = await restarted.view()
 
     assert view.status is PairingPageStatus.LOCAL_ONLY
+    assert view.device_name == "Nikolai's Mac"
     assert "could not be confirmed" in view.detail
     assert view.pairing_code is None
 
@@ -329,7 +358,7 @@ async def test_pairing_routes_are_csrf_bound_path_free_and_explain_both_live_mod
             data={
                 "csrf_token": _csrf(initial),
                 "gateway_url": "https://foldweave.example.workers.dev",
-                "device_name": "Nikolai's Mac",
+                "device_name": "  Nikolai's Mac  ",
             },
             follow_redirects=True,
         )
@@ -342,15 +371,31 @@ async def test_pairing_routes_are_csrf_bound_path_free_and_explain_both_live_mod
     assert home.status_code == 200
     assert "Direct API" in home.text
     assert "ChatGPT-hosted" in home.text
-    assert "Manage ChatGPT pairing" in home.text
+    assert "Pair ChatGPT" in home.text
+    assert "Foldweave reviewed planning" not in home.text
     assert initial.status_code == 200
     assert "Not paired" in initial.text
+    assert "folder-proof-list folder-proof-list--compact" not in initial.text
+    assert 'class="folder-disclosure folder-advanced" open' not in initial.text
     assert rejected.status_code == 422
     assert PAIRING_CODE in registered.text
+    assert "Nikolai&#39;s Mac" in registered.text
+    assert (
+        "authorization screen for <strong>Nikolai&#39;s Mac</strong>" in registered.text
+    )
     assert "Waiting for local approval" in registered.text
+    assert "Nikolai&#39;s Mac" in approved.text
+    assert "Revoke pairing" in approved.text
     assert "Locally approved; finish in ChatGPT" in approved.text
     assert "This alone does not authorize ChatGPT" in approved.text
-    for forbidden in (DEVICE_ID, SESSION_ID, str(tmp_path), "privateKey", "signature"):
+    for forbidden in (
+        DEVICE_ID,
+        SESSION_ID,
+        str(tmp_path),
+        "privateKey",
+        "signature",
+        "foldweave.plan",
+    ):
         assert forbidden not in registered.text
         assert forbidden not in approved.text
 
@@ -378,11 +423,29 @@ async def test_active_apply_uses_foldweave_change_file_wording() -> None:
         await asyncio.sleep(0)
 
     assert page.status_code == 200
-    assert "Choose a Foldweave Change File" in page.text
+    assert "<legend>Foldweave Change File</legend>" in page.text
     assert started.status_code == 303
     assert app.state.folder_web_state.request_value == (
         "Applying the selected Foldweave Change File"
     )
+
+
+@pytest.mark.anyio
+async def test_browser_settings_unavailable_state_uses_foldweave_shell() -> None:
+    app = create_folder_app(
+        _ConnectedReviewService(),
+        pairing_service=_StaticPairingService(),
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+    ) as browser:
+        page = await browser.get("/settings")
+
+    assert page.status_code == 404
+    assert "<title>Settings · Foldweave</title>" in page.text
+    assert "Open Foldweave.app to manage the API key." in page.text
+    assert "Browser mode does not expose native Keychain settings." in page.text
 
 
 class _StaticPairingService:

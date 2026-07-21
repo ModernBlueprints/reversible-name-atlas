@@ -20,6 +20,7 @@ from name_atlas.foldweave_companion_client import (
     CompanionPairingRegistrationV1,
     CompanionPairingStateStore,
     CompanionPairingStateV1,
+    CompanionRuntimeLock,
     CompanionTransportError,
     FoldweaveCompanionSession,
     InProcessMcpProxy,
@@ -88,7 +89,10 @@ class EmbeddedCompanionRuntime:
 
     async def __call__(self, state_store: CompanionPairingStateStore) -> None:
         await state_store.read()
-        mcp_server = build_foldweave_chatgpt_server(self.service)
+        mcp_server = build_foldweave_chatgpt_server(
+            self.service,
+            stateless_http=True,
+        )
         mcp_app = mcp_server.streamable_http_app()
         stop = asyncio.Event()
         session = FoldweaveCompanionSession(
@@ -275,26 +279,33 @@ async def run_companion_runtime(
 ) -> None:
     """Run one existing local MCP engine and one outbound companion cleanly."""
 
-    await state_store.read()
-    identity_store = DeviceIdentityStore()
-    if local_server_factory is None and session_factory is None:
-        await EmbeddedCompanionRuntime(
-            service=FoldweaveHostPlanningService(identity_store=identity_store),
-            identity_store=identity_store,
-        )(state_store)
-        return
-    if local_server_factory is None or session_factory is None:
-        raise ValueError("Companion runtime test factories must be supplied together.")
-    server = local_server_factory()
-    stop = asyncio.Event()
+    ownership = CompanionRuntimeLock(state_store.runtime_lock_path)
+    ownership.acquire()
     try:
-        server.start()
-        endpoint = f"{server.url}/mcp"
-        session = session_factory(endpoint)
-        await session.run_forever(stop)
+        await state_store.read()
+        identity_store = DeviceIdentityStore()
+        if local_server_factory is None and session_factory is None:
+            await EmbeddedCompanionRuntime(
+                service=FoldweaveHostPlanningService(identity_store=identity_store),
+                identity_store=identity_store,
+            )(state_store)
+            return
+        if local_server_factory is None or session_factory is None:
+            raise ValueError(
+                "Companion runtime test factories must be supplied together."
+            )
+        server = local_server_factory()
+        stop = asyncio.Event()
+        try:
+            server.start()
+            endpoint = f"{server.url}/mcp"
+            session = session_factory(endpoint)
+            await session.run_forever(stop)
+        finally:
+            stop.set()
+            await asyncio.to_thread(server.stop)
     finally:
-        stop.set()
-        await asyncio.to_thread(server.stop)
+        ownership.release()
 
 
 def _write_json(stream: TextIO, payload: dict[str, object]) -> None:

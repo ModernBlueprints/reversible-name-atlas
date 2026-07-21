@@ -124,6 +124,11 @@ def test_verifier_rejects_retagged_extra_portable_artifact(tmp_path: Path) -> No
     verification = verify_connected_result(result_root)
     assert verification.status is ConnectedReceiptVerificationStatus.BLOCKED
     assert verification.failed_check_ids == ("artifact_set_mismatch",)
+    assert any(
+        "portable Name Atlas artifact family" in check.detail
+        for check in verification.checks
+        if not check.passed
+    )
 
 
 def test_verifier_rejects_self_consistent_false_verification_report(
