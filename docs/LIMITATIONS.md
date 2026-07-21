@@ -22,7 +22,7 @@ integrated implementation baseline. Product release baseline
 correction checkpoint `68aba38a643d95f69e9aacd392904ef310f6994c` passed
 renewed clean-clone acceptance and is included in the release fast-forwarded to
 public `main`.
-Its product, capture package, and 2:54 public Build Week video are complete; the
+Its product, capture package, and 2:16 public Build Week video are complete; the
 Devpost entry remains unsubmitted. The following distinctions are part of the
 claim boundary:
 
@@ -36,7 +36,7 @@ claim boundary:
 | Codex | Foldweave plugin `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery pass against the same local MCP server |
 | Integrated regression | 1,184 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; the sole direct ledger remained byte-identical at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9` |
 | Public ChatGPT availability | Not submitted for review, approved, published, publicly listed, or claimed |
-| Foldweave product release candidate | Accepted and fast-forwarded to public `main`; replacement public video verified at <https://youtu.be/wY6gL6wfLzo>; `/feedback` Session ID captured privately for the required submission field; personal attestations and explicit hold release remain separate gates |
+| Foldweave product release candidate | Accepted and fast-forwarded to public `main`; final public video verified at <https://youtu.be/JpHIoLa-hZI>; `/feedback` Session ID captured privately for the required submission field; personal attestations and explicit hold release remain separate gates |
 
 The operational checkpoint in `docs/build/STATE.md` changes as qualification
 continues. This document intentionally states only the minimum durable boundary

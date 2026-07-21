@@ -22,7 +22,7 @@ proposed one. The user can revise the proposal or accept what is on screen. Only
 acceptance creates a separate verified copy. The original folder is left
 untouched.
 
-[Watch the 2:54 demo](https://youtu.be/wY6gL6wfLzo) ·
+[Watch the 2:16 demo](https://youtu.be/JpHIoLa-hZI) ·
 [Try the keyless replay](#try-foldweave-in-five-minutes) ·
 [See how the cross-layout matching works](#the-key-idea-one-change-different-layouts)
 
@@ -397,12 +397,12 @@ boundary is in
 
 ## How Codex and GPT-5.6 were used
 
-### We began with a project-selection tournament
+### I began with a project-selection tournament
 
-Before writing product code, we used Codex to compare several Build Week ideas.
-We tested each idea against user value, technical feasibility, differentiation,
-demo clarity, and whether we could build one complete trustworthy transaction
-in the available time. That process led us to the connected-folder problem and
+Before writing product code, I used Codex to compare several Build Week ideas.
+I tested each idea against user value, technical feasibility, differentiation,
+demo clarity, and whether I could build one complete trustworthy transaction
+in the available time. That process led me to the connected-folder problem and
 one clear rule: **let AI interpret intent, but keep execution, verification, and
 final approval under deterministic and human control.**
 
@@ -412,7 +412,7 @@ repository.
 
 ### Codex was the primary build and integration environment
 
-Codex was our main development environment. We used it to turn the selected idea
+Codex was my main development environment. I used it to turn the selected idea
 into working end-to-end flows, then to attack the cases that could make those
 flows incorrect or misleading. It accelerated work on:
 
@@ -427,7 +427,7 @@ flows incorrect or misleading. It accelerated work on:
 - regression tests, refusal cases, packaging, visual review, documentation, and
   the final demo.
 
-The user made the main product decisions: no in-place mutation; review before
+I made the main product decisions: no in-place mutation; review before
 execution; supported Markdown links rather than vague “all connections”;
 deterministic ambiguity blocking; exact preview-bound acceptance; and truthful
 privacy, platform, and publication claims. The chronological record is in

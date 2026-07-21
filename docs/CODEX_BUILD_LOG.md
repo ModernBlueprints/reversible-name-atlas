@@ -1386,13 +1386,14 @@ project `1327974` was updated to version `9`; connector readback reports the
 canonical repository and public video while Build Week `submitted_at` remains
 `null`. No final submission occurred, and the submission hold remains active.
 
-### Replacement problem-first video and fresh live transaction — 21 July 2026
+### Final constant-speed problem-first video — 22 July 2026
 
 The user rejected the initial moving-crop edit because it did not explain the
 cross-layout problem clearly enough and clipped the final application frame.
-The replacement uses thirteen fixed 1920×1080 visual states, hard cuts only,
-and no pan, zoom, moving crop, or overlay across an application control. The
-final frame is a separate unclipped end card.
+The final edit uses fourteen fixed 1920×1080 visual states, hard cuts only,
+and no pan, zoom, moving crop, or overlay across an application control. It
+opens with real native macOS Finder icon views of Sofia's and Martin's
+differently arranged copies and closes on a separate unclipped end card.
 
 A fresh exact `gpt-5.6` Responses API transaction produced Sofia's complete
 24-file proposal. The provider returned `gpt-5.6-sol`; the durable execution
@@ -1403,27 +1404,63 @@ arranged equivalent source with `planning_basis: none`, `model_transport: none`,
 and `execution_origin: capsule_applied`. Both verified results commit organized
 tree `d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`.
 
-The 300-word narration was rendered as thirteen aligned cues with authorized
-OpenAI Text-to-Speech model `gpt-4o-mini-tts-2025-12-15`, voice `cedar`. The
-complete master is exactly 174.000 seconds (`2:54`), 1920×1080 at 30 fps, H.264
-High / AAC-LC, `yuv420p`, with 5,220 frames, −16.0 LUFS integrated loudness,
-and true peak −1.37 dBFS. Its SHA-256 is
-`034465557eb6c35d947dd19af269440e8684cfb8809ff54037da94f04ce05b18`.
+The 305-word narration was rendered at one unchanged `speed=1.0` with
+authorized OpenAI Text-to-Speech model `gpt-4o-mini-tts-2025-12-15`, voice
+`cedar`. No `atempo`, `asetrate`, `rubberband`, asynchronous resampling, or
+other speech time-stretch filter appears in the final pipeline. The complete
+master is exactly 136.000 seconds (`2:16`), 1920×1080 at 30 fps, H.264 High /
+AAC-LC, `yuv420p`, with 4,080 frames, −16.2 LUFS integrated loudness, and true
+peak −1.2 dBFS. Its SHA-256 is
+`0612557235b88a5106ab82c45a56107aa1ac9bbf6b6c09fe3070bf4f3b7eaec9`.
 The 13-cue timed English SRT has SHA-256
-`4befab019e4195297e9a45d496c699006318f592eca3834c822659fc62d5eaeb`.
+`89bbf4b899f9176a1a323efd74990394d321dfa2df202841ff2217d05372f7c2`.
 Full decode, fixed-frame, end-frame, loudness, transcript, visual, claim, and
-sensitive-data checks passed.
+sensitive-data checks passed. Independent transcription of the final mux
+retained the complete meaning and final spoken `Foldweave`; differences were
+limited to expected ASR spellings and number formatting.
 
 The replacement was published Public as **Foldweave | One change across
 different folder layouts | OpenAI Build Week**:
 
-<https://youtu.be/wY6gL6wfLzo>
+<https://youtu.be/JpHIoLa-hZI>
 
 YouTube reported **Checks complete. No issues found.** The timed English caption
 track is published in Studio. Google Chrome loaded the public watch page with
-the exact title, problem-first description, and 2:54 stream. The video
+the exact title, problem-first description, and 2:16 stream. Public-player
+caption propagation had not completed at the immediate post-upload readback. The video
 description links the canonical Foldweave repository and discloses the
 text-to-speech narration. Devpost project `1327974` was synchronized to the
-replacement URL as version `10`; connector readback returned Build Week
+final URL as version `11`; connector readback returned Build Week
 `submitted_at: null`. Final Devpost submission remains prohibited until the user
 completes personal attestations and explicitly releases the hold.
+
+### Final solo-author Devpost and cross-layout media pass — 22 July 2026
+
+At the user's request, every editable Devpost project surface was audited again
+against the live OpenAI Build Week submission schema. Project `1327974` was
+updated without submitting to version `12`. The public story now uses
+first-person-singular authorship, explains the cross-layout problem before the
+review workflow, distinguishes the exact GPT-5.6, ChatGPT-hosted, Codex,
+replay, and model-free paths, and renders current origin and receiver review
+images inside the story. The focused 21-item technology list, canonical public
+repository, final 2:16 video, and exact tagline remain synchronized.
+
+The Devpost thumbnail was replaced with a new 1500×1000 Foldweave-owned
+cross-layout graphic. Its primary claim is **One verified change across
+different folder layouts.** It shows Sofia's and Martin's different local paths,
+the bounded deterministic matcher, complete file/link accounting, source
+immutability, and a separate verified result. The final PNG is 185,308 bytes
+with SHA-256
+`2916c953876b8c67261b0e6c79bceac29b1572174ab6495a74c62ecb421cc296`;
+the 6,914-byte SVG source has SHA-256
+`8a78e7be6b182779157d78fa3462b2c27a36f96b6586af09511c6a24f4f0f5d6`.
+The live project page rendered the final YouTube embed, singular story, both
+current product images, Built With list, and canonical repository link.
+
+All seven custom Build Week answers are prepared in the ignored owner-only
+record: `Individual`, `Norway`, **Work & Productivity**, canonical repository,
+credential-free judge guidance, the private primary `/feedback` value, and
+plugin/platform instructions. The exact private identifier remains absent from
+tracked files and public pages. The required personal eligibility, ownership,
+and other legal attestations remain user-owned. Build Week `submitted_at`
+remains `null`; the submission hold remains active.

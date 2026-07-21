@@ -2246,25 +2246,32 @@ held.
   receiver transaction were completed and verified. Their 24-file results each
   rewrote 23 supported links and converged to organized-tree commitment
   `d56f75001d7db8b315db0893d0a19ec51099bed02be8056c99ab0f5062454dc0`.
-  The problem-first 300-word script was rendered with authorized, disclosed
-  OpenAI Text-to-Speech into an exact 174.000-second (`2:54`) fixed-frame
-  1920×1080 master. Full decode, frame-count, loudness, visual, claim,
-  sensitive-data, and transcription audits passed. The replacement video is
-  Public at <https://youtu.be/wY6gL6wfLzo>; YouTube checks reported no issues;
-  the 13-cue timed English track is published in YouTube Studio; and the public
-  player reports the exact 2:54 stream. GitHub repository
+  The final problem-first 305-word script was rendered with authorized,
+  disclosed OpenAI Text-to-Speech at one unchanged `speed=1.0` into an exact
+  136.000-second (`2:16`) fixed-frame 1920×1080 master. It opens with native
+  Finder icon views of Sofia's and Martin's different starting layouts. Full
+  decode, frame-count, constant-speed, loudness, visual, claim, sensitive-data,
+  and transcription audits passed. The final video is
+  Public at <https://youtu.be/JpHIoLa-hZI>; YouTube checks reported no issues;
+  the 13-cue timed English track is published in YouTube Studio; public-player
+  caption propagation was still pending at immediate readback; and the public
+  player reports the exact 2:16 stream. GitHub repository
   `ModernBlueprints/Foldweave` remains canonical. Devpost project `1327974`,
-  version `10`, contains the replacement video and canonical repository URLs;
-  Build Week `submitted_at` remains `null`.
+  version `12`, contains the final video, canonical repository URL,
+  first-person-singular project story, current origin/receiver images, focused
+  technology list, and current cross-layout thumbnail; Build Week
+  `submitted_at` remains `null`.
 
 ## 19. Protected final 16-hour reserve and submission hold
 
 After F7, the primary `/feedback` Session ID was captured privately for required
 Devpost field `27950`. Product, release, public-video, public-playback,
-rules/claims, and Devpost-draft work are now complete. The remaining reserved
-work is the user's submitter-type, country, eligibility, ownership,
-representative-authority, and other personal/legal attestations; explicit
-submission-hold release; final submission; and receipt confirmation.
+rules/claims, and Devpost-draft work are now complete. All seven custom
+submission answers, including `Individual`, `Norway`, **Work & Productivity**,
+the canonical repository, judge guidance, `/feedback`, and plugin instructions,
+are prepared privately. The remaining reserved work is the user's eligibility,
+ownership, representative-authority, and other personal/legal attestations;
+explicit submission-hold release; final submission; and receipt confirmation.
 
 The submission hold remains binding:
 
