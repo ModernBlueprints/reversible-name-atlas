@@ -13,9 +13,11 @@ rewrites the supported relative Markdown links that connect files, and produces
 a payload-free **Foldweave Change File** that another person can review, apply
 unchanged, or use as the parent of a new proposal.
 
-> **Current build status:** pre-release qualification on
-> `revision/foldweave-native-review`, based on verified checkpoint
-> `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87`. The native application,
+> **Current build status:** the Foldweave product release candidate is
+> `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on
+> `revision/foldweave-native-review`. Earlier checkpoint
+> `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` remains the verified integrated
+> implementation baseline. The native application,
 > review/revision authority, purpose-built macOS visual system, direct planning,
 > ChatGPT developer mode, deterministic collaboration proof, and current Codex
 > installed copy are qualified. The public gateway, ChatGPT connector OAuth,
@@ -23,9 +25,10 @@ unchanged, or use as the parent of a new proposal.
 > transactions, reconnect, and refusal paths are also qualified through the
 > user-authorized Google Chrome route. Foldweave is technically
 > `PUBLICATION_READY` for review submission, but it has not been submitted for
-> ChatGPT review, approved, published, or publicly listed. This is not yet the
-> final Foldweave release, a notarized app, or a submitted Devpost entry; the
-> submission hold remains active.
+> ChatGPT review, approved, published, or publicly listed. The product release
+> candidate is not yet a notarized app, a public ChatGPT listing, a
+> recording-ready package, or a submitted Devpost entry; the submission hold
+> remains active.
 
 ## Why Foldweave exists
 
@@ -112,12 +115,14 @@ services. It is not a fifth provenance mode or a second execution engine.
 
 ## Current qualification snapshot
 
-The current verified worktree, based on pushed checkpoint `719fc182`, records:
+The current release record distinguishes the earlier integrated baseline
+`719fc182` from product release candidate `4e9ec44`. The following evidence is
+backed by the accepted product candidate and the published revision branch:
 
 | Surface | Evidence-backed state |
 |---|---|
 | Review authority | `GO` — origin and receiver jobs stop at immutable review; stale, duplicate, substituted, and conflicting acceptance paths fail closed |
-| Native macOS application | `GO` — 55 MiB Apple-Silicon `Foldweave.app`, native picker, temporary Keychain configure/read/remove, unrelated-directory launch, durable restart, exact acceptance, verification, reconstruction, and clean shutdown; the qualification credential was removed |
+| Native macOS application | `GO` — clean-clone 55 MiB Apple-Silicon `Foldweave.app`, native picker, temporary Keychain configure/read/remove, unrelated-directory launch, durable restart, review rendering, exact acceptance, verification, reconstruction, and clean shutdown; the qualification credential was removed |
 | Native visual system | Objective `GO` — restrained macOS dark utility styling across native, browser, review, settings, pairing, Done/proof, and ChatGPT widget surfaces; no gradients, glow, text shadows, cyber palette, or decorative full-width rules; large/narrow fixtures, keyboard behavior, focus, overflow, and contrast checks passed |
 | ChatGPT developer mode | `DEVELOPER_MODE_VERIFIED` — actual macOS ChatGPT, Secure MCP Tunnel, hosted tools, rendered widget, revision, exact widget acceptance, verification, Change File retrieval, and reconstruction; no direct-ledger mutation |
 | Review/revision engine | Complete through F1, including v3 jobs, immutable previews, bounded revisions, destination reservation, restart, strict legacy dispatch, and public-authority corrections |
@@ -127,18 +132,21 @@ The current verified worktree, based on pushed checkpoint `719fc182`, records:
 | Direct API ledger | Unchanged at SHA-256 `d76924e416de3e8a6f4cd7878399f9d54d711b1fadd6fa57dd524264ebd21af9`; USD 40 ceiling, 14 provider attempts, USD 13.057830 conservative exposure, and USD 0.895450 reported estimated cost |
 | Regression checkpoint | 1,176 Python tests passed with one upstream deprecation warning; frontend passed 80/80; gateway passed 50/50; strict TypeScript, production builds, lock, Ruff, format, and diff checks passed |
 
-Clean-clone release acceptance for commit
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` passed from
-`/tmp/foldweave-clean-4e9ec44-1784626262`: `uv sync --frozen`, 1,176 Python
-tests with one upstream warning, `uv lock --check`, Ruff lint/format, Git diff
-check, frontend TypeScript, 80 Vitest tests, both frontend production builds,
-gateway TypeScript, 50 gateway tests, Wrangler dry-run build, plugin validation,
-and stdio MCP initialization/tool discovery with 22 bounded Foldweave tools.
+Fresh clean-clone release reproduction from the published revision branch
+passed `uv sync --frozen`, 1,176 Python tests with one upstream warning,
+`uv lock --check`, Ruff lint/format, Git diff checks, frontend TypeScript, 80
+Vitest tests, both frontend production builds, gateway TypeScript, 50 gateway
+tests, Wrangler dry-run build, plugin validation, and stdio MCP initialization/
+tool discovery with 22 bounded Foldweave tools. It also rebuilt the wheel and
+the arm64 native app, ran a model-free origin and receiver transaction through
+review, exact acceptance, source-free/source-aware verification, and exact
+reconstruction, then repeated the origin transaction from the installed wheel.
 
 The exact changing operational state belongs in
-[`docs/build/STATE.md`](docs/build/STATE.md). This README deliberately does not
-promote an implementation checkpoint to a public listing, release candidate, or
-recording-ready release.
+[`docs/build/STATE.md`](docs/build/STATE.md). The product release candidate is
+accepted; public-`main` promotion, recording readiness, the final video,
+`/feedback`, personal attestations, explicit hold release, and final Devpost
+submission remain separately controlled.
 
 ## Quick start
 
@@ -201,9 +209,12 @@ open "$APP"
 ```
 
 The tested profile is a PyInstaller `onedir --windowed` application with an
-arm64 entry point. The current executable SHA-256 is
-`c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`.
-Strict deep ad-hoc signature verification and unrelated-directory launch pass.
+arm64 entry point. The latest clean-clone executable SHA-256 is
+`3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`;
+the corresponding wheel SHA-256 is
+`c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276`.
+Strict deep ad-hoc signature verification, unrelated-directory launch, Home,
+and the persisted review surface pass.
 Gatekeeper assessment rejects the bundle because it has no Developer ID and is
 not notarized; Foldweave therefore does not claim warning-free installation of
 a separately downloaded copy. The tested judge route is the local clean build
@@ -422,9 +433,12 @@ Uninstall with:
 Current plugin version `0.1.0+codex.20260721091729` is installed and enabled
 from the repository marketplace. Its installed cache copy was inspected, and
 the declared stdio MCP command initialized as `Foldweave` and returned 22
-bounded tools through `tools/list`. A final unrelated clean-clone acceptance
-remains required before release-candidate selection. Historical Name Atlas
-plugin qualification remains predecessor evidence and is not relabelled.
+bounded tools through `tools/list`. Fresh clean-clone plugin validation and
+stdio MCP discovery passed for the accepted product candidate. The earlier
+installed-copy UI invocation remains the qualified local transaction; no claim
+is made that a separate fresh clean-clone GUI invocation occurred during this
+final package reproduction. Historical Name Atlas plugin qualification remains
+predecessor evidence and is not relabelled.
 
 ## Supported folder and connection contract
 

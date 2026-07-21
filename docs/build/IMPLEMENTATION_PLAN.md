@@ -1,10 +1,10 @@
 # Foldweave — Sole Native-Review Implementation Plan
 
-Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F4 COMPLETE; F3 FINAL
-POLISH AND F5–F6 RELEASE QUALIFICATION IN PROGRESS; CONNECTED-CHANGE C0–C7
-BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
+Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F6 ARE VERIFIED COMPLETE;
+NO-FORCE PUBLIC-`main` PROMOTION AND F7 MEDIA-READINESS PREPARATION REMAIN;
+CONNECTED-CHANGE C0–C7 BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **F3 FINAL VISUAL POLISH AND F5–F6 RELEASE QUALIFICATION**
+Phase: **PUBLIC-`main` PROMOTION AND F7 MEDIA-READINESS PREPARATION**
 
 Submission hold: **ACTIVE**
 
@@ -1163,11 +1163,15 @@ SHA-256 `479351e01ca385a05fa306b229af32ba3ea695d3f8d4623731b302d5f91905a6`.
 The 44-hour envelope began with the user's earlier decision and was not reset or
 extended by activation.
 
-Latest stable published Foldweave checkpoint:
+Historical integrated Foldweave checkpoint:
 `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` —
-`feat: deliver Foldweave native review and shared planning`. Current F2–F4
-qualification and correction evidence remains uncommitted until the next
-coherent checkpoint.
+`feat: deliver Foldweave native review and shared planning`. It remains a
+verified implementation baseline. Product release candidate
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` and later published
+release-state documentation checkpoint
+`53fa3206c505292f4204d25a7fd8552093ed41fb` supersede it as current release
+evidence. The current release-document reconciliation is intentionally
+uncommitted until the next coherent checkpoint.
 
 At F+0 calculate, using `oslo_tz = ZoneInfo("Europe/Oslo")`:
 
@@ -1899,9 +1903,9 @@ completed Foldweave.
   visual reviewers.
 - **Allowed cut:** Sections 10 items 1–7 only; never the required tree,
   revision, native, ChatGPT, or accessibility semantics.
-- **Actual status:** `IN PROGRESS — FUNCTIONAL, OBJECTIVE MACOS, CONSUMER
-  ORIGIN, RECEIVER-DERIVATIVE, SAFE REVISION-RECOVERY, AND RECONNECT EXPERIENCES
-  PASS; FINAL USER VISUAL POLISH REMAINS`.
+- **Actual status:** `VERIFIED COMPLETE — functional, objective macOS,
+  consumer-origin, receiver-derivative, safe revision-recovery, and reconnect
+  experiences pass; the user-requested minimal macOS visual polish is complete`.
 - **Actual verification:** the active native, browser, review, settings,
   pairing, Done/proof, and ChatGPT widget surfaces now use the restrained
   system-aware macOS utility language. Authored surfaces contain no gradients,
@@ -1914,7 +1918,8 @@ completed Foldweave.
   arrow-key movement, empty-directory filtering, and narrow acceptance. Measured
   contrast was 15.63:1 for primary text, 8.28–10.10:1 for muted text, and 5.57:1
   for white text on the action blue. Visual/native checks passed 27 tests;
-  frontend passed 76/76; strict TypeScript, both production builds, generated
+  the earlier visual-polish frontend run passed 76/76; the fresh release-clone
+  frontend run passed 80/80. Strict TypeScript, both production builds, generated
   asset parity, and Git diff checks passed. This is objective conformance, not a
   claim of the user's personal final-pixel acceptance. The polished 55 MiB
   arm64 `dist/Foldweave.app` has bundle ID `com.modernblueprints.foldweave` and
@@ -1936,7 +1941,13 @@ completed Foldweave.
   required same-conversation recovery preserved the prior preview and completed
   exactly one revision without a second transport or reservation. A real
   companion outage and reconnect then preserved and rehydrated the verified
-  derivative. F3 remains open only for final user-requested visual polish.
+  derivative. A later fresh unrelated clean-clone package rebuilt a 55 MiB arm64
+  app with executable SHA-256
+  `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`.
+  It passed strict deep signature verification, unrelated-directory launch,
+  Home and immutable-review rendering, Original/Proposed switching, and clean
+  shutdown. This completes F3; its unsigned/ad-hoc distribution boundary
+  remains explicit.
 
 ## 15. F4 — MCP, Codex, direct/live/replay qualification
 
@@ -2094,12 +2105,18 @@ external evidence, and only `PUBLISHED` supports a public-listing claim.
 - **Downstream consumer:** F6 release candidate.
 - **Owner:** primary integrator; independent adversarial reviewers by surface.
 - **Allowed cut:** only the ordered optional list in Section 10.
-- **Actual status:** `IN PROGRESS — ABSOLUTE FEATURE-FREEZE BOUNDARY PASSED;
-  RELEASE-SAFE HARDENING ONLY`. Remaining F3 visual polish and F5 hardening are
-  confined to the release-safe categories below.
-- **Actual verification:** `PARTIAL` — the absolute freeze restriction is active,
-  but the zero-open-defect evidence, final visual/accessibility record, selected
-  cuts, and coherent feature-freeze checkpoint have not yet been recorded.
+- **Actual status:** `VERIFIED COMPLETE — ABSOLUTE FEATURE-FREEZE BOUNDARY
+  PASSED; RELEASE-SAFE WORK ONLY`.
+- **Actual verification:** full current preflight passes 1,176 Python tests
+  (one upstream warning), 80 frontend tests, 50 gateway tests, lock, Ruff,
+  TypeScript, production builds, Wrangler dry build, package, and diff checks.
+  The required native/browser/ChatGPT/Codex/replay/unchanged-apply/derivative
+  paths, refusal/race/compatibility matrices, final macOS visual record,
+  accessibility checks, historical dispatch, gateway redaction/replay/revocation
+  controls, and no-secret/path/active-brand scans have passing evidence. No
+  required product defect is open. The only selected cuts are the already
+  authorized decorative and nonessential presentation scope; no mandatory
+  capability is cut.
 
 At the absolute freeze boundary, stop feature development. Thereafter only
 defect correction, proof-integrity correction, accessibility, visual QA, clean
@@ -2144,11 +2161,25 @@ release work are permitted.
 - **Allowed cut:** no release-critical cut; public approval may remain accurately
   pending, but developer and consumer pairing plus publication readiness must
   pass.
-- **Actual status:** `IN PROGRESS — ABSOLUTE TARGET PASSED; RELEASE-CANDIDATE
-  ACCEPTANCE NOT YET ESTABLISHED`.
-- **Actual verification:** `PARTIAL` — documentation, media, packaging, and clean-
-  release qualification are underway; no accepted release-candidate commit or
-  complete exact-commit clean-clone evidence has yet been recorded.
+- **Actual status:** `VERIFIED COMPLETE — PRODUCT RELEASE CANDIDATE ACCEPTED`.
+- **Actual verification:** product commit
+  `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is accepted. A fresh unrelated
+  clone of the published documentation checkpoint passed `uv sync --frozen`,
+  1,176 Python tests, lock, Ruff, strict TypeScript, frontend and gateway
+  production builds, 80 frontend tests, 50 gateway tests, wheel packaging, and
+  a 55 MiB arm64 `Foldweave.app` build/launch/review/shutdown. The clean clone
+  also completed a keyless origin replay and unchanged receiver application:
+  source-free/source-aware verification and both exact reconstructions passed;
+  the results share organized-tree commitment
+  `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+  An installed fresh wheel independently repeated the replay, exact acceptance,
+  verification, and reconstruction. Existing direct, ChatGPT, and installed
+  Codex qualification remains authoritative and is not relabelled as a new
+  clean-clone provider or host call. The release documents were reconciled and
+  two independent read-only audits found no material contradiction, stale active
+  claim, exposed credential/response-ID/personal path, or Markdown/table defect.
+  The permitted no-force public promotion follows this release acceptance; it is
+  not a reason to relabel F6 as incomplete.
 
 After complete release acceptance, fast-forward `main` to the selected
 Foldweave release commit and push without force. Safely update repository
@@ -2187,10 +2218,15 @@ held.
   reserve.
 - **Owner:** primary integrator; user owns voice recording and the final gates.
 - **Allowed cut:** none from the recording-ready definition.
-- **Actual status:** `NOT STARTED — ABSOLUTE TARGET PASSED; DEPENDENCY F6 NOT YET
-  ACCEPTED`.
-- **Actual verification:** `NOT RUN` — elapsed target time is not completion
-  evidence, and F7 cannot begin before an accepted F6 release candidate.
+- **Actual status:** `IN PROGRESS — product candidate and fresh clean-clone
+  evidence exist; recording readiness is not claimed until the public release
+  checkpoint, final media plan, and user-owned timing/voice gates are complete`.
+- **Actual verification:** the screenshot set, public-product story, 317-word
+  narration draft, target 2:55 storyboard, application launch/review evidence,
+  and final release materials are being reconciled. Actual spoken timing, the
+  user's voice, final capture/edit/upload/playback, `/feedback`, personal
+  attestations, and explicit hold release are intentionally not inferred from
+  elapsed time or document existence.
 
 ## 19. Protected final 16-hour reserve and submission hold
 

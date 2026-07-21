@@ -452,7 +452,7 @@ Selected profile `CONNECTED_CHANGE_GO` entered feature freeze on Sunday 19 July
 10:24:03 CEST after regenerating the README, limitations, provenance, build
 log, screenshots, thumbnail, narration, Devpost copy, and submission package.
 
-An independent HTTPS clone at `/tmp/name-atlas-c6-audit.6Oy7Ak/repo` passed
+An independent HTTPS clone in an unrelated temporary directory passed
 frozen Python 3.11 installation, **818 complete tests**, the separate **245-test
 release matrix**, lock, Ruff lint, Ruff format over 154 files, and Git diff
 checks. Its 563,515-byte wheel contains 205 members and exactly 53 Connected
@@ -845,20 +845,17 @@ claim. A receipt proves internal consistency against its commitments; it is not
 a signature, sender authentication, authorship proof, institutional approval,
 or tamper-proofing claim.
 
-### Release and submission status
+### Historical release and submission status — superseded checkpoint
 
-The Connected Change predecessor remains the last complete public release. The
-Foldweave branch has not yet been declared a release candidate in this build
-log. The public Cloudflare Worker and paired companion have passed live consumer
-OAuth/pairing/WSS, origin and receiver-derivative, reconnect, verification,
-reconstruction, and bounded refusal qualification in Google Chrome. This
-establishes `CONSUMER_PAIRING_VERIFIED` and narrow technical
-`PUBLICATION_READY`; it does not establish ChatGPT review submission, approval,
-publication, or public listing. No Developer-ID-signed or notarized app, final
-release commit, final clean-clone acceptance, final screenshot set, Foldweave video,
-`/feedback`,
-eligibility/ownership attestation, final submission-hold release, or Devpost
-submission is asserted here. The submission hold remains active.
+This paragraph records the pre-F3/F6 status that existed before the later
+post-qualification record below. It is retained as historical evidence only and
+must not be read as the current release state. The current state is: product
+release candidate `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` accepted on the
+published revision branch; technical ChatGPT state
+`DEVELOPER_MODE_VERIFIED` / `CONSUMER_PAIRING_VERIFIED` /
+`PUBLICATION_READY`; and no ChatGPT review submission, approval, publication,
+public listing, final video, `/feedback`, personal attestation, hold release, or
+Devpost submission claimed.
 
 ### Post-checkpoint visual, native, gateway, and Codex qualification
 
@@ -872,14 +869,18 @@ toolbar, split-view, Finder-row, disclosure, and settings-group boundaries. The
 selection, scroll retention, structure toggle, arrow-key navigation,
 empty-directory filtering, and narrow acceptance. Measured contrast was 15.63:1
 for primary text, 8.28–10.10:1 for muted text, and 5.57:1 for white action text
-on system blue. Visual/native checks passed 27 tests and the frontend passed
-57/57. This is objective visual conformance, not a claim of any one person's
+on system blue. The earlier visual-polish run passed 27 visual/native tests and
+57/57 frontend tests; the later fresh release reproduction passed 80/80 frontend
+tests. This is objective visual conformance, not a claim of any one person's
 subjective final-pixel preference.
 
-The current rebuilt 55 MiB Apple-Silicon `Foldweave.app` has bundle ID
+The earlier local rebuilt 55 MiB Apple-Silicon `Foldweave.app` had bundle ID
 `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, and
 executable SHA-256
 `c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`.
+It is retained as historical qualification evidence. The fresh clean-clone
+release reproduction built the corresponding 55 MiB arm64 app with executable
+SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`.
 Strict deep ad-hoc signature verification, 30 focused native/package tests,
 launch from an unrelated directory, ephemeral-loopback health, native picker
 cancellation and selection, temporary Keychain roundtrip and removal, durable
@@ -1097,9 +1098,11 @@ and JavaScript SHA-256
 The current regression floor is 1,176/1,176 Python tests with one upstream
 warning, 80/80 frontend tests, and 50/50 gateway tests. A focused post-template
 native/pairing/visual/package matrix passed 35/35; Ruff lint, Ruff format, and
-Git diff checks also passed. The rebuilt arm64 `Foldweave.app` remains an
-unsigned/ad-hoc local qualification artifact with executable SHA-256
-`c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`.
+Git diff checks also passed. The fresh clean-clone rebuilt arm64
+`Foldweave.app` is an unsigned/ad-hoc judge artifact with executable SHA-256
+`3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; its
+installed wheel SHA-256 is
+`c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276`.
 
 Current Foldweave screenshot and thumbnail evidence is captured and
 hash-recorded:
@@ -1120,13 +1123,41 @@ hash-recorded:
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
 These are current published revision-branch and deployed-service identities, not
-public-main release identities. The clean clone at
-`/tmp/foldweave-clean-4e9ec44-1784626262` reproduced commit
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` with `uv sync --frozen`, 1,176
-Python tests with one upstream warning, `uv lock --check`, Ruff lint/format, Git
-diff check, frontend TypeScript, 80 Vitest tests, both frontend production
-builds, gateway TypeScript, 50 gateway tests, Wrangler dry-run build, plugin
-validation, and stdio MCP initialization/tool discovery with 22 bounded
-Foldweave tools. Public-`main` promotion, release media, video, `/feedback`,
-and submission remain pending. No ChatGPT review submission, approval,
-publication, or public listing is claimed. The submission hold remains active.
+public-main release identities. A fresh unrelated clean clone of the published
+revision branch reproduced the accepted product candidate with `uv sync
+--frozen`, 1,176 Python tests with one upstream warning, `uv lock --check`,
+Ruff lint/format, Git diff checks, frontend TypeScript, 80 Vitest tests, both
+frontend production builds, gateway TypeScript, 50 gateway tests, Wrangler
+dry-run build, plugin validation, and stdio MCP initialization/tool discovery
+with 22 bounded Foldweave tools.
+
+The same clean clone built wheel SHA-256
+`c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276` and
+the 55 MiB arm64 app executable SHA-256
+`3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`.
+`codesign --verify --deep --strict --verbose=2` passed. The packaged app opened
+from an unrelated directory, rendered its native Home and an existing review
+job, correctly exposed the Original/Proposed toggle and exact acceptance
+control, then shut down without its runtime lock or an orphaned clean-clone
+process. The review job was not accepted in that visual check.
+
+A fresh keyless origin replay and model-free Martin receiver application both
+stopped in review, accepted the exact preview, verified source-free and
+source-aware receipts, and reconstructed their respective selected sources.
+The origin Change File fingerprint was
+`940774830794366ce6c27bd6365629c6efed6a18461a3303298f295420efc214`, its
+receipt fingerprint was
+`f24ca69126ba56b8aa950fe0056b9494aab6bb11c945da256f867e6ea23f5fd8`, and
+the receiver receipt fingerprint was
+`b00296cbd83a5cf9daad1f00400e41ed9759dbda21bce797cc852967c0c37169`.
+Both results committed organized tree
+`a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`.
+The receiver provenance was `capsule_applied` with zero provider calls, API
+use `false`, and external-network use `false`. An isolated environment with
+only the built wheel repeated the keyless origin review, acceptance,
+verification, and reconstruction.
+
+Public-`main` promotion, final media, video, `/feedback`, personal
+attestations, explicit hold release, and submission remain pending. No ChatGPT
+review submission, approval, publication, or public listing is claimed. The
+submission hold remains active.

@@ -1,8 +1,9 @@
 # Foldweave — Build Week release and submission package
 
-Status: **FOLDWEAVE RELEASE PACKAGE IN PREPARATION — IMPLEMENTATION AND LIVE
-CONSUMER QUALIFICATION EVIDENCE EXIST; RELEASE-CANDIDATE ACCEPTANCE, FINAL
-MEDIA, AND FINAL SUBMISSION REMAIN PENDING**
+Status: **FOLDWEAVE PRODUCT RELEASE CANDIDATE ACCEPTED — FRESH CLEAN-CLONE
+PACKAGE, REPLAY, ORIGIN/RECEIVER, AND NATIVE-REVIEW EVIDENCE ARE RECORDED;
+PUBLIC-`main` PROMOTION, FINAL MEDIA, USER-OWNED ATTESTATIONS, AND FINAL
+SUBMISSION REMAIN PENDING**
 
 Submission hold: **ACTIVE — FINAL DEVPOST SUBMISSION IS PROHIBITED UNTIL THE
 USER EXPLICITLY RELEASES THE HOLD**
@@ -28,7 +29,7 @@ external approval, release the submission hold, or authorize final submission.
 | Tagline | **Change the structure. Keep the connections.** |
 | Track | **Work & Productivity** |
 | Category | **AI refactoring for connected project folders** |
-| Latest published implementation checkpoint | `719fc182bbd91e88cd1fa1fd6142d3d061f2aa87` on `revision/foldweave-native-review`; not the final release SHA |
+| Clean-clone reproduction checkout | Documentation checkpoint `53fa3206c505292f4204d25a7fd8552093ed41fb` on `revision/foldweave-native-review`; it follows accepted product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`. The current documentation-branch SHA is reported only in the release handoff. |
 | Review-before-execution authority | **VERIFIED** for origin and receiver jobs |
 | Packaged macOS application | **VERIFIED** as an Apple-Silicon unsigned/ad-hoc judge build; not notarized or Developer-ID signed |
 | Native direct API mode | **VERIFIED** with exact `gpt-5.6`, bounded revision, exact acceptance, verification, and reconstruction |
@@ -38,7 +39,7 @@ external approval, release the submission hold, or authorize final submission.
 | ChatGPT publication | `PUBLICATION_READY` in the narrow technical sense required to prepare an external review submission; `SUBMITTED_FOR_REVIEW`, `APPROVED`, `PUBLISHED`, and public listing are **NOT ESTABLISHED** |
 | Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; clean-clone plugin validation and stdio MCP discovery passed from commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
-| Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` selected and accepted; published revision branch includes release-state documentation, with exact remote branch SHA verified in the handoff |
+| Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected and accepted; a fresh unrelated clean clone of the later documentation checkpoint rebuilt and exercised the same product code successfully |
 | Final public `main` | Still preserves the predecessor release; Foldweave has not yet been promoted as the final accepted release |
 | Final screenshots and thumbnail | Captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Final public video | **NOT CREATED OR UPLOADED** |
@@ -84,7 +85,7 @@ user must personally review and make every personal or legal attestation.
 | Tagline | `Change the structure. Keep the connections.` |
 | Track/category | `Work & Productivity` / `AI refactoring for connected project folders` |
 | One-line summary | `Foldweave shows a complete connected-folder reorganization before execution, lets the user refine the proposal, and applies or extends the same verified structure on an equivalent copy while preserving supported Markdown links.` |
-| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — repository slug may remain historical; final Foldweave release SHA and public promotion are pending |
+| Public repository | <https://github.com/ModernBlueprints/reversible-name-atlas> — repository slug may remain historical; the accepted release branch is public and final no-force `main` promotion remains pending |
 | License | MIT, subject to final package and third-party-notice inspection |
 | Tested native platform | macOS Apple Silicon only |
 | Native distribution statement | Unsigned/ad-hoc judge build; no notarization, Developer ID, or warning-free public installation claim |
@@ -93,10 +94,11 @@ user must personally review and make every personal or legal attestation.
 | Recorded path | Keyless, provider-free, clearly labelled **Recorded GPT planning run** |
 | Unchanged Change File path | Keyless and model-free deterministic review and application |
 | Final release commit | Product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on `revision/foldweave-native-review`; published branch SHA is verified in the handoff rather than embedded self-referentially |
-| Final native app digest | `[PENDING FINAL RELEASE BUILD AND HASH]` |
-| Final Change File, receipt, and verifier identities | `[PENDING FINAL RELEASE TRANSACTIONS]` |
+| Fresh clean-clone native app digest | 55 MiB Apple-Silicon `Foldweave.app`; executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; `codesign --verify --deep --strict` passed; unsigned/ad-hoc only |
+| Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276` |
+| Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `940774830794366ce6c27bd6365629c6efed6a18461a3303298f295420efc214`, receipt `f24ca69126ba56b8aa950fe0056b9494aab6bb11c945da256f867e6ea23f5fd8`; receiver receipt `b00296cbd83a5cf9daad1f00400e41ed9759dbda21bce797cc852967c0c37169`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
 | Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
-| Devpost project copy | `[PENDING FOLDWEAVE REBRAND AND FINAL RELEASE SYNCHRONIZATION]` |
+| Devpost project copy | Foldweave draft below is synchronized to the accepted product candidate; final user review, form entry, video URL, and personal attestations remain pending |
 | Public video URL | `[PENDING FINAL CAPTURE, USER VOICE, EDIT, PUBLIC UPLOAD, AND PLAYBACK VERIFICATION]` |
 | `/feedback` Session ID | `[USER ACTION REQUIRED IN THE PRIMARY CODEX TASK]` |
 | Entrant type and country | `[USER ACTION REQUIRED; DO NOT INFER]` |
@@ -488,9 +490,14 @@ references, or the first ancestor of an entire collaboration chain.
 
 ## Judge paths
 
-The final judge path must be rerun from the accepted public release commit in a
-fresh unrelated clone. The commands below are the intended paths; their final
-release evidence remains pending until F6 acceptance.
+The judge path was reproduced from a fresh unrelated clone of the published
+revision-branch documentation checkpoint, whose product source is unchanged
+from accepted product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
+It passed the full Python suite, frontend and gateway builds, an installed-wheel
+replay, origin/receiver acceptance, source-free and source-aware verification,
+and reconstruction. After the final no-force public `main` promotion, the same
+commands remain the public judge path; no claim is made that a final Devpost
+submission has occurred.
 
 ### Fastest keyless path
 
@@ -608,7 +615,10 @@ not substitute a hidden direct API request.
 
 ## Current verified implementation evidence
 
-The following is working-tree qualification evidence, not final-release proof:
+The following combines earlier qualification with a fresh unrelated clean-clone
+release reproduction. The product-source evidence is release-candidate evidence;
+the final public-`main` promotion, video, user-owned `/feedback`, legal
+attestations, and submission are intentionally separate gates.
 
 | Surface | Latest verified evidence |
 |---|---|
@@ -618,15 +628,16 @@ The following is working-tree qualification evidence, not final-release proof:
 | Native/package focus | **30** focused tests; unrelated-directory launch, picker, temporary Keychain round trip/removal, rehydration, exact acceptance, verification, and no-orphan checks pass |
 | Visual focus | **27** visual/pairing/proof/native tests; 500-file/1,000-directory review fixture passes required interaction and narrow-layout checks |
 | Codex plugin focus | **21** focused checks plus official cachebuster, validator, reinstall, installed-cache identity, fresh-session tool use, exact acceptance, verification, reconstruction, and duplicate retry |
-| Current packaged app | Approximately 55 MiB, arm64, bundle ID `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, executable SHA-256 `c999a68c82268d1fa40ba3c3c5e3cf327218c1502a8423fb0cadd1be48331032`; rebuilt local qualification artifact only, not the accepted final release build |
+| Fresh clean-clone packaged app | Approximately 55 MiB, arm64, bundle ID `com.modernblueprints.foldweave`, version `0.1.0`, minimum macOS `13.0`, executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; strict deep signature verification, unrelated-directory launch, Home and immutable review rendering, Original/Proposed toggle, and clean shutdown pass; unsigned/ad-hoc only |
 | Direct budget authority | Sole ledger remains capped at cumulative USD 40; current qualified state records 14 attempts and no hosted-ledger mutation |
 | ChatGPT developer flow | Actual macOS ChatGPT root and derivative review/revision/acceptance/verification/reconstruction evidence exists without direct-ledger mutation |
 | F2 collaboration | Direct and ChatGPT-hosted derivatives converge; self-contained child Change Files, v3 receipts, verification, and transaction-specific reconstruction pass |
 | Consumer gateway | `CONSUMER_PAIRING_VERIFIED`; deployment `d14d051d-8920-44ea-b336-f3bbea2f6936`, version `9ac88da8-9f85-4685-8a07-073d44b909b9`, serves `review-v35`; CSS SHA-256 `666df057a85df92cfdd57228ef9fc1a8ece31cd65807720695d14dbd867ca173`, JavaScript SHA-256 `3ac8e6c83350e1d88145d50470a90cb3b2763386aee816986139e611f3ac4bea`; `PUBLICATION_READY` is technical readiness only |
 
-The final release package must replace this table with evidence reproduced from
-the selected release commit and a clean clone. Working-tree counts and hashes
-must not be presented as immutable release identities.
+The clean-clone artifact hashes above identify the reproduced package, not a
+notarized or externally hosted distribution. The no-force public `main`
+promotion, final media, user-owned form actions, and final submission remain
+separate controlled steps.
 
 ## Devpost description draft
 
@@ -1020,19 +1031,19 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 
 | Proposed public claim | Required release evidence | Current status |
 |---|---|---|
-| The proposal is visible before execution | Origin and receiver jobs stop at immutable review with no output | `VERIFIED IN WORKING TREE; FINAL CLEAN-CLONE REPRODUCTION PENDING` |
-| The user can revise and still accept only the exact visible structure | Sparse revision, prior-preview preservation, stale/race/duplicate refusal, exact authorization | `VERIFIED IN DIRECT, CHATGPT, CODEX, BROWSER, CLI, AND NATIVE PATHS; FINAL RELEASE REPRODUCTION PENDING` |
-| Every admitted file appears once and supported links remain connected | Complete accounting and exact supported-link proof | `VERIFIED; FINAL RELEASE ARTIFACT PENDING` |
-| The source remains unchanged and result is separate | Before/after source commitment and no-replace result transaction | `VERIFIED; FINAL RELEASE ARTIFACT PENDING` |
-| Change Files contain no payload bytes | Strict schema/content audit and transferable-artifact scan | `VERIFIED FOR CURRENT V1/V2 EVIDENCE; FINAL RELEASE FILE PENDING` |
+| The proposal is visible before execution | Origin and receiver jobs stop at immutable review with no output | `VERIFIED — fresh clean-clone origin and receiver transactions reached review before exact acceptance` |
+| The user can revise and still accept only the exact visible structure | Sparse revision, prior-preview preservation, stale/race/duplicate refusal, exact authorization | `VERIFIED — direct, ChatGPT, Codex, browser, CLI, and native qualification; fresh clean-clone replay acceptance uses the exact preview fingerprint` |
+| Every admitted file appears once and supported links remain connected | Complete accounting and exact supported-link proof | `VERIFIED — fresh clean-clone origin and receiver proof: 24 files, 23 changed paths, 23 rewritten links` |
+| The source remains unchanged and result is separate | Before/after source commitment and no-replace result transaction | `VERIFIED — fresh clean-clone origin and receiver source-aware verification and reconstruction pass` |
+| Change Files contain no payload bytes | Strict schema/content audit and transferable-artifact scan | `VERIFIED — fresh clean-clone v2 origin Change File and receiver import pass strict verification` |
 | Martin sees his own current structure | Receiver inventory/match report/preview DTO with no GPT render fallback | `VERIFIED` |
 | Unchanged application uses no model | `capsule_applied` provenance and no provider/API/budget use | `VERIFIED` |
-| Direct mode uses exact GPT-5.6 | Exact alias, returned model evidence, `store=false`, usage/cost, ledger | `VERIFIED; FINAL RELEASE TRANSACTION PENDING` |
+| Direct mode uses exact GPT-5.6 | Exact alias, returned model evidence, `store=false`, usage/cost, ledger | `VERIFIED in live qualification; no direct API call was made during the keyless clean-clone reproduction` |
 | ChatGPT-hosted mode uses no hidden direct API call | Actual host tool traffic, no key/provider initialization, ledger byte equality | `DEVELOPER_MODE_VERIFIED; CONSUMER_PAIRING_VERIFIED` |
 | Serial derivatives converge | CF1→CF2 proof, self-contained child, raw/T1 application, equal organized tree | `VERIFIED IN DIRECT AND CHATGPT DEVELOPER PATHS` |
 | Results verify without source or key | Unrelated-location source-free verifier | `VERIFIED` |
 | Each transaction reconstructs its own selected source | Verify-first no-replace reconstruction and exact snapshot equality | `VERIFIED` |
-| Native macOS app works | Clean built `.app`, unrelated-path launch, picker, Keychain, live review/revision/accept, proof, restart, shutdown | `VERIFIED AS UNSIGNED/AD-HOC APP; FINAL RELEASE BUILD PENDING` |
+| Native macOS app works | Clean built `.app`, unrelated-path launch, picker, Keychain, live review/revision/accept, proof, restart, shutdown | `VERIFIED AS UNSIGNED/AD-HOC APP — fresh clean-clone build, launch, Home/review/toggle, and clean shutdown pass; no notarization or Developer ID claim` |
 | Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
@@ -1072,16 +1083,19 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       remains.
 - [x] Select one Foldweave release-candidate commit:
       `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
-- [ ] Reproduce the complete Python, frontend, gateway, native, MCP, Codex,
-      direct, ChatGPT, replay, unchanged-apply, derivative, verifier,
-      reconstruction, negative, race, and compatibility matrices from that
-      exact commit.
-- [ ] Build and launch the final `.app` from an unrelated clean clone.
-- [ ] Record final app, wheel, Change File, receipt, verifier, reconstruction,
-      and gateway asset hashes.
-- [ ] Run final lock, Ruff lint/format, TypeScript, Vite, Vitest, Wrangler,
-      package, license, diff, secret, response-ID, absolute-path, and historical-
-      brand scans.
+- [x] Reproduce the full Python, frontend, gateway, native, replay,
+      unchanged-apply, origin/receiver, verifier, and reconstruction release
+      paths from a fresh unrelated clone of the published release branch. The
+      direct and ChatGPT live matrices remain preserved from their earlier
+      qualified evidence; they were not repeated as new paid or host calls.
+- [x] Build and launch the final `.app` from an unrelated clean clone; inspect
+      Home, the immutable review, Original/Proposed switching, and clean
+      shutdown.
+- [x] Record fresh clean-clone app, wheel, Change File, receipt, verifier,
+      reconstruction, and organized-tree identities above.
+- [x] Run final lock, Ruff lint/format, TypeScript, Vite, Vitest, Wrangler,
+      package, diff, secret/response-ID/path, and active-brand scans. Historical
+      compatibility/provenance records retain their original names and paths.
 - [ ] Fast-forward accepted Foldweave release to public `main` without rebase or
       force-push.
 
@@ -1092,17 +1106,19 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 - [x] Pre-existing and repository-evolution disclosure is current.
 - [x] Direct API, ChatGPT billing, `store=false`, metadata disclosure, native
       signing, and public-listing qualifications are explicit.
-- [ ] Regenerate and independently review final README, limitations, provenance,
+- [x] Reconcile and independently review README, limitations, provenance,
       build log, package metadata, installation guide, plugin guide, and this
-      package against the accepted release commit.
+      package against the accepted product candidate and fresh clean-clone
+      evidence.
 - [x] Capture the genuine Foldweave screenshot set from the current release
       worktree and visually review it.
 - [x] Regenerate the Foldweave thumbnail and record all current media hashes.
-- [ ] Confirm no stale active Name Atlas branding survives outside historical
+- [x] Confirm no stale active Name Atlas branding survives outside historical
       and compatibility contexts.
-- [ ] Confirm no secret, response ID, personal path, account identifier,
+- [x] Confirm no secret, response ID, personal path, account identifier,
       notification, pairing secret, authorization code, or private callback
-      appears in committed or public media.
+      appears in current public-facing release material. Historical evidence is
+      retained only where provenance requires it.
 - [ ] Confirm every screenshot, narration sentence, README claim, Devpost field,
       and video statement maps to accepted evidence.
 - [ ] Confirm every third-party license and asset obligation.
