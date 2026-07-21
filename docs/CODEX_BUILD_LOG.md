@@ -918,9 +918,9 @@ local MCP contract. Clean-clone plugin validation and stdio MCP discovery also
 passed from release-candidate commit
 `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`.
 
-The Foldweave branch remains pre-release. Release-candidate commit
-`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected locally; branch push
-remains pending. No ChatGPT review submission,
+The Foldweave branch remains pre-release. Release-candidate product commit
+`4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected and the revision branch
+is published with release-state documentation. No ChatGPT review submission,
 approval, publication, or public listing; Developer-ID/notarized distribution;
 final video; `/feedback`; eligibility or ownership attestation;
 submission-hold release; or Devpost submission is claimed. The submission hold
@@ -1119,8 +1119,8 @@ hash-recorded:
 | `docs/submission-thumbnail.png` | 1500×1000 | 136,792 | `b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6` |
 | `docs/submission-thumbnail.svg` | SVG source | 8,994 | `6f4b2b87c55ddf0b0d3c029261df581782901c555e0aae9d22a7d80ac280637d` |
 
-These are current working-tree and deployed-service identities, not final
-release identities until the branch push is verified. The clean clone at
+These are current published revision-branch and deployed-service identities, not
+public-main release identities. The clean clone at
 `/tmp/foldweave-clean-4e9ec44-1784626262` reproduced commit
 `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` with `uv sync --frozen`, 1,176
 Python tests with one upstream warning, `uv lock --check`, Ruff lint/format, Git

@@ -38,7 +38,7 @@ external approval, release the submission hold, or authorize final submission.
 | ChatGPT publication | `PUBLICATION_READY` in the narrow technical sense required to prepare an external review submission; `SUBMITTED_FOR_REVIEW`, `APPROVED`, `PUBLISHED`, and public listing are **NOT ESTABLISHED** |
 | Codex plugin | Version `0.1.0+codex.20260721091729` is installed and enabled from the repository marketplace; installed cache inspection and stdio MCP initialization/tool discovery passed; clean-clone plugin validation and stdio MCP discovery passed from commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
-| Release candidate | Commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` selected and accepted locally; branch push pending |
+| Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` selected and accepted; published revision branch includes release-state documentation, with exact remote branch SHA verified in the handoff |
 | Final public `main` | Still preserves the predecessor release; Foldweave has not yet been promoted as the final accepted release |
 | Final screenshots and thumbnail | Captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
 | Final public video | **NOT CREATED OR UPLOADED** |
@@ -92,7 +92,7 @@ user must personally review and make every personal or legal attestation.
 | ChatGPT path | ChatGPT supplies model inference; no hidden Foldweave Responses API call or direct-ledger reservation |
 | Recorded path | Keyless, provider-free, clearly labelled **Recorded GPT planning run** |
 | Unchanged Change File path | Keyless and model-free deterministic review and application |
-| Final release commit | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on `revision/foldweave-native-review`; branch push pending |
+| Final release commit | Product release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` on `revision/foldweave-native-review`; published branch SHA is verified in the handoff rather than embedded self-referentially |
 | Final native app digest | `[PENDING FINAL RELEASE BUILD AND HASH]` |
 | Final Change File, receipt, and verifier identities | `[PENDING FINAL RELEASE TRANSACTIONS]` |
 | Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |

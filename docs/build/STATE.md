@@ -1,9 +1,9 @@
 # Foldweave build state
 
-Observed: **Tuesday 21 July 2026 at 11:34:10 CEST** using
+Observed: **Tuesday 21 July 2026 at 11:38:43 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
-Phase: **RELEASE CANDIDATE SELECTED — WAITING_FOR_BRANCH_PUSH_AND_SUBMISSION_RESERVE**
+Phase: **RELEASE BRANCH PUBLISHED — WAITING_FOR_SUBMISSION_RESERVE**
 
 Submission hold: **ACTIVE**
 
@@ -12,11 +12,12 @@ deployment, OAuth connection, pairing, outbound companion WSS, opaque local
 selection, consumer root planning/review/revision, exact acceptance, independent
 verification, reconstruction, reconnect, and refusal qualification are no
 longer blocked. The final native-macOS visual polish and release qualification
-have completed. Release-candidate commit
+have completed. Release-candidate product commit
 `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` has passed local and clean-clone
-acceptance. The remaining independent work is final branch push verification and
-then the submission-reserve work. This is active work rather than a user-owned
-or global blocker.
+acceptance, and the revision branch has been published. The exact remote branch
+SHA is verified in the current handoff rather than embedded self-referentially
+in this file. The remaining independent work is submission-reserve work. This is
+active work rather than a user-owned or global blocker.
 
 ## Activation and repository
 
@@ -28,19 +29,19 @@ or global blocker.
 | Historical C+0 | Saturday 18 July 2026 at 23:31:39 CEST — `PRESERVED` |
 | Foldweave F+0 | Sunday 19 July 2026 at 17:18:14 CEST — `ACTIVE` |
 | Current branch | `revision/foldweave-native-review` |
-| Latest local release candidate | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` — `feat: qualify Foldweave release candidate`; push pending at this observation |
+| Latest product release candidate | `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` — `feat: qualify Foldweave release candidate`; release-state documentation is published on `revision/foldweave-native-review` and the exact remote branch SHA belongs in the handoff |
 | Exact predecessor, `main`, `origin/main`, and previous revision | `1023999f2acc7b806775b407dc01a15af3447e90` — unchanged |
 | Historical portable branch | local and remote `revision/portable-change-receipt` at `4baec1ed7b8553775527e3be506edab584b2b8b3` — unchanged |
-| Working tree at observation | intentionally dirty only with post-clean-clone release-state documentation updates after local release-candidate commit `4e9ec44`; nothing is staged and no unrelated work was discarded |
+| Working tree at observation | clean after published release-state documentation; no unrelated work was discarded |
 
 ## Remaining fixed windows
 
 | Boundary | Absolute Oslo time | Remaining at observation |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 10 hours, 34 minutes, 10 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 5 hours, 34 minutes, 10 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 1 hour, 34 minutes, 10 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 14 hours, 25 minutes, 49 seconds |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 10 hours, 38 minutes, 43 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 5 hours, 38 minutes, 43 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 1 hour, 38 minutes, 43 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 14 hours, 21 minutes, 16 seconds |
 
 These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
@@ -67,7 +68,7 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 | Foldweave F3 product experience | `VERIFIED COMPLETE` — functional native/browser/ChatGPT journeys, recovery, reconnect, objective visual checks, final macOS visual polish, current screenshot set, and thumbnail hashes pass |
 | Foldweave F4 qualification | `VERIFIED COMPLETE` — direct, developer-hosted, consumer-hosted, keyless replay, installed Codex, reconnect, refusal, verification, and reconstruction gates pass |
 | Feature freeze | absolute boundary passed; only release-safe defect, proof, accessibility, visual, packaging, documentation, screenshot, claim, and release work permitted |
-| Foldweave release materials | current README, limitations, provenance, build log, screenshot package, thumbnail, and submission package are synchronized against the accepted release candidate; branch push remains pending |
+| Foldweave release materials | current README, limitations, provenance, build log, screenshot package, thumbnail, and submission package are synchronized against the accepted release candidate and published revision branch |
 | Devpost submission | `NOT PERFORMED`; hold active |
 
 ## F0c completion evidence
@@ -309,21 +310,22 @@ These windows continue to elapse. F+0 did not reset the 44-hour envelope.
 
 ## Exact next operation
 
-`Commit the post-clean-clone release-state documentation update, push
-revision/foldweave-native-review, verify the remote branch SHA, and keep the
-submission hold active.`
+`Proceed with the submission-reserve package: final narration/shot-list/video
+work, /feedback, final due-diligence review, and Devpost drafting while keeping
+the submission hold active until explicit user release.`
 
 ## Compact recovery capsule
 
-- **Phase:** `RELEASE CANDIDATE SELECTED — WAITING_FOR_BRANCH_PUSH_AND_SUBMISSION_RESERVE`
+- **Phase:** `RELEASE BRANCH PUBLISHED — WAITING_FOR_SUBMISSION_RESERVE`
 - **Branch / checkpoint:** `revision/foldweave-native-review` /
-  `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`; post-clean-clone
-  release-state documentation updates are uncommitted
+  product release candidate `4e9ec44b02b25f515017ceb9922fff4fdf84ae46`;
+  release-state documentation is published on the revision branch, with exact
+  remote branch SHA verified in the handoff
 - **Current milestone:** F0c, F1, and complete F2 live/deterministic evidence;
   deployed F0d consumer origin and receiver-derivative plan/review/revision/
   acceptance/verification/reconstruction plus reconnect/refusal qualification
   pass; F3 visual polish and screenshot/thumbnail evidence pass; F5/F6 local
-  and clean-clone release qualification pass; branch push is next
+  and clean-clone release qualification pass; revision branch publication passes
 - **Job / preview:** consumer root job
   `976daca126a648a8bee4a5a4d62b6f8c`, revision 11/proposal revision 1
   `verified`; candidate/preview and verified artifact fingerprints recorded
