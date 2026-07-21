@@ -1129,6 +1129,22 @@ pixel-equivalence check preserved its 1728×940 rendered content exactly. The
 table records the normalized asset's new size and SHA-256. No product state,
 claim, or visual content changed.
 
+The final gallery contact-sheet review confirmed that the ten captures and
+thumbnail retain the intended restrained macOS dark visual language, readable
+controls, and no stale Name Atlas, gradient, neon, or cyber-dashboard surface.
+The exact 317-word narration was also rendered through a local macOS
+synthetic-speech preflight: 150.304 seconds at 125 words per minute and
+148.652 seconds at 130. Those results validate the script's timing margin only;
+they are not a substitute for the user's final voice, the final encoded video,
+or public playback verification.
+
+The official Build Week rules, FAQ, and dates page were rechecked during this
+pass. They continue to require a working Codex/GPT-5.6 project, a public
+repository, a public YouTube demonstration with audio below three minutes, the
+primary `/feedback` Session ID, and no submission edits after the July 21 17:00
+PDT deadline (Wednesday 22 July 2026 at 02:00 CEST). No Devpost or submission
+state was modified by that recheck.
+
 These are current published `main`/revision-branch and deployed-service
 identities. A fresh unrelated clean clone of the published revision branch
 reproduced the accepted product candidate with `uv sync

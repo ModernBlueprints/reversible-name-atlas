@@ -41,7 +41,7 @@ external approval, release the submission hold, or authorize final submission.
 | Visual system | Objective macOS-style visual, responsive, component, accessibility, screenshot, and thumbnail checks pass |
 | Release candidate | Product commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` is selected and accepted; a fresh unrelated clean clone of the later documentation checkpoint rebuilt and exercised the same product code successfully |
 | Final public `main` | Contains the accepted Foldweave release evidence through an ordinary no-force fast-forward; the exact current SHA is reported in the release handoff rather than embedded self-referentially |
-| Final screenshots and thumbnail | Captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
+| Final screenshots and thumbnail | Captured against the accepted product release candidate, visually reviewed, hash-recorded, and published in the current public release-evidence history |
 | Final public video | **NOT CREATED OR UPLOADED** |
 | `/feedback` Session ID | **USER ACTION PENDING** |
 | Personal eligibility and ownership attestations | **USER ACTION PENDING** |
@@ -55,6 +55,14 @@ The current release process must remain aligned with the
 [FAQ](https://openai.devpost.com/details/faqs), and
 [dates page](https://openai.devpost.com/details/dates). The binding submission
 deadline is **Wednesday 22 July 2026 at 02:00 CEST**.
+
+Those official sources were rechecked on Tuesday 21 July 2026 during the final
+recording-readiness pass. They still state a July 21, 2026 17:00 PDT submission
+deadline, which is Wednesday 22 July 2026 at 02:00 CEST; require a public
+YouTube video with audio below three minutes; require clear Codex and GPT-5.6
+use; require the primary `/feedback` Session ID; and prohibit changing a
+submission after the period closes. No Devpost field or submission state was
+mutated by that recheck.
 
 The final package must include:
 
@@ -97,7 +105,7 @@ user must personally review and make every personal or legal attestation.
 | Fresh clean-clone native app digest | 55 MiB Apple-Silicon `Foldweave.app`; executable SHA-256 `3a2bd5ed0eeca704fe8aed2c30652e18aedc088ebb65d5ec5a66d9d8031d1976`; `codesign --verify --deep --strict` passed; unsigned/ad-hoc only |
 | Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `c510b708c715aa59e1453a8ed5f7254372bc85d280fd490f339c6298732ad276` |
 | Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `940774830794366ce6c27bd6365629c6efed6a18461a3303298f295420efc214`, receipt `f24ca69126ba56b8aa950fe0056b9494aab6bb11c945da256f867e6ea23f5fd8`; receiver receipt `b00296cbd83a5cf9daad1f00400e41ed9759dbda21bce797cc852967c0c37169`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
-| Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured, visually reviewed, hash-recorded, and included in accepted release-candidate commit `4e9ec44b02b25f515017ceb9922fff4fdf84ae46` |
+| Final screenshots and thumbnail | Current ten-image Foldweave gallery and thumbnail are captured against the accepted product candidate, visually reviewed, hash-recorded, and published in current release-evidence history |
 | Devpost project copy | Foldweave draft below is synchronized to the accepted product candidate; final user review, form entry, video URL, and personal attestations remain pending |
 | Public video URL | `[PENDING FINAL CAPTURE, USER VOICE, EDIT, PUBLIC UPLOAD, AND PLAYBACK VERIFICATION]` |
 | `/feedback` Session ID | `[USER ACTION REQUIRED IN THE PRIMARY CODEX TASK]` |
@@ -778,10 +786,11 @@ This draft must be read aloud, timed, and corrected against the final release
 before recording. It intentionally avoids a public-listing claim and may use
 the verified developer-mode and consumer-pairing evidence with their exact
 qualifications. The current draft contains **317 whitespace-delimited words**.
-At 125 words per minute it is approximately **2:32**, and at 130 words per
-minute approximately **2:26**. Those calculations show planning margin only;
-they are not a substitute for timing the user's actual narration and final
-encoded video.
+A local macOS synthetic-speech preflight of this exact text measured
+**150.304 seconds (2:30.304)** at 125 words per minute and **148.652 seconds
+(2:28.652)** at 130 words per minute. It confirms useful script margin inside
+the 2:55 storyboard, but it is not the user's voice and does not substitute for
+timing the final narration or the final encoded video.
 
 > A project folder is more than filenames. Notes connect reports, research,
 > meetings, images, and working files. Reorganizing that folder with AI is easy.
