@@ -397,25 +397,45 @@ class CompanionRpcResponseEnvelopeV1(StrictFrozenModel):
 class DeviceIdentityStore:
     """Generate and retain one Ed25519 installation key in macOS Keychain."""
 
-    adapter: SecurityKeychainAdapter = field(default_factory=PyObjCKeychainAdapter)
+    adapter: SecurityKeychainAdapter = field(
+        default_factory=lambda: PyObjCKeychainAdapter(
+            allow_authentication_ui=False,
+        )
+    )
     service: str = DEVICE_KEYCHAIN_SERVICE
     account: str = DEVICE_KEYCHAIN_ACCOUNT
+    _cache_lock: threading.RLock = field(
+        default_factory=threading.RLock,
+        init=False,
+        repr=False,
+    )
+    _cached_identity: _StoredDeviceIdentityV1 | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
 
     def load_or_create(self) -> CompanionDeviceIdentityV1:
-        if self.adapter.exists(service=self.service, account=self.account):
-            stored = self._read_stored()
-            private_key = _private_key_from_text(stored.private_key)
-        else:
-            private_key = Ed25519PrivateKey.generate()
-            stored = _StoredDeviceIdentityV1(
-                device_id=DEVICE_ID_PREFIX + secrets.token_hex(16),
-                private_key=_private_key_text(private_key),
-            )
-            self.adapter.write(
+        with self._cache_lock:
+            stored = self._cached_identity
+            if stored is None and self.adapter.exists(
                 service=self.service,
                 account=self.account,
-                value=canonical_json_bytes(stored),
-            )
+            ):
+                stored = self._read_stored()
+            elif stored is None:
+                private_key = Ed25519PrivateKey.generate()
+                stored = _StoredDeviceIdentityV1(
+                    device_id=DEVICE_ID_PREFIX + secrets.token_hex(16),
+                    private_key=_private_key_text(private_key),
+                )
+                self.adapter.write(
+                    service=self.service,
+                    account=self.account,
+                    value=canonical_json_bytes(stored),
+                )
+                self._cached_identity = stored
+            private_key = _private_key_from_text(stored.private_key)
         return CompanionDeviceIdentityV1(
             device_id=stored.device_id,
             public_key=_public_key_text(private_key.public_key()),
@@ -522,20 +542,31 @@ class DeviceIdentityStore:
         return PUBLIC_JOB_CAPABILITY_PREFIX + _b64url_encode(signature)
 
     def remove(self) -> bool:
-        return self.adapter.remove(service=self.service, account=self.account)
+        with self._cache_lock:
+            removed = self.adapter.remove(
+                service=self.service,
+                account=self.account,
+            )
+            self._cached_identity = None
+            return removed
 
     def _read_stored(self) -> _StoredDeviceIdentityV1:
-        try:
-            raw = self.adapter.read(service=self.service, account=self.account)
-            payload = json.loads(raw.decode("utf-8", errors="strict"))
-            return _StoredDeviceIdentityV1.model_validate(payload, strict=True)
-        except CredentialStoreError:
-            raise
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-            raise CompanionContractError(
-                "device_identity_invalid",
-                "The stored Foldweave device identity is invalid.",
-            ) from exc
+        with self._cache_lock:
+            if self._cached_identity is not None:
+                return self._cached_identity
+            try:
+                raw = self.adapter.read(service=self.service, account=self.account)
+                payload = json.loads(raw.decode("utf-8", errors="strict"))
+                stored = _StoredDeviceIdentityV1.model_validate(payload, strict=True)
+            except CredentialStoreError:
+                raise
+            except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+                raise CompanionContractError(
+                    "device_identity_invalid",
+                    "The stored Foldweave device identity is invalid.",
+                ) from exc
+            self._cached_identity = stored
+            return stored
 
 
 def parse_companion_challenge(value: object) -> CompanionChallengeV1:

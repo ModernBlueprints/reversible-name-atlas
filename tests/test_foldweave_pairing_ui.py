@@ -29,6 +29,7 @@ from name_atlas.foldweave_pairing_service import (
     PairingPageStatus,
     PairingPageView,
 )
+from name_atlas.native_settings import CredentialStoreError
 
 NOW_MS = 1_784_500_000_000
 EXPIRES_MS = NOW_MS + 600_000
@@ -275,6 +276,33 @@ async def test_restart_preserves_local_state_without_inventing_authorization(
     assert view.device_name == "Nikolai's Mac"
     assert "could not be confirmed" in view.detail
     assert view.pairing_code is None
+
+
+@pytest.mark.anyio
+async def test_keychain_failure_preserves_a_truthful_local_pairing_view(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "private" / "pairing.json"
+    store = CompanionPairingStateStore(path=path)
+    await store.write(_pairing_state())
+    service = FoldweavePairingService(
+        state_store=store,
+        pairing=_FakePairingClient(
+            store=store,
+            gateway_evidence=CredentialStoreError(
+                "keychain_operation_timeout",
+                "macOS Keychain did not complete the device operation.",
+            ),
+        ),
+        now_ms=lambda: NOW_MS,
+    )
+
+    view = await service.view()
+
+    assert view.status is PairingPageStatus.LOCAL_ONLY
+    assert view.configured is True
+    assert view.can_revoke is True
+    assert "could not be confirmed" in view.detail
 
 
 @dataclass(slots=True)

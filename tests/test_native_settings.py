@@ -1,3 +1,4 @@
+import threading
 from dataclasses import dataclass, field
 
 import pytest
@@ -7,6 +8,7 @@ from name_atlas.native_settings import (
     DirectEndpointProfile,
     MacOSKeychainCredentialStore,
     NativeSettingsService,
+    PyObjCKeychainAdapter,
     SessionCredentialStore,
 )
 
@@ -53,6 +55,28 @@ class FixedPrompt:
         return self.value
 
 
+class _FakeSecurity:
+    kSecClass = object()
+    kSecClassGenericPassword = object()
+    kSecAttrService = object()
+    kSecAttrAccount = object()
+    kSecUseAuthenticationUI = object()
+    kSecUseAuthenticationUIFail = object()
+    kSecReturnAttributes = object()
+    kSecReturnData = object()
+    kSecMatchLimit = object()
+    kSecMatchLimitOne = object()
+    errSecSuccess = 0
+    errSecItemNotFound = -25300
+
+    def __init__(self) -> None:
+        self.queries: list[dict[object, object]] = []
+
+    def SecItemCopyMatching(self, query, _result):
+        self.queries.append(query)
+        return self.errSecItemNotFound, None
+
+
 def test_keychain_store_add_read_update_remove_without_status_secret() -> None:
     adapter = FakeKeychainAdapter()
     store = MacOSKeychainCredentialStore(adapter=adapter)
@@ -71,6 +95,81 @@ def test_keychain_store_add_read_update_remove_without_status_secret() -> None:
     assert store.remove() is True
     assert store.remove() is False
     assert store.status().configured is False
+
+
+def test_noninteractive_keychain_adapter_forbids_authentication_ui(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    security = _FakeSecurity()
+    monkeypatch.setattr(
+        PyObjCKeychainAdapter,
+        "_security",
+        staticmethod(lambda: security),
+    )
+    adapter = PyObjCKeychainAdapter(allow_authentication_ui=False)
+
+    assert adapter.exists(service="service", account="account") is False
+    with pytest.raises(CredentialStoreError):
+        adapter.read(service="service", account="account")
+
+    assert len(security.queries) == 2
+    assert all(
+        query[security.kSecUseAuthenticationUI] is security.kSecUseAuthenticationUIFail
+        for query in security.queries
+    )
+
+
+def test_interactive_keychain_adapter_does_not_force_ui_policy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    security = _FakeSecurity()
+    monkeypatch.setattr(
+        PyObjCKeychainAdapter,
+        "_security",
+        staticmethod(lambda: security),
+    )
+    adapter = PyObjCKeychainAdapter()
+
+    assert adapter.exists(service="service", account="account") is False
+    assert security.kSecUseAuthenticationUI not in security.queries[0]
+
+
+def test_noninteractive_keychain_timeout_opens_a_process_circuit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    security = _FakeSecurity()
+    blocked = threading.Event()
+    call_count = 0
+
+    def copy_matching(query, _result):
+        nonlocal call_count
+        security.queries.append(query)
+        call_count += 1
+        blocked.wait(30)
+        return security.errSecItemNotFound, None
+
+    security.SecItemCopyMatching = copy_matching
+    monkeypatch.setattr(
+        PyObjCKeychainAdapter,
+        "_security",
+        staticmethod(lambda: security),
+    )
+    adapter = PyObjCKeychainAdapter(
+        allow_authentication_ui=False,
+        operation_timeout_seconds=0.01,
+    )
+
+    try:
+        with pytest.raises(CredentialStoreError) as first:
+            adapter.exists(service="service", account="account")
+        with pytest.raises(CredentialStoreError) as second:
+            adapter.exists(service="service", account="account")
+
+        assert first.value.code == "keychain_operation_timeout"
+        assert second.value.code == "keychain_operation_timeout"
+        assert call_count == 1
+    finally:
+        blocked.set()
 
 
 def test_native_settings_configure_cancel_and_remove_are_status_only() -> None:

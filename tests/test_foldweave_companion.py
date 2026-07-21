@@ -27,6 +27,7 @@ from name_atlas.foldweave_local_handles import (
     FoldweaveLocalHandleStore,
 )
 from name_atlas.native_bridge import NativePathRole
+from name_atlas.native_settings import PyObjCKeychainAdapter
 
 oslo_tz = ZoneInfo("Europe/Oslo")
 
@@ -77,11 +78,13 @@ def _public_invocation(
 class _MemoryKeychain:
     def __init__(self) -> None:
         self.items: dict[tuple[str, str], bytes] = {}
+        self.read_count = 0
 
     def exists(self, *, service: str, account: str) -> bool:
         return (service, account) in self.items
 
     def read(self, *, service: str, account: str) -> bytes:
+        self.read_count += 1
         return self.items[(service, account)]
 
     def write(self, *, service: str, account: str, value: bytes) -> None:
@@ -89,6 +92,39 @@ class _MemoryKeychain:
 
     def remove(self, *, service: str, account: str) -> bool:
         return self.items.pop((service, account), None) is not None
+
+
+def test_default_device_identity_keychain_is_noninteractive() -> None:
+    adapter = DeviceIdentityStore().adapter
+
+    assert isinstance(adapter, PyObjCKeychainAdapter)
+    assert adapter.allow_authentication_ui is False
+
+
+def test_device_identity_cache_avoids_repeated_keychain_reads() -> None:
+    keychain = _MemoryKeychain()
+    created = DeviceIdentityStore(adapter=keychain)
+    identity = created.load_or_create()
+    restarted = DeviceIdentityStore(adapter=keychain)
+
+    assert restarted.load_or_create() == identity
+    assert keychain.read_count == 1
+    restarted.sign_envelope(
+        request_id="c" * 32,
+        sequence=1,
+        body={"type": "heartbeat"},
+        issued_at=1_000_000,
+        nonce="d" * 32,
+    )
+    restarted.derive_public_job_capability_id(
+        job_id="e" * 32,
+        device_id=identity.device_id,
+        oauth_grant_fingerprint="f" * 64,
+        scopes=("foldweave.review",),
+        expires_at_ms=2_000_000,
+    )
+
+    assert keychain.read_count == 1
 
 
 def test_device_identity_is_stable_keychain_backed_and_signs_canonical_body() -> None:

@@ -11,6 +11,34 @@
     <script>
       (function () {
         "use strict";
+        function setFocusOrigin(origin) {
+          document.documentElement.dataset.focusOrigin = origin;
+        }
+
+        setFocusOrigin("pointer");
+        document.addEventListener("pointerdown", function () {
+          setFocusOrigin("pointer");
+        }, true);
+        document.addEventListener("mousedown", function () {
+          setFocusOrigin("pointer");
+        }, true);
+        document.addEventListener("touchstart", function () {
+          setFocusOrigin("pointer");
+        }, true);
+        document.addEventListener("keydown", function (event) {
+          if (
+            event.key === "Tab" ||
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown" ||
+            event.key === "ArrowLeft" ||
+            event.key === "ArrowRight" ||
+            event.key === "Home" ||
+            event.key === "End"
+          ) {
+            setFocusOrigin("keyboard");
+          }
+        }, true);
+
         const appearance = window.matchMedia("(prefers-color-scheme: dark)");
         function applyAppearance(event) {
           document.documentElement.dataset.bpColorScheme = event.matches ? "dark" : "light";

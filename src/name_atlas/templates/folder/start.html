@@ -21,13 +21,15 @@
       <input type="hidden" name="csrf_token" value="{{ state.csrf_token }}">
       <fieldset class="folder-path-control">
         <legend>Folder to organize</legend>
-        <button class="bp6-button folder-picker-button" type="button" data-picker-role="source_folder" data-picker-target="source-root" data-derive-output-target="output-parent">Choose folder…</button>
-        <small data-picker-status aria-live="polite"></small>
-        <details class="folder-manual-path">
-          <summary aria-description="Or enter the absolute path">Enter path manually…</summary>
-          <label for="source-root">Absolute path</label>
-          <input class="bp6-input" id="source-root" name="source_root" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.source_value }}" placeholder="/absolute/path/to/project" data-derive-output-target="output-parent">
-        </details>
+        <div class="folder-path-surface">
+          <button class="bp6-button folder-picker-button" type="button" data-picker-role="source_folder" data-picker-target="source-root" data-derive-output-target="output-parent">Choose folder…</button>
+          <small data-picker-status aria-live="polite"></small>
+          <details class="folder-manual-path">
+            <summary aria-description="Or enter the absolute path">Enter path manually…</summary>
+            <label for="source-root">Absolute path</label>
+            <input class="bp6-input" id="source-root" name="source_root" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.source_value }}" placeholder="/absolute/path/to/project" data-derive-output-target="output-parent">
+          </details>
+        </div>
       </fieldset>
 
       <div class="folder-form-group">
@@ -37,14 +39,16 @@
 
       <fieldset class="folder-path-control folder-path-control--secondary">
         <legend>Result location</legend>
-        <p class="folder-derived-path">Defaults next to the source.</p>
-        <button class="bp6-button folder-picker-button" type="button" data-picker-role="output_parent" data-picker-target="output-parent">Change result location…</button>
-        <small data-picker-status aria-live="polite"></small>
-        <details class="folder-manual-path">
-          <summary aria-description="Or enter the absolute path">Enter path manually…</summary>
-          <label for="output-parent">Absolute result-parent path</label>
-          <input class="bp6-input" id="output-parent" name="output_parent" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.output_value }}" placeholder="Derived from your selected folder">
-        </details>
+        <div class="folder-path-surface">
+          <p class="folder-derived-path">Defaults next to the source.</p>
+          <button class="bp6-button folder-picker-button" type="button" data-picker-role="output_parent" data-picker-target="output-parent">Change result location…</button>
+          <small data-picker-status aria-live="polite"></small>
+          <details class="folder-manual-path">
+            <summary aria-description="Or enter the absolute path">Enter path manually…</summary>
+            <label for="output-parent">Absolute result-parent path</label>
+            <input class="bp6-input" id="output-parent" name="output_parent" type="text" inputmode="text" autocomplete="off" spellcheck="false" required value="{{ state.output_value }}" placeholder="Derived from your selected folder">
+          </details>
+        </div>
       </fieldset>
 
       {% if foldweave_active %}

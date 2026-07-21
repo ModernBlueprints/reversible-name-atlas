@@ -104,12 +104,119 @@ def test_page_skip_target_does_not_draw_release_screenshot_outline() -> None:
         encoding="utf-8"
     )
     main_focus_rule = re.search(
-        r"\.folder-main:focus\s*\{(?P<body>[^}]*)\}",
+        r"\.folder-main:focus,\s*\.folder-main:focus-visible\s*"
+        r"\{(?P<body>[^}]*)\}",
         css,
         flags=re.DOTALL,
     )
     assert main_focus_rule is not None
-    assert "outline: none;" in main_focus_rule.group("body")
+    assert "outline: none !important;" in main_focus_rule.group("body")
+    assert "box-shadow: none !important;" in main_focus_rule.group("body")
+
+
+def test_native_form_groups_and_disclosures_keep_mac_style_alignment() -> None:
+    css = (PROJECT_ROOT / "src/name_atlas/static/folder.css").read_text(
+        encoding="utf-8"
+    )
+    base = (PROJECT_ROOT / "src/name_atlas/templates/folder/base.html").read_text(
+        encoding="utf-8"
+    )
+
+    path_control_rule = re.search(
+        r"\.folder-path-control\s*\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    path_surface_rule = re.search(
+        r"\.folder-path-surface\s*\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    manual_rule = re.search(
+        r"\.folder-manual-path\[open\]\s*\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    manual_input_rule = re.search(
+        r"\.folder-manual-path\[open\] > \.bp6-input\s*"
+        r"\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    closed_key_storage_rule = re.search(
+        r"\.folder-settings-surface > \.folder-disclosure:not\(\[open\]\)"
+        r" > summary\s*\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+
+    assert path_control_rule is not None
+    assert "padding: 0;" in path_control_rule.group("body")
+    assert "background: transparent;" in path_control_rule.group("body")
+    assert path_surface_rule is not None
+    assert "padding: 0.9rem 1rem 1rem;" in path_surface_rule.group("body")
+    assert "background: var(--folder-surface);" in path_surface_rule.group("body")
+    assert manual_rule is not None
+    assert "gap: 0.5rem;" in manual_rule.group("body")
+    assert manual_input_rule is not None
+    assert "margin-top: 0.35rem;" in manual_input_rule.group("body")
+    assert closed_key_storage_rule is not None
+    assert "padding: 0.7rem 0.8rem;" in closed_key_storage_rule.group("body")
+    assert 'setFocusOrigin("pointer")' in base
+    assert 'setFocusOrigin("keyboard")' in base
+
+    start = (PROJECT_ROOT / "src/name_atlas/templates/folder/start.html").read_text(
+        encoding="utf-8"
+    )
+    apply = (PROJECT_ROOT / "src/name_atlas/templates/folder/apply.html").read_text(
+        encoding="utf-8"
+    )
+    assert start.count('class="folder-path-surface"') == 2
+    assert apply.count('class="folder-path-surface"') == 3
+
+
+def test_pointer_focus_does_not_draw_blue_disclosure_boxes() -> None:
+    css = (PROJECT_ROOT / "src/name_atlas/static/folder.css").read_text(
+        encoding="utf-8"
+    )
+
+    pointer_focus_rule = re.search(
+        r"body\.folder-app :where\(a, button, input, textarea, summary\):focus\s*"
+        r"\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    keyboard_summary_rule = re.search(
+        r'html\[data-focus-origin="keyboard"\] body\.folder-app summary:focus\s*'
+        r"\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+
+    assert pointer_focus_rule is not None
+    assert "outline: none;" in pointer_focus_rule.group("body")
+    assert "box-shadow: none;" in pointer_focus_rule.group("body")
+    assert keyboard_summary_rule is not None
+    assert "outline" not in keyboard_summary_rule.group("body")
+    assert "text-decoration: underline;" in keyboard_summary_rule.group("body")
+
+    review_css = (PROJECT_ROOT / "web/src/review.css").read_text(encoding="utf-8")
+    widget_css = (PROJECT_ROOT / "web/src/chatgpt-widget.css").read_text(
+        encoding="utf-8"
+    )
+    assert ".fw-review .bp6-input:focus-visible" in review_css
+    assert ".fw-decision-panel textarea:focus-visible" in review_css
+    assert ".fw-review .bp6-input:focus," not in review_css
+    assert (
+        ".fw-decision-panel textarea:focus {\n  border-color: var(--fw-control-border);"
+        in review_css
+    )
+    assert (
+        ".fw-filter-menu[open] > summary {\n"
+        "  background: var(--fw-selection);\n"
+        "  border-color: var(--fw-control-border);" in review_css
+    )
+    assert ".fw-chatgpt-widget summary:focus-visible" in widget_css
 
 
 def test_settings_headings_use_native_sentence_case_without_tracking() -> None:
@@ -141,7 +248,7 @@ def test_start_and_apply_use_a_width_gated_short_desktop_layout() -> None:
     body = short_desktop.group("body")
     assert "--folder-group-gap: 0.65rem;" in body
     assert "min-height: 4.25rem;" in body
-    assert ".folder-path-control" in body
+    assert ".folder-path-surface" in body
 
 
 def test_foldweave_icon_is_flat_vector_source_with_1024_pixel_master() -> None:

@@ -481,13 +481,14 @@ class CompanionPairingClient:
         *,
         device_name: str,
     ) -> CompanionPairingRegistrationV1:
-        identity = self.identity_store.load_or_create()
+        identity = await asyncio.to_thread(self.identity_store.load_or_create)
         normalized_device_name = device_name.strip()
         registration_body = identity.registration_body(
             device_name=normalized_device_name
         )
         request_id = secrets.token_urlsafe(24)
-        envelope = self.identity_store.sign_envelope(
+        envelope = await asyncio.to_thread(
+            self.identity_store.sign_envelope,
             request_id=request_id,
             sequence=1,
             body=registration_body,
@@ -519,7 +520,8 @@ class CompanionPairingClient:
 
     async def approve_locally(self) -> CompanionPairingStateV1:
         advanced, sequence = await self.state_store.allocate_control_sequence()
-        envelope = self.identity_store.sign_envelope(
+        envelope = await asyncio.to_thread(
+            self.identity_store.sign_envelope,
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
             body={
@@ -554,7 +556,8 @@ class CompanionPairingClient:
 
     async def revoke(self) -> None:
         advanced, sequence = await self.state_store.allocate_control_sequence()
-        envelope = self.identity_store.sign_envelope(
+        envelope = await asyncio.to_thread(
+            self.identity_store.sign_envelope,
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
             body={
@@ -593,7 +596,8 @@ class CompanionPairingClient:
 
         advanced, sequence = await self.state_store.allocate_control_sequence()
         request_id = secrets.token_urlsafe(24)
-        envelope = self.identity_store.sign_envelope(
+        envelope = await asyncio.to_thread(
+            self.identity_store.sign_envelope,
             request_id=request_id,
             sequence=sequence,
             body={
@@ -973,7 +977,8 @@ class FoldweaveCompanionSession:
                 "The gateway challenge has expired.",
             )
         advanced, sequence = await self.state_store.allocate_companion_sequence()
-        challenge_response = self.identity_store.sign_envelope(
+        challenge_response = await asyncio.to_thread(
+            self.identity_store.sign_envelope,
             request_id=secrets.token_urlsafe(24),
             sequence=sequence,
             body={
@@ -1015,7 +1020,8 @@ class FoldweaveCompanionSession:
                 _advanced,
                 response_sequence,
             ) = await self.state_store.allocate_companion_sequence()
-            envelope = self.identity_store.sign_envelope(
+            envelope = await asyncio.to_thread(
+                self.identity_store.sign_envelope,
                 request_id=request.request_id,
                 sequence=response_sequence,
                 body=transport_response.wire_payload(),

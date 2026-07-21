@@ -16,7 +16,7 @@
   --folder-green: #1d7733;
   --folder-amber: #9a4800;
   --folder-red: #b00012;
-  --folder-focus: #005eb8;
+  --folder-focus: rgb(29 29 31 / 72%);
   --folder-control-bg: #ffffff;
   --folder-control-height: 2rem;
   --folder-radius: 0.42rem;
@@ -42,7 +42,7 @@
     --folder-green: #30d158;
     --folder-amber: #ff9f0a;
     --folder-red: #ff8a80;
-    --folder-focus: #64b5ff;
+    --folder-focus: rgb(245 245 247 / 78%);
     --folder-control-bg: #343434;
   }
 }
@@ -139,9 +139,27 @@ body.folder-app textarea.bp6-input {
   resize: vertical;
 }
 
-body.folder-app :where(a, button, input, textarea, summary):focus-visible {
-  outline: 3px solid var(--folder-focus);
+body.folder-app :where(a, button, input, textarea, summary):focus {
+  outline: none;
+  box-shadow: none;
+}
+
+body.folder-app :where(input, textarea):focus {
+  border-color: var(--folder-border-strong);
+}
+
+html[data-focus-origin="keyboard"]
+  body.folder-app
+  :where(a, button, input, textarea):focus {
+  outline: 2px solid var(--folder-focus);
   outline-offset: 2px;
+}
+
+html[data-focus-origin="keyboard"] body.folder-app summary:focus {
+  text-decoration: underline;
+  text-decoration-color: var(--folder-focus);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 .folder-skip-link {
@@ -257,8 +275,10 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
   padding: 1.5rem clamp(0.9rem, 3vw, 2rem) 2.5rem;
 }
 
-.folder-main:focus {
-  outline: none;
+.folder-main:focus,
+.folder-main:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .folder-panel,
@@ -396,12 +416,11 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
 .folder-path-control {
   display: grid;
   min-width: 0;
-  gap: 0.45rem;
+  gap: 0.35rem;
   margin: 0;
-  padding: 0.9rem 1rem 1rem;
+  padding: 0;
   border: 0;
-  border-radius: var(--folder-group-radius);
-  background: var(--folder-surface);
+  background: transparent;
 }
 
 .folder-path-control + .folder-path-control,
@@ -410,10 +429,20 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
 }
 
 .folder-path-control legend {
-  padding: 0 0.25rem 0 0;
+  margin: 0;
+  padding: 0;
   color: var(--folder-text);
   font-size: 0.8125rem;
   font-weight: 600;
+}
+
+.folder-path-surface {
+  display: grid;
+  min-width: 0;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: var(--folder-group-radius);
+  background: var(--folder-surface);
 }
 
 .folder-path-control small,
@@ -451,12 +480,20 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
 
 .folder-manual-path[open] {
   display: grid;
-  gap: 0.35rem;
-  padding-top: 0.2rem;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
 }
 
 .folder-manual-path[open] summary {
-  margin-bottom: 0.1rem;
+  margin-bottom: 0;
+}
+
+.folder-manual-path[open] > label {
+  margin: 0.2rem 0 0.05rem;
+}
+
+.folder-manual-path[open] > .bp6-input {
+  margin-top: 0.35rem;
 }
 
 .folder-source-promise,
@@ -887,6 +924,10 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
   background: transparent;
 }
 
+.folder-settings-surface > .folder-disclosure:not([open]) > summary {
+  padding: 0.7rem 0.8rem;
+}
+
 .folder-settings-row > span {
   display: grid;
   gap: 0.05rem;
@@ -1006,7 +1047,7 @@ body.folder-app :where(a, button, input, textarea, summary):focus-visible {
     margin-bottom: 0.55rem;
   }
 
-  .folder-path-control {
+  .folder-path-surface {
     gap: 0.25rem;
     padding: 0.55rem 0.75rem 0.65rem;
   }

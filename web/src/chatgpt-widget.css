@@ -211,8 +211,20 @@ body {
 }
 
 .fw-chatgpt-widget .bp6-button:focus-visible {
-  outline: 3px solid var(--fw-focus-ring);
+  outline: 2px solid var(--fw-focus-ring);
   outline-offset: 1px;
+}
+
+.fw-chatgpt-widget summary:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.fw-chatgpt-widget summary:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--fw-focus-ring);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 @media (max-width: 620px) {

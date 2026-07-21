@@ -26,6 +26,7 @@ from name_atlas.foldweave_companion_client import (
     CompanionTransportError,
 )
 from name_atlas.foldweave_companion_supervisor import PairingConnectionState
+from name_atlas.native_settings import CredentialStoreError
 
 oslo_tz = ZoneInfo("Europe/Oslo")
 
@@ -176,6 +177,7 @@ class FoldweavePairingService:
         except (
             CompanionContractError,
             CompanionTransportError,
+            CredentialStoreError,
             OSError,
             ValidationError,
         ):

@@ -20,7 +20,7 @@
   --fw-danger-background: #fff1f2;
   --fw-code-background: rgba(118, 118, 128, 0.12);
   --fw-control-border: rgba(60, 60, 67, 0.34);
-  --fw-focus-ring: #005eb8;
+  --fw-focus-ring: rgba(29, 29, 31, 0.72);
 }
 
 .foldweave-review-shell {
@@ -124,11 +124,28 @@ body.folder-app .folder-main:has(.foldweave-review-shell) {
 }
 
 .fw-review .bp6-button:focus-visible,
-.fw-review .bp6-input:focus,
-.fw-review summary:focus-visible,
-.fw-decision-panel textarea:focus {
-  outline: 3px solid var(--fw-focus-ring);
+.fw-review .bp6-input:focus-visible,
+.fw-decision-panel textarea:focus-visible,
+.fw-tree-row:focus-visible {
+  outline: 2px solid var(--fw-focus-ring);
   outline-offset: 1px;
+}
+
+.fw-review summary:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.fw-review summary:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--fw-focus-ring);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+html[data-focus-origin="pointer"] .fw-review :where(button, input, textarea, summary):focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .fw-filter-menu {
@@ -160,7 +177,7 @@ body.folder-app .folder-main:has(.foldweave-review-shell) {
 
 .fw-filter-menu[open] > summary {
   background: var(--fw-selection);
-  border-color: var(--fw-system-blue);
+  border-color: var(--fw-control-border);
 }
 
 .fw-filter-row {
@@ -624,7 +641,7 @@ body.folder-app .folder-main:has(.foldweave-review-shell) {
 }
 
 .fw-decision-panel textarea:focus {
-  border-color: var(--fw-system-blue);
+  border-color: var(--fw-control-border);
 }
 
 .fw-revision-count {
@@ -899,7 +916,7 @@ body.folder-app .folder-main:has(.foldweave-review-shell) {
     --fw-danger-background: #431c1f;
     --fw-code-background: rgba(118, 118, 128, 0.24);
     --fw-control-border: rgba(235, 235, 245, 0.32);
-    --fw-focus-ring: #64b5ff;
+    --fw-focus-ring: rgba(245, 245, 247, 0.78);
   }
 
   .fw-review .bp6-button:not(.bp6-intent-primary),

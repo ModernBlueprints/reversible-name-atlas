@@ -21,6 +21,8 @@ KEYCHAIN_SERVICE = "com.modernblueprints.foldweave.openai-api"
 KEYCHAIN_ACCOUNT = "default"
 MAX_CREDENTIAL_BYTES = 16 * 1024
 SECURE_PROMPT_TIMEOUT_SECONDS = 300.0
+NONINTERACTIVE_KEYCHAIN_TIMEOUT_SECONDS = 2.0
+KeychainCallResult = TypeVar("KeychainCallResult")
 
 
 class CredentialStoreError(RuntimeError):
@@ -231,8 +233,22 @@ class SecurityKeychainAdapter(Protocol):
     def remove(self, *, service: str, account: str) -> bool: ...
 
 
+@dataclass(slots=True)
 class PyObjCKeychainAdapter:
     """Call Security.framework without backend discovery or shell execution."""
+
+    allow_authentication_ui: bool = True
+    operation_timeout_seconds: float = NONINTERACTIVE_KEYCHAIN_TIMEOUT_SECONDS
+    _operation_gate: threading.Lock = field(
+        default_factory=threading.Lock,
+        init=False,
+        repr=False,
+    )
+    _timed_out: bool = field(default=False, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.operation_timeout_seconds <= 0:
+            raise ValueError("Keychain operation timeout must be positive.")
 
     @staticmethod
     def _security():
@@ -252,11 +268,56 @@ class PyObjCKeychainAdapter:
 
     def _query(self, *, service: str, account: str) -> dict[object, object]:
         security = self._security()
-        return {
+        query = {
             security.kSecClass: security.kSecClassGenericPassword,
             security.kSecAttrService: service,
             security.kSecAttrAccount: account,
         }
+        if not self.allow_authentication_ui:
+            query[security.kSecUseAuthenticationUI] = (
+                security.kSecUseAuthenticationUIFail
+            )
+        return query
+
+    def _call_security(
+        self,
+        operation: Callable[[], KeychainCallResult],
+    ) -> KeychainCallResult:
+        if self.allow_authentication_ui:
+            return operation()
+        with self._operation_gate:
+            if self._timed_out:
+                raise CredentialStoreError(
+                    "keychain_operation_timeout",
+                    "macOS Keychain did not complete the device operation.",
+                )
+            completed = threading.Event()
+            result: list[KeychainCallResult] = []
+            failure: list[BaseException] = []
+
+            def invoke() -> None:
+                try:
+                    result.append(operation())
+                except BaseException as exc:  # noqa: BLE001 - thread handoff
+                    failure.append(exc)
+                finally:
+                    completed.set()
+
+            worker = threading.Thread(
+                target=invoke,
+                name="foldweave-keychain-noninteractive",
+                daemon=True,
+            )
+            worker.start()
+            if not completed.wait(self.operation_timeout_seconds):
+                self._timed_out = True
+                raise CredentialStoreError(
+                    "keychain_operation_timeout",
+                    "macOS Keychain did not complete the device operation.",
+                )
+            if failure:
+                raise failure[0]
+            return result[0]
 
     def exists(self, *, service: str, account: str) -> bool:
         security = self._security()
@@ -265,7 +326,9 @@ class PyObjCKeychainAdapter:
             security.kSecReturnAttributes: True,
             security.kSecMatchLimit: security.kSecMatchLimitOne,
         }
-        status, _result = security.SecItemCopyMatching(query, None)
+        status, _result = self._call_security(
+            lambda: security.SecItemCopyMatching(query, None)
+        )
         if status == security.errSecSuccess:
             return True
         if status == security.errSecItemNotFound:
@@ -279,7 +342,9 @@ class PyObjCKeychainAdapter:
             security.kSecReturnData: True,
             security.kSecMatchLimit: security.kSecMatchLimitOne,
         }
-        status, result = security.SecItemCopyMatching(query, None)
+        status, result = self._call_security(
+            lambda: security.SecItemCopyMatching(query, None)
+        )
         if status == security.errSecItemNotFound:
             raise CredentialStoreError(
                 "credential_not_configured",
@@ -293,21 +358,26 @@ class PyObjCKeychainAdapter:
         security = self._security()
         query = self._query(service=service, account=account)
         if self.exists(service=service, account=account):
-            status = security.SecItemUpdate(
-                query,
-                {security.kSecValueData: value},
+            status = self._call_security(
+                lambda: security.SecItemUpdate(
+                    query,
+                    {security.kSecValueData: value},
+                )
             )
         else:
-            status, _result = security.SecItemAdd(
-                {**query, security.kSecValueData: value},
-                None,
+            status, _result = self._call_security(
+                lambda: security.SecItemAdd(
+                    {**query, security.kSecValueData: value},
+                    None,
+                )
             )
         if status != security.errSecSuccess:
             raise _keychain_error(status)
 
     def remove(self, *, service: str, account: str) -> bool:
         security = self._security()
-        status = security.SecItemDelete(self._query(service=service, account=account))
+        query = self._query(service=service, account=account)
+        status = self._call_security(lambda: security.SecItemDelete(query))
         if status == security.errSecSuccess:
             return True
         if status == security.errSecItemNotFound:
