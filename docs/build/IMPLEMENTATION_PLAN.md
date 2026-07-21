@@ -2257,9 +2257,11 @@ held.
   caption propagation was still pending at immediate readback; and the public
   player reports the exact 2:16 stream. GitHub repository
   `ModernBlueprints/Foldweave` remains canonical. Devpost project `1327974`,
-  version `12`, contains the final video, canonical repository URL,
+  version `13`, contains the final video, canonical repository URL,
   first-person-singular project story, current origin/receiver images, focused
-  technology list, and current cross-layout thumbnail; Build Week
+  technology list, and a successfully processed current cross-layout thumbnail
+  asset; immediate public Open Graph metadata still referenced Devpost's
+  predecessor photo path after replacement; Build Week
   `submitted_at` remains `null`.
 
 ## 19. Protected final 16-hour reserve and submission hold

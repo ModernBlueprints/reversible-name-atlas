@@ -107,7 +107,7 @@ user must personally review and make every personal or legal attestation.
 | Fresh clean-clone wheel digest | `foldweave-0.1.0-py3-none-any.whl`; SHA-256 `7de05603f9be06627888f8369581a987693ad69b7e9ca1dd340cf78414c1df07` |
 | Fresh clean-clone Change File, receipt, and verifier identities | Origin Change File fingerprint `9cadf68fe3207e6de89a2fd3b1fd7ed3d97cb7a1d41dfba483911e4f507d79e0`, receipt `0e33b16b6a7dc26cd171def18b0a01eaf0098315f32e154915373ff5cd6fcd1b`; receiver receipt `c0122b6ee7ed278c2aa7b18396bc8a35f628cbbbd0f3a0ab092f7ae0f24c77a8`; equal organized-tree commitment `a11ab49b9b48151aae4343c189c2eecae8c0a67a91cac45144656eb0ece02f7e`; source-free/source-aware verification and both reconstructions passed |
 | Final screenshots and thumbnail | Nine Foldweave UI captures, one installed-copy Codex evidence card, and the thumbnail are visually reviewed, hash-recorded, and published in current release-evidence history; the evidence card is not represented as a literal Codex UI screenshot |
-| Devpost project copy | Public project `1327974`, version `12`, is synchronized to the accepted product candidate, canonical Foldweave repository URL, final public video, first-person-singular project story, two embedded current product images, focused technology list, and current cross-layout thumbnail without exposing the private `/feedback` identifier; all custom submission answers are prepared privately and only personal attestations, hold release, and final submission remain pending |
+| Devpost project copy | Public project `1327974`, version `13`, is synchronized to the accepted product candidate, canonical Foldweave repository URL, final public video, first-person-singular project story, two embedded current product images, focused technology list, and current cross-layout thumbnail without exposing the private `/feedback` identifier; all custom submission answers are prepared privately and only personal attestations, hold release, and final submission remain pending |
 | Public video URL | <https://youtu.be/JpHIoLa-hZI> — Public; exact local master duration 136.000 seconds; public watch page verified |
 | `/feedback` Session ID | `[CAPTURED PRIVATELY FROM THE PRIMARY CODEX BUILD TASK; ENTER IN REQUIRED FIELD 27950]` |
 | Entrant type and country | `Individual` and `Norway`; prepared privately from the user's explicit solo-project statement and canonical Europe/Oslo context |
@@ -651,7 +651,7 @@ remain separate controlled steps.
 
 ## Devpost description draft
 
-The live version-12 Devpost story is the canonical submitted-copy candidate.
+The live version-13 Devpost story is the canonical submitted-copy candidate.
 It expands this recovery synopsis into a first-person-singular, problem-first
 explanation and embeds the current origin and receiver review images. The live
 record was read back after saving and contains no collective author voice or
@@ -1067,7 +1067,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 | Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
-| Foldweave public video is complete | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, 2:16 fixed-frame master, public YouTube stream, disclosed constant-speed narration, and no planned product/design work | `VERIFIED — https://youtu.be/JpHIoLa-hZI; Devpost project version 12 contains the final video, canonical repository URL, singular project story, and current cross-layout thumbnail` |
+| Foldweave public video is complete | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, 2:16 fixed-frame master, public YouTube stream, disclosed constant-speed narration, and no planned product/design work | `VERIFIED — https://youtu.be/JpHIoLa-hZI; Devpost project version 13 contains the final video, canonical repository URL, singular project story, and current cross-layout thumbnail` |
 | Final submission is complete | Captured `/feedback` Session ID, personal/legal attestations, explicit hold release, Devpost submission, and confirmation | `PENDING USER-OWNED ATTESTATIONS, HOLD RELEASE, AND FINAL SUBMISSION` |
 
 ## Due-diligence checklist
@@ -1169,11 +1169,16 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 - [x] Update the actual Build Week project record `1327974` with Foldweave
       public project copy, repository link, technology list, and verified
       thumbnail without submitting. Devpost retained its supplied
-      `preflight-8s9awt` slug. Version `12` renders the public repository,
+      `preflight-8s9awt` slug. Version `13` renders the public repository,
       keyless judge path, verified public video, singular project story, two
       current embedded product images, and captured-status `/feedback` evidence
       without exposing the identifier; no unsupported slug mutation was
       attempted.
+- [x] Rebind the approved cross-layout thumbnail through both supported Devpost
+      thumbnail upload paths. Devpost returned successful processed assets and
+      project version `13`. Immediate public Open Graph metadata still returned
+      the predecessor photo path, so that Devpost-controlled propagation is a
+      residual platform uncertainty rather than a missing local artifact.
 - [x] Freeze **Work & Productivity** as the submission category. Devpost exposes
       this only as submission field `27947`; it will be supplied with the final
       submission after the user completes the personal fields and releases the
@@ -1183,7 +1188,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       reproduced the keyless review/accept/verify/reconstruct path, and passed
       the final local Markdown-link and release-state checks.
 - [x] Add the verified public YouTube URL and canonical Foldweave repository URL
-      to Devpost project `1327974`; version `12` reports both and remains
+      to Devpost project `1327974`; version `13` reports both and remains
       unsubmitted.
 - [x] Capture the primary Codex task's exact `/feedback` Session ID privately
       for required Devpost field `27950`; do not duplicate it in public release

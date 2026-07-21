@@ -1438,7 +1438,7 @@ completes personal attestations and explicitly releases the hold.
 
 At the user's request, every editable Devpost project surface was audited again
 against the live OpenAI Build Week submission schema. Project `1327974` was
-updated without submitting to version `12`. The public story now uses
+updated without submitting to version `13`. The public story now uses
 first-person-singular authorship, explains the cross-layout problem before the
 review workflow, distinguishes the exact GPT-5.6, ChatGPT-hosted, Codex,
 replay, and model-free paths, and renders current origin and receiver review
@@ -1456,6 +1456,14 @@ the 6,914-byte SVG source has SHA-256
 `8a78e7be6b182779157d78fa3462b2c27a36f96b6586af09511c6a24f4f0f5d6`.
 The live project page rendered the final YouTube embed, singular story, both
 current product images, Built With list, and canonical repository link.
+
+The approved thumbnail was then rebound through both supported Devpost upload
+paths. Devpost returned successful processed current assets and project version
+`13`. Immediate no-cache public Open Graph reads continued to reference the
+predecessor photo path, whose CDN object returned HTTP 403. The current
+thumbnail assets themselves returned HTTP 200 and passed the independent visual
+audit. This is recorded as a Devpost-controlled metadata-propagation
+uncertainty, not as proof that the obsolete social-card reference was repaired.
 
 All seven custom Build Week answers are prepared in the ignored owner-only
 record: `Individual`, `Norway`, **Work & Productivity**, canonical repository,

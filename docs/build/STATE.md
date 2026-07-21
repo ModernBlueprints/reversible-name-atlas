@@ -1,6 +1,6 @@
 # Foldweave build state
 
-Observed: **Wednesday 22 July 2026 at 01:14:32 CEST** using
+Observed: **Wednesday 22 July 2026 at 01:26:59 CEST** using
 `oslo_tz = ZoneInfo("Europe/Oslo")`.
 
 Phase: **WAITING_FOR_SUBMISSION_HOLD_RELEASE**
@@ -29,10 +29,10 @@ occurred.
 
 | Boundary | Absolute Oslo time | State at observation |
 |---|---|---:|
-| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 24 hours, 14 minutes, 32 seconds |
-| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 19 hours, 14 minutes, 32 seconds |
-| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 15 hours, 14 minutes, 32 seconds |
-| Submission | Wednesday 22 July 2026 at 02:00 CEST | 45 minutes, 27 seconds remained |
+| Feature freeze | Tuesday 21 July 2026 at 01:00 CEST | passed by 24 hours, 26 minutes, 59 seconds |
+| Release candidate | Tuesday 21 July 2026 at 06:00 CEST | passed by 19 hours, 26 minutes, 59 seconds |
+| Recording readiness | Tuesday 21 July 2026 at 10:00 CEST | passed by 15 hours, 26 minutes, 59 seconds |
+| Submission | Wednesday 22 July 2026 at 02:00 CEST | 33 minutes, 1 second remained |
 
 F+0 did not reset the 44-hour envelope. Only release-safe work is now
 permitted.
@@ -53,7 +53,7 @@ permitted.
 | Public video | `VERIFIED COMPLETE` — final video is Public at <https://youtu.be/JpHIoLa-hZI>; exact 136.000-second fixed-frame master; two native Finder icon views; one constant-speed disclosed OpenAI Text-to-Speech narration; repository-owned visuals; no music; YouTube checks passed; a 13-cue English track is published in Studio; and the public player reports the exact 2:16 stream while caption propagation remains pending |
 | `/feedback` | `CAPTURED PRIVATELY` — exact primary Codex Session ID reserved for Devpost field `27950` |
 | Public repository | `VERIFIED COMPLETE` — canonical repository is <https://github.com/ModernBlueprints/Foldweave>; local `origin` uses the canonical URL, both release refs are synchronized, and the historical GitHub slug redirects to Foldweave |
-| Devpost project preparation | `COMPLETE WITHOUT SUBMISSION` — public project `1327974`, version `12`, has a first-person-singular Foldweave story, current origin/receiver images, canonical public repository URL, focused technology list, current cross-layout thumbnail, final public video, keyless judge guidance, and captured-status `/feedback` evidence without exposing the identifier; all seven custom answers are prepared privately, and only the user's final legal attestations, hold release, and submission remain pending |
+| Devpost project preparation | `COMPLETE WITHOUT SUBMISSION` — public project `1327974`, version `13`, has a first-person-singular Foldweave story, current origin/receiver images, canonical public repository URL, focused technology list, a successfully processed current cross-layout thumbnail asset, final public video, keyless judge guidance, and captured-status `/feedback` evidence without exposing the identifier; all seven custom answers are prepared privately, and only the user's final legal attestations, hold release, and submission remain pending. Devpost's immediate public Open Graph readback still referenced the predecessor photo path after successful replacement, which remains a platform-propagation uncertainty. |
 | Devpost submission | `NOT PERFORMED` |
 
 The category decision is complete: **Work & Productivity** will be supplied as
@@ -124,7 +124,7 @@ Session ID are already prepared. Do not submit before that explicit release.`
 - **Evidence:** job/preview, Change File/receipt/verifier/reconstruction,
   native/browser, direct/hosted/replay, gateway, MCP/Codex, release visuals,
   final 2:16 public video, canonical Foldweave repository, Devpost project
-  version 12, current cross-layout thumbnail, singular story, prepared private
+  version 13, current cross-layout thumbnail, singular story, prepared private
   custom answers, and the Codex evidence
   card are verified; detailed fingerprints remain in the sole plan and build
   log.
