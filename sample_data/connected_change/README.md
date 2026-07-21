@@ -1,9 +1,11 @@
 # Connected Change release fixtures
 
-All project content below is synthetic and was generated for Foldweave. No
-third-party project content or personal information is included. Historical
-internal paths and schema names may retain their original Name Atlas spelling
-where strict compatibility requires it.
+All project content below is synthetic Build Week fixture material used by the
+current Foldweave release. It originated in the Connected Change/Name Atlas
+predecessor. Original Name Atlas labels may remain in historical or internal
+paths, schema names, and embedded synthetic-fixture metadata where strict
+provenance or compatibility requires them. No third-party project content or
+personal information is included.
 
 - `sofia_apollo/` and `martin_apollo/` contain the same 24 logical files in
   different local layouts. Corresponding files have identical payload bytes,

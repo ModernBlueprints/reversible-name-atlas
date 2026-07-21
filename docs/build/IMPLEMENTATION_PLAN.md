@@ -1,10 +1,10 @@
 # Foldweave — Sole Native-Review Implementation Plan
 
-Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F6 ARE VERIFIED COMPLETE;
-PUBLIC-`main` PROMOTION IS COMPLETE; F7 MEDIA-READINESS PREPARATION REMAINS;
+Status: **FOLDWEAVE EXECUTION ACTIVE; F0A–F0D AND F1–F7 ARE VERIFIED COMPLETE;
+PUBLIC-`main` PROMOTION IS COMPLETE; RECORDING PACKAGE READY;
 CONNECTED-CHANGE C0–C7 BASELINE COMPLETE; SUBMISSION HOLD ACTIVE**
 
-Phase: **F7 MEDIA-READINESS PREPARATION — PUBLIC-`main` PROMOTION COMPLETE**
+Phase: **RECORDING_READY — PUBLIC-`main` RELEASE AND CAPTURE PACKAGE COMPLETE**
 
 Submission hold: **ACTIVE**
 
@@ -2218,15 +2218,21 @@ held.
   reserve.
 - **Owner:** primary integrator; user owns voice recording and the final gates.
 - **Allowed cut:** none from the recording-ready definition.
-- **Actual status:** `IN PROGRESS — product candidate and fresh clean-clone
-  evidence exist; recording readiness is not claimed until the public release
-  checkpoint, final media plan, and user-owned timing/voice gates are complete`.
-- **Actual verification:** the screenshot set, public-product story, 317-word
-  narration draft, target 2:55 storyboard, application launch/review evidence,
-  and final release materials are being reconciled. Actual spoken timing, the
-  user's voice, final capture/edit/upload/playback, `/feedback`, personal
-  attestations, and explicit hold release are intentionally not inferred from
-  elapsed time or document existence.
+- **Actual status:** `COMPLETE — RECORDING_READY`. The accepted public release
+  and capture package are ready. This does not assert that a user voice-over,
+  public video, `/feedback` Session ID, personal attestation, hold release, or
+  Devpost submission exists.
+- **Actual verification:** a fresh public `main` clone of the final
+  judge-documentation checkpoint passed the documented keyless replay → review
+  → exact-acceptance → verification → reconstruction path, including bytewise
+  reconstruction of the selected synthetic source. The tested native app,
+  direct, ChatGPT-hosted, Codex, replay, unchanged-apply, derivative, verifier,
+  reconstruction, and gateway paths remain stable. The exact 317-word narration
+  and 11-shot 2:55 story are frozen. A macOS speech-synthesis timing proxy and
+  the Sofia/Martin visual rehearsal passed below the three-minute limit. The
+  proxy is recording-margin evidence only; it is not the user's final voice or
+  video. No product or design change is planned. The submission hold remains
+  active.
 
 ## 19. Protected final 16-hour reserve and submission hold
 

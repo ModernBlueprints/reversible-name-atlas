@@ -1184,3 +1184,45 @@ The accepted release evidence is fast-forwarded to public `main`. Final media,
 video, `/feedback`, personal attestations, explicit hold release, and submission
 remain pending. No ChatGPT review submission, approval, publication, or public
 listing is claimed. The submission hold remains active.
+
+### Final agent-controlled recording-package closeout — 21 July 2026
+
+The judge-facing documentation checkpoint
+`d5702e1665c1ddb2b88ac68d902e9d6bc63304fd` was fast-forwarded without force to
+both public `main` and `revision/foldweave-native-review`. A new unrelated public
+`main` clone then installed with `uv sync --frozen` and ran the README's exact
+keyless transaction. It materialized the disposable 24-file Sofia fixture,
+stopped in `reviewing`, served the Foldweave review page on loopback, and exposed
+the immutable preview endpoint. CLI exact acceptance of preview
+`a361edc8f0f3e9a910481897c1ef8a3cac6ff293ace8e92f09bfcd918173d4b0` produced
+a separate verified result with receipt
+`eb328314e777c332754e27a538c9a16a159f8c571fbfcc0114786e385a1af257`.
+Source-aware verification and `diff -qr` reconstruction proved the selected
+synthetic source's paths and bytes exactly. The temporary loopback server shut
+down cleanly after the inspection.
+
+The final README now discloses the constrained project-selection tournament that
+preceded product implementation. It is correctly described as a Build Week
+decision aid that tested candidate directions against feasibility, user value,
+track fit, and demonstrability. It is not Foldweave runtime code; its semantic,
+scoring, evaluator, and transport machinery is excluded. The Foldweave demo
+fixtures are also now described truthfully as synthetic predecessor material used
+by the current release, with original Name Atlas labels retained only where
+strict provenance or compatibility requires them.
+
+The agent-controlled public project preparation is complete without a Build Week
+submission: Devpost project record `1327974` now contains Foldweave project copy,
+the public repository link, technology list, and the verified current thumbnail
+(`b67e2f845857851fc31335ab85b9634a9f8acf9f65bdc6c95e547030876e7cb6`). Its
+Devpost-provided `preflight-8s9awt` slug remains unchanged; no unsupported slug
+mutation, category selection, personal form entry, or submission was attempted.
+GitHub public metadata now identifies Foldweave as a review-and-verify connected
+folder product and carries current product topics.
+
+This establishes `RECORDING_READY` only in the narrow, governed sense: the
+accepted Foldweave product, public repository, keyless judge path, screenshots,
+frozen 317-word narration, 11-shot 2:55 capture plan, and timing-margin
+preflight are ready for the user's recording work. It does not establish a user
+voice recording, a public YouTube video, `/feedback` Session ID, personal or
+legal attestation, release of the submission hold, or a Devpost submission. All
+of those remain pending and the hold remains active.

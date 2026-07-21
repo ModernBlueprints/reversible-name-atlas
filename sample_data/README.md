@@ -1,11 +1,13 @@
 # Sample-data provenance
 
-All release-facing sample content is synthetic and was created for Foldweave
-during OpenAI Build Week. It contains no personal project data and no
-third-party project payload. Unless a subdirectory says otherwise, the samples
-are distributed under the repository's MIT license. Historical files may retain
-their original Name Atlas identity where that is necessary for provenance or
-compatibility.
+All release-facing sample content is synthetic Build Week fixture material. The
+current Foldweave release uses `connected_change/` as its demonstration family.
+It originated in the Connected Change/Name Atlas predecessor and retains
+original names, paths, schema identifiers, and embedded synthetic-fixture
+metadata where strict provenance or compatibility requires them. The samples
+contain no personal project data and no third-party project payload. Unless a
+subdirectory says otherwise, they are distributed under the repository's MIT
+license.
 
 ## Primary release fixtures: `connected_change/`
 

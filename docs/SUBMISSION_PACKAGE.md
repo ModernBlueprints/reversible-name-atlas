@@ -1055,7 +1055,7 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 | Codex plugin is installed and uses the same engine | Final clean-clone install, cache identity, fresh task, discovery, invocation, complete reviewed path, uninstall | `CLEAN-CLONE PLUGIN VALIDATION AND STDIO MCP DISCOVERY PASSED; FULL INSTALLED-COPY UI INVOCATION EVIDENCE REMAINS CURRENT LOCAL QUALIFICATION` |
 | Consumer ChatGPT pairing works | Real OAuth/PKCE, pairing, WSS, reconnect, bounded refusal/revocation coverage, origin and receiver derivative, unchanged ledger | `CONSUMER_PAIRING_VERIFIED`; standard `ui/message` continuation still requires the documented explicit same-conversation recovery |
 | Foldweave is public in ChatGPT | Observed approval and publication | `NOT ESTABLISHED — DO NOT CLAIM` |
-| Foldweave is recording-ready | Accepted release commit, clean clone, all mandatory modes, final media package, no planned product/design work | `NOT YET ESTABLISHED` |
+| Foldweave is recording-ready | Accepted release commit, fresh public clean clone, all mandatory modes, final proof, screenshots, frozen narration/shot package, timing preflight, and no planned product/design work | `VERIFIED — recording package is ready. Final user voice, public video, /feedback, personal attestations, hold release, and submission remain pending.` |
 | Video and submission are complete | Public playback, `/feedback`, attestations, hold release, Devpost confirmation | `PENDING USER AND FINAL CLOSURE ACTIONS` |
 
 ## Due-diligence checklist
@@ -1127,10 +1127,17 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
       notification, pairing secret, authorization code, or private callback
       appears in current public-facing release material. Historical evidence is
       retained only where provenance requires it.
-- [ ] Confirm every screenshot, narration sentence, README claim, Devpost field,
-      and video statement maps to accepted evidence.
-- [ ] Confirm every third-party license and asset obligation.
+- [x] Confirm every currently prepared screenshot, narration sentence, README
+      claim, Devpost project-copy field, and planned video statement maps to
+      accepted evidence. The actual video and user-owned form entries remain
+      outside this check.
+- [x] Confirm MIT licensing, third-party notices, bundled sample provenance,
+      screenshot/thumbnail origins, and repository asset obligations. Final
+      video music, footage, and voice remain user-owned media obligations.
 - [ ] Confirm no unlicensed music or footage.
+- [x] Run the macOS synthetic-speech timing preflight for the frozen 317-word
+      narration: 150.304 seconds at 125 words per minute and 148.652 seconds
+      at 130 words per minute. This is timing-margin evidence only.
 - [ ] Perform a real spoken narration timing and revise for comfortable pacing.
 - [ ] Record the user's voice.
 - [ ] Export a complete video strictly below 3:00 with intelligible audio.
@@ -1140,10 +1147,13 @@ pywebview, PyInstaller, and every other dependency or asset obligation.
 
 ### Devpost and user-owned actions
 
-- [ ] Recheck official rules, FAQ, deadline, and current form immediately before
+- [x] Recheck the official rules, FAQ, dates, requirements, and current form
+      during final release preparation. Recheck them again immediately before
       submission.
-- [ ] Replace predecessor Devpost identity and copy with the accepted Foldweave
-      release only after release acceptance.
+- [x] Update the actual Build Week project record `1327974` with Foldweave
+      public project copy, repository link, technology list, and verified
+      thumbnail without submitting. Devpost retained its supplied
+      `preflight-8s9awt` slug; no unsupported slug mutation was attempted.
 - [ ] Select **Work & Productivity**.
 - [ ] Verify repository, judge, plugin, platform, and ChatGPT-state instructions
       against the final public clone.
@@ -1169,9 +1179,9 @@ Creating, editing, committing, pushing, publishing, packaging, deploying,
 rehearsing, capturing, or uploading this release does not release the
 submission hold.
 
-If every independently actionable product, release, media, due-diligence,
-`/feedback`, and Devpost-draft requirement is complete while the hold remains
-active, the correct phase is:
+If every independently actionable product, release, media-preparation,
+due-diligence-preparation, and Devpost-draft requirement is complete while the
+hold remains active, the correct phase is:
 
 `WAITING_FOR_SUBMISSION_HOLD_RELEASE`
 

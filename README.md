@@ -31,8 +31,10 @@ unchanged, or use as the parent of a new proposal.
 > user-authorized Google Chrome route. Foldweave is technically
 > `PUBLICATION_READY` for review submission, but it has not been submitted for
 > ChatGPT review, approved, published, or publicly listed. The product release
-> candidate is not yet a notarized app, a public ChatGPT listing, a
-> recording-ready package, or a submitted Devpost entry; the submission hold
+> and capture package are `RECORDING_READY`: the final Foldweave product and
+> under-three-minute recording plan are ready to record. The project is not a
+> notarized app, a public ChatGPT listing, a completed public video, a
+> `/feedback` Session ID, or a submitted Devpost entry; the submission hold
 > remains active.
 
 ## Why Foldweave exists
